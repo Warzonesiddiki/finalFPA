@@ -67,9 +67,44 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   seed model (`FactImportAudit` absorbed into `FactImportBatch`); and the schema-versioning and
   migration rules. Reason: Kickoff §7, Addon 1 §C.2, Addon 2 §C.2, Addon 3 §B.2, Addon 4 §G.1/H.
 
+- **`docs/04_SOURCE_MAPPING_AND_IMPORT_SPEC.md`** (Draft v0.1) — the import contract: nine source
+  types and their required mapping fields; the seven-step wizard with resumability and long-running-job
+  UX; the shipped template inventory and version-stamp rules; mapping profiles with header-fingerprint
+  auto-match (Jaccard ≥ 0.80), immutable versions, revert-as-new-version and mid-year source-change
+  handling; the canonical field reference including explicitly ignored columns; per-profile value
+  parsing (dates incl. the ambiguity rule, numbers/Cr-Dr/parentheses, dimension strings, fiscal-period
+  text, enums); the **26-item Excel structure hardening table** and **12-item CSV hardening table**
+  (every quirk handled or rejected with a named message slug); the **32-check validation catalogue
+  `IMP-001`…`IMP-032`**; the fixed reject-vs-quarantine decision rule; balance and control-total
+  reconciliation with the fail-by-default-plus-recorded-acceptance decision; duplicate-detection keys at
+  three levels; incremental monthly load rules; atomic commit, cancellation and crash/sleep recovery;
+  data-quality score inputs; the nine-part validation report; the batch lifecycle and void rules; the
+  three-part error-copy standard with worked examples; and the mapping to the canonical edge cases.
+  Reason: Kickoff §7/§13, Addon 1 §C.2/E/F/G/H, Addon 2 §D.4/D.5/D.6/D.12, Addon 3 §C.1/C.2/C.7/C.11/C.12,
+  Addon 4 §G.2.
+- **`docs/05_CALCULATION_SPEC.md`** (Draft v0.1) — every formula the product computes, with **14 golden
+  fixtures (36 exact assertions, verified computationally)**: fiscal calendar and period assignment
+  (posting-date default, document-date only for the cut-off rule); the five period windows (MTD/YTD/PY
+  MTD/PY YTD/TTM) with always-visible labels; canonical sign conventions; variance, variance % with the
+  three-state zero-budget rule (`value` / `—` / `n/a`), direction-aware favour*ability* by statement-line
+  type, and percentage-point vs percent; the KPI/ratio library with divide-by-zero guards; rounding
+  policy (half-up, compute-then-round-once) including the **sum-of-rounded rule** and its mandatory
+  footnote; display scale (whole/thousands/lakhs) and negative presentation; grain, grouped-sum and
+  hierarchy-rollup invariants; the **data-quality score formula** with its decomposition guarantee (a
+  failed High check caps the score at 96); the four forecast methods' arithmetic plus scenario
+  adjustment; forecast-accuracy metrics (signed error, absolute error, signed bias, MAPE-lite with the
+  zero-actual exclusion rule); control-total/balance/row-count variance formulas; materiality thresholds
+  with the mandatory AND-test; the binding **tolerance policy** (exact equality at minor-unit precision,
+  no epsilon in money paths, cross-artifact exact equality); and a formula register mapping every ID to
+  its section and fixture. Reason: Kickoff §5/§8, Addon 1 §C.2/H/L, Addon 2 §C.2/G, Addon 3 §B.2/F,
+  Addon 4 §G.1.
+
 #### Changed — 2026-10-01
 
-- Nothing yet (no doc has been revised after first issue).
+- **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's
+  `data_quality_score` from `96` to **`95`** so it matches the now-defined formula (`05` `CALC-050`,
+  fixture F12: `100 × (1 − 11/238) = 95.378…` → `95`), and added a cross-reference note. Reason: the
+  formula landed after the example; the example must be reproducible from the formula.
 
 #### Fixed — 2026-10-01
 

@@ -644,7 +644,11 @@ never silently merged (P13, FR-IMP-017/018).
 
 | batch_id | source_type | file_name | file_checksum (prefix) | row_count_source | row_count_loaded | row_count_quarantined | balance_result | data_quality_score | status | period_id |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 37 | `actuals_d365` | `GL_Sep26.xlsx` | `a41d…` | 184,502 | 184,494 | 8 | pass | 96 | committed | 69 |
+| 37 | `actuals_d365` | `GL_Sep26.xlsx` | `a41d…` | 184,502 | 184,494 | 8 | pass | 95 | committed | 69 |
+
+*The score in this row is the worked example `F12` of `05_CALCULATION_SPEC.md`: one failed High-severity
+check (weight 10) plus one Low-severity warning (weight 0.5 × 2) over a weight total of 238 gives
+`100 × (1 − 11/238) = 95.378…` → **95**. Any change to the score formula changes this example too.*
 
 ## 9. Notes, supersessions and storage
 
