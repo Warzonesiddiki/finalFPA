@@ -248,6 +248,32 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
 - **Governance** — `00_INDEX` gains the `SEC-nnn` prefix family, the `SEC` error family and the `TST-SEC`
   family; doc `09`'s storage inventory gains `security.log`; `01` gains `DEC-030`; `02` `FR-SET-012` records
   the append-only audit rule; `11` §4.8's secret-pattern pointer is now a real section (`13` §5.4).
+- **`docs/14_TESTING_QA_PLAN.md`** (Draft v0.1) — the test and quality system: nine test levels and their
+  runners; the **canonical `NFR-001`…`NFR-016`** targets, each with a measurement method, fixture, script
+  and recorded baseline plus the measurement protocol (reference machine, 5 runs, median/worst, > 20 %
+  regression blocks a gate); a **292-test catalogue** (206 tests owned here — `TST-CALC` 24, `TST-IMP` 36,
+  `TST-RUL` 28, `TST-FC` 14, `TST-BVA` 12, `TST-EXC` 12, `TST-UI` 20, `TST-API` 16, `TST-E2E` 8,
+  `TST-PRF` 16, `TST-WIN` 14, `TST-UAT` 6 — plus the 86 already reserved by docs 10–13); the golden-file
+  policy ("expectations are never edited to pass"); the **planted-exception acceptance harness** with the
+  bars from `06` §8.3 (recall ≥ 90 %, zero control raises) plus an 18/18 High-severity bar, the per-rule
+  test map and the worked re-run identity scenario; the **tolerance and edge-case matrices** (16 rows with
+  message IDs) and the 16-file negative corpus; the **cross-artifact consistency harness** and its
+  comparison set; performance baselines and regression rules; Playwright golden path, UI state sweeps,
+  accessibility and wording scans, the 14-item Windows manual checklist and the E2E journeys;
+  security/privacy/supply-chain test routing and the fault-injection set; data-integrity, migration and
+  upgrade tests; API/CLI contract tests and the six UAT scripts; **`scripts/check` composition**, coverage
+  bars and CI rules; defect severities, evidence formats and the demo-recipe DoD; and the **58 gate checks**
+  (`GATE-01-01`…`GATE-05-13`) restated as the authoritative checklists with evidence and status.
+- **Reconciliation — NFR numbering made canonical.** One number per target across the whole set:
+  `NFR-007` = rule run (was cited as `NFR-009` in `02`/`03` — corrected), `NFR-009` = Excel pack ≤ 120 s
+  (was "an `NFR-004` analogue" in `11`), `NFR-011` = logs (as `02`/`03`/`13` already cited; `09`'s table had
+  it as `NFR-009`), `NFR-012` = crash behaviour (was `09`'s `NFR-011`), and four new numbers recording
+  targets that had no ID: `NFR-013` screen/scaling, `NFR-014` coverage bars, `NFR-015` cross-artifact
+  equality, `NFR-016` UI responsiveness during jobs. `09` §14's table now carries all sixteen with their
+  architectural drivers. No target value changed.
+- **Governance** — `00_INDEX`: document map row 14, docs complete `00`–`14`, `A1-L` **INTEGRATED**, the
+  `TST-<FAM>` registry row now enumerates all sixteen families; `09`'s repo layout gains `tests/` categories
+  (`rules`, `artefacts`, `integration`, `manual`) and the `acceptance`/`perf` scripts.
 - **`docs/03_DATA_DICTIONARY.md`** — `FactExport` **added** to §5.7 and to the §2.1 grain register
   (one row per generated export artefact: filter context, versions, content hash, row counts, outcome).
   Reason: `11` §3.9 needs a durable home for the refresh contract; the 40-table figure recorded for

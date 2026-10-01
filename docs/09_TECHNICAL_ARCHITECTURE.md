@@ -370,9 +370,9 @@ app/
   desktop/         pywebview shell, single-instance mutex, window/DPI handling
   jobs/            worker thread, job registry, progress/ETA, cancellation
 ui/                React + TS + Vite SPA (src/, theme/tokens.ts, e2e/ Playwright)
-tests/             unit, golden, contract, e2e, perf, fixtures (prior-version projects)
+tests/             unit, golden, rules, contract, artefacts, integration, e2e, perf, manual, fixtures (prior-version projects)
 packaging/         PyInstaller spec, Inno Setup script, icons, version metadata
-scripts/           dev, check, build, release (one command each)
+scripts/           dev, check, build, release, acceptance, perf (one command each)
 sample-data/       generator, templates, planted exceptions, malformed corpus
 docs/              this documentation set
 ```
@@ -694,9 +694,14 @@ architecture-level rules:
 | `NFR-006` Installer ≤ 500 MB | PyInstaller `onedir`, excluded dev dependencies, `--exclude-module` for unused scientific stacks, compressed Inno Setup | `packaging/`, `ADR-001` |
 | `NFR-007` Rule run ≤ 60 s over 250k rows | Set-based evaluation in SQL where possible, one pass per rule family, indexed subject keys | `engine/rules` |
 | `NFR-008` Offline walkthrough passes | No background network calls anywhere; AI strictly user-initiated | `ADR-009`, §9 |
-| `NFR-009` Logs ≤ 50 MB / 7 days | Rotation, no verbose logging by default, no amounts/vendor names in logs | §7.5 |
+| `NFR-009` Excel pack ≤ 120 s at 250k rows | Write-only workbook mode, one pass over aggregates, no full-sheet DataFrame (`11` §13) | `engine/exports` |
 | `NFR-010` Diagnostics zip ≤ 20 MB | Metadata-only bundle with a capped log tail; opt-in for data rows | `FR-XC-005` |
-| `NFR-011` Crash never yields a raw traceback | Typed errors + catalog mapping + global handler + recovery flow | §7.5, §8.3 |
+| `NFR-011` Logs ≤ 50 MB / 7 days | Rotation, no verbose logging by default, no amounts/vendor names in logs | §7.5 |
+| `NFR-012` Crash never yields a raw traceback | Typed errors + catalog mapping + global handler + recovery flow | §7.5, §8.3 |
+| `NFR-013` Screen ≥ 1366×768, 100–150 % scaling correct | Responsive layout, DPI-aware sizing, minimum-size enforcement | `ui/` |
+| `NFR-014` Coverage: engine ≥ 90 %, backend ≥ 75 % | Test discipline enforced in `scripts/check` | `14` |
+| `NFR-015` Cross-artifact equality (zero tolerance) | Values-only workbooks, engine authority, parsed-back assertions | `14` §7 |
+| `NFR-016` UI responsive during long jobs | Worker-thread jobs + polling API; no blocking calls on the UI thread | `09` §7.4 |
 
 *(Numbers themselves are owned by `14`; this table records which architectural decision protects each.)*
 

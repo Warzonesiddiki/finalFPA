@@ -79,7 +79,7 @@ precise, terse, and testable.
 | 11 | `11_EXCEL_OUTPUT_SPEC.md` | Excel pack layouts, naming, formats, row caps, consistency | Draft v0.1 |
 | 12 | `12_POWERPOINT_OUTPUT_SPEC.md` | Slide-by-slide spec, placeholders, character budgets, base deck | Draft v0.1 |
 | 13 | `13_SECURITY_PRIVACY.md` | Local-only guarantees, secrets, key rotation, logs, redaction, data at rest | Draft v0.1 |
-| 14 | `14_TESTING_QA_PLAN.md` | Test cases, NFR numbers, perf baselines, coverage bars, 58 gate checks | Not started |
+| 14 | `14_TESTING_QA_PLAN.md` | Test cases, NFR numbers, perf baselines, coverage bars, 58 gate checks | Draft v0.1 |
 | 15 | `15_PACKAGING_DEPLOYMENT_RUNBOOK.md` | Build → installer → clean-Win11 validation → SmartScreen → diagnostics | Not started |
 | 16 | `16_ROADMAP_PHASES.md` | Phases, estimates, gate artifacts, release cadence, next open item | Not started |
 | 17 | `17_CODING_STANDARDS.md` | Repo layout, naming, commits, branching, engine boundary, code health | Not started |
@@ -148,7 +148,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A1-I | Security, privacy & supply chain (prompt injection, diagnostics redaction, log policy, secrets, dependency policy, data at rest) | `10`, `13`, `17` | IN PROGRESS (13 done; 17 pending) |
 | A1-J | Delivery, release & upgrade addenda (semver, release checklist, migration test, distribution, no schema drift, signing ADR) | `15`, `16`, `24` | PENDING |
 | A1-K | Client enablement (task-structured guide, first-run tour, 60-min training, error dialog, support flow) | `22`, `23` | PENDING |
-| A1-L | NFR numbers (cold start, import, dashboard, PPT, offline, installer size, memory, logs, diagnostics, screen, crash behaviour) | `14` (numbers), `16`, `09` | IN PROGRESS |
+| A1-L | NFR numbers (cold start, import, dashboard, PPT, offline, installer size, memory, logs, diagnostics, screen, crash behaviour) | `14` (numbers), `16`, `09` | INTEGRATED |
 | A1-M | Session protocol addenda (SESSION_LOG, regression gate, Windows evidence, schema change process, sample data sacred, roadmap discipline) | `19`, `14` | PENDING |
 | A1-N | Explicitly parked backlog list | `27`, `01` | IN PROGRESS |
 | A1-O | Combined Phase 0 quality gate deltas (12 checks) | `00`, `14` | IN PROGRESS |
@@ -170,7 +170,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A2-C.2-07 | `07` additions: closed-period accuracy report feeding method-choice guidance | `07` | INTEGRATED |
 | A2-D | Functional precision FRs (exception identity/re-run, aging/bulk, period status, re-import guard, control totals, budget validation, three-way view, rolling windows, one-off tagging, rule effectiveness, materiality, export collision, evidence bundle, scope decisions) | `02`, `06` | IN PROGRESS |
 | A2-E | UI/UX & brand addenda (SCR-IDs, accessibility baseline, stale indicator, theme tokens as data, PPT text fit, wizard UX) | `08`, `12`, `ui/theme` | IN PROGRESS |
-| A2-F | Testing, CI & quality bars (coverage ≥90% engine / ≥75% backend, `scripts/check`, CI, Playwright golden path, demo recipe DoD, link-check) | `14`, `16`, `17` | PENDING |
+| A2-F | Testing, CI & quality bars (coverage ≥90% engine / ≥75% backend, `scripts/check`, CI, Playwright golden path, demo recipe DoD, link-check) | `14`, `16`, `17` | IN PROGRESS (14 done; 16/17 pending) |
 | A2-G | AI addenda (usage log, draft provenance, regeneration policy, determinism/number-mismatch stance) | `10` | INTEGRATED |
 | A2-H | Process & governance addenda (trunk-based branching, Keep a Changelog, blocking-question protocol, disclaimer enforcement) | `17`, `19` | PENDING |
 | A2-I | Phase 0 quality gate deltas (12 checks) | `00`, `14` | IN PROGRESS |
@@ -304,7 +304,7 @@ as cross-references in `11`/`12`.
 | `SEC-nnn` | Security/privacy statement (mechanism + verification) | `13` | `SEC-009` |
 | `API-nnn` | API endpoint | `26` | `API-018` |
 | `ERR-<FAM>-nnn` | Error code (families: IMP, VAL, STO, AI, **EXP** = export, **SEC** = secret/key/support-bundle, ENG) | `26`, `08` | `ERR-IMP-004`, `ERR-EXP-003`, `ERR-SEC-004` |
-| `TST-<FAM>-nn` | Test case (`FAM` = AI, XL, PPT, SEC, E2E, …; bare `TST-nnn` kept for cross-cutting tests) | `14` | `TST-XL-07` |
+| `TST-<FAM>-nn` | Test case (`FAM` = CALC, IMP, RUL, FC, BVA, EXC, UI, API, E2E, PRF, WIN, UAT, AI, XL, PPT, SEC; bare `TST-nnn` kept for cross-cutting tests) | `14` | `TST-XL-07` |
 | `NFR-nnn` | Non-functional target | `14` | `NFR-004` |
 | `ADR-nnn` | Architecture decision record | `09` | `ADR-002` |
 | `Q-nnn` | Client questionnaire item | `21` | `Q-014` |
@@ -343,8 +343,8 @@ UAT → go-live. Approvals are recorded in `CHANGELOG.md` **and** `SESSION_LOG.m
 |---|---|
 | Phase | **Phase 0 — Documentation** |
 | Authoritative next-action list | Addon 4 §L (supersedes Addon 3 §K → Addon 1 §P → Kickoff §15) |
-| Docs complete | `00`–`13` (drafts) + `CHANGELOG`, `SESSION_LOG` |
-| Docs remaining | `14`–`29`, `PHASE0_SUMMARY` |
+| Docs complete | `00`–`14` (drafts) + `CHANGELOG`, `SESSION_LOG` |
+| Docs remaining | `15`–`29`, `PHASE0_SUMMARY` |
 | Product code | **None. Forbidden until recorded approval.** |
 | App version / docs version | 0.1.0 (planned) / 0.1.0 (working draft) |
 | Open questions count | Tracked in `18_...OPEN_QUESTIONS.md` §Open |

@@ -756,8 +756,8 @@ section specifies engine and workflow behaviour.
 - **Acceptance:** a wording lint over UI strings, exports and PPT text finds no forbidden phrasing.
 
 **FR-EXC-020 · P0 · Phase 3 — Rule-run performance**
-- **Behaviour:** A full rule run over 250k rows completes within `NFR-009` (≤ 60 s), measured by the
-  perf script and re-baselined at every gate.
+- **Behaviour:** A full rule run over 250k rows completes within `NFR-007` (≤ 60 s), measured by the
+  perf script and re-baselined at every gate (`14` §3).
 - **Acceptance:** the perf test passes with the recorded baseline.
 
 ## 9. `FR-FC` — Rolling forecast (9 FRs)

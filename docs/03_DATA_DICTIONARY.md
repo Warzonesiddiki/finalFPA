@@ -414,7 +414,7 @@ setting that generated them.
 | `exceptions_raised` | `INTEGER` | No | New identities only |
 | `exceptions_flagged_again` | `INTEGER` | No | Previously closed, re-flagged (§02 FR-EXC-005) |
 | `exceptions_unchanged` | `INTEGER` | No | |
-| `duration_ms` | `INTEGER` | No | Measured against `NFR-009` |
+| `duration_ms` | `INTEGER` | No | Measured against `NFR-007` |
 | `triggered_by` | `VARCHAR(120)` | No | Session user or `system` |
 | `engine_version` | `VARCHAR(20)` | No | |
 | `data_scope` | `JSON` | No | Batch IDs and period range covered |

@@ -417,7 +417,7 @@ When the project is the sample project (`CF-012`):
 
 | Budget | Value at 250,000 detail rows | Notes |
 |---|---|---|
-| Month-end pack generation | ≤ 120 s (progress + cancel) | `NFR-004` analogue for Excel; PPT is ≤ 15 s (`09` §14) |
+| Month-end pack generation | ≤ 120 s (progress + cancel) | `NFR-009` (`14` §3); the deck is ≤ 15 s (`NFR-004`) |
 | Month-end pack file size | ≤ 150 MB typical; hard fail at 300 MB with a stated reason and a "summary only" option | 26 columns × 250k rows of text is the size driver |
 | Evidence bundle | ≤ 5 MB typical; warn over 25 MB and offer the zip form | |
 | Ad-hoc export | ≤ 20 s for 250k rows | |

@@ -275,7 +275,7 @@ measured during the real-data pilot (`28` §Pilot) before the metric is reported
 | M7 | Offline capability | n/a | Full sample-project walkthrough **passes with the network disabled** (except the marked AI step) | `NFR-008` test |
 | M8 | Adoption | 0 | **3 consecutive months** of packs issued from the app within 6 months of go-live | Issuance register |
 | M9 | Exception closure hygiene | Untracked | **≥ 80%** of month-end exceptions carry a status + owner within 5 working days | Exception analytics (`06`) |
-| M10 | Performance on the client's real file sizes | Manual, no target | Import 250k rows ≤ 60 s; dashboard ≤ 2 s; deck ≤ 15 s; cold start ≤ 10 s; installer ≤ 500 MB | `NFR-001…NFR-007` |
+| M10 | Performance on the client's real file sizes | Manual, no target | Import 250k rows ≤ 60 s; dashboard ≤ 2 s; deck ≤ 15 s; cold start ≤ 10 s; installer ≤ 500 MB | `NFR-001`…`NFR-006` and `NFR-009` (`14` §3) |
 
 ## 8. Multi-entity stance and consolidation
 
