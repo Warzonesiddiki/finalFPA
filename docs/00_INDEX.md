@@ -76,7 +76,7 @@ precise, terse, and testable.
 | 08 | `08_UI_UX_SPEC.md` | Screens (SCR-), charts (CHT-), formatting rules, copy, states, a11y | Draft v0.1 |
 | 09 | `09_TECHNICAL_ARCHITECTURE.md` | Stack, ADRs, engine boundary, storage, CLI, scripts, jobs, migrations | Draft v0.1 |
 | 10 | `10_AI_INTEGRATION_SPEC.md` | AI policy, the four prompt texts, schemas, redaction, caps, provenance | Draft v0.1 |
-| 11 | `11_EXCEL_OUTPUT_SPEC.md` | Excel pack layouts, naming, formats, row caps, consistency | Not started |
+| 11 | `11_EXCEL_OUTPUT_SPEC.md` | Excel pack layouts, naming, formats, row caps, consistency | Draft v0.1 |
 | 12 | `12_POWERPOINT_OUTPUT_SPEC.md` | Slide-by-slide spec, placeholders, character budgets, base deck | Not started |
 | 13 | `13_SECURITY_PRIVACY.md` | Local-only guarantees, secrets, key rotation, logs, redaction, data at rest | Not started |
 | 14 | `14_TESTING_QA_PLAN.md` | Test cases, NFR numbers, perf baselines, coverage bars, 58 gate checks | Not started |
@@ -126,7 +126,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | K-S8 | Calculation rules summary (variance, favour*ability*, MTD/YTD/PY, grain, rounding, currency, forecasts) | `05`, `07` | IN PROGRESS |
 | K-S9 | Exception engine summary + seed rule list + workflow statuses + UI wording | `06` | INTEGRATED |
 | K-S10 | AI policy: optional/off by default, allowed/forbidden uses, redaction, JSON schema, caps, offline fallback, labelling | `10` | INTEGRATED |
-| K-S11 | Reporting outputs: Excel pack + PPT pack (6 slides), native/editable, stamping | `11`, `12` | PENDING |
+| K-S11 | Reporting outputs: Excel pack + PPT pack (6 slides), native/editable, stamping | `11`, `12` | IN PROGRESS |
 | K-S12 | UX for non-technical users: guided nav, sample project, error copy, confirmations, help, diagnostics | `08` | INTEGRATED |
 | K-S13 | Quality, testing & acceptance: unit/golden tests, planted-exception acceptance, UAT script, error handling, packaging validation | `14` | PENDING |
 | K-S14 | Session protocol (vibe coding rules) | `19` | PENDING |
@@ -299,10 +299,11 @@ as cross-references in `11`/`12`.
 | `FC-nnn` | Forecast method / rule | `07` | `FC-002` |
 | `IMP-nnn` | Import validation check | `04` | `IMP-014` |
 | `XL-nnn` | Excel sheet / layout block | `11` | `XL-005` |
+| `XLS-FMT-nnn` | Excel number-format ID | `11` | `XLS-FMT-001` |
 | `PPT-nnn` | PowerPoint slide | `12` | `PPT-003` |
 | `API-nnn` | API endpoint | `26` | `API-018` |
-| `ERR-<FAM>-nnn` | Error code (families: IMP, VAL, STO, AI, EXP, ENG) | `26`, `08` | `ERR-IMP-004` |
-| `TST-nnn` | Test case | `14` | `TST-063` |
+| `ERR-<FAM>-nnn` | Error code (families: IMP, VAL, STO, AI, **EXP** = export, ENG) | `26`, `08` | `ERR-IMP-004`, `ERR-EXP-003` |
+| `TST-<FAM>-nn` | Test case (`FAM` = AI, XL, PPT, E2E, …; bare `TST-nnn` kept for cross-cutting tests) | `14` | `TST-XL-07` |
 | `NFR-nnn` | Non-functional target | `14` | `NFR-004` |
 | `ADR-nnn` | Architecture decision record | `09` | `ADR-002` |
 | `Q-nnn` | Client questionnaire item | `21` | `Q-014` |
@@ -341,8 +342,8 @@ UAT → go-live. Approvals are recorded in `CHANGELOG.md` **and** `SESSION_LOG.m
 |---|---|
 | Phase | **Phase 0 — Documentation** |
 | Authoritative next-action list | Addon 4 §L (supersedes Addon 3 §K → Addon 1 §P → Kickoff §15) |
-| Docs complete | `00`–`10` (drafts) + `CHANGELOG`, `SESSION_LOG` |
-| Docs remaining | `11`–`29`, `PHASE0_SUMMARY` |
+| Docs complete | `00`–`11` (drafts) + `CHANGELOG`, `SESSION_LOG` |
+| Docs remaining | `12`–`29`, `PHASE0_SUMMARY` |
 | Product code | **None. Forbidden until recorded approval.** |
 | App version / docs version | 0.1.0 (planned) / 0.1.0 (working draft) |
 | Open questions count | Tracked in `18_...OPEN_QUESTIONS.md` §Open |

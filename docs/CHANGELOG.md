@@ -32,7 +32,7 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   mandatory session reading plan), the **Addon Coverage Matrix** covering all **64 sections** of the
   spec of record (kickoff 15 + Addon 1 §16 + Addon 2 §10 + Addon 3 §11 + Addon 4 §12), the
   **Source-of-Truth Matrix**, the document standard and header template, hygiene and conflict-resolution
-  rules, the permanent **ID namespace registry** (25 prefixes), the 5-gate/58-check tracker, and the
+  rules, the permanent **ID namespace registry** (26 prefixes), the 5-gate/58-check tracker, and the
   approval log. Reason: Kickoff §5, Addon 2 §A.3, Addon 3 §A.3, Addon 4 §A.3/B/C.
 - **`docs/01_PRD.md`** (Draft v0.1) — product definition, current-state problem and prior-prototype
   failure modes, four personas, the monthly-rhythm core JTBD plus secondary JTBDs, scope consequences of
@@ -176,6 +176,27 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   code-health guardrails; and the one-command scripts. Reason: Kickoff §4, Addon 1 §C.2/G/I/J/L,
   Addon 2 §B/C.2/F/H, Addon 3 §I, Addon 4 §I.
 
+- **`docs/11_EXCEL_OUTPUT_SPEC.md`** (Draft v0.1) — the complete Excel-output contract: the five
+  artefact families, the universal rules (**values-only workbooks**, the 30-field machine-readable stamp,
+  the four-row sheet header block, filenames/sanitisation/collision policy with the recoverable
+  `.recycle` behaviour, the 15-ID number-format dictionary incl. the Indian lakh/crore grouping with its
+  boundary matrix, the `CF-001`…`CF-012` → Excel mapping with mandatory non-colour signal columns,
+  freeze/autofilter/width rules, locale independence, sample-data watermarking), **the eight pack sheets
+  specified column by column** (`Cover`, `BvA Summary`, `BvA Bridge`, `Transaction Detail`, `Exception
+  Register`, `Forecast Summary`, `Import Reconciliation`, `Audit Trail`) with controls and empty states,
+  the 1,048,576-row cap and lossless split algorithm, the evidence bundle (workbook + zip with manifest),
+  ad-hoc "export what you see" incl. the CSV contract and its sidecar stamp schema, the owner
+  distribution with the exact plain-text template, house-style matching (what can and cannot be matched),
+  print/PDF setup, the cross-artifact consistency contract, 11 export failure modes (`ERR-EXP-*`), and a
+  26-item test contract. Reason: Kickoff §5/§11/§12.9, Addon 2 §D.12/D.13 and §E.4, Addon 3
+  §C.5 and §F.3/F.4.
+- **`DEC-028`** added to `01` §21 (print/PDF readiness, not in-app rendering) with the three rejected
+  alternatives recorded in `11` §10.3; **`FR-XL-009`** amended in `02` to match. Reason: the FR implied
+  a PDF action the architecture cannot deliver without a bundled renderer or Excel automation.
+- **`docs/03_DATA_DICTIONARY.md`** — `FactExport` **added** to §5.7 and to the §2.1 grain register
+  (one row per generated export artefact: filter context, versions, content hash, row counts, outcome).
+  Reason: `11` §3.9 needs a durable home for the refresh contract; the 40-table figure recorded for
+  `03` in the previous entry is therefore superseded by **41 tables**.
 - **`docs/10_AI_INTEGRATION_SPEC.md`** (Draft v0.1) — the complete AI contract: the one-sentence policy
   (*AI drafts words for humans to check; it never computes, decides, applies or sends anything*); optional
   and off-by-default status with the keyless default; the **complete allowed-use list** (four features)

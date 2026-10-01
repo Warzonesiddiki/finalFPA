@@ -400,6 +400,13 @@ The complete open-question list is `18` §Open. The **blocking set for design de
 `OQ-010` current Excel/PPT outputs for house-style matching · `OQ-011` pack audience ·
 `OQ-012` signing certificate budget · `OQ-013` real file sizes · `OQ-014` sample real data for the
 pilot · `OQ-015` branding assets · `OQ-016` support/warranty terms · `OQ-017` delivery channel.
+Added by the `11` pass (non-blocking, defaults in place): `OQ-021` client's current report format
+(`.xlsx` / `.xlsm` / protected / paper) for house-style matching · `OQ-022` preferred pack default units
+(whole units vs lakhs).
+
+**Registry hygiene flag (2026-10-01):** `OQ-020` is referenced in §16 but does not appear in the list
+above or in any written document. `18_...OPEN_QUESTIONS.md` must register it or renumber the reference
+when that document is written; numbers `018`–`020` are treated as reserved until then.
 
 None of these blocks Phase 0: each has a labelled default (§12) that is safe to build against and cheap
 to change (mapping profiles, settings, brand config). Any question that later proves **unsafe** to
@@ -538,4 +545,5 @@ This table is an index of the rulings made in this document; IDs are allocated h
 | `DEC-025` | Forecast: default project method `remaining_budget`, `N = 3` for run-rate, three scenarios with **default, unconfirmed** adjustment percentages | §6.1, §12 |
 | `DEC-026` | AI number-mismatch policy: figures not present in the payload are **stripped and flagged**, never trusted | §6.1, §15.3 |
 | `DEC-027` | AI redaction defaults: vendor names and descriptions masked; account/cost-centre/entity codes **not** masked (required for the task) and disclosed to the client | §15.3 |
+| `DEC-028` | **PDF is not rendered in-app.** v1 delivers print/PDF *readiness* (tested page setup per sheet) plus an "Open for printing / Save as PDF" action using Excel / Microsoft Print to PDF; no bundled renderer and no Excel automation. Rationale and the three rejected alternatives: `11` §10.3 | §12, `11` §10.3 |
 

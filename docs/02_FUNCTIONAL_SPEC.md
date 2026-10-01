@@ -885,8 +885,12 @@ print setup are owned by `11_EXCEL_OUTPUT_SPEC.md`. This section specifies behav
 
 **FR-XL-009 · P2 · Phase 5 — Print/PDF readiness**
 - **Behaviour:** Every sheet has a defined print area, orientation, fit-to-width, repeating header row
-  and footer; "Export to PDF" uses those settings.
-- **Acceptance:** a printed/PDF pack is legible in black and white (P19) with no truncated columns.
+  and footer (`11` §10). The app does **not** render PDF itself (`DEC-028`): its action is "Open for
+  printing / Save as PDF", which opens the workbook in the OS default handler with an inline three-step
+  guide (Print → Microsoft Print to PDF → Save). The page setup is the contract; the user's Excel is the
+  renderer.
+- **Acceptance:** a printed/PDF pack is legible in black and white (P19) with no truncated columns, on
+  the real-Windows validation (`14`) using Excel's print-to-PDF.
 
 ## 11. `FR-PPT` — PowerPoint management pack (9 FRs)
 

@@ -151,6 +151,7 @@ time.
 | `FactAIUsage` | One AI call | `UNIQUE(usage_id)` |
 | `AuditLog` | One user action | `UNIQUE(audit_id)` |
 | `VersionHistory` | One change to one versioned artefact | `UNIQUE(artefact_type, artefact_id, version_no)` |
+| `FactExport` | One generated export artefact (one file version of one pack token) | `UNIQUE(file_name)` |
 | `ProjectSetting` | One project-level configuration key | `UNIQUE(key)` |
 | `AppSetting` | One machine-level configuration key | `UNIQUE(key)` |
 | `SchemaMetadata` | One row per project (single-row table) | `UNIQUE(project_id)` |
@@ -581,6 +582,7 @@ setting that generated them.
 | `FactAIUsage` | `usage_id` PK, `occurred_at`, `feature_code`, `model`, `prompt_version`, `input_row_count`, `tokens_in`, `tokens_out`, `estimated_cost` `DECIMAL(18,6)`, `latency_ms`, `outcome` (`ok`\|`schema_error`\|`timeout`\|`cap_exceeded`\|`refused`) | Usage log and caps (FR-AI-009) |
 | `AuditLog` | `audit_id` PK, `occurred_at`, `actor`, `action_code`, `object_type`, `object_id`, `before` JSON, `after` JSON, `session_id`, `app_version` | Local audit trail; **no amounts or vendor names in `action_code`/text fields** (`13`) |
 | `VersionHistory` | `history_id` PK, `artefact_type`, `artefact_id`, `version_no`, `changed_at`, `changed_by`, `old_value` JSON, `new_value` JSON, `change_note` | Generic version/revert support (FR-SET-011) |
+| `FactExport` | `export_id` PK, `generated_at`, `generated_by`, `pack_token` (`MonthEnd`\|`Register`\|`OwnerDist`\|`Evidence`\|`Drill`\|`Matrix`\|…), `file_version` INTEGER, `file_name`, `file_format` (`xlsx`\|`csv`\|`txt`\|`zip`), `filter_json` JSON, `filter_human`, `period_id` NULL, `pack_issue_id` NULL, `batch_ids` JSON, `content_hash` `VARCHAR(80)`, `row_counts` JSON, `house_style_version` NULL, `row_limit_applied` INTEGER NULL, `refresh_of_export_id` NULL, `outcome` (`written`\|`cancelled`\|`failed`) | **Export register**: the exact context needed to refresh a pack (FR-XL-003), the source of `vN` file numbering and collision decisions (`11` §3.4/§3.9), and the audit link for every generated artefact. SQLite (workflow state, not rebuildable) |
 | `ProjectSetting` | `key` PK, `value` JSON, `updated_at`, `updated_by` | Project-level configuration (fiscal calendar, currency, locale, branding, storage) — portable, contains **no secrets** (`09` §config layering) |
 | `AppSetting` | `key` PK, `value` (encrypted when sensitive), `updated_at` | **Machine-level** settings: AI provider/model, key (DPAPI-protected, `13`), theme, data directory, telemetry = off |
 | `SchemaMetadata` | `project_id` PK, `app_version`, `schema_version`, `created_at`, `migrated_at`, `migration_log` JSON, `timezone`, `project_type` (`normal`\|`sample`) | Single-row table; the anchor for migrations (`24`) and sample-data integrity (`02` §16 H) |

@@ -633,6 +633,11 @@ render from it; per-screen ad-hoc colours are forbidden (Addon 3 §F.2). Token n
 | `CF-011` | Zero-amount row | `semantic.muted` | `0.00` rendered in muted text | Kept and visible, never hidden (`02` E4) |
 | `CF-012` | Sample-data artefact | `semantic.sample.watermark` | Diagonal text watermark + banner | Excel sheets, PPT slides, in-app headers |
 
+**Literal values for the Excel consumer:** the v1 ARGB values, the Excel rule types, the fixed rule
+order and the mandatory non-colour **signal columns** are specified in `11` §3.7. `ui/theme/tokens.ts`
+remains the single source; the export theme is re-derived from it and asserted equal by a test
+(`11` §13 `TST-XL-10`), so the workbook cannot drift from the app's semantics.
+
 **Black-and-white print test:** every rule above must remain readable when printed greyscale — the
 non-colour signal is what carries the meaning, and a test renders the pack to greyscale and asserts the
 labels are present (`NFR` print check, P19).
