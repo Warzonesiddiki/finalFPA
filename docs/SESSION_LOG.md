@@ -27,6 +27,8 @@ product code** (Addon 4 §L, steps 1–2).
 | `docs/03_DATA_DICTIONARY.md` | **New.** Two-store model (DuckDB analytics / SQLite workflow), type + money rules, nullability and identity conventions, grain register (35 tables), full column specs, dedup keys, 15 integrity invariants, example rows, on-disk layout, volume estimates, supersessions, schema-versioning rules |
 | `docs/04_SOURCE_MAPPING_AND_IMPORT_SPEC.md` | **New.** 9 source types, 7-step wizard, template versioning, mapping profiles (fingerprint auto-match, versions, mid-year changes), per-profile parsing rules, 26 Excel + 12 CSV hardening cases, 32-check validation catalogue (`IMP-001`…`IMP-032`), reject-vs-quarantine rule, reconciliation, duplicates, incremental loads, atomic commit/recovery, score inputs, validation report, batch lifecycle/void, error-copy standard |
 | `docs/05_CALCULATION_SPEC.md` | **New.** All formulas: windows (MTD/YTD/PY/TTM), sign conventions, variance/%/favour*ability*, pp-vs-percent, KPI library, rounding + sum-of-rounded rule, scale/negatives, grain and rollup invariants, data-quality score, 4 forecast methods' arithmetic, accuracy metrics, control-total variances, materiality AND-test, tolerance policy, formula register — with **14 golden fixtures / 36 assertions, all verified computationally** |
+| `docs/06_EXCEPTION_RULES_CATALOG.md` | **New.** Engine model (identity/re-run, statuses, severity SLAs, aging, owner auto-assign, degradation, effective thresholds, implementation contract) + **24 fully specified rules** with 13 fields each + dependency matrix + enablement defaults + **40-planting sample plan (32 raises, 8 precision controls)** + false-positive management + effectiveness analytics + change control |
+| `docs/07_FORECAST_METHODS_SPEC.md` | **New.** Forecast lifecycle, eligibility guards, method resolver, scenarios, version lifecycle/locks, accuracy report, method-choice guidance, overrides, 8 integrity guarantees, worked example, config reference |
 | `docs/CHANGELOG.md` | **New.** Keep a Changelog + semver policy for app and schema, Phase 0 entries, approval-record table, release history placeholder |
 | `docs/SESSION_LOG.md` | **New.** This file |
 
@@ -34,7 +36,8 @@ product code** (Addon 4 §L, steps 1–2).
 
 - 156 `FR-nnn` allocated across 11 families, all with priorities and phases (`02` §2–§14).
 - 16 `CALC-*`/`KPI-*` formula IDs registered with fixtures (`05` §14); 32 `IMP-nnn` validation checks
-  catalogued (`04` §10).
+  catalogued (`04` §10); 24 `EXC-nnn` rules fully specified with a 40-planting plan (`06`), all 15 seed
+  rules covered; 6 new decisions allocated (`DEC-020`…`DEC-025`) in `01_PRD.md` §21.
 - Areas governed: scope (`01`), behaviour (`02`), structure (`03`), ingestion (`04`), arithmetic (`05`),
   governance/metadata (`00`), process (`CHANGELOG`, `SESSION_LOG`).
 
@@ -72,15 +75,18 @@ None. Every unconfirmed client fact has a labelled default in `01` §12 and will
 
 ### Next step
 
-Continue the mandated doc order: `06_EXCEPTION_RULES_CATALOG.md` — ≥15 fully specified rules (target
-~24) with rule ID, business intent, exact logic/pseudocode, default thresholds, severity, suggested
-owner, false-positive mitigation, master-data dependencies, per-rule strictness tiers, sample case with
-expected verdict, re-run/identity semantics, aging buckets, owner auto-assignment and effectiveness
-stats — then `07_FORECAST_METHODS_SPEC.md`, `08_UI_UX_SPEC.md` and `09_TECHNICAL_ARCHITECTURE.md`.
+Continue the mandated doc order: `08_UI_UX_SPEC.md` — the full screen inventory with stable `SCR-001…`
+IDs (Home, Import wizard steps, Check/validation, Import History, Analyze set, Exception register and
+detail, Forecast workspace, Reports/Generate, Issuance register, Commentary editor, Settings sections,
+Master Data, Backup/Restore, About/Diagnostics, error dialog, help panel), the **chart inventory**
+(`CHT-` IDs with type, grain, screen, drill target, empty state), centralized conditional-format rules,
+the message-catalog wording rules, accessibility baseline, empty/loading/error/first-run states, ASCII
+wireframes, and the Home-screen spec — then `09_TECHNICAL_ARCHITECTURE.md` (ADRs, engine boundary, CLI,
+storage, jobs, migrations).
 
 ### Deferred to backlog / open questions
 
-- All 24 parked scope items from `01` §6.2 → to be seeded into `27_BACKLOG.md` as `BL-001`…`BL-024`.
+- All 25 parked scope items from `01` §6.2 → to be seeded into `27_BACKLOG.md` as `BL-001`…`BL-025`.
 - Headcount metrics, one-off tagging, budget version-compare, commentary carry-forward, Power BI export,
   direct ERP connectors → already parked with triggers.
 - Open commercial questions: support/warranty terms (`OQ-016`), delivery channel (`OQ-017`),

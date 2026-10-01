@@ -342,7 +342,7 @@ the value" are all protocol violations (P13).
 |---|---|
 | **Debit = credit** | Computed at minor-unit precision (exact; no epsilon, `05` §tolerance) per file, per entity, per period, and overall. Tolerance may be configured only with a documented reason, and any non-zero tolerance is stated in the report |
 | **Row-count reconciliation** | `source = loaded + quarantined + rejected`, asserted before commit (IMP-024) |
-| **Control totals (optional block)** | When the `ControlTotals` sheet is present: compare file totals (as supplied by the client) vs loaded totals vs previous-period totals where useful; report the variance. **Decision:** a variance beyond tolerance **fails the import by default**; the user may accept it explicitly, and the acceptance is recorded on the batch (who, when, why) — never silent |
+| **Control totals (optional block)** | When the `ControlTotals` sheet is present: compare file totals (as supplied by the client) vs loaded totals vs previous-period totals where useful; report the variance. **Decision `DEC-022`:** a variance beyond tolerance **fails the import by default**; the user may accept it explicitly, and the acceptance is recorded on the batch (who, when, why) — never silent |
 | **Approved total (budgets)** | When the `ApprovedTotal` sheet is present: compare the sum of loaded budget lines with the approved figure; report the delta; fail by default with a recorded-acceptance path |
 | **No control totals supplied** | The check is `skipped` with the reason "no control-totals block supplied" — never reported as `pass` |
 
@@ -355,9 +355,11 @@ the value" are all protocol violations (P13).
 | File level | `file_checksum` (SHA-256) | Hard block with the original import date and batch ID |
 | Budget/forecast | uniqueness key from `03` §2.1 | Conflicting duplicates (same key, different amount) block the commit; exact duplicates are reported and de-duplicated with a recorded count |
 
-**Rationale for two cross-batch keys:** voucher-based keys catch re-exports of the same ledger, while
-invoice-based keys catch duplicate invoices posted under different vouchers. Both are needed; neither is
-sufficient (this is a documented product decision, `DEC-021`).
+**Rationale for two cross-batch keys (`DEC-021`):** voucher-based keys catch re-exports of the same
+ledger, while invoice-based keys catch duplicate invoices posted under different vouchers. Both are
+needed; neither is sufficient. The default action on a detected overlap is **report and ask**
+(`DEC-023`) — never auto-skip and never auto-import. The decisions are recorded in `01_PRD.md` §21 and,
+canonically, in `18_...OPEN_QUESTIONS.md` §Decided.
 
 ## 14. Incremental monthly load rules
 

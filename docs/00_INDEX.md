@@ -71,8 +71,8 @@ precise, terse, and testable.
 | 03 | `03_DATA_DICTIONARY.md` | Tables, columns, types, grains, identities, nullability, example rows | Draft v0.1 |
 | 04 | `04_SOURCE_MAPPING_AND_IMPORT_SPEC.md` | Import wizard, profiles, file quirks, validation, quarantine rules | Draft v0.1 |
 | 05 | `05_CALCULATION_SPEC.md` | Formulas, tolerances, rounding, fiscal calendar, worked examples | Draft v0.1 |
-| 06 | `06_EXCEPTION_RULES_CATALOG.md` | Every exception rule: logic, thresholds, severity, owner, test case | Not started |
-| 07 | `07_FORECAST_METHODS_SPEC.md` | Forecast methods, scenarios, locks, accuracy metrics | Not started |
+| 06 | `06_EXCEPTION_RULES_CATALOG.md` | Every exception rule: logic, thresholds, severity, owner, test case | Draft v0.1 |
+| 07 | `07_FORECAST_METHODS_SPEC.md` | Forecast methods, scenarios, locks, accuracy metrics | Draft v0.1 |
 | 08 | `08_UI_UX_SPEC.md` | Screens (SCR-), charts (CHT-), formatting rules, copy, states, a11y | Not started |
 | 09 | `09_TECHNICAL_ARCHITECTURE.md` | Stack, ADRs, engine boundary, storage, CLI, scripts, jobs, migrations | Not started |
 | 10 | `10_AI_INTEGRATION_SPEC.md` | AI policy, the four prompt texts, schemas, redaction, caps, provenance | Not started |
@@ -124,7 +124,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | K-S6 | Approved product scope v1 (9 in-scope areas) + explicit out-of-scope list | `01`, `16` | PENDING |
 | K-S7 | Canonical data model: fact/dim tables, grains, integrity rules | `03` | INTEGRATED |
 | K-S8 | Calculation rules summary (variance, favour*ability*, MTD/YTD/PY, grain, rounding, currency, forecasts) | `05`, `07` | IN PROGRESS |
-| K-S9 | Exception engine summary + seed rule list + workflow statuses + UI wording | `06` | PENDING |
+| K-S9 | Exception engine summary + seed rule list + workflow statuses + UI wording | `06` | INTEGRATED |
 | K-S10 | AI policy: optional/off by default, allowed/forbidden uses, redaction, JSON schema, caps, offline fallback, labelling | `10` | PENDING |
 | K-S11 | Reporting outputs: Excel pack + PPT pack (6 slides), native/editable, stamping | `11`, `12` | PENDING |
 | K-S12 | UX for non-technical users: guided nav, sample project, error copy, confirmations, help, diagnostics | `08` | PENDING |
@@ -144,7 +144,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A1-E | Additional FRs (import history/void, new-period wizard, cross-batch dupes, in-app templates, master data, KPI library, rollups, export-what-you-see, job UX, search, owner distribution, backup/restore, close snapshot, diagnostics) | `02` | INTEGRATED |
 | A1-F | Excel/CSV ingestion hardening (every quirk handled-or-rejected with named error; reject-vs-quarantine; validation report) | `04` | INTEGRATED |
 | A1-G | Windows 11 & environment hardening (OneDrive trap, no admin, SmartScreen ladder, DPI, single instance, real-Windows protocol, offline proof) | `08`, `09`, `14`, `15` | PENDING |
-| A1-H | Financial-correctness addenda (fiscal calendar, posting vs document date, rounding, ratio maths, sign conventions, comparability guard, forecast integrity) | `05`, `07` | IN PROGRESS |
+| A1-H | Financial-correctness addenda (fiscal calendar, posting vs document date, rounding, ratio maths, sign conventions, comparability guard, forecast integrity) | `05`, `07` | INTEGRATED |
 | A1-I | Security, privacy & supply chain (prompt injection, diagnostics redaction, log policy, secrets, dependency policy, data at rest) | `10`, `13`, `17` | PENDING |
 | A1-J | Delivery, release & upgrade addenda (semver, release checklist, migration test, distribution, no schema drift, signing ADR) | `15`, `16`, `24` | PENDING |
 | A1-K | Client enablement (task-structured guide, first-run tour, 60-min training, error dialog, support flow) | `22`, `23` | PENDING |
@@ -163,6 +163,8 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A2-C | Document updates: new doc 26 + 19-row additions table | `26`, owning docs | IN PROGRESS |
 | A2-C.2-03 | `03` additions: exception stable identity fields, optional `journal_category`, rule-effectiveness fields | `03` | INTEGRATED |
 | A2-C.2-05 | `05` additions: TTM/rolling-12, forecast-accuracy metrics, control-total variance, materiality-driven default | `05` | INTEGRATED |
+| A2-C.2-06 | `06` additions: re-run/identity semantics, aging buckets, owner auto-assign, effectiveness stats, per-rule strictness tiers | `06` | INTEGRATED |
+| A2-C.2-07 | `07` additions: closed-period accuracy report feeding method-choice guidance | `07` | INTEGRATED |
 | A2-D | Functional precision FRs (exception identity/re-run, aging/bulk, period status, re-import guard, control totals, budget validation, three-way view, rolling windows, one-off tagging, rule effectiveness, materiality, export collision, evidence bundle, scope decisions) | `02`, `06` | IN PROGRESS |
 | A2-E | UI/UX & brand addenda (SCR-IDs, accessibility baseline, stale indicator, theme tokens as data, PPT text fit, wizard UX) | `08`, `12`, `ui/theme` | PENDING |
 | A2-F | Testing, CI & quality bars (coverage ≥90% engine / ≥75% backend, `scripts/check`, CI, Playwright golden path, demo recipe DoD, link-check) | `14`, `16`, `17` | PENDING |
@@ -179,6 +181,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A3-B | Document updates: new docs 27–28 + 14-row additions table | `27`, `28`, owning docs | PENDING |
 | A3-B.2-03 | `03` additions: `FactPackIssue`, `MappingSuggestion`, template-version stamps on batches | `03` | INTEGRATED |
 | A3-B.2-05 | `05` additions: data-quality score formula with worked example | `05` | INTEGRATED |
+| A3-B.2-06 | `06` additions: cross-system tie-out rule family with v1 scope decision (file-level control totals only) | `06` | INTEGRATED |
 | A3-C | Feature precision part 2 (AI mapping review queue, mapping preview/profile auto-match, commentary workflow, pack issuance register, data-quality score, storage/health, budget re-import, persistence/destructive actions, home screen, no login, import UX, display locale) | `02`, `08`, `10` | IN PROGRESS |
 | A3-D | AI feature depth (four full prompt texts, model pinning/deprecation, golden fixtures, prompt-edit discipline) | `10`, `02` | PENDING |
 | A3-E | Decisions that must be settled (success metrics, IP/licensing, forced in/out list, support/warranty) | `01`, `18`, `28` | IN PROGRESS |
@@ -332,8 +335,8 @@ UAT → go-live. Approvals are recorded in `CHANGELOG.md` **and** `SESSION_LOG.m
 |---|---|
 | Phase | **Phase 0 — Documentation** |
 | Authoritative next-action list | Addon 4 §L (supersedes Addon 3 §K → Addon 1 §P → Kickoff §15) |
-| Docs complete | `00`–`05` (drafts) + `CHANGELOG`, `SESSION_LOG` |
-| Docs remaining | `06`–`29`, `PHASE0_SUMMARY` |
+| Docs complete | `00`–`07` (drafts) + `CHANGELOG`, `SESSION_LOG` |
+| Docs remaining | `08`–`29`, `PHASE0_SUMMARY` |
 | Product code | **None. Forbidden until recorded approval.** |
 | App version / docs version | 0.1.0 (planned) / 0.1.0 (working draft) |
 | Open questions count | Tracked in `18_...OPEN_QUESTIONS.md` §Open |

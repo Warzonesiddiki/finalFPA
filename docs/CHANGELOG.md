@@ -99,6 +99,42 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   its section and fixture. Reason: Kickoff §5/§8, Addon 1 §C.2/H/L, Addon 2 §C.2/G, Addon 3 §B.2/F,
   Addon 4 §G.1.
 
+- **`docs/06_EXCEPTION_RULES_CATALOG.md`** (Draft v0.1) — the formal catalogue of **24 exception rules**
+  (`EXC-001`…`EXC-024`) covering all 15 seed rules from the kickoff prompt plus nine additions: import
+  integrity (imbalance, cross-batch duplicates, cross-system tie-out, unmapped account/dimension), master
+  data hygiene (inactive cost centre, orphan entity/account), duplicates (invoice, voucher line), timing
+  (posting/period mismatch, cut-off, future-dated), anomalies (unusual negative expense, spike vs
+  trailing average, unusual vendor→account pairing), completeness (missing recurring cost, missing
+  expected accrual), budget relationship (material unbudgeted spend, material variance with the mandatory
+  AND test, cumulative overrun, coverage gap), and controls (approval threshold crossing, round-number
+  manual journal, voucher-level imbalance, suspense/clearing residual). Each rule carries all 13 required
+  fields — family/version, intent, severity, owner role, dependencies, subject key, exact deterministic
+  logic, thresholds, strictness tier, false-positive mitigation, sample case, expected verdict, and the
+  rows it registers on. The engine model section defines stable identity and re-run semantics (with the
+  gate's required raise → tune → re-run → status-preserved worked scenario), the human-only status
+  machine, severity SLAs, period-based aging, six-step owner auto-assignment, graceful degradation for
+  missing master data, effective-threshold traceability, and the rule-module implementation contract. §5
+  is the dependency matrix, §6 the enablement defaults, **§7 the 40-planting sample plan (32 expected
+  raises at 18 High / 12 Medium / 2 Low, plus 8 precision controls that must not raise)** with the
+  `expected_exceptions.csv` schema, §8 the false-positive management contract and precision targets, §9
+  rule effectiveness analytics with the two-period review trigger, and §10 the change-control rules.
+  Reason: Kickoff §9, Addon 1 §C.2/E/F, Addon 2 §B.7/C.2/D, Addon 3 §B.2/H, Addon 4 §D/H.
+- **`docs/07_FORECAST_METHODS_SPEC.md`** (Draft v0.1) — forecast behaviour: the eight-step monthly
+  lifecycle; eligibility rules per period state with the method-eligibility guard table and the explicit
+  no-silent-substitution fallback order; the four-level most-specific-wins method resolver (line pin →
+  account group → project default → built-in) with account groups, exclusions and driver references;
+  the three scenarios (Base/Best/Worst) with adjustments-as-data, per-scenario versions and the
+  "identical to Base" labelling rule; the version lifecycle (`draft → locked → superseded`) with the rule
+  that only locked versions may be referenced by issued packs; the accuracy report for closed periods
+  (including the "not generated" and "draft — not the issued basis" states); non-blocking
+  method-choice guidance with its evidence requirements and governance; override rules with mandatory
+  reasons; **eight forecast-integrity guarantees** (actuals never overwritten, budget never modified,
+  every row explainable, closed periods immutable, issued packs unrewritable, drafts cannot alter locked
+  versions, idempotent regeneration, no invented numbers); an end-to-end worked example tied to the `05`
+  fixtures; screen/export/CLI touchpoints; the configuration reference; and change control. All
+  arithmetic is referenced to `CALC-060`…`CALC-069`, never restated. Reason: Kickoff §6/§8, Addon 1
+  §C.2/H, Addon 2 §C.2, Addon 3 §B.2.
+
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's

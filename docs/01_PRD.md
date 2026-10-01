@@ -239,6 +239,7 @@ recorded in `27_BACKLOG.md` with a trigger condition):
 | Localisation beyond English | v1 English only; number/date display is configurable | `BL-022` |
 | Multi-client licence management | Single client, single product build | `BL-023` |
 | One-off / exceptional item tagging | PRD decision (A2 §D.9): **parked**, not minimal-v1 — not in the approved §6.1 scope, and it adds tagging UX + adjusted-toggle views + AI integration; revisit after the first real month | `BL-024` |
+| Partial-amount duplicate detection (staged/split payments) | v1 duplicate detection requires an exact amount match to keep precision high; partial matching is a refinement for a later phase | `BL-025` |
 
 ### 6.3 Forced in/out decisions (A2 §D.14, A3 §E.3) — each settled
 
@@ -529,4 +530,10 @@ This table is an index of the rulings made in this document; IDs are allocated h
 | `DEC-017` | Branding defaults apply until assets arrive; colours must meet WCAG AA | §17 |
 | `DEC-018` | Packaging spike runs immediately after Phase 0 approval, before Phase 1 | §18 |
 | `DEC-019` | Support/warranty terms are flagged as an open commercial question | §19 |
+| `DEC-020` | Cross-system tie-out: v1 covers **file-level control totals only**; automated cross-system matching parked (`BL-014`) | §6.3 |
+| `DEC-021` | Cross-batch duplicate detection uses **two keys** (voucher+line, and vendor+invoice+date+amount) because neither is sufficient alone | §6.3 |
+| `DEC-022` | Control-total variance **fails the import by default**, with an explicit recorded-acceptance path | §6.3 |
+| `DEC-023` | Cross-batch duplicate handling **reports and asks** (skip / import anyway / cancel) — never auto-skip, never auto-import | §6.3 |
+| `DEC-024` | Exception rules are **registered and catalogued**; an unregistered rule module cannot run, and a new rule requires a catalogue entry + planting + golden test | §6.1 |
+| `DEC-025` | Forecast: default project method `remaining_budget`, `N = 3` for run-rate, three scenarios with **default, unconfirmed** adjustment percentages | §6.1, §12 |
 
