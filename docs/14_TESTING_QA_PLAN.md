@@ -699,7 +699,7 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 | `GATE-01-06` | `15` is a step-by-step script producing a working installer on a clean Windows 11 machine | `15` | ⬜ |
 | `GATE-01-07` | NFR numbers stated | `14` §3 (`NFR-001`…`016`) | ✅ |
 | `GATE-01-08` | `18` lists every unconfirmed item | `18` (with `21` `Q-` items) | ✅ (doc side; `Q-` items with `21`) |
-| `GATE-01-09` | `20` links every FR to at least one future test | `20` + `14` §4 | ⬜ |
+| `GATE-01-09` | `20` links every FR to at least one future test | `20` (156 rows; every FR ≥ 1 test) + `14` §4 | ✅ |
 
 ### 15.2 `GATE-02` — Addon 1 §O deltas (12 checks)
 
@@ -729,7 +729,7 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 | `GATE-03-05` | Data-volume rule and config layering documented with test cases in `14` | `09` §11/§12 + `TST-API-09`, `TST-UI-15`, `TST-UI-20` | ✅ |
 | `GATE-03-06` | Exception identity/re-run semantics fully specified with a worked scenario | `06` §D.1 + §5.5 here | ✅ |
 | `GATE-03-07` | Forecast-accuracy and TTM formulas have worked examples in `05` | `05` §9 | ✅ |
-| `GATE-03-08` | Screen inventory exists in `08`; the traceability chain includes screen IDs and API endpoints | `08`, `20`, `26` | ✅ (API endpoints with `26`) |
+| `GATE-03-08` | Screen inventory exists in `08`; the traceability chain includes screen IDs and API endpoints | `08`, `20` (chain complete), `26` (endpoint catalogue) | ✅ (chain in `20`; catalogue finalised by `26`) |
 | `GATE-03-09` | PPT character budgets defined per placeholder | `12` §3.4 | ✅ |
 | `GATE-03-10` | Coverage bars, `scripts/check` contents and the E2E list recorded in `14` | this document §9, §13 | ✅ |
 | `GATE-03-11` | PRD scope decisions and disclaimer text resolved | `01` §15, `DEC-*` | ✅ |
@@ -761,7 +761,7 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 | `GATE-05-03` | Source-of-Truth Matrix in `00_INDEX`; no duplicated formula/threshold; conflict rule documented | `00_INDEX` §5 + the conflict rule | ✅ |
 | `GATE-05-04` | Quote-before-code and FR-citation rules written into `19` | `19` | ✅ |
 | `GATE-05-05` | Every FR has P0/P1/P2; never-cut list and cut process in `02`/`16` | `02` priorities, `16` | ✅ (priorities; process with `16`) |
-| `GATE-05-06` | Per-phase estimates in `16` | `16` | ⬜ |
+| `GATE-05-06` | Per-phase estimates in `16` | `16` §7 (per-phase + per-epic ideal days) | ✅ |
 | `GATE-05-07` | `29_CLIENT_REQUIREMENTS_PACK.md` complete and jargon-free; sign-off block present | `29` | ⬜ |
 | `GATE-05-08` | Approval-recording convention and post-approval impact rule in `19` | `19`, `CHANGELOG` | ✅ |
 | `GATE-05-09` | Real-data pilot gate defined in `28` with tie-out worksheet + classification log | `28` | ⬜ |

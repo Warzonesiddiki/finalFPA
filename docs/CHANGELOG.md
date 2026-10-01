@@ -370,6 +370,31 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   `K-S15`, `A1-B`, `A1-M`, `A1-P`, `A2-H`, `A2-J`, `A3-I`, `A3-K`, `A4-I`, `A4-L` **INTEGRATED** with
   `A4-E` now pending only on `24`/`29`. `14`'s `GATE-05-04`/`GATE-05-08` now read ✅. `16` §1.3's next
   open item advanced to `20`.
+- **`docs/20_REQUIREMENTS_TRACEABILITY.md`** (Draft v0.1) — the traceability chain: **all 156 FRs** in
+  `02` joined to their spec sections, screens (`08` §4), API endpoints, test IDs (`14` §4) and status.
+  110 `P0` / 39 `P1` / 7 `P2` across phases 1–6; **every FR carries at least one named test** from the
+  frozen 292-test inventory (188 distinct IDs used; all 16 families exercised). The document defines the
+  chain keys and their owners, a three-value status vocabulary (`Spec'd` / `Built` / `Complete`), the
+  sanctioned non-values for screen cells (`Global` shell rows and four justified `n/a` reasons), the
+  **95-route endpoint reference set** in nine areas that `26` adopts verbatim (renames recorded), the
+  reading rules for the matrix, **invariants I1–I9** as the document's own acceptance checks, the reverse
+  indexes (screen → FR, endpoint area → FR, test family → FR), the **gate interface** (`GATE-01-09` now
+  provable, `GATE-03-08` chain complete), the non-blocking client-fact dependencies (`OQ-`/`Q-` → FRs
+  whose detail changes), the **eight FRs whose evidence is strengthened in Phase 1 by extending an
+  existing test**, the obligations placed on `26`/`14`/`16`/`02`/`08`/`27`/`29`/`22`, and the frozen
+  constants of this document. Reason: Kickoff §5 (`20` links every FR to at least one future test),
+  Addon 2 §A/§C.2 (`FR → spec section → screen ID → API endpoint → test ID`), Addon 4 §C/§D/§L.2.
+- **Governance** — `00_INDEX`: doc-map row 20 → Draft v0.1; docs complete `00`–`20`; remaining
+  `21`–`29` + `PHASE0_SUMMARY`; Coverage-Matrix rows `K-S1`, `K-S8`, `K-S13`, `A1-A`, `A1-C.2`, `A2-A`,
+  `A2-D`, `A3-A`, `A4-A`, `A4-B`, `A4-C`, `A4-D`, `A4-G`, `A4-J` moved to **INTEGRATED** (each verified
+  against its owning doc and gate check), `K-S5` annotated with the docs-complete range. `14`'s
+  `GATE-01-09` now reads ✅, `GATE-03-08` states the chain is complete in `20` with the endpoint
+  catalogue finalised by `26`, and `GATE-05-06` reads ✅ (per-phase estimates exist in `16` §7). `16` §1.3's next open item advanced to `21`. `08` §4's **Owning FRs**
+  column regenerated from `20` §4.3 (43 screens, 7 previously-missing links added: `FR-PRJ-009`→
+  `SCR-002`, `FR-SET-006`→`SCR-003`, `FR-IMP-022`/`FR-EXC-014`→`SCR-014`, `FR-EXC-009`→`SCR-024`,
+  `FR-XC-001`→`SCR-029`, `FR-XC-012`→`SCR-041`, `FR-IMP-026`→`SCR-033`), plus a global-shell-components
+  note; `08` §4's stale state-matrix pointer corrected from §15 to **§17**. Reason: the join must not
+  drift from its owner, and a screen with no FR would be an orphan screen.
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's
@@ -387,8 +412,12 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
 
 ### Notes carried into the next session
 
-- Docs `02`–`29` remain to be written, in the mandated order: `02`–`20` first (Kickoff §5), then
-  Addon 1's `21`–`25`, Addon 2's `26`, Addon 3's `27`–`28`, Addon 4's `29`.
+- Docs `21`–`29` + `PHASE0_SUMMARY` remain to be written, in the mandated order (Addon 4 §L): Addon 1's
+  `21`–`25`, Addon 2's `26` (+ ADR-002), Addon 3's `27`–`28` (+ the four prompt texts, chart inventory
+  and negative corpus), Addon 4's `29` + the Source-of-Truth Matrix refresh and doc headers, then the
+  `sample-data/` build step, the Addon Coverage Matrix refresh, the five-gate self-audit with the
+  link-check, the tabletop walkthrough (extended through pack issuance and a cold-start client pass) and
+  `PHASE0_SUMMARY.md`.
 - Cross-addon additions are folded into the owning documents as they are written (never a parallel tree).
 - **No product code may be written before recorded Phase 0 approval** (Addon 4 §L.12).
 

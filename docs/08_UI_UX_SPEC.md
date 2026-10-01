@@ -105,57 +105,61 @@ Home ──► [New Period wizard] ──► Import (× N files) ──► Check
 
 ## 4. Screen inventory (43 screens)
 
-Every entry lists the screen's purpose, the FRs it serves, and its dominant states (§15 for the full matrix).
+Every entry lists the screen's purpose, the FRs it serves, and its dominant states (§17 for the full matrix).
 "Consumer of" = the API endpoints it calls (defined in `26`).
 
 | ID | Screen | Purpose | FRs | Key states |
 |---|---|---|---|---|
-| `SCR-001` | Home | Period status, health, KPIs, quick actions | `FR-PRJ-001`, `FR-ONB-003` | first-run, no project, empty period, warnings, normal |
-| `SCR-002` | Project launcher (modal) | Open recent / create / restore | `FR-PRJ-003`, `FR-PRJ-002`, `FR-PRJ-009` | empty recents, missing folder, read-only |
+| `SCR-001` | Home | Period status, health, KPIs, quick actions | `FR-ONB-001`, `FR-ONB-003`, `FR-ONB-005`, `FR-ONB-006`, `FR-ONB-008`, `FR-PRJ-001`, `FR-PRJ-004`, `FR-PRJ-005`, `FR-PRJ-010` | first-run, no project, empty period, warnings, normal |
+| `SCR-002` | Project launcher (modal) | Open recent / create / restore | `FR-ONB-001`, `FR-ONB-006`, `FR-PRJ-002`, `FR-PRJ-003`, `FR-PRJ-006`, `FR-PRJ-007`, `FR-PRJ-009`, `FR-PRJ-012` | empty recents, missing folder, read-only |
 | `SCR-003` | New Project wizard | Create project + fiscal calendar + currency + locale | `FR-PRJ-002`, `FR-SET-005`, `FR-SET-006` | validation errors, synced-path warning |
-| `SCR-004` | New Period wizard | Open a period, show missing sources, carry forward config | `FR-PRJ-004` | out-of-order warning, already-exists, no budget |
-| `SCR-005` | Import — 1 Choose file | Drag-and-drop + picker + source type | `FR-IMP-001`, `FR-IMP-002` | dragging, unsupported file, multi-file queue |
+| `SCR-004` | New Period wizard | Open a period, show missing sources, carry forward config | `FR-PRJ-004`, `FR-PRJ-005` | out-of-order warning, already-exists, no budget |
+| `SCR-005` | Import — 1 Choose file | Drag-and-drop + picker + source type | `FR-ONB-003`, `FR-ONB-005`, `FR-IMP-001`, `FR-IMP-002`, `FR-IMP-010`, `FR-IMP-019`, `FR-IMP-031` | dragging, unsupported file, multi-file queue |
 | `SCR-006` | Import — 2 Pre-scan | Size/rows/duration estimate + limits | `FR-IMP-003` | over-limit confirmation, encrypted, cannot-estimate |
-| `SCR-007` | Import — 3 Sheet & header | Sheet picker, header row selection, preview | `FR-IMP-009` | no header, multi-row header, hidden sheets |
-| `SCR-008` | Import — 4 Map columns | Column mapping, overrides, profile auto-match, suggestions | `FR-IMP-004`…`FR-IMP-008` | unmapped required field, duplicate headers, AI suggestions |
-| `SCR-009` | Import — 5 Validate | Progress, per-check results, offenders | `FR-IMP-021`, `FR-IMP-030` | running, cancelled, file-level rejection |
-| `SCR-010` | Import — 6 Commit & confirm | Summary, score, next actions | `FR-IMP-020`, `FR-IMP-022` | success, quarantine pending, conflict (duplicates) |
-| `SCR-011` | Import History | All batches with status and evidence | `FR-IMP-023`, `FR-IMP-024` | empty, voided present, closed-period block |
-| `SCR-012` | Batch detail / validation report | Nine-part report (per `04` §17) | `FR-IMP-021` | rejected, cancelled, skipped checks |
+| `SCR-007` | Import — 3 Sheet & header | Sheet picker, header row selection, preview | `FR-IMP-007`, `FR-IMP-009`, `FR-IMP-010`, `FR-IMP-012`, `FR-IMP-027` | no header, multi-row header, hidden sheets |
+| `SCR-008` | Import — 4 Map columns | Column mapping, overrides, profile auto-match, suggestions | `FR-IMP-004`, `FR-IMP-005`, `FR-IMP-006`, `FR-IMP-008`, `FR-IMP-011`, `FR-IMP-012`, `FR-IMP-026`, `FR-AI-004` | unmapped required field, duplicate headers, AI suggestions |
+| `SCR-009` | Import — 5 Validate | Progress, per-check results, offenders | `FR-IMP-007`, `FR-IMP-009`, `FR-IMP-014`, `FR-IMP-015`, `FR-IMP-017`, `FR-IMP-019`, `FR-IMP-021`, `FR-IMP-027`, `FR-IMP-030` | running, cancelled, file-level rejection |
+| `SCR-010` | Import — 6 Commit & confirm | Summary, score, next actions | `FR-IMP-016`, `FR-IMP-018`, `FR-IMP-020`, `FR-IMP-022`, `FR-IMP-028`, `FR-IMP-031` | success, quarantine pending, conflict (duplicates) |
+| `SCR-011` | Import History | All batches with status and evidence | `FR-IMP-023`, `FR-IMP-024`, `FR-IMP-025`, `FR-IMP-026` | empty, voided present, closed-period block |
+| `SCR-012` | Batch detail / validation report | Nine-part report (per `04` §17) | `FR-IMP-016`, `FR-IMP-017`, `FR-IMP-021`, `FR-IMP-025` | rejected, cancelled, skipped checks |
 | `SCR-013` | Quarantine review | Resolve row-level failures | `FR-IMP-013` | empty, resolved, bulk resolve |
-| `SCR-014` | Check | Data-quality score + failed checks + coverage | `FR-IMP-022`, `FR-EXC-014` | perfect, failing, missing master data |
-| `SCR-015` | Analyze — BvA matrix | The primary comparison grid | `FR-BVA-001`…`FR-BVA-003`, `FR-BVA-009`, `FR-BVA-013` | no budget, empty period, coarse-budget disclosure |
-| `SCR-016` | Analyze — Bridge | Waterfall from budget to actual | `FR-BVA-005` | all-zero variance, >N drivers |
-| `SCR-017` | Analyze — Trends | Multi-period lines and variance bars | `FR-BVA-006` | single period, sparse gaps |
-| `SCR-018` | Analyze — Top-N | Ranked adverse/favourable variances | `FR-BVA-007` | ties, empty |
-| `SCR-019` | Analyze — Three-way | Actual vs Budget vs Forecast + accuracy | `FR-BVA-008` | no forecast generated, closed periods only |
-| `SCR-020` | Analyze — KPIs | KPI cards + trend + drill | `FR-BVA-010` | `n/a` denominators, no targets |
-| `SCR-021` | Drill-through | Transaction detail for any figure | `FR-BVA-004` | forecast-sourced figure, snapshot figure |
-| `SCR-022` | Search | Vouchers, vendors, accounts, descriptions | `FR-BVA-012` | no results, partial periods loaded |
-| `SCR-023` | Exceptions register | Triage, filter, bulk act, export | `FR-EXC-002`…`FR-EXC-014` | all rules disabled, empty, overdue present |
-| `SCR-024` | Exception detail | Evidence, workflow, notes, history | `FR-EXC-006`…`FR-EXC-009`, `FR-EXC-016` | no evidence rows, closed, flagged again |
-| `SCR-025` | Evidence bundle export (modal) | Assemble the workbook/zip | `FR-EXC-016` | large bundle warning |
+| `SCR-014` | Check | Data-quality score + failed checks + coverage | `FR-IMP-014`, `FR-IMP-022`, `FR-EXC-001`, `FR-EXC-014`, `FR-EXC-020` | perfect, failing, missing master data |
+| `SCR-015` | Analyze — BvA matrix | The primary comparison grid | `FR-BVA-001`, `FR-BVA-002`, `FR-BVA-003`, `FR-BVA-009`, `FR-BVA-011`, `FR-BVA-013`, `FR-BVA-014`, `FR-BVA-016` | no budget, empty period, coarse-budget disclosure |
+| `SCR-016` | Analyze — Bridge | Waterfall from budget to actual | `FR-BVA-005`, `FR-BVA-011`, `FR-BVA-016` | all-zero variance, >N drivers |
+| `SCR-017` | Analyze — Trends | Multi-period lines and variance bars | `FR-BVA-006`, `FR-BVA-011`, `FR-BVA-016` | single period, sparse gaps |
+| `SCR-018` | Analyze — Top-N | Ranked adverse/favourable variances | `FR-BVA-007`, `FR-BVA-011`, `FR-BVA-016` | ties, empty |
+| `SCR-019` | Analyze — Three-way | Actual vs Budget vs Forecast + accuracy | `FR-BVA-008`, `FR-BVA-011`, `FR-BVA-016` | no forecast generated, closed periods only |
+| `SCR-020` | Analyze — KPIs | KPI cards + trend + drill | `FR-BVA-010`, `FR-BVA-011`, `FR-BVA-016` | `n/a` denominators, no targets |
+| `SCR-021` | Drill-through | Transaction detail for any figure | `FR-BVA-004`, `FR-BVA-011`, `FR-BVA-016` | forecast-sourced figure, snapshot figure |
+| `SCR-022` | Search | Vouchers, vendors, accounts, descriptions | `FR-BVA-011`, `FR-BVA-012`, `FR-BVA-016` | no results, partial periods loaded |
+| `SCR-023` | Exceptions register | Triage, filter, bulk act, export | `FR-EXC-001`, `FR-EXC-002`, `FR-EXC-003`, `FR-EXC-004`, `FR-EXC-005`, `FR-EXC-009`, `FR-EXC-010`, `FR-EXC-011`, `FR-EXC-014`, `FR-EXC-017`, `FR-EXC-018`, `FR-EXC-019`, `FR-AI-004` | all rules disabled, empty, overdue present |
+| `SCR-024` | Exception detail | Evidence, workflow, notes, history | `FR-EXC-006`, `FR-EXC-007`, `FR-EXC-008`, `FR-EXC-009`, `FR-EXC-011`, `FR-EXC-016`, `FR-EXC-019` | no evidence rows, closed, flagged again |
+| `SCR-025` | Evidence bundle export (modal) | Assemble the workbook/zip | `FR-EXC-016`, `FR-XL-007` | large bundle warning |
 | `SCR-026` | Rule effectiveness | Per-rule stats + review recommendations | `FR-EXC-015` | insufficient history |
-| `SCR-027` | Forecast workspace | Methods, overrides, scenarios, guidance | `FR-FC-002`…`FR-FC-006`, `FR-FC-009` | ineligible methods, no budget, not generated |
-| `SCR-028` | Forecast comparison & accuracy | Scenarios side by side + accuracy report | `FR-FC-003`, `FR-FC-007` | no closed periods, draft-only basis |
-| `SCR-029` | Reports — Generate pack | Choose artifacts, filters, scenario, commentary | `FR-XL-001`, `FR-PPT-001`, `FR-XC-001` | no forecast, no exceptions, long generation |
-| `SCR-030` | Pack issuance register | Issue, version, recipients, immutability | `FR-XC-002`, `FR-XC-003`, `FR-PRJ-010` | not issued, issued, re-issue required |
-| `SCR-031` | Commentary editor | Per-line and executive narrative with versions | `FR-XC-001`, `FR-AI-004`, `FR-AI-011` | AI disabled (rule-based), locked by issue |
-| `SCR-032` | Settings — Data & storage | Data folder, storage used, health, archive-and-delete | `FR-SET-001`, `FR-SET-009`, `FR-PRJ-011` | synced path, low storage |
-| `SCR-033` | Settings — Mappings | Profiles, versions, history, revert, import/export | `FR-SET-002`, `FR-IMP-005`, `FR-IMP-026` | no profiles, mid-year version present |
-| `SCR-034` | Settings — Master data | Vendor categories, recurring costs, thresholds, owners | `FR-SET-003`, `FR-EXC-014` | empty (rules disabled), imported |
-| `SCR-035` | Settings — Thresholds & rules | Per-rule enable/threshold/severity, materiality | `FR-EXC-012`, `FR-EXC-013`, `FR-SET-004` | defaults vs overridden |
-| `SCR-036` | Settings — Display & locale | Currency, scale, grouping, dates, decimals, negatives | `FR-SET-006`, `FR-SET-007` | — |
-| `SCR-037` | Settings — Branding | Name, logo, two brand colours, contrast check | `FR-SET-008` | contrast failure variant |
-| `SCR-038` | Settings — AI | Provider, key, model, redaction, caps, usage log | `FR-AI-001`…`FR-AI-003`, `FR-AI-009`, `FR-AI-014` | keyless (default), cap reached, model retired |
+| `SCR-027` | Forecast workspace | Methods, overrides, scenarios, guidance | `FR-FC-001`, `FR-FC-002`, `FR-FC-003`, `FR-FC-004`, `FR-FC-005`, `FR-FC-006`, `FR-FC-009` | ineligible methods, no budget, not generated |
+| `SCR-028` | Forecast comparison & accuracy | Scenarios side by side + accuracy report | `FR-FC-003`, `FR-FC-007`, `FR-FC-008`, `FR-FC-009` | no closed periods, draft-only basis |
+| `SCR-029` | Reports — Generate pack | Choose artifacts, filters, scenario, commentary | `FR-XL-001`, `FR-XL-002`, `FR-XL-003`, `FR-XL-004`, `FR-XL-005`, `FR-XL-006`, `FR-XL-008`, `FR-XL-009`, `FR-PPT-001`, `FR-PPT-002`, `FR-PPT-003`, `FR-PPT-004`, `FR-PPT-005`, `FR-PPT-007`, `FR-PPT-008`, `FR-PPT-009`, `FR-AI-012`, `FR-XC-001` | no forecast, no exceptions, long generation |
+| `SCR-030` | Pack issuance register | Issue, version, recipients, immutability | `FR-PRJ-010`, `FR-XC-002`, `FR-XC-003` | not issued, issued, re-issue required |
+| `SCR-031` | Commentary editor | Per-line and executive narrative with versions | `FR-PPT-008`, `FR-AI-004`, `FR-AI-005`, `FR-AI-006`, `FR-AI-007`, `FR-AI-008`, `FR-AI-010`, `FR-AI-011`, `FR-AI-012`, `FR-AI-013`, `FR-XC-001`, `FR-XC-002` | AI disabled (rule-based), locked by issue |
+| `SCR-032` | Settings — Data & storage | Data folder, storage used, health, archive-and-delete | `FR-PRJ-011`, `FR-SET-001`, `FR-SET-009` | synced path, low storage |
+| `SCR-033` | Settings — Mappings | Profiles, versions, history, revert, import/export | `FR-IMP-005`, `FR-IMP-026`, `FR-SET-001`, `FR-SET-002`, `FR-SET-011` | no profiles, mid-year version present |
+| `SCR-034` | Settings — Master data | Vendor categories, recurring costs, thresholds, owners | `FR-IMP-029`, `FR-EXC-007`, `FR-EXC-014`, `FR-SET-001`, `FR-SET-003`, `FR-SET-011` | empty (rules disabled), imported |
+| `SCR-035` | Settings — Thresholds & rules | Per-rule enable/threshold/severity, materiality | `FR-EXC-012`, `FR-EXC-013`, `FR-SET-001`, `FR-SET-004`, `FR-SET-011` | defaults vs overridden |
+| `SCR-036` | Settings — Display & locale | Currency, scale, grouping, dates, decimals, negatives | `FR-SET-001`, `FR-SET-006`, `FR-SET-007` | — |
+| `SCR-037` | Settings — Branding | Name, logo, two brand colours, contrast check | `FR-PPT-005`, `FR-PPT-006`, `FR-SET-001`, `FR-SET-008`, `FR-SET-011` | contrast failure variant |
+| `SCR-038` | Settings — AI | Provider, key, model, redaction, caps, usage log | `FR-AI-001`, `FR-AI-002`, `FR-AI-003`, `FR-AI-007`, `FR-AI-009`, `FR-AI-014`, `FR-SET-001` | keyless (default), cap reached, model retired |
 | `SCR-039` | Backup & restore | Zip backup, restore, drill | `FR-PRJ-008`, `FR-PRJ-009` | in progress, invalid zip, newer version |
-| `SCR-040` | About / Diagnostics | Version, data folder, storage, diagnostics zip, disclaimer | `FR-XC-004`, `FR-XC-005`, `FR-XC-016` | redaction opt-in |
+| `SCR-040` | About / Diagnostics | Version, data folder, storage, diagnostics zip, disclaimer | `FR-PRJ-011`, `FR-SET-012`, `FR-XC-004`, `FR-XC-005`, `FR-XC-014`, `FR-XC-015`, `FR-XC-016` | redaction opt-in |
 | `SCR-041` | Error dialog (global) | What happened, what was not lost, one action | `FR-XC-006`, `FR-XC-012` | informational, recoverable, fatal |
-| `SCR-042` | Help panel (global overlay) | Contextual help, single-sourced with doc `22` | `FR-ONB-004`, `FR-ONB-007` | no topic → workflow topic |
+| `SCR-042` | Help panel (global overlay) | Contextual help, single-sourced with doc `22` | `FR-ONB-004`, `FR-ONB-007`, `FR-XC-014` | no topic → workflow topic |
 | `SCR-043` | First-run tour overlay | Six-step guided tour | `FR-ONB-002` | resumed mid-tour, dismissed |
 
-**Coverage check:** every FR family maps to at least one screen; every screen serves at least one FR
-(verified in `20_REQUIREMENTS_TRACEABILITY.md`).
+**Coverage check:** every FR maps to at least one screen, a shell component or a justified `n/a`; every
+screen serves at least one FR. The FR lists above are generated from `20_REQUIREMENTS_TRACEABILITY.md` §4.3
+(the join of record) and must not drift from it; a screen with no FR would be an orphan screen. **Global
+shell components** (§3.3 — not screens, not counted in the 43) serve `FR-BVA-015`, `FR-SET-010`,
+`FR-XC-008`, `FR-XC-011` and `FR-XC-012`; `FR-XC-007`, `FR-XC-009` and `FR-XC-013` are non-visual by design
+(`20` §2.2).
 
 ## 5. Home (`SCR-001`)
 
