@@ -87,7 +87,7 @@ precise, terse, and testable.
 | 19 | `19_VIBE_CODING_PLAYBOOK.md` | Session protocol, principles P1–P20, quote-before-code, gates/approvals | Draft v0.1 |
 | 20 | `20_REQUIREMENTS_TRACEABILITY.md` | FR → spec → SCR → API → test → status chain (156 rows; 95-route endpoint reference set) | Draft v0.1 |
 | 21 | `21_CLIENT_ONBOARDING_QUESTIONNAIRE.md` | Every client question (Q-), why it matters, the labelled default in force, the answer flow, the §D checklist map | Draft v0.1 |
-| 22 | `22_END_USER_GUIDE.md` | Task-structured user manual keyed to SCR-IDs; in-app help source | Not started |
+| 22 | `22_END_USER_GUIDE.md` | Task-structured user manual (T-01…T-21 keyed to SCR-IDs), training outline, screenshot contract; the in-app help source | Draft v0.1 |
 | 23 | `23_CONSULTANT_HANDOVER_AND_SUPPORT.md` | Rebuild, config/prompt/branding editing, diagnostics, escalation | Not started |
 | 24 | `24_RELEASE_AND_VERSIONING_RUNBOOK.md` | Semver, tags, release checklist, upgrade/migration test, distribution | Not started |
 | 25 | `25_RISK_REGISTER.md` | Risks (RISK-) with likelihood/impact/mitigation/owner; reviewed at gates | Not started |
@@ -117,7 +117,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | Ref | Requirement | Owning doc(s) | Status |
 |---|---|---|---|
 | K-S1 | Role: lead product engineer/architect/delivery lead; spec-first; docs before code | `19`, `01` | INTEGRATED |
-| K-S2 | Product & client context: current manual workflow, Windows 11 x64, non-technical user, offline, self-contained installer, clean start | `01`, `21` | IN PROGRESS (question set in `21`; `23`/`25` outstanding) |
+| K-S2 | Product & client context: current manual workflow, Windows 11 x64, non-technical user, offline, self-contained installer, clean start | `01`, `21`, `22` | IN PROGRESS (`21` question set + `22` user-facing guide; `23`/`25` outstanding) |
 | K-S3 | Zero-compromise principles P1–P10 | `19` (canonical list), `01` | INTEGRATED |
 | K-S4 | Authoritative stack (ADR-001) + forbidden technologies + environment open questions | `09` | INTEGRATED |
 | K-S5 | Phase 0 documentation set & quality gate (the doc tree, gate checklist) | `00`, `14` | IN PROGRESS (docs `00`–`20` written; gates tracked in `14` §15) |
@@ -138,7 +138,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 |---|---|---|---|
 | A1-A | How this addon works: spec of record, integrate into existing docs, no parallel tree | `00`, `19` | INTEGRATED |
 | A1-B | Principles P11–P20 (monthly rhythm, atomic imports, nothing silently discarded, versioned edits, upgrades, end-user docs, supply chain, hostile input, no colour-only signals, tabletop walkthrough) | `19`, `01` | INTEGRATED |
-| A1-C.1 | New docs 21–25 | `21`–`25` | IN PROGRESS (`21` done; `22`–`25` outstanding) |
+| A1-C.1 | New docs 21–25 | `21`–`25` | IN PROGRESS (`21`–`22` done; `23`–`25` outstanding) |
 | A1-C.2 | Required additions inside original docs (26-row table) | `01`–`20` (owning docs) | INTEGRATED (through `20`) |
 | A1-D | Domain completeness checklist (20 items → decisions + defaults) | `21`, `18` | INTEGRATED (through `21`: 20 of 20 §D items mapped, §6.2) |
 | A1-E | Additional FRs (import history/void, new-period wizard, cross-batch dupes, in-app templates, master data, KPI library, rollups, export-what-you-see, job UX, search, owner distribution, backup/restore, close snapshot, diagnostics) | `02` | INTEGRATED |
@@ -147,7 +147,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A1-H | Financial-correctness addenda (fiscal calendar, posting vs document date, rounding, ratio maths, sign conventions, comparability guard, forecast integrity) | `05`, `07` | INTEGRATED |
 | A1-I | Security, privacy & supply chain (prompt injection, diagnostics redaction, log policy, secrets, dependency policy, data at rest) | `10`, `13`, `17` | INTEGRATED |
 | A1-J | Delivery, release & upgrade addenda (semver, release checklist, migration test, distribution, no schema drift, signing ADR) | `15`, `16`, `24` | IN PROGRESS (24 pending) |
-| A1-K | Client enablement (task-structured guide, first-run tour, 60-min training, error dialog, support flow) | `22`, `23` | PENDING |
+| A1-K | Client enablement (task-structured guide, first-run tour, 60-min training, error dialog, support flow) | `22`, `23` | IN PROGRESS (`22` done — guide, tour, training outline, error-dialog and support sections; `23` outstanding) |
 | A1-L | NFR numbers (cold start, import, dashboard, PPT, offline, installer size, memory, logs, diagnostics, screen, crash behaviour) | `14` (numbers), `16`, `09` | INTEGRATED |
 | A1-M | Session protocol addenda (SESSION_LOG, regression gate, Windows evidence, schema change process, sample data sacred, roadmap discipline) | `19`, `14` | INTEGRATED |
 | A1-N | Explicitly parked backlog list | `27`, `01` | IN PROGRESS |
@@ -345,8 +345,8 @@ Addon 3 §G). Approvals are recorded in `CHANGELOG.md` **and** `SESSION_LOG.md` 
 |---|---|
 | Phase | **Phase 0 — Documentation** |
 | Authoritative next-action list | Addon 4 §L (supersedes Addon 3 §K → Addon 1 §P → Kickoff §15) |
-| Docs complete | `00`–`21` (drafts) + `CHANGELOG`, `SESSION_LOG` |
-| Docs remaining | `22`–`29`, `PHASE0_SUMMARY` |
+| Docs complete | `00`–`22` (drafts) + `CHANGELOG`, `SESSION_LOG` |
+| Docs remaining | `23`–`29`, `PHASE0_SUMMARY` |
 | Product code | **None. Forbidden until recorded approval.** |
 | App version / docs version | 0.1.0 (planned) / 0.1.0 (working draft) |
 | Open questions count | Tracked in `18_...OPEN_QUESTIONS.md` §Open |

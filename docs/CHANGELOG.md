@@ -417,6 +417,30 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   matrix and §6.1 — the cites resolved to existing but wrong-topic sections (`05` §4.4, `05` §10, `06` §7,
   `03` §5.5, `09` §10/§11); no FR, screen, endpoint, test or status changed.
 
+- **`docs/22_END_USER_GUIDE.md`** (Draft v0.1) — the user-facing manual, **structured by task** (Addon 1 §K):
+  §1 how to use it (five-minute version, three ways to get help), §2 install + the **verbatim SmartScreen
+  walkthrough** (`15` §8.3) + first run with the sample project and the 6-step tour + the verbatim
+  plain-language privacy sentence (`13` §8.3) + first backup, §3 the nine-step month-end rhythm mapped to
+  tasks, §4 the **21 tasks `T-01`…`T-21`** (open, new period, import ×2, quarantine, check, explain a
+  variance, triage, work to closure, evidence bundle, forecast refresh/override/compare, commentary,
+  Excel, deck, issue, close, back up/restore/archive, AI boundaries, support) each with steps,
+  checkpoints, "if it looks wrong" and the owning FRs, plus the **43-screen coverage map**, §5 reading the
+  numbers (units, rounding, `n/a` vs `—`, favourable/unfavourable, stale), §6 what the app never does with
+  the **verbatim disclaimer** (`01` §15.1), §7 the error-dialog anatomy + the ten commonest symptoms +
+  offline/autosave/recovery + the diagnostics support flow, §8 the settings a user may change, §9 the
+  **screenshot capture contract** (`SS-01`…`SS-24`, sample project only, filled as built), §10 the
+  **60-minute training outline** and six-chapter recorded demo (the `Q-017` default), §11 the in-app help
+  **single-source contract** (`FR-ONB-004`/`007`), §12 a plain-language on-screen glossary, and the
+  obligations/change-control/frozen constants. Reason: Addon 1 §C.1/§K/§P17, `01` §4.1, `08` §3–§4,
+  `FR-ONB-002`/`004`/`007`, `GATE-02-10`.
+- **Governance** — `00_INDEX`: doc-map row 22 → Draft v0.1; `A1-C.1` → IN PROGRESS (`21`–`22` done),
+  `A1-K` → IN PROGRESS (`22` done, `23` outstanding), `K-S2` now names `22`, docs complete `00`–`22`,
+  remaining `23`–`29`. `14` §15's `GATE-02-10` annotated (`22` done: 21 tasks, 43-screen map, 60-minute
+  training outline, screenshot contract; `23` outstanding). `16` §1.3's next open item advanced to
+  `23`–`25`, `26`, `27`, `28`, `29`, then `PHASE0_SUMMARY.md`. Reason: the guide is the in-app help
+  source, so it must not drift from `08`/`15`/`13`, and a screen without a task would be an unguided
+  screen.
+
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's

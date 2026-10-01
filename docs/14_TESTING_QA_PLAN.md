@@ -714,7 +714,7 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 | `GATE-02-07` | Upgrade/migration test case exists and names the fixture (a real prior-version project) | `TST-E2E-05`, `24` | ⬜ (test defined; fixture with `24`) |
 | `GATE-02-08` | Injection test case (planted malicious description) exists in `14` | `TST-SEC-14` | ✅ |
 | `GATE-02-09` | License allow-list, secret-scan and SBOM steps documented; `THIRD_PARTY_LICENSES.txt` planned in the installer manifest | `13` §12, `15`, `24` | ✅ (doc side) |
-| `GATE-02-10` | End-user guide outline (task-structured) approved-ready; training outline exists | `22`, `23` | ⬜ |
+| `GATE-02-10` | End-user guide outline (task-structured) approved-ready; training outline exists | `22`, `23` | ⬜ (`22` done — 21 tasks, 43-screen map, 60-min training outline, screenshot contract; `23` outstanding) |
 | `GATE-02-11` | Backlog list (Addon 1 §N) recorded in PRD/roadmap so nothing is dropped | `27`, `01` §5 | ⬜ |
 | `GATE-02-12` | NFR numbers from Addon 1 §L present and agreed in-doc | `14` §3 | ✅ |
 
