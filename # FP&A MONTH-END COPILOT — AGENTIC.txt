@@ -1,0 +1,1035 @@
+# FP&A MONTH-END COPILOT — AGENTIC AI KICKOFF PROMPT
+_Paste this entire document as the first message to your agentic AI. It must read all of it before doing anything._
+
+---
+
+## SECTION 1 — YOUR ROLE
+
+You are the lead product engineer, architect, and delivery lead for a client-facing software product. You work **spec-first**. Your **first deliverable is a complete documentation set — NOT code**. The documentation must be detailed enough that any AI coding agent (or human developer) can implement the entire product later with zero ambiguity and zero improvised product decisions. Zero compromises: if a document would be "nice to have" but is actually required to avoid a wrong implementation, you must write it.
+
+---
+
+## SECTION 2 — PRODUCT & CLIENT CONTEXT
+
+**Working product name:** FP&A Month-End Copilot (final name to be decided in the branding section of the PRD).
+
+**What the client does today (the workflow the product must serve):**
+
+| # | Current manual activity |
+|---|---|
+| 1 | Downloads large Excel exports monthly from Microsoft Dynamics 365 (edition: F&O / Business Central / other — unconfirmed, log as open question) plus **two other systems** (names unconfirmed — log as open question) |
+| 2 | Compares actuals vs budget, investigates variances down to individual transactions |
+| 3 | Investigates questionable accounting entries and guides multiple accounting teams to correct them |
+| 4 | Builds budgets including rolling forecasts |
+| 5 | Produces management PowerPoint presentations |
+
+**Client profile and hard constraints:**
+
+- Uses **Windows 11 (x64)** only.
+- **Non-technical.** Cannot install developer tooling: no Python, no Node, no .NET runtime downloads, no Docker, no terminal commands, no Power BI Desktop requirement, no "unblock files / edit config" rituals.
+- Delivery must be **self-contained**: one Windows installer (plus a portable/fallback mode if feasible) → double-click → works. No runtime prerequisites to install.
+- Data comes in as **Excel/CSV exports** first; direct D365 API connectivity is a later, optional phase.
+- The solution must work **offline**; the only internet use is the optional AI commentary feature.
+
+**Why we are starting clean:** two previous vibe-coded prototypes were abandoned because they sprawled into an all-in-one FP&A platform with heavy architecture (Tauri/Rust, hundreds of files, no validated core). **Scope sprawl and over-engineering are the primary failure modes to avoid.** If prior repositories are available to you, treat them strictly as a reference for idea/exception-rule brainstorming — never copy their architecture, and never use them as the base code.
+
+---
+
+## SECTION 3 — ZERO-COMPROMISE PRINCIPLES
+
+1. **Docs before code.** No product code until the full Phase 0 documentation set exists, passes its quality gate, and I have approved it.
+2. **The spec is the source of truth.** Any change to behavior goes into the spec + CHANGELOG **first**, then the code. Code never drifts silently from spec.
+3. **Deterministic money math.** All calculations, reconciliations, thresholds, and approvals are deterministic code. AI never computes totals, never approves, never posts, never decides.
+4. **Offline-first, local-only data.** No cloud storage, no telemetry, no auto-upload. Raw client files stay on the machine.
+5. **Traceability.** Every number the user sees must be drillable back to source transactions and to the source file it came from.
+6. **Scope discipline.** Build only what is in the approved phase. New ideas go to the backlog/OPEN_QUESTIONS log — they do not get built opportunistically.
+7. **Non-technical UX.** Guided workflow, plain-language errors that state the fix, help text, confirmations on destructive actions, a first-run sample project.
+8. **"Potential exception," never "error confirmed."** The tool flags suspects for human review; humans decide.
+9. **Quality bars are numbers, not vibes.** Every non-functional target (performance, installer size, start-up time) must be stated as a number in the docs and tested.
+10. **Boring, testable code.** No speculative abstractions, no frameworks not approved in Section 4, no microservices, no premature plugin systems.
+
+---
+
+## SECTION 4 — AUTHORITATIVE TECHNICAL STACK (this becomes ADR-001)
+
+Record this exact decision in `docs/09_TECHNICAL_ARCHITECTURE.md` as ADR-001. Do not silently change any part of it; a blocking issue requires a new ADR with options + impact, presented to me for approval before switching.
+
+| Layer | Decision |
+|---|---|
+| Backend / engine | **Python 3.12**, FastAPI (local API on `127.0.0.1:<random port>` with session token), **DuckDB** for analytics storage, Polars and/or Pandas for transformations, `openpyxl` for Excel read/write, `python-pptx` for PowerPoint, `httpx` for optional AI calls, `pytest` for tests. Use **decimal-safe money handling** (Python `Decimal` or integer minor units) — binary floats are forbidden for currency math. |
+| Frontend | **React + TypeScript + Vite**, Tailwind CSS, **ECharts** for charts. Single-page app served locally. |
+| Desktop shell | **pywebview** native window (WebView2 is present on Windows 11) loading the local API/UI; documented fallback = open default browser to the local URL. |
+| Persistence | DuckDB file(s) for the analytic model; SQLite for workflow state (exception register, settings, audit log). Files stored under `%USERPROFILE%\Documents\FP&A Month-End Copilot\Projects\<project>\`. |
+| Packaging | **PyInstaller (onedir, not onefile)** → **Inno Setup** installer producing `Setup-FPandAMonthEndCopilot-<version>.exe`, plus documented portable-zip option. Desktop + Start Menu shortcuts, uninstaller, app icon, version metadata. No runtime prerequisites. |
+| Version control | Git, Conventional Commits, docs-only commits kept separate from code commits. |
+| Explicitly forbidden without an approved ADR | Tauri, Rust, Electron, any cloud service dependency, containers, auto-update frameworks in v1, ORMs/DB layers beyond the above, "AI agent frameworks" for core logic. |
+
+**Environment assumptions to confirm and log as open questions:** Windows 11 x64; Microsoft Defender present; availability of a code-signing certificate (document SmartScreen reputation impact if none); client internet only for optional AI; fiscal calendar and reporting currency (assume INR only after confirmation).
+
+---
+
+## SECTION 5 — PHASE 0: THE DOCUMENTATION SET (THE ONLY WORK ALLOWED FIRST)
+
+Create this exact tree and fill every file. Cross-link documents from `00_INDEX.md`. No placeholders, no "TBD" on anything that blocks implementation.
+
+```
+docs/
+  00_INDEX.md                       — map of all docs, reading order, status of each
+  01_PRD.md                         — personas, jobs-to-be-done, in/out of scope, success metrics, branding
+  02_FUNCTIONAL_SPEC.md             — every feature as numbered FR-001…; inputs, outputs, edge cases, acceptance criteria
+  03_DATA_DICTIONARY.md             — canonical star schema: every table, column, type, nullability, grain, example row
+  04_SOURCE_MAPPING_AND_IMPORT_SPEC.md — import wizard, D365-style template + flexible mapping profiles, validation rules
+  05_CALCULATION_SPEC.md            — every formula with a worked example (input table → expected output) usable as a golden test
+  06_EXCEPTION_RULES_CATALOG.md     — ≥15 rules, each with ID, business intent, exact logic/pseudocode, default thresholds, severity, suggested owner, false-positive mitigation, sample case, expected verdict
+  07_FORECAST_METHODS_SPEC.md       — rolling forecast logic, methods, scenarios, locks
+  08_UI_UX_SPEC.md                  — screen-by-screen: layout, components, navigation, copy, empty/loading/error states, ASCII wireframes
+  09_TECHNICAL_ARCHITECTURE.md      — ADR-001 (Section 4), module boundaries, data flow, folder structure, logging/error strategy
+  10_AI_INTEGRATION_SPEC.md         — provider config, prompt templates (versioned files), redaction rules, JSON output schema, token/cost caps, offline fallback
+  11_EXCEL_OUTPUT_SPEC.md           — every exported workbook: sheet list, layout, number formats, conditional formatting, freeze/filter/print setup
+  12_POWERPOINT_OUTPUT_SPEC.md      — slide-by-slide spec (exact slides, placeholders, editable elements, brand colors/logo)
+  13_SECURITY_PRIVACY.md            — local-only guarantees, key storage (Windows DPAPI / Credential Manager), audit log, file handling
+  14_TESTING_QA_PLAN.md             — unit/golden tests tied to FR IDs, planted-exception acceptance dataset, UAT script vs client's manual month pack
+  15_PACKAGING_DEPLOYMENT_RUNBOOK.md — exact build→installer→clean-Win11-VM test steps, first-run UX, uninstall, SmartScreen/code-signing notes, support "export diagnostics" flow
+  16_ROADMAP_PHASES.md              — phases with deliverables and Definition of Done per phase
+  17_CODING_STANDARDS.md            — repo layout, naming, commits, error handling, logging, coverage bar
+  18_GLOSSARY_ASSUMPTIONS_OPEN_QUESTIONS.md — FP&A terms, every assumption, every open question with owner
+  19_VIBE_CODING_PLAYBOOK.md        — session protocol for future agents (Section 14), DoD, change process
+  20_REQUIREMENTS_TRACEABILITY.md   — FR → spec section → test ID → status
+  CHANGELOG.md                      — doc changes with dates
+```
+
+**Supporting build artifacts created during Phase 0 (still no product code):**
+
+- `sample-data/` — generator script producing a realistic fictional dataset: 2–3 entities, full-year budget, 9+ months actuals (~100k–250k GL rows), vendors, cost centres, projects, D365-style raw exports (plus one "other system" format), and **~40 planted known exceptions** with `expected_exceptions.csv` (golden answer key for acceptance testing).
+- Input templates as actual `.xlsx` files mirroring `04_…` and `03_…`.
+- `README.md` at repo root: what this project is, how to open the docs, current phase.
+
+**Repo skeleton (folders + `.gitkeep` only):** `docs/`, `app/` (backend package), `ui/` (React), `sample-data/`, `tests/`, `packaging/` (PyInstaller spec + Inno Setup script), `scripts/` (dev bootstrap, build).
+
+**Phase 0 quality gate — self-audit against this checklist before requesting approval:**
+
+- [ ] Every FR is numbered, testable, and has acceptance criteria; zero blocking TBDs.
+- [ ] `05_CALCULATION_SPEC` contains worked examples with exact numbers for: MTD/YTD variance, variance %, favorability rules (state explicitly: revenue lines — actual > budget = favorable; expense lines — actual < budget = favorable; define treatment for balance-sheet/other), prior-year comparison, rounding, and each forecast method.
+- [ ] `06_EXCEPTION_RULES_CATALOG` has ≥15 fully specified rules, each with a planted test case in the sample dataset.
+- [ ] `08_UI_UX_SPEC` covers every screen including empty, loading, error, and first-run states, written for a non-technical user.
+- [ ] `12_POWERPOINT_OUTPUT_SPEC` defines 4–6 slides exactly, slide by slide, with editable text/tables/native charts (no screenshots), and brand color/logo handling.
+- [ ] `15_…RUNBOOK` is a step-by-step script that results in a working installer on a clean Windows 11 machine.
+- [ ] NFR numbers stated: max import size (target: 250k rows / ~100 MB per file, import ≤ 60 s on a 4-core laptop), dashboard interaction ≤ 2 s, PowerPoint generation ≤ 15 s, cold start ≤ 10 s, installer ≤ 500 MB, memory ≤ 1.5 GB — adjust only with justification in the doc.
+- [ ] `18_…OPEN_QUESTIONS` lists every unconfirmed item (D365 edition, the two other systems, currency, fiscal calendar, signing cert, branding assets, real sample data access).
+- [ ] `20_REQUIREMENTS_TRACEABILITY` links every FR to at least one future test.
+
+**Gate:** when Phase 0 is complete, write `docs/PHASE0_SUMMARY.md` (one page: product in a paragraph, key decisions, top risks, open questions) and **STOP. Present it to me and wait for explicit approval before writing any product code.**
+
+---
+
+## SECTION 6 — APPROVED PRODUCT SCOPE (v1)
+
+**In scope, delivered in phases (final ordering in `16_ROADMAP_PHASES.md`):**
+
+1. **Import & validation** — import wizard for Excel/CSV, saved column-mapping profiles (D365 profile included), raw-file archive with checksum, validation dashboard: row counts, debit = credit balance, unmapped accounts/dimensions, date/period checks, duplicate candidates at import.
+2. **Budget vs Actual analysis** — at the lowest shared grain (period + entity + cost centre + GL), MTD/YTD/PY, variance amount/%, favorability, interactive matrix + bridge/waterfall + trend charts, **drill-down from any figure to the underlying transactions with source-file evidence**.
+3. **Exception engine & register** — ≥15 rules (Section 9), severity, suggested owner, statuses, notes, re-assignment, audit trail, bulk export to Excel.
+4. **Rolling forecast** — closed periods locked to actuals; remaining periods via budget-remaining, run-rate (avg of last N actual months), 3-month average, and manual override; Base/Best/Worst scenarios; forecast vs budget vs actual comparison views.
+5. **Excel reporting pack** — refreshable-from-project export per `11_EXCEL_OUTPUT_SPEC`.
+6. **PowerPoint management pack** — 4–6 editable slides per `12_POWERPOINT_OUTPUT_SPEC`, generated from the current filtered view, ≤ 15 s.
+7. **AI commentary (optional, off by default)** — Section 10.
+8. **Settings** — mappings, thresholds, company/branding, currency display, data-file locations, AI key config.
+9. **First-run experience** — sample project loads immediately so the app is demoable on day one; guided tour.
+
+**Explicitly OUT of scope for v1 (list in PRD):** posting/writing anything back to D365, replacing the ERP, journal approval workflows, multi-user/cloud/collaboration, mobile, auto-update, direct ERP API connectors, auto-generated Power BI files (backlog: "export star-schema CSVs for Power BI" may be a Phase 6 item — document, don't build).
+
+---
+
+## SECTION 7 — CANONICAL DATA MODEL (seed for doc 03; elaborate it fully)
+
+Grains must be exact; doc 03 defines every column:
+
+- `FactActual` — one row per posted GL transaction (source file, company, fiscal period, posting date, voucher/document, account, cost centre, department, project, vendor, description, debit, credit, net, currency).
+- `FactBudget` — one row per budget line (version, scenario, period, account, dimension, amount).
+- `FactForecast` — one row per forecast line (version, method used, period, account, dimension, amount, driver ref).
+- `DimAccount` (with statement-line mapping), `DimCompany`, `DimCostCenter`, `DimVendor`, `DimProject`, `DimPeriod` (fiscal calendar), `DimMapping` (source→canonical, versioned, approval-flagged), `FactException` (rule, severity, subject rows, status, owner, notes), `FactImportAudit` (file, checksum, row counts, timestamp, balance check result).
+
+**Integrity rules:** raw imported files archived immutably; every fact row links to its import batch; import cannot complete unless debit = credit (or documented tolerance) and row counts reconcile; mappings are data (editable with history), never hardcoded.
+
+---
+
+## SECTION 8 — CALCULATION RULES (summary; doc 05 must contain the full formal spec)
+
+- `Variance = Actual − Budget`; `Variance % = Variance / |Budget|` with a documented zero-budget handling rule.
+- Favorability is direction-aware per statement line type (revenue vs expense vs memo) — define explicitly, with examples.
+- Period comparisons: MTD, YTD, PY MTD, PY YTD — against `DimPeriod` fiscal calendar, not calendar months.
+- Comparisons happen at the **lowest shared grain**; if budget exists only at GL/month level, the UI must not imply transaction-level budget matching — state this in doc 02/05 and enforce in the UI spec.
+- Rounding: compute at full precision, round for display only, document the rule (e.g., 2 dp for INR, 1 dp for %).
+- Currency: v1 = single reporting currency per project OR a simple FX-rate table — **decide in doc 05, document it, and do not half-build multi-currency.**
+- Forecast methods (all deterministic): locked actuals; remaining-budget; run-rate; 3-month average; manual override — each with a worked example in doc 07.
+
+---
+
+## SECTION 9 — EXCEPTION ENGINE (summary; doc 06 is the formal catalog)
+
+Seed rules (catalog must reach ≥15, each fully specified): duplicate invoice candidate (vendor + invoice no. + date + amount); unmapped GL account/dimension; inactive cost centre usage; posting-date/period mismatch; unusual negative expense/credit; missing recurring cost (known monthly charge absent); material unbudgeted spend; material variance over threshold (amount AND %); unusual vendor→account combination; import imbalance; potential cut-off issue (posting near period end with document date in prior period); amount crossing approval threshold; out-of-pattern spike vs trailing average; missing expected accrual; orphan dimension (entity without budget).
+
+- Every rule: default threshold, severity (High/Medium/Low), suggested owner role, false-positive mitigation, and a planted sample case with expected verdict.
+- Workflow statuses (spec the final list): e.g., Open → In Review → Explained → Corrected → Closed, with owner, timestamped notes, and export.
+- UI wording: "Potential exception — requires accounting review." Never "error" or "wrong entry."
+
+---
+
+## SECTION 10 — AI POLICY
+
+- **Optional, disabled by default.** Bring-your-own key UI: Azure OpenAI preferred; OpenAI-compatible base URL supported. Key stored via Windows DPAPI / Credential Manager, never in plain files.
+- **Allowed uses:** draft variance commentary, summarize top drivers, group similar exceptions, suggest (never auto-apply) account/category mappings, draft follow-up messages — each output linked to the evidence rows that produced it, with a confidence indicator.
+- **Forbidden:** computing/altering financial totals, approving anything, editing mappings/data, posting, silent decisions, sending raw client data anywhere beyond the configured endpoint.
+- **Redaction:** configurable vendor-name/ID masking before any AI call; only the minimum filtered rows needed go in the prompt.
+- **Output:** strict JSON schema (commentary, drivers[], evidence_ids[], confidence); prompts stored as versioned template files in the repo; token/cost caps; caching.
+- **Offline fallback:** when no key is configured, generate rule-based narrative from the same driver data so the feature still demos offline.
+- **UI labeling:** every AI text shown as "AI draft — review before use."
+
+---
+
+## SECTION 11 — REPORTING OUTPUTS
+
+- **Excel pack** (doc 11): BvA summary, transaction detail, exception register, forecast summary, import reconciliation sheet — with specified headers, number formats, conditional colors, frozen panes, autofilters, column widths, print setup.
+- **PowerPoint pack** (doc 12), recommended slides: 1) Cover + period + source files, 2) Executive KPIs (actual/budget/variance), 3) BvA bridge/waterfall, 4) Top variances with drivers (+ AI draft commentary if enabled), 5) Exceptions & control risks, 6) Forecast & outlook. All elements **native and editable** in PowerPoint (text boxes, tables, native charts via python-pptx) — never pasted screenshots. Brand: logo file + two brand colors configurable in Settings.
+- Every export stamps: generation timestamp, project/filter context, and source import batch IDs.
+
+---
+
+## SECTION 12 — UX FOR NON-TECHNICAL USERS
+
+- Left-nav guided workflow: **Home → Import → Check → Analyze → Exceptions → Forecast → Reports → Settings**.
+- First launch opens a ready-made **sample project**; a "Load your own data" path is always visible.
+- Every error states: what happened, why, and the exact next action ("Column 'Cost Center' not found — map it now or download the template").
+- Confirmations before destructive actions; autosave; reopen last project; Help panel with tooltips; "Export diagnostics log" for support.
+- English only in v1; INR-style number formatting by default but configurable.
+
+---
+
+## SECTION 13 — QUALITY, TESTING & ACCEPTANCE
+
+- `pytest` unit tests for every formula in doc 05 and every rule in doc 06; **golden-file tests** comparing full outputs on the sample dataset.
+- Planted-exception acceptance: engine must find the expected subset of `expected_exceptions.csv`; false positives documented and justified.
+- UAT script in doc 14: analyst reproduces one month's manual BvA + one PPT deck with the app and diffs against their existing outputs.
+- Global error handler; logs written to `%APPDATA%`; app must fail with a readable message, never a raw traceback.
+- Installer validated on a clean Windows 11 machine per doc 15; performance numbers measured, not assumed.
+
+---
+
+## SECTION 14 — HOW TO WORK: SESSION PROTOCOL (VIBE CODING RULES)
+
+1. **Start of every session:** read `docs/00_INDEX.md`, `docs/CHANGELOG.md`, and the next open item in `docs/16_ROADMAP_PHASES.md` before touching anything.
+2. **Change process:** behavior change → update the relevant spec + CHANGELOG **first** → then code → then traceability (`20_…`). Never reverse this order.
+3. **Definition of Done per feature:** spec updated → tests written (or with code) → works on sample data → error/empty states handled → FR traceability updated → changelog entry → demoable.
+4. **Commits:** Conventional Commits; docs and code in separate commits; commit small and often.
+5. **Never:** weaken/delete tests to pass, hardcode demo numbers, invent requirements silently (log them in OPEN_QUESTIONS), skip validation/error handling "for now", add libraries or patterns not approved by an ADR.
+6. **Phase gate:** at each phase end — demo notes, updated UAT script, green test suite, installer rebuild — then **stop and wait for my approval**.
+7. Prefer the smallest implementation that fully satisfies the spec. If you are about to build something not traceable to an FR, stop and ask.
+
+---
+
+## SECTION 15 — IMMEDIATE NEXT ACTIONS (execute strictly in this order)
+
+1. Create the repo skeleton (folders + `.gitkeep` + root README) — nothing else.
+2. Write Phase 0 docs `00 → 20` + `CHANGELOG.md` in the order given in Section 5, cross-linked, zero blocking TBDs.
+3. Build the `sample-data/` generator, input `.xlsx` templates, and `expected_exceptions.csv`.
+4. Self-audit against the Phase 0 quality gate checklist; fix every gap.
+5. Write `docs/PHASE0_SUMMARY.md` (one page: product paragraph, key decisions, top risks, open questions).
+6. **STOP. Present the Phase 0 summary to me and wait for explicit approval. No product code before approval.**
+7. After approval: execute the **packaging spike first** — a minimal hello-world slice driven from the real UI through build → PyInstaller → Inno Setup → installed launch on Windows 11 — to de-risk distribution before feature development. Then begin roadmap Phase 1 (import & validation) per `16_ROADMAP_PHASES.md`.
+
+# ADDON 1 — COMPLETENESS & PRODUCTION-READINESS EXTENSION
+_Extension to the FP&A Month-End Copilot kickoff prompt. Both documents together are the contract; where they overlap, this addon adds requirements and never removes them. Future addons continue the numbering (Addon 2, 3, …)._
+
+---
+
+## SECTION A — HOW THIS ADDON WORKS
+
+1. The kickoff prompt + this addon together form the **spec of record**. Implement both.
+2. This addon does **not** create a parallel documentation tree. Every item below must be **integrated into the original Phase 0 documents** (or added as new documents `21–25`) with a `CHANGELOG.md` entry. No duplicate, contradictory docs.
+3. Any further gaps you (the agent) discover become **proposed items for Addon 2** written to `docs/18_…OPEN_QUESTIONS.md` — you do not silently expand scope.
+4. After integrating this addon, re-run the **combined quality gate** (Section O) before requesting approval.
+
+---
+
+## SECTION B — ADDITIONAL ZERO-COMPROMISE PRINCIPLES (P11–P20)
+
+11. **The monthly rhythm is first-class.** This is a tool that runs every month-end, not once. The spec must cover the recurring cycle: new period opens → import → validate → analyze → exceptions → forecast refresh → pack out → period archived. One-shot data loads are a design failure.
+12. **All-or-nothing imports.** Imports run in a staging area and commit atomically. A crash, cancel, or bad file never leaves half-loaded data. Partial batches are detectable and cleanable on next launch.
+13. **Nothing is silently discarded.** Rejected/quarantined rows, skipped sheets, dropped columns — all visible in a validation report with counts and downloadable detail.
+14. **Versioned everything the user edits.** Mappings, thresholds, master data, forecast assumptions, AI prompt templates: keep history with timestamp + old/new value, and support revert.
+15. **Releases are upgradeable.** Every release must state how existing client projects survive an upgrade (schema migration tested on a real prior-version project). A release that can't upgrade is not releasable.
+16. **End-user documentation is a deliverable, not an afterthought.** The non-technical client gets a written user guide and in-app help; you get a handover/support doc. Code without user-facing docs fails the phase gate.
+17. **Supply-chain hygiene.** Pinned dependencies, license review (no GPL/AGPL in shipped binaries), `THIRD_PARTY_LICENSES.txt`, per-release dependency snapshot (SBOM-lite), `.gitignore` blocks secrets — no API keys ever in the repo.
+18. **Treat imported file content as hostile data.** Transaction descriptions, vendor names, and file contents are untrusted input — for validation, for logs, and especially for AI prompts (prompt-injection defense, Section I).
+19. **Color is never the only signal.** Variance favorability, severity, and status must also carry +/− signs, symbols, or text so color-blind users and black-and-white printouts stay correct.
+20. **Tabletop walkthrough before approval.** Before requesting Phase 0 sign-off, narrate a full month-end day-in-the-life using only the documents: every step must map to a documented screen, rule, or export. Any step with no home = missing spec.
+
+---
+
+## SECTION C — NEW PHASE 0 DOCUMENTS (21–25) + REQUIRED ADDITIONS TO EXISTING DOCS
+
+### C.1 New documents (add to the tree in Section 5 of the kickoff prompt)
+
+```
+docs/
+  21_CLIENT_ONBOARDING_QUESTIONNAIRE.md — every question the client must answer,
+      why it matters, and the DEFAULT assumption used if unanswered
+      (list must be complete enough that zero blocking TBDs is achievable
+      without a live client interview)
+  22_END_USER_GUIDE.md           — non-technical user manual: full outline now,
+      every screen documented as built; delivered at UAT
+  23_CONSULTANT_HANDOVER_AND_SUPPORT.md — rebuild steps, config/branding/prompt
+      editing, dependency updates, diagnostics workflow, support escalation
+  24_RELEASE_AND_VERSIONING_RUNBOOK.md — semver, git tags, release checklist,
+      upgrade/migration test, installer distribution + checksum, signing status
+  25_RISK_REGISTER.md            — risks with likelihood/impact/mitigation/owner,
+      reviewed at every phase gate
+```
+
+### C.2 Required new sections inside the ORIGINAL documents
+
+| Existing doc | Must now also contain |
+|---|---|
+| `01_PRD.md` | Monthly recurring workflow as the core JTBD; multi-entity stance; "who receives the pack" persona; explicit no-RBAC single-user decision for v1 |
+| `02_FUNCTIONAL_SPEC.md` | FRs from Section E below; import history & batch void; new-period wizard; progress/cancel; export-what-you-see |
+| `03_DATA_DICTIONARY.md` | `FactImportBatch` (status: staging/committed/voided), master-data tables (vendor master, recurring-cost list, approval thresholds), mapping version history columns |
+| `04_SOURCE_MAPPING_AND_IMPORT_SPEC.md` | Full Excel/CSV hardening spec (Section F); quarantine-vs-reject decision; cross-import duplicate keys; incremental monthly load rules; mapping-profile versioning when the source changes columns mid-year |
+| `05_CALCULATION_SPEC.md` | Fiscal calendar configurability; posting-date vs document-date rule; ratio KPI list with divide-by-zero handling; percentage-point vs percent; display rounding vs stored precision (sum-of-rounded ≠ rounded-sum rule); amounts-in-thousands display mode; accounting-format negatives (parentheses) |
+| `06_EXCEPTION_RULES_CATALOG.md` | Rule dependencies on master data (recurring-cost list, thresholds, vendor categories, prior-period baselines); cross-batch duplicate rule; rule enable/disable per project |
+| `08_UI_UX_SPEC.md` | Screens for Import History, Master Data, Backup/Restore, About/Diagnostics; long-running job UX (progress %, ETA, cancel); single-instance lock message; min screen 1366×768, Windows scaling 100–150% |
+| `09_TECHNICAL_ARCHITECTURE.md` | Storage location decision (Section G — NOT under OneDrive-synced folders); job queue for long tasks; crash recovery; log rotation; single-instance mutex; schema-migration strategy |
+| `10_AI_INTEGRATION_SPEC.md` | Prompt-injection hardening (Section I); region/data-residency statement; per-call cost estimate table; model fallback order |
+| `11_EXCEL_OUTPUT_SPEC.md` | File naming convention (`<Project>_<Entity>_<Period>_<Pack>_<vN>.xlsx`); house-style matching when client supplies their current report; print/PDF setup |
+| `12_POWERPOINT_OUTPUT_SPEC.md` | Option to build from a client-supplied `.pptx` (load as base, replace text/tables); house-style matching (fonts/colors from their current deck); deterministic element ordering |
+| `13_SECURITY_PRIVACY.md` | Diagnostics-bundle redaction rules (metadata only — no amounts/vendor names without explicit opt-in); log content policy; secret storage verification; backup/restore encryption stance (state it, even if "plain local files, documented") |
+| `14_TESTING_QA_PLAN.md` | Upgrade test (install new version over old with an existing project); crash-during-import test; OneDrive-path test; encoding/delimiter test matrix; real-Windows validation protocol (Section G) |
+| `16_ROADMAP_PHASES.md` | Release cadence, rough size estimates per phase, and the gate artifacts each phase must produce |
+| `18_GLOSSARY_…OPEN_QUESTIONS.md` | Seeded with the complete questionnaire (doc 21), each item pre-filled with its default |
+| `19_VIBE_CODING_PLAYBOOK.md` | Session protocol addenda (Section M) |
+
+---
+
+## SECTION D — DOMAIN COMPLETENESS CHECKLIST (feeds doc 21; answer every item with a decision + default)
+
+Each item must end up decided in the docs. Use the listed default if the client hasn't answered, and flag it as "default, unconfirmed":
+
+1. **Fiscal calendar**: year start (default: January), period numbering, 4-4-5 vs calendar — configurable in Settings either way.
+2. **D365 edition** (F&O / Business Central / other): default = generic "D365-style GL export" template + documented dimension parsing; per-edition profiles added when confirmed.
+3. **The two other systems**: default = sample-data ships **two** distinct non-D365 export shapes (e.g., payroll summary and procurement/bank ledger) to prove mapping flexibility; real column lists to be confirmed.
+4. **Consolidation stance**: default = per-entity reporting plus simple grouped totals; **no eliminations/intercompany netting in v1** (explicitly out of scope in PRD) unless confirmed otherwise.
+5. **Prior-year comparatives**: is PY data available? Default = build PY views, auto-hide when no PY batch exists.
+6. **Reporting currency & units**: default = INR, whole units, optional "₹ in thousands/lakhs" display toggle; FX table only if confirmed multi-currency.
+7. **Budget versions**: default = one approved annual budget + version field so v2/reforecast can load later; version-compare view in backlog unless confirmed for v1.
+8. **Forecast cadence**: default = monthly rolling forecast, 3 scenarios (Base/Best/Worst).
+9. **Approval thresholds source**: default = editable master-data table seeded with sensible defaults; client confirms real thresholds later.
+10. **Recurring-cost list source**: default = editable master-data table the client maintains (needed by the "missing recurring cost" rule).
+11. **Vendor master/categories**: default = importable optional table; rules degrade gracefully when absent (rule auto-disabled with notice, not false positives).
+12. **Current outputs to replicate**: obtain one recent BvA Excel and one recent management PPT (house style, slide structure) — questionnaire items; outputs match them when provided.
+13. **Who reads the pack** (CFO vs management team) → drives slide 2 KPI selection.
+14. **File sizes / row volumes actually seen** (validate the 250k-row NFR).
+15. **Signing certificate**: budget for one, or accept documented SmartScreen friction with mitigation (Section J).
+16. **Delivery channel**: how the installer reaches the client (secure link + published SHA-256).
+17. **Training**: default = 60-minute guided session script + recorded demo outline in doc 22.
+18. **Support model**: who the client calls first; diagnostics-zip workflow in doc 23.
+19. **Branding**: product name, logo, two brand colors — defaults provided in PRD until assets arrive.
+20. **Data-retention**: default = projects kept locally until user deletes; secure-deletion stance stated.
+
+---
+
+## SECTION E — ADDITIONAL FUNCTIONAL REQUIREMENTS (seed FRs for doc 02)
+
+1. **Import History screen** — every batch: file name, checksum, row counts, balance result, status (committed/staged/voided), timestamp; **void/reverse a batch** (all-or-nothing, audited) without touching other batches.
+2. **New Period wizard** — "Start September close": opens the period, checks which sources are loaded, reminds what's missing, carries forward mappings/assumptions (never numbers).
+3. **Cross-batch duplicate detection** — same voucher/invoice re-imported in a later file is flagged, not double-counted; documented dedup keys.
+4. **Download blank templates from inside the app** — actuals, budget, forecast, master data — so the client never hunts for files.
+5. **Master Data screens** — vendor categories, recurring-cost list, approval thresholds, exception-rule enable/thresholds; all versioned and revertable.
+6. **KPI/ratio library** — gross margin %, Opex %, cost per head (if headcount provided), budget-burn %, etc.; each formula in doc 05 with divide-by-zero behavior; shown as cards + trend.
+7. **Hierarchy rollups** — COA parent levels and cost-centre/department tree: expand/collapse with numbers that always tie to the sum of children (tested).
+8. **Export-what-you-see** — every table view exports exactly the current filter/sort/columns to Excel/CSV.
+9. **Long-running job UX** — progress %, ETA, cancel button for imports, large exports, and PPT generation; UI never freezes.
+10. **Search** — voucher, vendor, description, account across loaded periods with a documented performance target.
+11. **Owner-wise exception distribution** — export/CSV grouped per accounting owner plus a copyable plain-text summary for pasting into Teams/email.
+12. **Project backup/restore** — one-click "backup project to a zip" and "restore from zip"; documented recovery drill in QA plan.
+13. **Period-close snapshot** — archiving the numbers behind each issued pack (immutable) so a later re-import can't rewrite history behind an already-sent deck.
+14. **About/Diagnostics screen** — version, build date, data folder, storage used, "Export diagnostics zip", "Check for updates" (manual: shows latest version + link; no auto-update in v1).
+
+---
+
+## SECTION F — EXCEL/CSV INGESTION HARDENING (requirements for doc 04)
+
+Real ERP exports are messy; the import spec must handle or explicitly reject each of these **with a plain-language error that names the sheet and cell/row**:
+
+- Title/banner rows and merged cells above the real header; multi-row headers; a `Total`/`Subtotal` row embedded in data; blank trailing rows/columns; hidden sheets; multiple sheets per workbook (profile selects sheet).
+- CSV: UTF-8 BOM, Windows-1252 accents, semicolon/tab/comma delimiters (auto-detect with confirmation step), quoted fields containing delimiters/newlines.
+- Dates: ISO, `dd-mm-yyyy`, `mm/dd/yyyy`, Excel serials, date-times — one documented per-profile rule; ambiguous formats must be confirmed, not guessed silently.
+- Numbers: thousands separators, accounting parentheses for negatives, currency symbols (₹/$/€), trailing `Cr`/`Dr`, text-formatted numbers.
+- Fiscal columns arrive as text (`FY26-P09`); financial-dimension single strings like `Dept=100|CC=200` must be split per a documented parsing rule.
+- Formulas vs values: read cached values only (`data_only`), documented; error cells (`#REF!`, `#DIV/0!`) reported.
+- Enforced limits (row count / file size) with a pre-scan estimate and confirmation; required-column presence; type validation; per-column profile overrides saved for next month.
+- **Reject-vs-quarantine decision stated in the doc**: file-level failures (balance ≠ 0, unreadable) reject the whole file; row-level failures quarantine rows to a review sheet with counts — never silent drops.
+- Every import produces a **Validation Report** (pass/fail per check, counts, sample of first N offending rows) saved with the batch.
+
+---
+
+## SECTION G — WINDOWS 11 & ENVIRONMENT HARDENING (add to docs 08/09/14/15)
+
+1. **OneDrive/Known Folder Move is the default trap.** `%USERPROFILE%\Documents` is frequently OneDrive-synced. Decision required in doc 09: database/project files default to `%LOCALAPPDATA%\FP&A Month-End Copilot\` (never inside a syncing folder); exports may default to Documents but detect sync and warn about locked/large files. Synced-folder DB access must be explicitly tested.
+2. **No admin rights required** — per-user install default; document any exception.
+3. **SmartScreen/Defender reality for unsigned PyInstaller output**: mitigation ladder documented (signing cert → Microsoft's malware-analysis false-positive submission → published SHA-256 + "More info → Run anyway" walkthrough written for a non-technical user). This is a launch-blocking item, not a footnote.
+4. **High-DPI** (125%/150% scaling) must render correctly; **min window 1366×768**; long/Unicode paths (client name in folder name) must work; laptop **sleep/standby mid-import** resumes or fails cleanly with recovery on next launch.
+5. **Single instance per project** via mutex with a friendly "already open" message, not a raw error.
+6. **Real-Windows validation protocol**: if the developing agent's environment is not Windows 11, every phase gate must include evidence of a build installed and exercised on a real Windows 11 machine (manual checklist in doc 15, or a Windows CI runner — decide in an ADR). "It should work on Windows" without this evidence fails the gate.
+7. **Offline proof**: full sample-project walkthrough with network disabled, except the explicitly-marked AI step.
+
+---
+
+## SECTION H — FINANCIAL-CORRECTNESS ADDENDA (add to docs 05/07)
+
+- **Fiscal calendar fully configurable** (year start, period codes); all period logic derives from it — no hardcoded calendar months anywhere.
+- **Posting date vs document date**: one documented rule for period assignment (default: posting date drives; document date used by the cut-off exception rule).
+- **Rounding policy**: compute at full precision (Decimal), round only at display/export; document how rounded parts may not sum to the rounded total (and how the UI avoids confusing the user — e.g., footnote or consistent re-rounding rule).
+- **Ratio math**: variance of a ratio is in **percentage points**; percentages use 1 dp; divide-by-zero renders `n/a`, never `inf`/crash.
+- **Sign conventions**: single canonical table — `Variance = Actual − Budget` — with favorability by line type; every chart, table, and export uses it.
+- **Comparability guard**: never show a BvA cell when the two sides aren't at the same grain; the UI shows the grain of the comparison (prevents fake precision).
+- **Forecast integrity**: actuals never overwritten by forecast; forecast rows always carry method + version + "generated at" so a number can be explained months later.
+
+---
+
+## SECTION I — SECURITY, PRIVACY & SUPPLY-CHAIN ADDENDA (add to docs 10/13/17)
+
+- **Prompt-injection defense**: imported text (descriptions, vendor names) is data, not instructions — wrap in delimited data blocks, system prompt states that content inside data must never be obeyed; strip HTML/control chars; cap field lengths; test with a planted malicious description.
+- **Diagnostics/support zip redaction**: metadata only by default (versions, config minus secrets, log tail, column headers, row counts). Financial values or data rows included only after an explicit, labeled opt-in.
+- **Log policy**: rotation (e.g., 7 days / 50 MB), no secrets, no amounts/vendor names in normal logs.
+- **Secrets**: API keys via Windows DPAPI/Credential Manager; `pre-commit` secret scan; `.gitignore` covers `.env`, keys, client data folders; CI fails on committed secrets.
+- **Dependency policy**: pinned lockfile; license allow-list (MIT/BSD/Apache/PSF; no GPL/AGPL in shipped app); `THIRD_PARTY_LICENSES.txt` shipped in installer; per-release `pip freeze` snapshot; vulnerability check step documented.
+- **Data at rest**: state plainly (local plain files vs encrypted zip for backups), justified for the client's confidentiality expectations; "Delete project" removes data files, documented.
+
+---
+
+## SECTION J — DELIVERY, RELEASE & UPGRADE ADDENDA (add to docs 15/16/24)
+
+- **Semver** for app + schema version stored in every project file/DB.
+- **Release checklist** (doc 24): green test suite → Windows install → upgrade-over-previous with an existing project → sample-project walkthrough → new installer built → SHA-256 published → release notes in CHANGELOG → git tag.
+- **Upgrade migration tested on real prior-version data**, not just fresh installs; rollback stance documented (backup prompt before migration).
+- **Distribution**: secure delivery of installer + checksum to client; never "here's a random exe".
+- **No silent schema drift**: DB migrations only with doc update + version bump + backup prompt — never ad-hoc ALTERs during feature work.
+- **Signing decision recorded as an ADR** with cost/lead-time and the accepted fallback.
+
+---
+
+## SECTION K — CLIENT ENABLEMENT (docs 22/23 + in-app)
+
+- **User guide** structured by task ("Import this month's files", "Explain a variance", "Find exceptions", "Refresh the forecast", "Generate the deck") — not by screen; includes screenshots of the sample project; ships as PDF/help panel.
+- **In-app first-run tour** (already required) + contextual help on every wizard step.
+- **60-minute training session outline** with a scripted demo on sample data.
+- **Plain-language crash/error dialog**: what happened, what was NOT lost, one recommended action, "Copy details" button.
+- **Support flow**: who to contact, what the diagnostics zip contains, how to send it safely (client confidentiality note).
+
+---
+
+## SECTION L — NFR ADDENDA (numbers; adjust only with justification in-doc)
+
+| Target | Value |
+|---|---|
+| Cold start (sample project) | ≤ 10 s |
+| Import 250k rows incl. validation report | ≤ 60 s, with progress + cancel |
+| Dashboard interaction after load | ≤ 2 s |
+| PPT generation (6 slides) | ≤ 15 s |
+| Full sample-project offline walkthrough | passes with network off |
+| Installer size | ≤ 500 MB |
+| Peak memory during 250k-row import | ≤ 1.5 GB |
+| Logs | ≤ 50 MB, rotate 7 days |
+| Diagnostics zip | ≤ 20 MB, redacted |
+| Screen | ≥ 1366×768, scaling 100–150% correct |
+| Crash behavior | never raw traceback; recoverable state |
+
+---
+
+## SECTION M — SESSION PROTOCOL ADDENDA (extend Section 14 of the kickoff prompt)
+
+1. **`SESSION_LOG.md`**: at the end of every session — what changed, which FRs touched, test results, next step, anything deferred to Addon 2 / OPEN_QUESTIONS.
+2. **Regression gate**: run the full test suite (all golden files included) before finishing any session that touched calculation, import, or rule code. A red suite = session not done.
+3. **Windows evidence at phase gates**: attach the doc-15 checklist result (Section G.6).
+4. **Schema changes** require: doc 03 updated first → migration script → version bump → backup prompt tested.
+5. **Sample data is sacred**: never edit `expected_exceptions.csv` or golden outputs to make tests pass — if expectations change, the spec changed first, with CHANGELOG entry.
+6. **If you catch yourself building ahead of the roadmap**, stop, log it, return to the next approved open item.
+
+---
+
+## SECTION N — EXPLICITLY PARKED BACKLOG (document these as accepted-for-later, not forgotten)
+
+Direct D365/API connectors; Power BI export (star-schema CSV bundle + `.pbip` authoring notes); email/Teams distribution of packs; advanced forecast methods (seasonality index, driver-based regression); headcount/FTE metrics; PDF export of dashboards; budget version-compare view; commentary carry-forward between periods; multi-client license management; role-based permissions; localization beyond English; auto-update.
+
+---
+
+## SECTION O — COMBINED PHASE 0 QUALITY GATE (delta checks; run IN ADDITION to the kickoff checklist)
+
+- [ ] Docs 21–25 exist and are complete; every questionnaire item has a decision or a labeled default.
+- [ ] All Section C.2 table additions are present in the original docs; CHANGELOG shows the integration.
+- [ ] Tabletop walkthrough (P20) executed and recorded — every month-end step maps to a documented screen/rule/export.
+- [ ] Excel hardening list (Section F): each quirk has a documented handle-or-reject behavior with error copy.
+- [ ] OneDrive/storage decision made, with the test case listed in doc 14.
+- [ ] SmartScreen/signing decision is an ADR with a written non-technical-user mitigation path.
+- [ ] Upgrade/migration test case exists in doc 24/14 and names the fixture (a real prior-version project).
+- [ ] Injection test case (planted malicious description) exists in doc 14.
+- [ ] License allow-list, secret-scan, and SBOM steps documented; `THIRD_PARTY_LICENSES.txt` planned in the installer manifest.
+- [ ] End-user guide outline (task-structured) approved-ready; training outline exists.
+- [ ] Backlog list (Section N) recorded in PRD/roadmap so nothing in this addon is silently dropped.
+- [ ] NFR numbers from Section L present and agreed in-doc.
+
+---
+
+## SECTION P — UPDATED IMMEDIATE NEXT ACTIONS (supersedes kickoff Section 15, steps 1–7)
+
+1. Create the repo skeleton (folders + `.gitkeep` + root README) — nothing else.
+2. Write original Phase 0 docs `00 → 20` + `CHANGELOG.md`.
+3. **Integrate this addon**: create docs `21–25`, apply every Section C.2 addition, seed Sections D/F/G/H/I content into the right docs.
+4. Build `sample-data/` — **two** non-D365 export shapes + D365-style export + input `.xlsx` templates + ~40 planted exceptions + `expected_exceptions.csv`.
+5. Self-audit against **both** quality gates (kickoff + Section O); fix every gap.
+6. Run the **tabletop month-end walkthrough** (P20); log any spec holes and fix them.
+7. Write `docs/PHASE0_SUMMARY.md` (one page: product, key decisions, top risks, open questions) and `SESSION_LOG.md` entry.
+8. **STOP. Present to me and wait for explicit approval. No product code before approval.**
+9. After approval: **packaging spike first** (hello-world → PyInstaller → Inno Setup → installed launch on real Windows 11, exercising the SmartScreen path), then roadmap Phase 1 per doc 16.
+
+# ADDON 2 — ARCHITECTURE, CONTRACT & FEATURE-PRECISION EXTENSION
+_Extension to the FP&A Month-End Copilot kickoff prompt and Addon 1. All three documents together are the contract; where they overlap, later addons add requirements and never remove them. Further gaps you discover become proposals for Addon 3 via `docs/18_…OPEN_QUESTIONS.md` — never silent scope expansion._
+
+---
+
+## SECTION A — HOW THIS ADDON WORKS
+
+1. Kickoff + Addon 1 + Addon 2 = the **spec of record**. Implement all three.
+2. Integrate every item below into the existing Phase 0 documents (or new doc `26`) with a `CHANGELOG.md` entry — no parallel documentation.
+3. **Maintain an Addon Coverage Matrix** at the top of `docs/00_INDEX.md`: one row per section of the kickoff prompt, Addon 1, and Addon 2 → target document → status (integrated / pending). The quality gate fails if any row is not "integrated".
+4. Re-run the combined quality gate (kickoff + Addon 1 Section O + Section I below) before requesting approval.
+
+---
+
+## SECTION B — ARCHITECTURE & STACK ADDENDA (goes into doc 09 + new doc 26)
+
+### B.1 Headless engine (non-negotiable)
+
+- `app/engine/` is pure Python: **no FastAPI, UI, or pywebview imports allowed inside it.** All calculations, validations, exception rules, forecasts, Excel/PPT generation live here.
+- Ship a CLI: `python -m app.cli <import|validate|bva|exceptions|forecast|export-xlsx|export-ppt|doctor> --project <path>` with documented exit codes and a `--json` output mode.
+- The API layer is a thin shell over the engine; tests target the engine directly; future automation (Power BI export backlog, scheduled runs) reuses the same CLI. Violation of this boundary fails code review.
+
+### B.2 API contract (new document `26_API_CONTRACT.md`)
+
+- FastAPI **OpenAPI schema is the single source of truth**; TypeScript types are generated from it (e.g., `openapi-typescript`) — hand-duplicated types are forbidden (contract drift is a build error).
+- Standard error envelope for every failure: `{code, message, hint, details[]}` where `hint` is the plain-language next action the UI shows the user.
+- Standard list responses: `{items, total, page, pageSize}`; documented filter/sort parameter grammar; routes prefixed `/api/v1/`.
+- Document every endpoint: purpose, request/response schema, error codes, permissions (session token), and which screen (SCR-ID) consumes it.
+- Contract tests: response fixtures validated against the schema in CI/`scripts/check`.
+
+### B.3 Data-volume rule (browser never sees the raw firehose)
+
+- Aggregation, filtering, sorting, and pagination happen **server-side in DuckDB**. The browser never receives more than one page (default 100–200 rows) or one aggregation result set.
+- All grid views are virtualized; drill-through tables paginate; no view loads a full 250k-row dataset into React state. Document this in docs 08/09; test with the scaled dataset.
+
+### B.4 Configuration layering
+
+- **App-level** (machine): AI key/provider, theme, language, data directory, telemetry=off. Secrets live only here.
+- **Project-level** (inside project folder): fiscal calendar, currency/units display, mappings, thresholds, master data, branding, rule enablement.
+- Precedence documented; project backup zips therefore contain **no secrets**; a project folder is portable to another machine.
+
+### B.5 ADR-002 — pin the remaining toolchain (stop framework flip-flopping)
+
+| Area | Decision |
+|---|---|
+| Python toolchain | `ruff` (lint + format), `mypy` (strict on `app/engine`), `pytest` + `pytest-cov`, CLI via `argparse` (or `typer` — choose one in ADR-002, never both) |
+| Frontend runtime state | TanStack Query for server state, Zustand for UI state — no Redux |
+| Routing / tables | React Router; TanStack Table + virtualizer for all grids |
+| Frontend testing | Vitest + React Testing Library; **Playwright** for E2E smoke of the golden path |
+| Frontend hygiene | ESLint + Prettier; `tsc --noEmit` gate |
+| Version pinning | Python `3.12.x` pinned (`pyproject.toml` + `.python-version`); Node LTS pinned (`.nvmrc`); exact pins in lockfiles (`uv.lock`/`requirements.txt` + `package-lock.json`) |
+| Forbidden | Any library outside this table and the kickoff stack without a new ADR |
+
+### B.6 One-command scripts (also proof the build is reproducible)
+
+- `scripts/dev` (run app in dev with hot reload), `scripts/check` (format+lint+type+tests+contract tests), `scripts/build` (UI build → PyInstaller → Inno Setup), `scripts/release` (bump version, tag, build, emit SHA-256).
+- `scripts/build` must succeed **from a clean checkout** on a documented machine; that clean-checkout build is part of every release checklist (Addon 1 doc 24).
+- Development may run on any OS; **packaging evidence always comes from real Windows 11** (Addon 1 Section G.6).
+
+### B.7 Recompute & invalidation semantics
+
+- Derived views (aggregates, BvA, exceptions) are **computed on demand**; no unbounded caches. If any cache is introduced later, its invalidation rules must be documented in doc 09 first.
+- Changing mappings/thresholds/master data marks derived results "stale" in the UI until an explicit re-run; the user is never shown silently outdated numbers.
+
+---
+
+## SECTION C — DOCUMENT UPDATES
+
+### C.1 New document
+
+```
+docs/26_API_CONTRACT.md — endpoint inventory, error envelope, pagination/filter
+    grammar, OpenAPI-as-source-of-truth workflow, type generation, contract tests
+```
+
+### C.2 Required additions to existing documents
+
+| Existing doc | Must now also contain |
+|---|---|
+| `01_PRD.md` | Scope decisions from D.14 (statements covered, budget entry in-app vs import-only, journal-category column); legal **disclaimer** (advisory tool — flags are leads, not verdicts; a qualified accountant reviews all output; no guarantee every error is detected) mirrored in About screen and EULA text |
+| `02_FUNCTIONAL_SPEC.md` | FRs from Section D; screen-consumption noted per API in doc 26 |
+| `03_DATA_DICTIONARY.md` | Exception stable identity (`rule_id + subject_key`, `first_seen_period`, `raised_at`, `status`, `owner`, `closed_at`); optional `journal_category` (manual/auto/reclass/accrual) via profile; rule-effectiveness fields |
+| `05_CALCULATION_SPEC.md` | TTM/rolling-12 formulas; forecast-accuracy metrics for closed periods (error, absolute error, signed bias, MAPE-lite — with worked examples); control-total variance formula; materiality-driven variance default |
+| `06_EXCEPTION_RULES_CATALOG.md` | Re-run/identity semantics (D.1), aging buckets, owner auto-assign, effectiveness stats, per-rule strictness tiers (exact vs fuzzy match) |
+| `07_FORECAST_METHODS_SPEC.md` | Closed-period forecast-vs-actual accuracy report; how accuracy history feeds method choice guidance |
+| `08_UI_UX_SPEC.md` | Screen inventory table (`SCR-001…`, name, purpose, linked FRs); virtualization/pagination behavior; bulk actions; accessibility baseline (Section E); stale-data indicators |
+| `09_TECHNICAL_ARCHITECTURE.md` | All of Section B; ADR-002 |
+| `10_AI_INTEGRATION_SPEC.md` | Section G (usage log, prompt-version stamping, regeneration policy) |
+| `11_EXCEL_OUTPUT_SPEC.md` | Sheet row caps (Excel 1,048,576 rows — paginate or filter large details); export filename collision policy (D.12); evidence-bundle workbook layout (D.13) |
+| `12_POWERPOINT_OUTPUT_SPEC.md` | Per-placeholder character budgets with truncation/ellipsis rules — **text must never overflow or overlap**; long-value priority order when trimming |
+| `14_TESTING_QA_PLAN.md` | Contract tests; Playwright golden-path E2E; CLI smoke tests; perf run using `sample-data --scale 250000` against Section L NFRs; stale-indicator test |
+| `16_ROADMAP_PHASES.md` | Each phase gate now requires: `scripts/check` green + coverage bar met + Addon Coverage Matrix updated |
+| `17_CODING_STANDARDS.md` | Branching (Section H.1), commit format, engine-boundary rule (B.1), generated-types rule (B.2), coverage bar (F.1) |
+| `19_VIBE_CODING_PLAYBOOK.md` | Blocking-question protocol (H.3), demo recipe DoD (F.5) |
+| `20_REQUIREMENTS_TRACEABILITY.md` | Chain becomes FR → spec section → **screen ID** → API endpoint → test ID |
+
+---
+
+## SECTION D — FUNCTIONAL PRECISION (seed FRs for doc 02)
+
+1. **Exception identity & re-run semantics.** Key = `rule_id + subject_key`. Re-running rules (after mapping/threshold changes) **never wipes workflow state**: open stays open, closed stays closed; re-flagged closed items show a "flagged again" badge, never auto-reopen. Full history per key.
+2. **Aging & bulk operations.** Days-open per exception, aging buckets (0–7 / 8–30 / 31+), overdue highlight; multi-select bulk status/owner changes with one audit entry per item; owner auto-assign from cost-centre/account mapping, manual override always possible.
+3. **Period status (Open/Closed).** Closing a period locks its actuals: void/re-import into a closed period requires an explicit, warned "reopen period" action, audit-logged.
+4. **Re-import guard.** Identical file checksum → blocked with "already imported on <date>". Different checksum with overlapping vouchers → cross-batch duplicate report before commit.
+5. **Control-total reconciliation.** Optional control-totals block in the actuals template; validation report compares file totals vs loaded totals vs (if provided) client control totals; variance fails the import or requires explicit acceptance — documented decision.
+6. **Budget & forecast file validation.** Duplicate budget lines vs key; negative amounts; coverage matrix (which entity × account × period cells are missing, as %); sum-vs-approved-total check when provided; unmapped-account list.
+7. **Three-way view + forecast accuracy.** Actual vs Budget vs Forecast in one view; for closed periods show Forecast vs Actual columns with signed error — formulas in doc 05, view in Analyze, feeds commentary.
+8. **Rolling windows.** MTD, YTD, and TTM (trailing 12 periods) where data exists; window labels always visible so no ambiguous "period totals".
+9. **One-off / exceptional item tagging.** PRD must decide explicitly: minimal v1 (tag actual rows → "adjusted" toggle views + AI mentions them) **or** park with rationale. Never left undecided.
+10. **Rule effectiveness analytics.** Per rule: times raised, % closed as explained, average days to close, last threshold tuning — a tuning dashboard so the engine improves month over month without code changes.
+11. **Global materiality setting** (e.g., % of budget or absolute floor) feeding default thresholds; per-rule overrides win.
+12. **Export collision policy.** Existing file at target path → prompt (overwrite / keep-both with next `vN`); batch exports follow Addon 1 naming; never silent overwrite.
+13. **Evidence bundle.** One click per exception → workbook/zip containing subject rows, relevant validation report, mapping version, and audit trail — ready to send to an accounting team.
+14. **Scope decisions the PRD must settle (with defaults):** financial statements in v1 (default: P&L focus; balance sheet/cash flow parked); budget creation in-app (default: import-only); journal-category column (default: optional via mapping profile).
+
+---
+
+## SECTION E — UI/UX & BRAND ADDENDA (docs 08/12 + theme files)
+
+- **Screen inventory with stable IDs** (`SCR-001…`) — referenced by FRs, API endpoints, tests, and the user guide.
+- **Accessibility baseline:** full keyboard navigation on critical flows, visible focus states, ARIA labels on controls, WCAG AA contrast (4.5:1) in the default theme, and no color-only signals (per Addon 1 P19). Charts expose exact values via tooltips, and every chart has a corresponding table view.
+- **Stale-data indicator:** whenever derived results predate a mapping/threshold/master-data change, show a visible "Re-run required" banner — never a stale number presented as current.
+- **Theme tokens as data:** colors, spacing, type scale, brand accents live in `ui/theme/tokens.ts`, generated/validated against doc 08 — no hardcoded hex values scattered in components (lint rule).
+- **PPT text fit:** character budgets per placeholder (doc 12) with prioritized trimming — a long variance commentary must degrade gracefully, never overlap another element.
+- **First-run + wizard UX:** every wizard shows step N of M, validates inline, and can resume after an app restart (wizard state persisted).
+
+---
+
+## SECTION F — TESTING, CI & QUALITY BARS (docs 14/16/17)
+
+1. **Coverage bars:** `app/engine` ≥ 90% statement coverage; whole backend ≥ 75%; coverage enforced in `scripts/check` — lowering the bar is a spec change, not a code change.
+2. **`scripts/check` = the gate:** ruff format check + ruff lint + mypy + eslint + `tsc --noEmit` + pytest (+ coverage) + contract tests. Green `scripts/check` is mandatory at every session end touching code and at every phase gate.
+3. **CI:** if the repo is hosted (GitHub/GitLab), run `scripts/check` on every push on a Windows runner where possible; otherwise the local `scripts/check` transcript is attached to the gate evidence. Secrets scanning in CI per Addon 1 Section I.
+4. **E2E golden path (Playwright):** launch → open sample project → import a file → pass validation → drill a variance → see exception → refresh forecast → generate PPT — run before phase gates on Windows.
+5. **Demo recipe DoD:** every feature's SESSION_LOG entry includes a 3–6 step reproducible demo recipe on sample data (steps + expected result) so any reviewer can verify it in minutes.
+6. **Doc hygiene:** link-check across `docs/` (no dead cross-references) runs as part of the Phase 0 self-audit and each gate.
+
+---
+
+## SECTION G — AI ADDENDA (doc 10)
+
+- **Usage log:** every AI call records locally: timestamp, model, prompt-template version, input row count, tokens in/out, estimated cost — visible in Settings; hard monthly token cap configurable.
+- **Draft provenance:** every generated commentary is stamped with model + prompt version + timestamp; editing a prompt template never mutates existing drafts.
+- **Regeneration policy:** re-generating creates a new draft; the previous draft stays in history; the user approves which text enters the PPT.
+- **Determinism stance:** document that AI output is non-deterministic by nature; all *numbers* shown alongside AI text come from the engine, and a mismatch check strips any number in AI text that doesn't match engine values (or flags the text for review — decide in doc 10).
+
+---
+
+## SECTION H — PROCESS & GOVERNANCE ADDENDA (docs 17/19)
+
+1. **Branching:** trunk-based — `main` always green and releasable; short-lived feature branches (merged within a session or two); no long-lived `dev` sprawl; releases tagged per Addon 1 doc 24.
+2. **CHANGELOG format:** [Keep a Changelog](https://keepachangelog.com) conventions + semver for both app and schema versions (schema version recorded in docs 03/24).
+3. **Blocking-question protocol:** when an implementation choice affects **money semantics, data loss, UX flow, or client facts** — stop and ask with ≤3 options + your recommendation + the default you'll use if unanswered. Never guess on money semantics; never invent client facts (only questionnaire defaults from Addon 1 Section D, labeled "default, unconfirmed").
+4. **Disclaimer enforcement:** the advisory-tool disclaimer (C.2, doc 01) appears in the About dialog, generated packs' footer or cover slide, and the EULA — one canonical wording defined in the PRD.
+
+---
+
+## SECTION I — PHASE 0 QUALITY GATE DELTAS (run IN ADDITION to kickoff + Addon 1 gates)
+
+- [ ] Addon Coverage Matrix exists in `docs/00_INDEX.md`; every row of kickoff + Addon 1 + Addon 2 marked "integrated".
+- [ ] `docs/26_API_CONTRACT.md` complete; OpenAPI-as-source-of-truth and type generation workflow documented; error envelope + pagination specified.
+- [ ] Engine-boundary rule (B.1) and CLI command list documented in doc 09 with exit codes.
+- [ ] ADR-002 written; every library in the app traceable to ADR-001/002 — no strays.
+- [ ] Data-volume rule (B.3) and config layering (B.4) documented with test cases in doc 14.
+- [ ] Exception identity/re-run semantics (D.1) fully specified with a worked scenario (raise → tune threshold → re-run → status preserved).
+- [ ] Forecast-accuracy and TTM formulas have worked examples in doc 05.
+- [ ] Screen inventory (`SCR-xxx`) exists in doc 08; traceability chain includes screen IDs and API endpoints.
+- [ ] PPT character budgets defined per placeholder (doc 12).
+- [ ] Coverage bars, `scripts/check` contents, and E2E list recorded in doc 14.
+- [ ] PRD scope decisions (D.14) and disclaimer text resolved.
+- [ ] AI usage log + draft provenance + number-mismatch stance specified (doc 10).
+
+---
+
+## SECTION J — UPDATED IMMEDIATE NEXT ACTIONS (supersedes Addon 1 Section P)
+
+1. Create the repo skeleton (folders + `.gitkeep` + root README) — nothing else.
+2. Write original Phase 0 docs `00 → 20` + `CHANGELOG.md`.
+3. Integrate Addon 1: create docs `21–25`, apply its Section C.2/D/F/G/H/I additions.
+4. Integrate **this addon**: create `26_API_CONTRACT.md`, write ADR-002, apply every Section C.2 addition, build the **Addon Coverage Matrix** in `00_INDEX.md`.
+5. Build `sample-data/` — D365-style export + **two** distinct non-D365 shapes + input `.xlsx` templates + ~40 planted exceptions + `expected_exceptions.csv` + a `--scale 250000` mode for perf runs.
+6. Self-audit against **all three** quality gates (kickoff, Addon 1 Section O, Section I above); fix every gap; run the doc link-check.
+7. Run the **tabletop month-end walkthrough** (Addon 1 P20) using only the docs; fix every step that has no home.
+8. Write `docs/PHASE0_SUMMARY.md` (product, key decisions, top risks, open questions) + SESSION_LOG entry.
+9. **STOP. Present to me and wait for explicit approval. No product code before approval.**
+10. After approval: **packaging spike first** (hello-world through `scripts/build` → PyInstaller → Inno Setup → installed launch on real Windows 11 exercising the SmartScreen path), then roadmap Phase 1 per doc 16 — beginning with the headless engine skeleton + CLI + `scripts/check`, because every later phase stands on it.
+# ADDON 3 — DOMAIN WORKFLOWS, AI FEATURE DEPTH & PROJECT ACCEPTANCE EXTENSION
+_Extension to the FP&A Month-End Copilot kickoff prompt, Addon 1, and Addon 2. All four documents together are the contract; where they overlap, later addons add requirements and never remove them. Further gaps you discover become proposals for Addon 4 via `docs/18_…OPEN_QUESTIONS.md` — never silent scope expansion._
+
+---
+
+## SECTION A — HOW THIS ADDON WORKS
+
+1. Kickoff + Addon 1 + Addon 2 + Addon 3 = the **spec of record**. Implement all four.
+2. Integrate every item below into existing Phase 0 documents (or new docs `27–28`) with a `CHANGELOG.md` entry — no parallel documentation.
+3. Extend the **Addon Coverage Matrix** in `docs/00_INDEX.md` with Addon 3 rows; the quality gate fails if any row is not "integrated".
+4. Re-run all quality gates (kickoff + Addon 1 Section O + Addon 2 Section I + Section J below) before requesting approval.
+
+---
+
+## SECTION B — DOCUMENT UPDATES
+
+### B.1 New documents
+
+```
+docs/
+  27_BACKLOG.md — every parked item in one place: one-line scope, trigger
+      condition for promotion, rough size, target phase; reviewed at every gate
+  28_ACCEPTANCE_UAT_AND_GO_LIVE.md — project-level Definition of Done, UAT
+      mechanics, defect severity + workflow, go-live checklist, client sign-off
+      template, per-phase demo scripts
+```
+
+### B.2 Required additions to existing documents
+
+| Existing doc | Must now also contain |
+|---|---|
+| `01_PRD.md` | Success metrics with **client baselines and targets** (e.g., days to build the monthly pack today → target after go-live; # of manual consolidation steps; # of issues found manually) — baselines sourced via questionnaire, targets stated as numbers; IP/licensing stance (E.2) |
+| `02_FUNCTIONAL_SPEC.md` | All FRs from Section C; mapping queue states; issuance workflow |
+| `03_DATA_DICTIONARY.md` | `FactPackIssue` (pack version, issued_at, recipients, snapshot ref, status); `MappingSuggestion` (source column, suggested mapping, confidence, evidence, state, decided_at); template-version stamp fields on import batches |
+| `05_CALCULATION_SPEC.md` | Data-quality score formula with worked example (weighted checks, 0–100, never masks individual failures) |
+| `06_EXCEPTION_RULES_CATALOG.md` | Cross-system tie-out rule family entry with its scope decision (E.3): v1 default = file-level control totals only; automated cross-system tie-out backlogged unless confirmed |
+| `08_UI_UX_SPEC.md` | Home screen spec (C.10); drag-and-drop + file-picker import; persistence/auto-save model and destructive-action pattern (C.9); **chart inventory table** (F.1); centralized conditional-format rules (F.2); display-locale settings (C.12); message-catalog wording rules (every error code → user message + hint, no raw exceptions ever reach the UI) |
+| `09_TECHNICAL_ARCHITECTURE.md` | ADR-000 (template + index of all ADRs); `doctor` command specification (C.7); crash dumps/logs local-only, never uploaded |
+| `10_AI_INTEGRATION_SPEC.md` | The four **full initial prompt texts** (D.1); model pinning + deprecation handling (D.2); mapping-queue state machine (C.1); prompt-edit process (D.4) |
+| `11_EXCEL_OUTPUT_SPEC.md` | Output conventions per F.3; audit-trail export sheet; cross-artifact consistency requirement (F.4) |
+| `12_POWERPOINT_OUTPUT_SPEC.md` | Same F.3 conventions; footer/cover shows pack version + issued-at once issued |
+| `14_TESTING_QA_PLAN.md` | Negative file corpus (F.5); structural output tests; cross-artifact consistency test; exception-run perf baseline re-run at every gate; mapping-queue and issuance workflow tests |
+| `16_ROADMAP_PHASES.md` | Gate artifacts now include: updated `27_BACKLOG.md`, updated decision register (`18` Decided section), and a demo script for the phase |
+| `18_GLOSSARY_…OPEN_QUESTIONS.md` | New **"Decided" section**: every closed question with decision date + rationale — open questions move there, they never just disappear |
+| `19_VIBE_CODING_PLAYBOOK.md` | Client-feedback intake rule (I.5): feedback arrives relayed by the user → log as decision/change request → spec first → code |
+| `22_END_USER_GUIDE.md` | Sections keyed to `SCR-xxx` IDs; in-app help text and guide share one source (no divergent wording) |
+| `26_API_CONTRACT.md` | Error-code catalog by family (import, validation, storage, AI, export, engine) with reserved ranges and user-facing message + hint for each |
+
+---
+
+## SECTION C — FEATURE PRECISION PART 2 (seed FRs for doc 02)
+
+1. **AI Mapping Review Queue.** AI may only *propose* mappings: each suggestion carries source column, target field, confidence, and evidence (examples of previously accepted rows). States: `suggested → accepted | edited | rejected`. Accepted mappings apply to future imports; **never auto-applied in the same run**. Bulk accept/edit with audit trail; queue visible on every import using an unprofiled file.
+2. **Mapping preview & profile auto-match.** Mapping screen shows the first N rows with detected types and sample values; saved profiles auto-suggest by header fingerprint when a file matches ≥ threshold of known headers; template files carry a **version stamp** and import warns on outdated templates.
+3. **Commentary workflow.** Two levels: per-variance-line commentary and a per-period executive narrative (for slide 2). AI drafts are editable; every save versions text (author, timestamp, old→new). Commentary **locks when the pack is issued**; post-issue edits require a re-issue (C.4).
+4. **Pack issuance register.** "Issue pack" freezes the underlying snapshot, increments pack version, records date + recipient list, and marks commentary locked. Re-issue creates a new version; issued packs are immutable; exports carry pack version (Addon 1 stamping).
+5. **Data-quality score.** Composite 0–100 on the Check screen from weighted validation checks (formula + weights in doc 05) — always displayed **alongside** the individual failed checks so a single score can never mask a failure.
+6. **Storage & health management.** CLI `doctor`: DB integrity check, disk space, project/schema version compatibility, WebView2 presence, data-dir permissions — with `--json`. In-app storage usage display; **archive-and-delete** flow (export raw archives to zip first, typed confirmation to delete); non-blocking backup reminder when a period is closed.
+7. **Budget re-import semantics.** Re-importing a budget **replaces the selected budget version atomically** — never merges silently. A diff summary (old vs new totals by entity/period, with deltas) is shown before commit.
+8. **Persistence & destructive actions.** Forms auto-save with visible "Saved" state; there is no global undo. Destructive actions (delete project, void batch, reopen period, archive-and-delete) require **typed confirmation naming the object** (e.g., type the period code).
+9. **Home screen.** Open/recent project, current period + status, last import summary, KPI strip, quick actions (Import / Check / Generate pack), and health warnings (failed checks, stale derived results, storage low).
+10. **No login in v1.** Single-user local app; privacy = OS user account; no in-app authentication — recorded as an explicit decision in docs 01/13 (multi-user auth backlogged).
+11. **Import UX.** Drag-and-drop **and** file picker; after drop: fingerprint → profile match → preview → validation report → commit (all-or-nothing per Addon 1 P12).
+12. **Display locale (project setting).** Date format (default `dd-mm-yyyy`), digit grouping — **Indian lakh/crore grouping option** (`₹ 1,23,456`) vs international, decimal places, negatives-in-parentheses toggle. Applies uniformly to app, Excel, and PPT (enforced by F.4 test).
+
+---
+
+## SECTION D — AI FEATURE DEPTH (docs 02/10)
+
+1. **Four initial prompt texts written in Phase 0** (real text with placeholders, not outlines): (a) variance commentary, (b) mapping suggestion with evidence, (c) exception grouping/summary for the period, (d) follow-up message draft for an accounting owner. Each has: system prompt, input schema, output JSON schema, guardrails, worked example input/output using sample data.
+2. **Model pinning & deprecation.** Default model name pinned; "model list" configurable; if a pinned model is retired, app surfaces a clear notice and documented fallback order — never a silent switch that changes output character.
+3. **Mapping-queue and commentary tests** per D.1 examples become golden fixtures: suggestion states, evidence rendering, draft versioning.
+4. **Prompt edits are spec changes.** Editing any prompt template = update doc 10 + CHANGELOG first, then file; re-run eval fixtures and record the output diff in SESSION_LOG.
+
+---
+
+## SECTION E — DECISIONS THAT MUST BE SETTLED (defaults provided; label unconfirmed)
+
+1. **Success metrics** (PRD): baseline numbers from client questionnaire + target after go-live (e.g., "month-end pack: 3 days → 0.5 days"; "# of issues caught manually before close vs after").
+2. **IP & licensing stance** (PRD): default — client owns their data, branding, and their instance; consultant retains app IP; client receives a perpetual usage license for the delivered build. Refine with your own commercial terms; record the decision.
+3. **Forced in/out list** — each gets an explicit PRD line with rationale (default = park to `27_BACKLOG.md`): price/volume/mix revenue decomposition; cash-flow view; purchase-commitment/PO data; cost allocation; automated cross-system tie-out (v1 = manual control totals only); in-app budget authoring (v1 = import-only); headcount metrics.
+4. **Support/warranty placeholder** in doc 23/28: defined by the user before delivery (duration, what's included) — flagged as an open commercial question.
+
+---
+
+## SECTION F — CHARTS, FORMATTING & TEST CORPUS
+
+1. **Chart inventory** (doc 08): a table of every chart — `CHT-ID, name, type, source query/grain, screen, drill target, empty state`. Minimum set: KPI trend line; BvA bridge (waterfall); top-N adverse/favourable variance bars; department/account heat-map matrix; forecast vs actual line; exception Pareto (by rule/severity). Adding a chart without an inventory row is a spec violation.
+2. **Centralized conditional formatting** (docs 08/11): one rule set — favourability sign + color policy (Addons 1 P19: never color-only), severity badges, variance thresholds — reused by app, Excel, and PPT. No per-screen ad-hoc colors.
+3. **Output conventions** (docs 11/12): ₹ symbol, `dd-mm-yyyy`, negatives in parentheses, grouping per project setting, "₹ in thousands/lakhs" label whenever scaled — identical across app / Excel / PPT.
+4. **Cross-artifact consistency test** (doc 14): for a fixed filter state, the numbers rendered in the UI, exported Excel, and exported PPT must match the engine's values exactly (parsed back via openpyxl/python-pptx and asserted) — the single strongest guard against display/export drift.
+5. **Negative file corpus** (doc 14 + `sample-data/malformed/`): truncated file, wrong encoding, missing required columns, merged multi-row headers, embedded total rows, wrong delimiter, text-formatted dates, negative amounts as parentheses, duplicate headers — each with expected error message ID. The importer must fail *gracefully and specifically*, never with a stack trace.
+
+---
+
+## SECTION G — ACCEPTANCE, UAT & GO-LIVE (doc 28)
+
+1. **Project-level Definition of Done:** all three original gates + Addons 1–3 gates green; coverage bars met; E2E golden path green on a clean Windows 11 install; docs 00–28 complete with live Coverage Matrix; user guide written; client UAT sign-off obtained.
+2. **UAT mechanics:** environment = installed build + sample project + one sanitized real month of client data; participants = FP&A analyst + at least one accounting-owner representative; duration ≤ 5 business days; entry = features demoed; exit = no open S1/S2 defects + sign-off template signed.
+3. **Defect severities & workflow:** S1 (wrong numbers / crash / data loss) — fix immediately, block release; S2 (feature broken, workaround exists) — fix before release; S3 (cosmetic) — fix or defer with rationale; S4 (enhancement) → `27_BACKLOG.md`. All logged in a defects list inside doc 28 (no silent fixes); triage: fix / defer / backlog with rationale.
+4. **Per-phase demo scripts:** 3–5 minute scripted runs (steps + expected result) on sample data so the user can demo progress to the client without preparation.
+5. **Go-live checklist:** installer + SHA-256 delivered via agreed channel; user guide + training session completed; backup/restore verified on client machine; diagnostics flow tested; rollback plan stated (previous installer remains available); support contact/escalation agreed (E.4).
+
+---
+
+## SECTION H — BACKLOG GOVERNANCE (doc 27)
+
+- One entry per parked item: **name | one-line scope | trigger condition that promotes it | rough size (S/M/L) | source (addon/FR/question) | target phase**.
+- Seed with every item from Addon 1 Section N + Section E.3 parks + anything deprioritized during the build.
+- Reviewed and updated at every phase gate; **nothing may live only in chat or SESSION_LOG** — if it's not in `27_BACKLOG.md`, it doesn't exist.
+
+---
+
+## SECTION I — PROCESS & QUALITY DELTAS
+
+1. **Exception-engine perf NFR:** full rule run over 250k rows ≤ 60 s (measured by the perf script; baseline recorded in doc 14 and re-run at each gate).
+2. **ADR-000:** template + index listing every ADR with status; a decision without an ADR row is incomplete.
+3. **Crash dumps and logs are local-only** — never uploaded; attaching them anywhere is a user action (redacted diagnostics per Addon 1 Section I).
+4. **Prompt-edit discipline** per D.4; **feedback intake** per doc 19: relayed client feedback is logged (decision/change request) before any code.
+5. **DoD additions:** every feature ships with its demo recipe (Addon 2 F.5), its SCR-ID, its error messages in the catalog (B.2/26), and its tests — incomplete bundles don't close.
+
+---
+
+## SECTION J — PHASE 0 QUALITY GATE DELTAS (run IN ADDITION to all previous gates)
+
+- [ ] Docs 27 and 28 exist and are complete; backlog seeded from Addon 1 N + Section E.3.
+- [ ] Coverage Matrix extended with Addon 3 rows; all "integrated".
+- [ ] Four full initial prompt texts exist in doc 10 with worked examples on sample data.
+- [ ] Mapping Review Queue state machine, commentary lock-on-issue, and issuance register fully specified (FR + tables + screen).
+- [ ] Chart inventory table and centralized conditional-format rules present in doc 08.
+- [ ] Output conventions (F.3) present in docs 11 and 12; cross-artifact consistency test specified in doc 14.
+- [ ] Negative file corpus exists in `sample-data/malformed/` with expected message IDs.
+- [ ] Data-quality score formula has a worked example in doc 05.
+- [ ] Success metrics, IP/licensing stance, and the forced in/out list (E.1–E.3) resolved in PRD.
+- [ ] Error-code catalog families defined in doc 26; message-catalog rule in doc 08.
+- [ ] Project DoD, UAT mechanics, defect severities, go-live checklist, and sign-off template present in doc 28.
+- [ ] "Decided" section active in doc 18; ADR-000 index lists ADR-001/002 (+ any new).
+
+---
+
+## SECTION K — UPDATED IMMEDIATE NEXT ACTIONS (supersedes Addon 2 Section J)
+
+1. Create the repo skeleton (folders + `.gitkeep` + root README) — nothing else.
+2. Write original Phase 0 docs `00 → 20` + `CHANGELOG.md`.
+3. Integrate Addon 1: docs `21–25` + its Section C.2/D/F/G/H/I additions.
+4. Integrate Addon 2: `26_API_CONTRACT.md`, ADR-002, its Section C.2 additions.
+5. Integrate **this addon**: docs `27_BACKLOG.md` + `28_ACCEPTANCE_UAT_AND_GO_LIVE.md`, its Section B.2 additions, the four prompt texts, chart inventory, and negative corpus.
+6. Build `sample-data/` — D365-style export + two non-D365 shapes + input `.xlsx` templates + ~40 planted exceptions + `expected_exceptions.csv` + `malformed/` corpus + `--scale 250000` mode.
+7. Build/refresh the **Addon Coverage Matrix** (all four documents) in `00_INDEX.md`.
+8. Self-audit against **all four** quality gates (kickoff, Addon 1 O, Addon 2 I, Section J above); fix every gap; run the doc link-check.
+9. Run the **tabletop month-end walkthrough** (Addon 1 P20) extended through **pack issuance** (issue → lock → re-issue) using only the docs; fix every step that has no home.
+10. Write `docs/PHASE0_SUMMARY.md` (product, key decisions, top risks, open questions) + SESSION_LOG entry.
+11. **STOP. Present to me and wait for explicit approval. No product code before approval.**
+12. After approval: **packaging spike first** (hello-world through `scripts/build` → PyInstaller → Inno Setup → installed launch on real Windows 11 exercising the SmartScreen path), then roadmap Phase 1 per doc 16 — beginning with the headless engine skeleton + CLI + `scripts/check`, because every later phase stands on it.
+# ADDON 4 — SPEC CONSUMPTION, PRIORITIZATION & REAL-DATA ACCEPTANCE EXTENSION
+_Extension to the FP&A Month-End Copilot kickoff prompt and Addons 1–3. All five documents together are the contract; where they overlap, later addons add requirements and never remove them. Further gaps become proposals for Addon 5 via `docs/18_…OPEN_QUESTIONS.md` — never silent scope expansion._
+
+---
+
+## SECTION A — HOW THIS ADDON WORKS
+
+1. Kickoff + Addons 1–4 = the **spec of record**. Implement all five.
+2. Integrate every item below into existing Phase 0 documents (or new doc `29`) with a `CHANGELOG.md` entry — no parallel documentation.
+3. Extend the **Addon Coverage Matrix** in `docs/00_INDEX.md` with Addon 4 rows; the quality gate fails if any row is not "integrated".
+4. Re-run all quality gates (kickoff + Addon 1 O + Addon 2 I + Addon 3 J + Section K below) before requesting approval.
+
+---
+
+## SECTION B — SPEC CONSUMPTION PROTOCOL (how a context-limited agent actually uses 29 docs)
+
+Vibe coding fails when the agent paraphrases the spec from memory. This section makes drift structurally impossible:
+
+1. **Standard doc header.** Every doc in `docs/` begins with:
+   `> Status | Last updated | Owning FRs/areas | TL;DR (≤ 15 lines)`
+   The TL;DR carries the essentials so daily work never requires re-reading the full file.
+2. **Session reading plan (mandatory order):** `00_INDEX` (incl. Coverage Matrix) → `CHANGELOG` entries since last session → `SESSION_LOG` tail → next open item in `16_ROADMAP` → **only the owning docs for today's task** per the Source-of-Truth Matrix (Section C) → `19_VIBE_CODING_PLAYBOOK`. Never bulk-read all documents.
+3. **Quote-before-code rule.** Before implementing an FR, paste the exact spec text you are implementing against (FR ID + its calc/rule section) into the session plan. Every commit and SESSION_LOG entry for feature work cites the FR IDs it satisfies. **If you cannot cite the FR, you may not build it.**
+4. **Decisions accumulate forward.** When context grows, summarize into SESSION_LOG (append-only) instead of re-reading everything; SESSION_LOG becomes the memory bridge between sessions.
+5. **Paraphrase ban.** Behavior questions are answered by quoting the spec, never from memory. If the spec is silent → blocking question (Addon 2 H.3), not an improvisation.
+
+---
+
+## SECTION C — SOURCE-OF-TRUTH MATRIX & DOC HYGIENE (put in `00_INDEX.md`)
+
+**Each fact lives in full in exactly one owning doc; everywhere else it is a one-line cross-reference.**
+
+| Fact type | Owning doc |
+|---|---|
+| Scope, personas, metrics, decisions in/out | `01_PRD` |
+| Feature behavior (FRs) | `02_FUNCTIONAL_SPEC` |
+| Tables, columns, grains, identities | `03_DATA_DICTIONARY` |
+| Import behavior, file quirks, profiles | `04_SOURCE_MAPPING_AND_IMPORT_SPEC` |
+| Formulas, tolerances, fiscal calendar, rounding | `05_CALCULATION_SPEC` |
+| Exception rule logic + thresholds | `06_EXCEPTION_RULES_CATALOG` |
+| Forecast methods + accuracy | `07_FORECAST_METHODS_SPEC` |
+| Screens, charts, formatting rules, wording | `08_UI_UX_SPEC` |
+| Stack, ADRs, storage, scripts, commands | `09_TECHNICAL_ARCHITECTURE` |
+| AI policy, prompts, models | `10_AI_INTEGRATION_SPEC` |
+| Excel layouts | `11_EXCEL_OUTPUT_SPEC` |
+| PPT layouts | `12_POWERPOINT_OUTPUT_SPEC` |
+| Security/privacy | `13_SECURITY_PRIVACY` |
+| Test cases, quality bars, perf baselines | `14_TESTING_QA_PLAN` |
+| Packaging/installer | `15_PACKAGING_DEPLOYMENT_RUNBOOK` |
+| Phases, estimates, gates | `16_ROADMAP_PHASES` |
+| Code standards | `17_CODING_STANDARDS` |
+| Decisions + open questions (with dates) | `18_GLOSSARY_ASSUMPTIONS_OPEN_QUESTIONS` |
+| Process/session rules | `19_VIBE_CODING_PLAYBOOK` |
+| Traceability | `20_REQUIREMENTS_TRACEABILITY` |
+| Client questionnaire | `21_CLIENT_ONBOARDING_QUESTIONNAIRE` |
+| User-facing help text | `22_END_USER_GUIDE` |
+| Support/handover | `23_CONSULTANT_HANDOVER_AND_SUPPORT` |
+| Release process | `24_RELEASE_AND_VERSIONING_RUNBOOK` |
+| Risks | `25_RISK_REGISTER` |
+| API | `26_API_CONTRACT` |
+| Backlog | `27_BACKLOG` |
+| UAT, DoD, go-live | `28_ACCEPTANCE_UAT_AND_GO_LIVE` |
+| Client-facing requirements pack | `29_CLIENT_REQUIREMENTS_PACK` |
+
+**Hygiene rules:**
+- **Conflict resolution:** owning doc wins; later addon wins over earlier; the fix goes into the owning doc (one PR/commit), never a patch to the copy.
+- **No duplication:** never paste a formula, threshold, or layout into a second doc — cross-reference it.
+- **Length discipline:** TL;DR ≤ 15 lines; if a doc grows unwieldy, split with an INDEX update rather than letting one file become unreadable.
+- **Link-check** (Addon 2 F.6) validates the matrix's references.
+
+---
+
+## SECTION D — FR PRIORITIZATION & CUT-LINE POLICY (docs 02/16)
+
+1. Every FR gets a priority: **P0** (phase cannot close without it), **P1** (should ship), **P2** (could ship). Priorities assigned during Phase 0, stored in doc 02, mirrored in traceability (doc 20).
+2. **Phase gate rule:** all P0 FRs of that phase green; P1/P2 gaps listed explicitly with a decision (finish vs defer).
+3. **Never-cut list** — these may never be deferred, descope, or "simplified": exact money math (Decimal/minor units), atomic all-or-nothing imports, versioned audit of edits, offline/local-only data behavior, the Windows installer + real-Windows validation, the advisory disclaimer, backup/restore, golden tests, cross-artifact consistency test.
+4. **Cut process:** any cut outside the never-cut list requires (a) your proposal with impact, (b) my explicit approval, (c) a `27_BACKLOG.md` entry with trigger condition. Silent under-delivery is a protocol violation — as is building P2s while P0s remain open.
+5. **Estimates:** doc 16 carries an ideal-effort estimate per phase (and per P0 epic); re-estimate at every gate; report variance > 50% to me immediately.
+
+---
+
+## SECTION E — NEW DOCUMENT & APPROVAL MECHANICS
+
+### E.1 New document `29_CLIENT_REQUIREMENTS_PACK.md`
+
+A **plain-language pack for the client** (no FR IDs, no jargon, reading level: a finance director with no IT background):
+
+- What the product will do for them, in their month-end words (screens as one-liners).
+- What the AI does and explicitly does not do (reviewed drafts, never decisions).
+- The decisions we need from them (from questionnaire 21, each with our recommendation).
+- What we need from them: sanitized exports, budget workbook, current PPT/Excel examples, thresholds, branding, access timing.
+- Timeline expectations, UAT plan, training, and the advisory disclaimer.
+- Sign-off block: "Requirements understood and agreed" with name/date.
+
+### E.2 Approval recording mechanics
+
+- Every gate approval is recorded in `CHANGELOG.md` (`"Phase 0 APPROVED — <who> — <date>"`) **and** SESSION_LOG.
+- Hard gates: Phase 0 (after Section K green), packaging spike, each phase gate, real-data pilot (F), UAT, go-live.
+- An approval applies only to the state presented at that moment; material changes after approval re-open the gate via E.3.
+
+### E.3 Post-approval change impact rule
+
+Every spec change after Phase 0 approval gets an **impact note first**: affected FRs, docs, tests, and size (`S/M/L`) in the CHANGELOG entry before any code. `L` changes (new P0, data model changes, stack changes, scope moves) require my explicit approval before implementation.
+
+---
+
+## SECTION F — REAL-DATA PILOT GATE (between final build phase and UAT)
+
+1. Run the full month-end flow on **one sanitized real month** of client data (D365 + both other systems) — no sample data allowed in this gate.
+2. **Tie-out acceptance:** the analyst reconciles the app's BvA totals, key account balances, and exception list against their own current manual pack for that month. Differences are classified: (a) spec bug → S1, (b) mapping/profile error → fix + re-run, (c) client source-data issue → documented finding (a selling point, not a failure), (d) acceptable rounding/display → recorded tolerance.
+3. Exit criteria: every difference classified and signed off by the analyst; mapping profiles frozen for that client; new spec gaps routed through E.3.
+4. Output appended to doc 28: tie-out worksheet, classification log, sign-off.
+
+---
+
+## SECTION G — NUMERICAL TOLERANCE & EDGE-CASE DATA MATRIX (docs 05/02/14)
+
+### G.1 Tolerance policy (doc 05)
+
+- **Internal math:** exact equality at minor-unit precision (Decimal) — no epsilon anywhere in comparisons.
+- **Display:** rounding mode defined (e.g., half-up), 2 dp for currency, 1 dp for %; tests assert on display-rounded values using that same defined mode.
+- **Cross-artifact:** exact equality of engine values (already required) — UI vs Excel vs PPT vs CLI.
+- Forbidding "close enough" tolerance in money paths is a quality-gate item.
+
+### G.2 Edge-case data matrix — every row defined in docs 02/14 with behavior + error message ID
+
+| Input condition | Required behavior (spec must finalize wording/state) |
+|---|---|
+| First-ever period (no prior periods, no PY) | BvA works; PY/TTM views hidden; run-rate methods disabled with explanatory hint — never a crash or blank chart |
+| No budget loaded | BvA screen shows explicit empty state + "Import budget" CTA; variance rules disable with notice — never variance = 0 masquerade |
+| Header-only actuals file (0 data rows) | Default: reject with message; allow accept-as-zero only after explicit confirm (zero-activity period) |
+| Rows with zero amounts | Kept; excluded from outlier-type rules; visible in drill |
+| Future-dated transactions | Loaded per period rule; cut-off exception flags them |
+| Dates outside the fiscal year | Quarantined with message — never assigned to a wrong period |
+| Duplicate column headers | Import blocked until profile renames them |
+| ≥90% rows unmapped | Import blocked with mapping CTA |
+| Budget imported mid-period / after actuals | Allowed anytime; stale-derived indicator (Addon 2 B.7) |
+| Mixed-currency rows in single-currency project | Decision in doc 04 (default: quarantine with message) |
+| Amount exceeding display precision | Round per G.1; never truncate silently |
+| Single-row / tiny files | Fully supported (no size assumptions) |
+| Amounts in parentheses / `Cr-Dr` / text numbers | Handled per Addon 1 Section F |
+
+---
+
+## SECTION H — SAMPLE-DATA INTEGRITY (docs 14/16 + `sample-data/`)
+
+- Sample project carries a visible **"SAMPLE DATA" watermark/banner** in-app and a `project_type: sample` flag — structurally impossible to confuse with client data.
+- Sample and client projects cannot interleave: an import into a sample project is refused (or loudly re-stamped) — decide in doc 02.
+- Deliverables to the client never contain sample-data files; go-live checklist (doc 28) includes a verification item.
+
+---
+
+## SECTION I — ENGINEERING DISCIPLINE DELTAS (docs 09/14/17/19)
+
+1. **Spike policy:** risky unknowns get a timeboxed spike (≤ half a day) with a written question, options, and outcome recorded as an ADR or backlog entry **before** committing code. Pre-approved spike list: PyInstaller/Defender behavior, python-pptx fidelity on the client's template, WebView2 specifics, DuckDB 250k-row performance, Playwright on Windows.
+2. **Fresh-clone bootstrap test:** every phase gate proves a clean `git clone` + documented bootstrap builds and passes `scripts/check` — no machine-local secrets, untracked files, or undocumented steps. This is what keeps the project portable across agent sessions and machines.
+3. **Code health guardrails:** no source file > 500 LOC without a justification note; zero commented-out code; every `TODO` cites a `27_BACKLOG` ID (enforced by lint where possible); dead code deleted, not left behind; `scripts/check` stays green.
+4. **Storage growth math** (doc 09): projected rows/year → DB size/year → disk footprint at 3 years; low-storage warning threshold configurable; raw-archive retention default stated (Addon 1 C storage additions completed here).
+
+---
+
+## SECTION J — SECURITY & CONFIG DELTAS (doc 13)
+
+- **AI key rotation:** Settings supports replacing the key; old value purged from config and memory; rotation is audit-logged (no key material in logs). Revocation steps documented for the client.
+- **Keyless mode remains the default path** — every AI feature works degraded (rule-based fallback) with no key present (Addon 1/2 already required fallbacks; this confirms rotation never breaks it).
+
+---
+
+## SECTION K — PHASE 0 QUALITY GATE DELTAS (run IN ADDITION to all previous gates)
+
+- [ ] Coverage Matrix has Addon 4 rows; all "integrated".
+- [ ] Standard doc header (B.1) present on every doc; TL;DR ≤ 15 lines.
+- [ ] Source-of-Truth Matrix (C) in `00_INDEX.md`; spot-check: no formula/threshold duplicated across docs; conflict rule documented.
+- [ ] Quote-before-code + FR-citation rules written into doc 19.
+- [ ] Every FR has P0/P1/P2 priority; never-cut list and cut process in docs 02/16.
+- [ ] Per-phase estimates in doc 16.
+- [ ] `29_CLIENT_REQUIREMENTS_PACK.md` complete and jargon-free; sign-off block present.
+- [ ] Approval-recording convention and post-approval impact rule (E.2/E.3) in doc 19.
+- [ ] Real-data pilot gate defined in doc 28 with tie-out worksheet template + classification log.
+- [ ] Tolerance policy (G.1) in doc 05; full edge-case matrix (G.2) in docs 02/14 with message IDs.
+- [ ] Sample-data watermark + project-type flag + non-delivery rule specified (H).
+- [ ] Spike policy, fresh-clone gate, code-health rules, storage math in docs 09/14/17.
+- [ ] Key-rotation procedure in doc 13.
+
+---
+
+## SECTION L — UPDATED IMMEDIATE NEXT ACTIONS (supersedes Addon 3 Section K)
+
+1. Create the repo skeleton (folders + `.gitkeep` + root README) — nothing else.
+2. Write original Phase 0 docs `00 → 20` + `CHANGELOG.md`.
+3. Integrate Addon 1: docs `21–25` + its additions.
+4. Integrate Addon 2: doc `26` + ADR-002 + its additions.
+5. Integrate Addon 3: docs `27–28`, four prompt texts, chart inventory, negative corpus.
+6. Integrate **this addon**: doc `29_CLIENT_REQUIREMENTS_PACK`, Source-of-Truth Matrix + doc headers, FR priorities, tolerance + edge-case matrices, and Section I/J items into their owning docs.
+7. Build `sample-data/` — D365-style export + two non-D365 shapes + `.xlsx` templates + ~40 planted exceptions + `expected_exceptions.csv` + `malformed/` corpus + `--scale 250000` mode — with watermark and project-type flag.
+8. Refresh the **Addon Coverage Matrix** (all five documents) in `00_INDEX.md`.
+9. Self-audit against **all five** quality gates (kickoff, Addon 1 O, Addon 2 I, Addon 3 J, Section K); fix every gap; run the link-check.
+10. Run the **tabletop month-end walkthrough** (Addon 1 P20) through pack issuance (Addon 3), then a second pass as a **cold-start client** (fresh machine, no data, sample project only) using only docs 22/29.
+11. Write `docs/PHASE0_SUMMARY.md` + SESSION_LOG entry.
+12. **STOP. Present to me — PHASE0_SUMMARY + doc 29 — and wait for recorded approval (E.2). No product code before approval.**
+13. After approval: **packaging spike first** (hello-world through `scripts/build` → PyInstaller → Inno Setup → installed launch on real Windows 11 exercising the SmartScreen path; outcome recorded per Section I.1), then roadmap Phase 1 per doc 16 — beginning with the headless engine skeleton + CLI + `scripts/check`.
