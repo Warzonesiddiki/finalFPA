@@ -708,7 +708,7 @@ are leads, not verdicts."* (`FR-EXC-019`), plus the applied filter.
 
 | Control row | Contents |
 |---|---|
-| `Counts` | `Total: N · Open: n · Overdue: n · High: n · Unassigned: n` — written as text in column A, counts repeated mechanically in column Y? No: counts are written as text in the control row (a count column would be meaningless per row); the values also appear on `Cover` control rows 55–59 |
+| `Counts` | `Total: N · Open: n · Overdue: n · High: n · Unassigned: n` — written as text in the control row (a per-row count column would be meaningless); the same values also appear on `Cover` control rows 55–59 |
 | `Σ Amount at risk` | `Q` = sum over shown rows, with the standing caveat in the same row's `Note` cell: *"Indicator only — amounts at risk across different subjects are not additive as a ledger total."* |
 | `Rule coverage` | Text: `Rules evaluated: 24 of 24 enabled (rule set 2026-09-30) · Run 118 · Last run 01-10-2026 14:05`; when rules are disabled the line names them and why (`FR-EXC-014`) |
 
@@ -868,7 +868,7 @@ data, mappings, rules, imports, voids), and (c) pack issuance and commentary app
    and row 4 states *"Showing the most recent 200,000 of <N> events (from dd-mm-yyyy) — export the full
    audit trail from Settings → Data & storage."* Silent truncation is a defect.
 5. Keys, tokens and passwords never appear even if a malformed event tried to record one — the writer
-   redacts anything matching the secret patterns in `13` §.
+   redacts anything matching the secret patterns in `13` §5.4.
 
 **Controls:** `Events in scope: N · Shown: M · Range: <first> → <last>`. No money totals (an audit sheet
 that totalled money would imply a control it does not provide).

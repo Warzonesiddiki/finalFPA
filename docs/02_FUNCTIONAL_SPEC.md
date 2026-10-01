@@ -1128,7 +1128,9 @@ Provider configuration, prompt templates, schemas, redaction rules, caps and pro
 
 **FR-SET-012 · P2 · Phase 3 — Audit log viewer**
 - **Behaviour:** A filterable local audit log (action, object, timestamp, before→after, session) with
-  export; retention configurable. Never contains secrets, amounts or vendor names in log text.
+  export; retention configurable. Never contains secrets, amounts or vendor names in log text. Audit rows
+  are **append-only** — no UI action edits or deletes them (`13` §6.3, `SEC-048`); the machine-level
+  security-event file is separate and is not this viewer's source.
 - **Acceptance:** the log policy test in `14` asserts no amounts/vendor names appear in log files.
 
 ## 14. `FR-XC` — Cross-cutting behaviour (16 FRs)

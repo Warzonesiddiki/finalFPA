@@ -176,42 +176,6 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   code-health guardrails; and the one-command scripts. Reason: Kickoff §4, Addon 1 §C.2/G/I/J/L,
   Addon 2 §B/C.2/F/H, Addon 3 §I, Addon 4 §I.
 
-- **`docs/12_POWERPOINT_OUTPUT_SPEC.md`** (Draft v0.1) — the deck contract: the **fixed six slides**
-  (`PPT-001`…`PPT-006`) with the default/opt-in rule for missing inputs (`DEC-029`); the universal
-  contract (inch grid + scaling to any slide size, the native-and-editable shape whitelist, the shared
-  theme, the **character-budget formula** with 29 per-placeholder budgets and the prioritized trimming
-  order that makes overlap structurally impossible, deterministic shape naming/order, stamping + footer +
-  the full disclaimer on the last slide, AI/rule-based labelling, not-available states, accessibility,
-  the ≤ 15 s aggregate-only performance budget); every slide and placeholder specified with geometry,
-  fonts, budgets and content sources; the two native charts including the waterfall decision (`SPK-08`)
-  and its documented stacked-column fallback; client base-deck mapping and refusal rules; the deck's half
-  of the cross-artifact contract; files/refresh/issuance; 24 test IDs; failures `ERR-EXP-012`…`018`.
-  Reason: Kickoff §5/§11, Addon 2 §C/§E.5, Addon 3 §F.3/F.4.
-- **Reconciliations and ripple edits** — `01` `DEC-029` (deck missing-input behaviour) and `02`
-  `FR-PPT-001` acceptance clarified for base-deck mode; `05` §6.3 scale examples aligned to the display
-  owner (`08` §15); `08` §11.1's omission example now points at `12` §2.1; `09` gained spike `SPK-08`;
-  `11` §12 gains the `ERR-EXP-012`…`018` pointer. No behaviour was invented outside the spec of record.
-- **`docs/11_EXCEL_OUTPUT_SPEC.md`** (Draft v0.1) — the complete Excel-output contract: the five
-  artefact families, the universal rules (**values-only workbooks**, the 30-field machine-readable stamp,
-  the four-row sheet header block, filenames/sanitisation/collision policy with the recoverable
-  `.recycle` behaviour, the 15-ID number-format dictionary incl. the Indian lakh/crore grouping with its
-  boundary matrix, the `CF-001`…`CF-012` → Excel mapping with mandatory non-colour signal columns,
-  freeze/autofilter/width rules, locale independence, sample-data watermarking), **the eight pack sheets
-  specified column by column** (`Cover`, `BvA Summary`, `BvA Bridge`, `Transaction Detail`, `Exception
-  Register`, `Forecast Summary`, `Import Reconciliation`, `Audit Trail`) with controls and empty states,
-  the 1,048,576-row cap and lossless split algorithm, the evidence bundle (workbook + zip with manifest),
-  ad-hoc "export what you see" incl. the CSV contract and its sidecar stamp schema, the owner
-  distribution with the exact plain-text template, house-style matching (what can and cannot be matched),
-  print/PDF setup, the cross-artifact consistency contract, 11 export failure modes (`ERR-EXP-*`), and a
-  26-item test contract. Reason: Kickoff §5/§11/§12.9, Addon 2 §D.12/D.13 and §E.4, Addon 3
-  §C.5 and §F.3/F.4.
-- **`DEC-028`** added to `01` §21 (print/PDF readiness, not in-app rendering) with the three rejected
-  alternatives recorded in `11` §10.3; **`FR-XL-009`** amended in `02` to match. Reason: the FR implied
-  a PDF action the architecture cannot deliver without a bundled renderer or Excel automation.
-- **`docs/03_DATA_DICTIONARY.md`** — `FactExport` **added** to §5.7 and to the §2.1 grain register
-  (one row per generated export artefact: filter context, versions, content hash, row counts, outcome).
-  Reason: `11` §3.9 needs a durable home for the refresh contract; the 40-table figure recorded for
-  `03` in the previous entry is therefore superseded by **41 tables**.
 - **`docs/10_AI_INTEGRATION_SPEC.md`** (Draft v0.1) — the complete AI contract: the one-sentence policy
   (*AI drafts words for humans to check; it never computes, decides, applies or sends anything*); optional
   and off-by-default status with the keyless default; the **complete allowed-use list** (four features)
@@ -236,6 +200,58 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   (`TST-AI-01`…`TST-AI-14`) with the gate rule. Reason: Kickoff §10, Addon 1 §C.2/I/K, Addon 2 §C.2/G,
   Addon 3 §B.2/D, Addon 4 §J.
 
+- **`docs/11_EXCEL_OUTPUT_SPEC.md`** (Draft v0.1) — the complete Excel-output contract: the five
+  artefact families, the universal rules (**values-only workbooks**, the 30-field machine-readable stamp,
+  the four-row sheet header block, filenames/sanitisation/collision policy with the recoverable
+  `.recycle` behaviour, the 15-ID number-format dictionary incl. the Indian lakh/crore grouping with its
+  boundary matrix, the `CF-001`…`CF-012` → Excel mapping with mandatory non-colour signal columns,
+  freeze/autofilter/width rules, locale independence, sample-data watermarking), **the eight pack sheets
+  specified column by column** (`Cover`, `BvA Summary`, `BvA Bridge`, `Transaction Detail`, `Exception
+  Register`, `Forecast Summary`, `Import Reconciliation`, `Audit Trail`) with controls and empty states,
+  the 1,048,576-row cap and lossless split algorithm, the evidence bundle (workbook + zip with manifest),
+  ad-hoc "export what you see" incl. the CSV contract and its sidecar stamp schema, the owner
+  distribution with the exact plain-text template, house-style matching (what can and cannot be matched),
+  print/PDF setup, the cross-artifact consistency contract, 11 export failure modes (`ERR-EXP-*`), and a
+  26-item test contract. Reason: Kickoff §5/§11/§12.9, Addon 2 §D.12/D.13 and §E.4, Addon 3
+  §C.5 and §F.3/F.4.
+- **`DEC-028`** added to `01` §21 (print/PDF readiness, not in-app rendering) with the three rejected
+  alternatives recorded in `11` §10.3; **`FR-XL-009`** amended in `02` to match. Reason: the FR implied
+  a PDF action the architecture cannot deliver without a bundled renderer or Excel automation.
+- **`docs/12_POWERPOINT_OUTPUT_SPEC.md`** (Draft v0.1) — the deck contract: the **fixed six slides**
+  (`PPT-001`…`PPT-006`) with the default/opt-in rule for missing inputs (`DEC-029`); the universal
+  contract (inch grid + scaling to any slide size, the native-and-editable shape whitelist, the shared
+  theme, the **character-budget formula** with 29 per-placeholder budgets and the prioritized trimming
+  order that makes overlap structurally impossible, deterministic shape naming/order, stamping + footer +
+  the full disclaimer on the last slide, AI/rule-based labelling, not-available states, accessibility,
+  the ≤ 15 s aggregate-only performance budget); every slide and placeholder specified with geometry,
+  fonts, budgets and content sources; the two native charts including the waterfall decision (`SPK-08`)
+  and its documented stacked-column fallback; client base-deck mapping and refusal rules; the deck's half
+  of the cross-artifact contract; files/refresh/issuance; 24 test IDs; failures `ERR-EXP-012`…`018`.
+  Reason: Kickoff §5/§11, Addon 2 §C/§E.5, Addon 3 §F.3/F.4.
+- **Reconciliations and ripple edits** — `01` `DEC-029` (deck missing-input behaviour) and `02`
+  `FR-PPT-001` acceptance clarified for base-deck mode; `05` §6.3 scale examples aligned to the display
+  owner (`08` §15); `08` §11.1's omission example now points at `12` §2.1; `09` gained spike `SPK-08`;
+  `11` §12 gains the `ERR-EXP-012`…`018` pointer. No behaviour was invented outside the spec of record.
+- **`docs/13_SECURITY_PRIVACY.md`** (Draft v0.1) — the security, privacy and supply-chain contract, written
+  as **49 verifiable statements** (`SEC-001`…`049`), each with a mechanism and a planned test (`TST-SEC-01`…`22`):
+  the local-only guarantees (no telemetry/upload/background call; the exhaustive three-item outbound
+  inventory; the static call-site inventory test); the threat model with the threats we explicitly do not
+  defend; the exact data-location tree and file-handling rules (atomic writes, `.recycle`, path limits,
+  synced-folder block + recorded override); deletion semantics with a pre-delete backup offer and the honest
+  "not a secure erase" caveat; DPAPI key storage, the write-only UI, rotation/revocation/purge with a byte-scan
+  proof, the `.gitignore` + pre-commit + CI secret-scan pipeline; log rotation numbers and the
+  allowed/forbidden content policy with a planted-value grep test; the metadata-only diagnostics bundle with
+  its redaction map, manifest schema and size cap; the AI data path (TLS verification not disableable,
+  redaction, caps, provenance, non-authority) and the prompt-injection defence layers; the plain-files
+  data-at-rest stance (`DEC-030`) with BitLocker guidance; the privacy note text owned here for `22`/`29`;
+  the three-way audit/log/security-event boundary (`SEC-048`/`049`); and error codes `ERR-SEC-001`…`008`.
+- **Governance** — `00_INDEX` gains the `SEC-nnn` prefix family, the `SEC` error family and the `TST-SEC`
+  family; doc `09`'s storage inventory gains `security.log`; `01` gains `DEC-030`; `02` `FR-SET-012` records
+  the append-only audit rule; `11` §4.8's secret-pattern pointer is now a real section (`13` §5.4).
+- **`docs/03_DATA_DICTIONARY.md`** — `FactExport` **added** to §5.7 and to the §2.1 grain register
+  (one row per generated export artefact: filter context, versions, content hash, row counts, outcome).
+  Reason: `11` §3.9 needs a durable home for the refresh contract; the 40-table figure recorded for
+  `03` in the previous entry is therefore superseded by **41 tables**.
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's

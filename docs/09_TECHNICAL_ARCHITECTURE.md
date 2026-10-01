@@ -519,7 +519,7 @@ outside the numeric path entirely.
 | `…\snapshots\` | Immutable close/issue snapshots | Project backup |
 | `…\exports\` | Generated packs | Not backed up (regenerable) |
 | `…\logs\` | Local logs, rotated | Not backed up |
-| `%APPDATA%\FP&A Month-End Copilot\` | Machine settings, AI key (DPAPI), diagnostics, crash reports | Not applicable (machine-local, secret-bearing) |
+| `%APPDATA%\FP&A Month-End Copilot\` | Machine settings, AI key (DPAPI), diagnostics, crash reports, `security.log` (key lifecycle, deletions, sync overrides — `13` §6.3) | Not applicable (machine-local, secret-bearing) |
 | `%LOCALAPPDATA%\FP&A Month-End Copilot\Sample\` | Bundled sample project | Re-creatable from the installer |
 
 ### 7.2 The OneDrive / synced-folder rule (`ADR-004`)

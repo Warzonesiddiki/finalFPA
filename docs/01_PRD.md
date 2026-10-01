@@ -545,6 +545,7 @@ This table is an index of the rulings made in this document; IDs are allocated h
 | `DEC-025` | Forecast: default project method `remaining_budget`, `N = 3` for run-rate, three scenarios with **default, unconfirmed** adjustment percentages | §6.1, §12 |
 | `DEC-026` | AI number-mismatch policy: figures not present in the payload are **stripped and flagged**, never trusted | §6.1, §15.3 |
 | `DEC-027` | AI redaction defaults: vendor names and descriptions masked; account/cost-centre/entity codes **not** masked (required for the task) and disclosed to the client | §15.3 |
+| `DEC-030` | **Data at rest is plain local files.** No application-level encryption of the analytic database or project backups in v1; the only encrypted artefact is the AI key (DPAPI). BitLocker/EFS guidance is given to the client, and the "not a secure erase" caveat on delete is stated | §15.3, `13` §9.1 |
 | `DEC-029` | **Missing-input deck behaviour:** the deck is always the six specified slides, with a *not-available* state naming the reason and the action; omitting a slide is an explicit user choice that must be stated on the deck's cover (`5 of 6 slides generated — <reason>`). Reconciles `FR-PPT-001` with the `08` §11.1 example | `12` §2.1 |
 | `DEC-028` | **PDF is not rendered in-app.** v1 delivers print/PDF *readiness* (tested page setup per sheet) plus an "Open for printing / Save as PDF" action using Excel / Microsoft Print to PDF; no bundled renderer and no Excel automation. Rationale and the three rejected alternatives: `11` §10.3 | §12, `11` §10.3 |
 
