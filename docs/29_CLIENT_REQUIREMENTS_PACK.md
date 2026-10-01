@@ -210,6 +210,22 @@ plan once your §7 answers are in, and we will flag any schedule risk as soon as
 | Updates | Manual in v1: you are told a new version exists and given the file plus a fingerprint number so you can check it arrived unchanged; nothing updates itself |
 | Uninstalling | Removes the application; your project folders and backups are yours and stay where you put them |
 
+### The Windows warning, in the exact words you will see
+
+> **When Windows shows a blue "Windows protected your PC" box**
+> This happens because the app is new and not yet a "known" download; it does **not** mean the file is
+> harmful. To continue:
+> 1. Click **More info**.
+> 2. Check that the app name is **FP&A Month-End Copilot** and that the version matches what you were told.
+> 3. Click **Run anyway**.
+> 4. If your browser warns that the file *"isn't commonly downloaded"*, choose **Keep** — then run the file.
+> **Check the file's fingerprint first (recommended).** Compare the SHA-256 we sent you with the file using
+> `certutil -hashfile "Setup-FPandAMonthEndCopilot-<version>.exe" SHA256`. The long string that appears must
+> match the one in `SHA256SUMS-<version>.txt`. If it does not match, stop and contact us — do not run the file.
+> **Never** do these things: do not turn off Defender or SmartScreen, do not run the installer "as
+> administrator" if Windows does not ask for it, and do not ignore a warning that names a **different**
+> file or publisher than the ones above.
+
 ## 12. Care and feeding: backups, retention and support
 
 | Topic | Plain statement |

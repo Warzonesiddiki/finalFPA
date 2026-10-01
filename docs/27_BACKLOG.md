@@ -8,8 +8,9 @@
 >   meeting note is not accepted; it gets an entry here in the same session.
 > - **Every entry has a trigger.** "Later" is not a trigger; the trigger is the observable event that
 >   promotes the item (a client answer, a phase boundary, a measured miss, an IT mandate).
-> - **33 items** are registered: the 25 parks from `01` §6.2, the Excel-charts deferral (`11` §14) and the
->   seven security/scale parks from `13` §15.
+> - **34 items** are registered: the 25 parks from `01` §6.2, the Excel-charts deferral (`11` §14), the
+>   seven security/scale parks from `13` §15, and the dashboard-PDF park from Addon 1 §N that had no
+>   `01` §6.2 twin (`BL-036`).
 > - **Sizes are rough on purpose** (S ≤ a session · M = a phase slice · L = its own phase); they exist so a
 >   gate can compare cost against value, not to plan dates.
 > - **Nothing is deleted.** A promoted item leaves the register with a pointer to the FR/ADR that
@@ -66,7 +67,7 @@
    becomes an FR (`02`), a decision (`18`) or a phase-plan change (`16`), and the register entry is updated
    with the pointer (never deleted).
 
-## 2. The register (33 items)
+## 2. The register (34 items)
 
 | ID | Item | One-line scope | Trigger that promotes it | Size | Source | Target phase |
 |---|---|---|---|---|---|---|
@@ -103,14 +104,15 @@
 | `BL-033` | Windows Hello / TPM-bound key unlock | Bind the AI key to the device/user | Client IT mandates hardware-bound unlock | S | `13` §15 | On trigger (small win) |
 | `BL-034` | AI endpoint allow-list | Restrict AI calls to specific hosts | Multi-provider support lands (the endpoint is already a single configured value) | S | `13` §15 | On trigger (small win) |
 | `BL-035` | In-app authentication, RBAC, multi-user | Server-dependent accounts and roles | The product gains a shared/server mode (explicitly out today, `DEC-010`; duplicates `BL-004`/`BL-005` intent) | L | `13` §15 | Post-v1 (with `BL-004`) |
+| `BL-036` | In-app PDF export of dashboards and packs | Render the dashboard views and a pack summary as a PDF without Office | A client workflow needs PDFs without Excel (or print/PDF readiness proves insufficient in practice, superseding `DEC-028`) | M | Addon 1 §N | Post-v1 |
 
 ### 2.1 Counts at first issue
 
 | View | Counts |
 |---|---|
-| By size | S 4 · M 17 · L 12 |
-| By target | Not planned 2 · On trigger 6 · Phase 6 candidate 11 · Post-v1 14 |
-| Registered | 33 (`BL-001`…`BL-026`, `BL-029`…`BL-035`); `BL-027`/`BL-028` unallocated |
+| By size | S 4 · M 18 · L 12 |
+| By target | Not planned 2 · On trigger 6 · Phase 6 candidate 11 · Post-v1 15 |
+| Registered | 34 (`BL-001`…`BL-026`, `BL-029`…`BL-036`); `BL-027`/`BL-028` unallocated |
 
 ## 3. Views
 
@@ -130,13 +132,14 @@
 | `01` §6.2 (explicitly out of scope for v1) | `BL-001`…`BL-025` |
 | `11` §14 (`XL-CHART-DEFER`) | `BL-026` |
 | `13` §15 (security/privacy parks with triggers) | `BL-029`…`BL-035` |
+| Addon 1 §N (the list `01` §6.2 mirrors) — the one item with no `01` twin | `BL-036` |
 | Client questions that can promote an item | `Q-021` → `BL-016`; `OQ-011` → `BL-019`; `OQ-014` → the pilot gate, not a backlog item |
 
 ### 3.3 Trigger families
 
 | Family | Trigger shape | Items |
 |---|---|---|
-| Client answer | A `Q-`/`OQ-` answer that changes scope | `BL-016`, `BL-019` |
+| Client answer | A `Q-`/`OQ-` answer or a stated workflow need that changes scope | `BL-016`, `BL-019`, `BL-036` |
 | Roadmap phase | A funding decision at a gate (Phase 6 candidate) | `BL-007`…`BL-009`, `BL-014`, `BL-018`, `BL-020`, `BL-021`, `BL-024`…`BL-026` |
 | Measured miss | A real month shows the v1 behaviour is insufficient | `BL-018` (accuracy), `BL-025` (duplicate miss) |
 | Client IT mandate | A policy requirement lands | `BL-029`…`BL-035` |
@@ -189,10 +192,10 @@
 | Constant | Value |
 |---|---|
 | ID format | `BL-nnn`, allocated here, never reused (`00_INDEX` §8) |
-| Registered at first issue | 33 rows (`BL-001`…`BL-026`, `BL-029`…`BL-035`) |
+| Registered at first issue | 34 rows (`BL-001`…`BL-026`, `BL-029`…`BL-036`) |
 | Unallocated | `BL-027`, `BL-028` (reserved) |
 | Sizes | `S` ≤ one session · `M` a phase slice · `L` its own phase |
 | Target phases | `Phase 6 candidate` · `Post-v1` · `On trigger` · `Not planned` |
 | Review | Every phase gate, recorded in the gate packet |
 | Promotion rule | Trigger → decision → FR/phase change; the row stays |
-| Sources | `01` §6.2, `11` §14, `13` §15, decisions, questions, review deferrals |
+| Sources | `01` §6.2, `11` §14, `13` §15, Addon 1 §N, decisions, questions, review deferrals |

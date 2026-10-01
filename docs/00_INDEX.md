@@ -97,7 +97,7 @@ precise, terse, and testable.
 | 29 | `29_CLIENT_REQUIREMENTS_PACK.md` | Plain-language client pack (no requirement codes): what it does, what the AI does not do, the decisions needed with recommendations, what we need from the client, timeline/UAT/training, disclaimer, sign-off block | Draft v0.1 |
 | — | `CHANGELOG.md` | Every doc/spec change (Keep a Changelog + semver) and gate approvals | Living |
 | — | `SESSION_LOG.md` | Append-only session memory: what changed, FRs touched, tests, next step | Living |
-| — | `PHASE0_SUMMARY.md` | One-page Phase 0 presentation (written at the end of Phase 0) | Not started |
+| — | `PHASE0_SUMMARY.md` | One-page Phase 0 presentation for approval: product, what the set locks, key decisions, top risks, open questions, gate snapshot, approval ask | Draft v0.1 (awaiting recorded approval) |
 
 **Supporting artifacts** (created at Phase 0 completion, governed by the docs above):
 `sample-data/` (generator, D365 + two non-D365 shapes, `.xlsx` templates, ~40 planted exceptions,
@@ -150,7 +150,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A1-K | Client enablement (task-structured guide, first-run tour, 60-min training, error dialog, support flow) | `22`, `23` | INTEGRATED (through `23`: guide/tour/training in `22`; diagnostics workflow, incident playbook and escalation in `23`) |
 | A1-L | NFR numbers (cold start, import, dashboard, PPT, offline, installer size, memory, logs, diagnostics, screen, crash behaviour) | `14` (numbers), `16`, `09` | INTEGRATED |
 | A1-M | Session protocol addenda (SESSION_LOG, regression gate, Windows evidence, schema change process, sample data sacred, roadmap discipline) | `19`, `14` | INTEGRATED |
-| A1-N | Explicitly parked backlog list | `27`, `01` | INTEGRATED (33 items, schema + trigger + size + target; `01` §6.2 stays the product view) |
+| A1-N | Explicitly parked backlog list | `27`, `01` | INTEGRATED (34 items, schema + trigger + size + target; `01` §6.2 stays the product view, `BL-036` covers Addon 1 §N's one item without a `01` twin) |
 | A1-O | Combined Phase 0 quality gate deltas (12 checks) | `00`, `14` | IN PROGRESS |
 | A1-P | Updated immediate next actions | `16`, `19`, `00` | INTEGRATED |
 
@@ -191,11 +191,11 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A3-C | Feature precision part 2 (AI mapping review queue, mapping preview/profile auto-match, commentary workflow, pack issuance register, data-quality score, storage/health, budget re-import, persistence/destructive actions, home screen, no login, import UX, display locale) | `02`, `08`, `10` | IN PROGRESS |
 | A3-D | AI feature depth (four full prompt texts, model pinning/deprecation, golden fixtures, prompt-edit discipline) | `10`, `02` | INTEGRATED |
 | A3-E | Decisions that must be settled (success metrics, IP/licensing, forced in/out list, support/warranty) | `01`, `18`, `28` | INTEGRATED (`01` §16/§5; the support/warranty placeholder is in `28` §3.1 and `OQ-016`) |
-| A3-F | Charts, formatting & test corpus (chart inventory, centralised conditional formatting, output conventions, cross-artifact consistency test, negative file corpus) | `08`, `11`, `12`, `14`, `sample-data/` | IN PROGRESS |
+| A3-F | Charts, formatting & test corpus (chart inventory, centralised conditional formatting, output conventions, cross-artifact consistency test, negative file corpus) | `08`, `11`, `12`, `14`, `sample-data/` | IN PROGRESS (charts/formatting/conventions/tests integrated; the `sample-data/malformed/` corpus is the open build step) |
 | A3-G | Acceptance, UAT & go-live (project DoD, UAT mechanics, defect severities, per-phase demo scripts, go-live checklist) | `28` | INTEGRATED |
-| A3-H | Backlog governance (entry schema, seed, reviewed at gates) | `27` | PENDING |
+| A3-H | Backlog governance (entry schema, seed, reviewed at gates) | `27` | INTEGRATED (`27` §2 schema + 34 seeded items with triggers; §4 review ritual at every gate) |
 | A3-I | Process & quality deltas (exception perf NFR, ADR-000 index, local-only crash dumps, prompt-edit + feedback intake, DoD additions) | `14`, `09`, `19` | INTEGRATED |
-| A3-J | Phase 0 quality gate deltas (12 checks) | `00`, `14` | IN PROGRESS |
+| A3-J | Phase 0 quality gate deltas (12 checks) | `00`, `14` | IN PROGRESS (10 of 12; `GATE-04-02` awaits the corpus row `A3-F`, `GATE-04-07` awaits `sample-data/malformed/`) |
 | A3-K | Updated immediate next actions | `16`, `19`, `00` | INTEGRATED |
 
 ### 4.5 Addon 4 (Sections A–L) — 12 rows
@@ -328,11 +328,11 @@ The authoritative checkbox lists live in doc `14` §Gates; this table tracks sta
 
 | Gate | Source | Checks | Status |
 |---|---|---|---|
-| `GATE-01` Phase 0 core | Kickoff §5 checklist | 9 | ⏳ In progress |
-| `GATE-02` Addon 1 deltas | Addon 1 §O | 12 | ⏳ In progress |
-| `GATE-03` Addon 2 deltas | Addon 2 §I | 12 | ⏳ In progress |
-| `GATE-04` Addon 3 deltas | Addon 3 §J | 12 | ⏳ In progress |
-| `GATE-05` Addon 4 deltas | Addon 4 §K | 13 | ⏳ In progress |
+| `GATE-01` Phase 0 core | Kickoff §5 checklist | 9 | **8 ✅ / 1 ⬜** (`GATE-01-06` = the installer script, proven by the post-approval packaging spike) |
+| `GATE-02` Addon 1 deltas | Addon 1 §O | 12 | **12 ✅** (incl. the recorded tabletop walkthrough) |
+| `GATE-03` Addon 2 deltas | Addon 2 §I | 12 | **12 ✅** |
+| `GATE-04` Addon 3 deltas | Addon 3 §J | 12 | **10 ✅ / 2 ⬜** (`GATE-04-02`, `GATE-04-07` = the `sample-data/` corpus) |
+| `GATE-05` Addon 4 deltas | Addon 4 §K | 13 | **13 ✅** |
 
 Downstream hard gates: the **packaging spike (`GATE-06`) → phases 1–6 (`GATE-07`…`GATE-12)**, defined by
 `16` §2.1/§5 and executed with the universal contract of `16` §5.1; then the **real-data pilot
@@ -346,7 +346,7 @@ Addon 3 §G). Approvals are recorded in `CHANGELOG.md` **and** `SESSION_LOG.md` 
 | Phase | **Phase 0 — Documentation** |
 | Authoritative next-action list | Addon 4 §L (supersedes Addon 3 §K → Addon 1 §P → Kickoff §15) |
 | Docs complete | `00`–`29` (drafts) + `CHANGELOG`, `SESSION_LOG` |
-| Docs remaining | `PHASE0_SUMMARY` (plus the `sample-data/` build step and the self-audit passes) |
+| Docs remaining | None — `00`–`29` + `PHASE0_SUMMARY` are written; the open items are the `sample-data/` build (scope decision) and the three gate checks it feeds |
 | Product code | **None. Forbidden until recorded approval.** |
 | App version / docs version | 0.1.0 (planned) / 0.1.0 (working draft) |
 | Open questions count | Tracked in `18_...OPEN_QUESTIONS.md` §Open |
@@ -364,9 +364,9 @@ Addon 3 §G). Approvals are recorded in `CHANGELOG.md` **and** `SESSION_LOG.md` 
 
 | Gate | State | Date | Approver | Evidence |
 |---|---|---|---|---|
-| Phase 0 (core + Addons 1–4) | **Not yet requested** | — | Project owner | `docs/PHASE0_SUMMARY.md` + doc `29` |
+| Phase 0 (core + Addons 1–4) | **Requested — awaiting recorded approval** (the state is `PHASE0_SUMMARY.md` at `HEAD`) | 2026-10-01 | Project owner | `docs/PHASE0_SUMMARY.md` + doc `29` |
 | Packaging spike | Not started (post-approval) | — | Project owner | `09`/`15` spike outcome |
 | Phase gates 1–6 | Not started | — | Project owner | Per-phase demo script (`16`, `28`) |
-| Real-data pilot | Not started | — | Client analyst | Tie-out worksheet (`28` §Pilot) |
+| Real-data pilot | Not started | — | Client analyst | Tie-out worksheet (`28` §4) |
 | UAT | Not started | — | Client | Signed UAT script (`28`) |
 | Go-live | Not started | — | Client + project owner | Go-live checklist (`28`) |

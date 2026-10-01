@@ -707,7 +707,7 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 |---|---|---|---|
 | `GATE-02-01` | Docs 21–25 exist and are complete; every questionnaire item has a decision or a labelled default | `21`–`25` | ✅ (docs `21`–`25` exist with the standard headers; all 21/21 `Q-` items carry a labelled default; `25` registers the consequences) |
 | `GATE-02-02` | All Addon 1 §C.2 additions are present in the owning docs; `CHANGELOG` shows the integration | `CHANGELOG` + docs | ✅ (through `13`) |
-| `GATE-02-03` | Tabletop walkthrough executed and recorded — every month-end step maps to a screen/rule/export | `SESSION_LOG` entry (Phase 0 close) | ⬜ |
+| `GATE-02-03` | Tabletop walkthrough executed and recorded — every month-end step maps to a screen/rule/export | `SESSION_LOG` entry (Phase 0 close) | ✅ (`SESSION_LOG` "Tabletop walkthrough": 24 steps, each mapped to its screen, rule, output and owning section, through pack issuance and re-issue) |
 | `GATE-02-04` | Excel hardening list: each quirk has a documented handle-or-reject behaviour with error copy | `04` (32 checks, 59 messages) | ✅ |
 | `GATE-02-05` | OneDrive/storage decision made, with its test case listed in `14` | `09` `ADR-004` + `TST-WIN-06` | ✅ |
 | `GATE-02-06` | SmartScreen/signing decision is an ADR with a non-technical-user mitigation path | `09` `ADR-003` | ✅ |
@@ -715,7 +715,7 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 | `GATE-02-08` | Injection test case (planted malicious description) exists in `14` | `TST-SEC-14` | ✅ |
 | `GATE-02-09` | License allow-list, secret-scan and SBOM steps documented; `THIRD_PARTY_LICENSES.txt` planned in the installer manifest | `13` §12, `15`, `24` | ✅ (doc side) |
 | `GATE-02-10` | End-user guide outline (task-structured) approved-ready; training outline exists | `22`, `23` | ✅ (`22`: 21 tasks, 43-screen map, 60-min training outline, screenshot contract; `23`: diagnostics workflow, incident playbook, escalation ladder) |
-| `GATE-02-11` | Backlog list (Addon 1 §N) recorded in PRD/roadmap so nothing is dropped | `27`, `01` §5 | ⬜ |
+| `GATE-02-11` | Backlog list (Addon 1 §N) recorded in PRD/roadmap so nothing is dropped | `27`, `01` §5 | ✅ (every Addon 1 §N item maps to a `27` row: connectors `BL-008`, Power BI `BL-009`, email/Teams distribution `BL-019`, advanced forecast methods `BL-018`, headcount/FTE `BL-016`, budget version-compare `BL-020`, commentary carry-forward `BL-021`, multi-client licensing `BL-023`, RBAC `BL-004`/`BL-035`, localisation `BL-022`, auto-update `BL-007`, dashboard PDF export `BL-036` — the one §N item with no `01` §6.2 twin, added in the approval pass) |
 | `GATE-02-12` | NFR numbers from Addon 1 §L present and agreed in-doc | `14` §3 | ✅ |
 
 ### 15.3 `GATE-03` — Addon 2 §I deltas (12 checks)
@@ -739,13 +739,13 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 
 | ID | Check | Provable by | Status |
 |---|---|---|---|
-| `GATE-04-01` | Docs 27 and 28 exist and are complete; backlog seeded from Addon 1 §N + §E.3 | `27`, `28` | ✅ (`27` seeds all 33 parks from `01` §6.2 / `11` §14 / `13` §15; `28` carries the DoD, the three gates and the sign-off) |
-| `GATE-04-02` | Coverage Matrix extended with Addon 3 rows; all integrated | `00_INDEX` §4 | ⬜ (Addon 3 rows present; `A3-B`/`A3-F`/`A3-G` complete when `28` and the `sample-data/` corpus land) |
+| `GATE-04-01` | Docs 27 and 28 exist and are complete; backlog seeded from Addon 1 §N + §E.3 | `27`, `28` | ✅ (`27` seeds all 34 items from `01` §6.2 / `11` §14 / `13` §15; `28` carries the DoD, the three gates and the sign-off) |
+| `GATE-04-02` | Coverage Matrix extended with Addon 3 rows; all integrated | `00_INDEX` §4 | ⬜ (every Addon 3 row integrated except `A3-F`'s `sample-data/malformed/` corpus; `A3-B`/`A3-G`/`A3-H` complete with `27`/`28`) |
 | `GATE-04-03` | Four full initial prompt texts exist in `10` with worked examples | `10` §4/§5 | ✅ |
 | `GATE-04-04` | Mapping Review Queue, commentary lock-on-issue and the issuance register fully specified | `02`, `03`, `08` | ✅ |
 | `GATE-04-05` | Chart inventory and centralized conditional-format rules present in `08` | `08` §13/§14 | ✅ |
 | `GATE-04-06` | Output conventions present in `11` and `12`; cross-artifact test specified in `14` | `11` §3, `12` §3.9, this doc §7 | ✅ |
-| `GATE-04-07` | Negative file corpus exists in `sample-data/malformed/` with expected message IDs | §6.3 (corpus built with sample data) | ⬜ (defined; built in Phase 0 build step) |
+| `GATE-04-07` | Negative file corpus exists in `sample-data/malformed/` with expected message IDs | §6.3 (corpus built with sample data) | ⬜ (defined in §6.3 with 16 cases and their expected `import.*` slugs; the files are the Phase 0 build step, deferred by the session's docs-only scope) |
 | `GATE-04-08` | Data-quality score formula has a worked example in `05` | `05` §8 | ✅ |
 | `GATE-04-09` | Success metrics, IP/licensing stance and the forced in/out list resolved in the PRD | `01` §16, §5 | ✅ |
 | `GATE-04-10` | Error-code catalog families defined in `26`; message-catalog rule in `08` | `26`, `08` §16 | ✅ (11 families + codes in `26` §5; shape and wording in `08` §16) |

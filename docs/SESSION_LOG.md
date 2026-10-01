@@ -48,6 +48,7 @@ product code** (Addon 4 §L, steps 1–2).
 | `docs/27_BACKLOG.md` | **New.** The backlog register (Addon 3 §B.1/§H): the entry schema and rules; **33 items** (`BL-001`…`BL-025` from `01` §6.2, `BL-026` from `11` §14, `BL-029`…`BL-035` from `13` §15) each with the trigger that promotes it, a size (S/M/L), its source and a target phase; the small-wins and by-source/by-trigger views; the gate review ritual; promotion/retirement states; obligations; change control and frozen constants. |
 | `docs/28_ACCEPTANCE_UAT_AND_GO_LIVE.md` | **New.** The acceptance path (Addon 3 §G, Addon 4 §F): the project-level Definition of Done; the `S1`–`S4` defect workflow with the `DEF-nnn` log and response targets as labelled defaults until `OQ-016`; the real-data pilot (`GATE-13`) with the four-class difference taxonomy and the tie-out worksheet template; UAT (`GATE-14`) with the six `TST-UAT-*` scripts; the 22-item go-live checklist (`GATE-15`); the acceptance evidence set and sign-off template; hypercare and post-go-live review; the demo-script standard. |
 | `docs/29_CLIENT_REQUIREMENTS_PACK.md` | **New.** The client-facing pack (Addon 4 §E.1), written so a finance director with no IT background can read it end to end: what the tool does in their month-end words with every screen as a one-liner; a month in the tool; the explicit boundaries; what the AI does and does not do (drafts only, off by default, never computes or sends); **17 decisions** each with a recommendation; what we need from the client and when; the timeline in plain terms; how the trial month, acceptance test and go-live will prove it; the machine and install reality incl. the unsigned-installer prompt; backups, retention and support; the verbatim advisory disclaimer; the "requirements understood and agreed" sign-off block; and the post-sign-off change process. No requirement codes and no document numbers in the body by design. |
+| `docs/PHASE0_SUMMARY.md` | **New.** The approval artefact (Kickoff §5; Addon 4 §L.11): the product in one paragraph; what the set locks (counts per group); 19 key decisions with their owning ADR/decision and why they matter; the 8 top risks with mitigations; open questions with the three answers that matter most; the gate snapshot (55 ✅ / 3 ⬜, each open item named); what approval means (recorded, scoped, releasing the packaging spike first); what happens next; and the copy-paste approval line |
 | `docs/13_SECURITY_PRIVACY.md` | **New.** The security/privacy/supply-chain contract as **49 verifiable statements** (`SEC-001`…`049`), each with a mechanism and a planned test (`TST-SEC-01`…`22`): local-only guarantees + the exhaustive three-item outbound inventory; the threat model incl. what is explicitly **not** defended; the exact data-location tree and file-handling rules (atomic writes, `.recycle`, path limits, synced-folder block with recorded override); deletion semantics with pre-delete backup offer and the "not a secure erase" caveat; DPAPI key storage, write-only UI, rotation/revocation/purge with byte-scan proof, `.gitignore` + pre-commit + CI secret scan; log rotation and the allowed/forbidden content policy with a planted-value grep test; the metadata-only diagnostics bundle with its redaction map and manifest schema (20 MB cap); the AI data path (TLS verification not disableable, redaction, caps, provenance, non-authority) and prompt-injection defence; the plain-files data-at-rest stance (`DEC-030`); the privacy note text owned here for `22`/`29`; the audit/log/security-event boundary (`SEC-048`/`049`); error codes `ERR-SEC-001`…`008` |
 | `docs/12_POWERPOINT_OUTPUT_SPEC.md` | **New.** The deck contract: the **fixed six slides** (`PPT-001`…`PPT-006`) with the default/opt-in missing-input rule (`DEC-029`); the universal contract (inch grid + scaling, the native-and-editable whitelist, the shared theme, the **character-budget formula** with per-placeholder budgets and the prioritized trimming order, deterministic shape naming/order, stamping + footer + full disclaimer on the last slide, AI/rule-based labelling, not-available states, accessibility, the ≤ 15 s aggregate-only budget); every slide/placeholder with geometry, fonts, budgets and content sources; two native charts incl. the waterfall decision (`SPK-08`) and its stacked-column fallback; base-deck mapping/refusal rules; the deck's half of the cross-artifact contract; files/refresh/issuance; 24 test IDs; `ERR-EXP-012`…`018` |
 | `docs/00_INDEX.md`, `docs/01_PRD.md`, `docs/02_FUNCTIONAL_SPEC.md`, `docs/03_DATA_DICTIONARY.md`, `docs/09_TECHNICAL_ARCHITECTURE.md`, `docs/11_EXCEL_OUTPUT_SPEC.md` | **Amended (ripple, doc 14).** `00`: doc-map row 14, completeness, `A1-L` INTEGRATED, `TST-<FAM>` families enumerated. `01`: the M10 performance row now cites the canonical NFRs. `02`/`03`: the rule-run target is `NFR-007` (was mis-cited as `NFR-009`). `09` §14: the NFR table extended to `NFR-001`…`016` with the remap (`NFR-009` = Excel pack, `NFR-011` = logs, `NFR-012` = crash) and the new `NFR-013`…`016`; repo layout gains the new test categories and `acceptance`/`perf` scripts. `11`: the Excel-pack budget now cites `NFR-009`. |
@@ -221,12 +222,111 @@ recorded in `CHANGELOG.md`. A **full matrix refresh is required at the end of th
   is taken from the owning document rather than restated. Corrected in this entry: the doc-25 audit bullet in
   the doc-21–25 pass said 320 lines; the shipped file is 332 (fixed in place, recorded here per the
   append-only rule).
+- **`PHASE0_SUMMARY` audit:** 170 lines; every number in it is re-derivable from the owning doc at this
+  commit (the gate split 55/3 parses from `14` §15; the counts in §2 match `20` §3, `08` §4/§13, `06` §7,
+  `26` §3/§5, `27` §2, `25` §6.3); every `§`-citation resolves; every table passes the cell-count check
+  (the one `|budget|` pipe in the materiality formula is escaped); the TL;DR is 15 bullets and the approval
+  line matches the `CHANGELOG`/`SESSION_LOG` convention in Addon 4 §E.2.
 - **`19` audit:** 497 lines; every `§`-citation resolves (`02` §3.5, `14` §14.3/§1.2/§8.3/§13.2, `16` §5.1/§5.2/§6/§9.2/§11.1/§11.2, `10` §4, `09` §3/§13, `17` §7.1/§9.2/§11.2, `08` §16/§17, `13` §7/§12); the TL;DR is 11 bullets (≤ 15); the DoD criteria are referenced rather than restated (single-source with `02`/`14`); and the doc states the Phase-0 no-code rule explicitly.
 - **`18` audit:** 451 lines; every `§`-citation verified (one draft cite to `03` §16 corrected to `04` §16 — the score inputs live in the import spec); every `Q-`/`OQ-`/`A`/`DEC-`/`BL-`/`EXC-`/`CALC-`/`GATE-` ID used resolves; the TL;DR is 10 bullets (≤ 15); `01` §14/§16 corrected for the `OQ-020` phantom and `14`'s two `18`-dependent gate rows updated.
 - **`17` audit:** 558 lines; every `§`-citation verified against its target (two first-draft cites to `14` §2.3/§2.5 corrected to `14` §1.2 items 3/5 and `09` §5.3 after the golden-file and determinism rules were located); every ID used exists (`FR-IMP-031`, `TST-WIN-03`/`13`, `SEC-0xx`, `GATE-02-09`, `BL-012`); the TL;DR is 11 bullets (≤ 15); all text owned elsewhere is cross-referenced rather than restated (the layer table, `scripts/check` composition, coverage bars and message-catalog rules remain single-sourced in `09`/`14`/`26`/`08`).
 - **`16` audit:** 682 lines; every `§`-citation verified against its target document and corrected where it was wrong (the first draft mis-cited `04`/`05`/`06`/`07`/`08`/`10`/`11`/`12` section numbers; all now point at the owning section, e.g. the KPI library is `05` §5, the rule specifications are `06` §4, the mapping review queue is `10` §13); all FR IDs used exist with the claimed meaning (`FR-BVA-012` = search, `FR-BVA-013` = comparability guard, `FR-IMP-022` = data-quality score); the TL;DR is 10 bullets (≤ 15); no marker text remains.
 - **`15` audit:** every `§`-citation verified against its target document (all resolved), every `SCR-`/`FR-`/`ERR-`/`SEC-`/`TST-`/`GATE-` ID used exists in its owning doc, the TL;DR is 10 bullets (≤ 15). Corrections made during the audit: the SmartScreen ladder is five steps (not three); the sample-data non-delivery rule points at `FR-XC-013`/`FR-ONB-008` (sample-data integrity is **Addon 4** §H, not Addon 1 §H); `SCR-003`/`SCR-040`/`SCR-043` replaced the `SCR-0xx` placeholder; the `TXT-INSTALL` marker became a proper §8.3 clause; `TST-SEC-20` is owned by `13` (not `14`).
 - Quality gates: **0 of 5 gates attempted** (expected — gates are run at Phase 0 completion).
+
+### Tabletop walkthrough (Addon 1 §P20 / `GATE-02-03`) — executed as a documentation pass
+
+The walkthrough narrates one month in the life of the analyst using **only the documents**. Every step
+below was traced from the task, through the documented screen, to its rule, its export and its owning
+section. "Verdict" is the result of that trace, not an opinion.
+
+| # | Step (a month in the life) | Screen | Rule / calc | Output | Documented home | Verdict |
+|---|---|---|---|---|---|---|
+| 1 | Install from the guide alone, including the Windows warning | installer | — | — | `22` §2.1; `29` §11 | No gap (see finding 1) |
+| 2 | First launch: sample project, tour | `SCR-043` | `FR-ONB-001`…`006` | — | `22` §2.2 | No gap |
+| 3 | Choose a project folder (local, never a synced path) | `SCR-003` | `ADR-004`, `FR-PRJ-002` | — | `22` T-02; `13` §4 | No gap |
+| 4 | Create / open the period | `SCR-004` | `CALC-002`; `FR-PRJ-003/004` | — | `22` T-02; `03` §5 | No gap |
+| 5 | Export the three files from the source systems | outside the app | — | — | `04` §2, §7–§9 file checklists; `22` T-03/T-04 | No gap |
+| 6 | Import file A through the six-step wizard | `SCR-005`–`SCR-010` | `IMP-001`…`032` | validation report | `22` T-03; `04` §10 | No gap |
+| 7 | Import files B and C (profile remembered) | `SCR-008` | `FR-IMP-005/026` | validation reports | `22` T-04 | No gap |
+| 8 | Read the validation report and the data-quality score | `SCR-012`, `SCR-014` | `05` §8 score | report | `22` T-06; `04` §11 | No gap |
+| 9 | Resolve quarantined rows | `SCR-013` | quarantine rules (`04` §10) | updated batch | `22` T-05 | No gap |
+| 10 | Check reconciliation before trusting the data | `SCR-014` | `06` cross-system tie-out family | reconciliation sheet | `22` T-06; `11` §4.7 | No gap |
+| 11 | BvA matrix → bridge → trends → top-N → KPI → three-way | `SCR-015`–`SCR-020` | `CALC-*`, `KPI-001`…`006` | charts `CHT-001`…`012` | `22` T-07; `05` §5/§7 | No gap |
+| 12 | Drill a number to transactions and the source row | `SCR-021` | `FR-BVA-*` | CSV/evidence | `22` T-07; `05` §9 | No gap |
+| 13 | Exception register → detail → triage (owner, status, age) | `SCR-023`, `SCR-024` | `EXC-001`…`024` | register | `22` T-08/T-09; `06` §2 | No gap |
+| 14 | Evidence bundle for the accounting teams | `SCR-025` | `FR-EXC-*` | zip + workbook | `22` T-10; `11` §9 | No gap |
+| 15 | Forecast refresh, overrides, scenarios, accuracy | `SCR-027`, `SCR-028` | `FC-*`, `CALC-*` | forecast sheet | `22` T-11/T-12/T-13; `07` | No gap |
+| 16 | Commentary: write, or accept an AI draft, then approve | `SCR-031` | `FR-XC-001`; `AI-*` (off by default) | slide-2 text | `22` T-14/T-20; `10` §2 | No gap |
+| 17 | Generate the Excel pack (eight sheets) | `SCR-029` | `XL-001`…`008` | `.xlsx` + zip | `22` T-15; `11` §3/§4 | No gap |
+| 18 | Generate the deck (six slides) | `SCR-029` | `PPT-001`…`006` | `.pptx` | `22` T-16; `12` §4 | No gap |
+| 19 | Issue the pack: freeze, version, recipients, commentary lock | `SCR-029`, `SCR-030` | `FR-XC-002/003`, `FR-PRJ-010` | issuance record | `22` T-17; `12` §8 | No gap |
+| 20 | Re-issue after a change: new version stating what changed | `SCR-030` | `FR-XC-002` | new version | `08` (issuance states); `12` §8 | No gap |
+| 21 | Close the period | `SCR-001`, `SCR-004` | `FR-PRJ-005` | — | `22` T-18 | No gap |
+| 22 | Back up; restore into an empty folder | `SCR-039` | `FR-PRJ-008/009` | `.zip` backup | `22` T-19; `13` §9.2 | No gap |
+| 23 | Produce a diagnostics bundle for support | `SCR-040` | `13` §7 | diagnostics zip | `22` T-21 | No gap |
+| 24 | Month-end +1: forecast accuracy review | `SCR-028` | `07` §8 | accuracy view | `22` T-13 | No gap |
+
+**Finding 1 (fixed in this pass).** `22` §2.1 states that its Windows-warning text "is reused verbatim in
+`29`", but the first `29` draft only paraphrased it. `29` §11 now carries the verbatim block, so the claim
+is true and the client reads the exact words they will meet on install day.
+
+**Finding 2 (recorded, no doc change needed).** The walkthrough's steps 6–9 assume the analyst knows which
+file is which system's export. `04` provides per-system file checklists and `22` T-03/T-04 names the three
+systems, so the assumption is satisfied; the mapping walkthrough in `29` §8 exists to close the gap where a
+client's export does not match the checklist.
+
+### Cold-start client pass (Addon 1 §P20 second pass / Addon 4 §L.10) — paper run
+
+Run as a first-timer with **only `22` and `29`** available, on a fresh machine with no data, sample project
+only. Twelve questions a cold-start user actually asks, and where the answer lives:
+
+| # | The cold-start question | Where the answer is | Result |
+|---|---|---|---|
+| 1 | Which file do I run, and what are the two files you sent? | `22` §2.1 | Answered |
+| 2 | Windows says it protected my PC — is this a virus? | `22` §2.1 (verbatim block); `29` §11 | Answered |
+| 3 | Can I practise before I have the real files? | `22` §2.2 (sample project + tour) | Answered |
+| 4 | Where does my data live, and does anything leave the machine? | `22` §2.3; `29` §11 | Answered |
+| 5 | What do I do on day one of a new month? | `22` §3 rhythm; T-02/T-03 | Answered |
+| 6 | The import found problems — now what? | `22` §7.2; T-05; `29` §6 | Answered |
+| 7 | Which numbers end up in the deck, and can I change them? | `22` T-16; `12` §4 | Answered |
+| 8 | How do I send the pack, and how do I know who got which version? | `22` T-17; `29` §8 row 10 | Answered |
+| 9 | I issued the pack and then found an error — what happens? | `22` T-17; `29` §15 | Answered |
+| 10 | How do I back up, and how do I restore? | `22` §2.4, T-19; `29` §12 | Answered |
+| 11 | Who do I call, and what do they need? | `22` §1.4, T-21; `29` §12 | Answered |
+| 12 | What exactly does the AI do with my data? | `22` T-20; `29` §6 | Answered |
+
+**Result: no blocking gap.** The pass is deliberately a **paper** pass: the executable cold-start test
+(install the built artefact and complete a month-end on sample data with no author present,
+`TST-UAT-04`/`TST-UAT-05`) needs the installer from the packaging spike and the `sample-data/` corpus, and is
+scheduled at UAT (`28` §5.2) rather than pretended here.
+
+### Findings that changed the set (not just verified it)
+
+| # | Finding | Where it came from | Action |
+|---|---|---|---|
+| 1 | `22` §2.1 promises its Windows-warning text is "reused verbatim in `29`", but `29` only paraphrased it | Tabletop walkthrough, step 1 | `29` §11 now carries the verbatim block (fixing the walkthrough finding; the claim is now true) |
+| 2 | Addon 1 §N's "PDF export of dashboards" was not in the backlog — only the v1 decision `DEC-028` (no in-app PDF rendering) covered the stance | Gate self-audit, `GATE-02-11` | `BL-036` added (Post-v1, M, trigger = a client workflow needs PDFs without Excel); `27` counts/views/constants refreshed; `GATE-02-11` → ✅ |
+| 3 | The doc-25 audit figure in the doc-21–25 pass said 320 lines; the shipped file is 332 | Link-check housekeeping | Corrected in place and recorded in the `28` audit bullet (append-only rule honoured by recording, not silently editing) |
+| 4 | 51 unescaped pipes inside inline code spans split table cells; `17` §12 had two rows with a missing "Enforced by" cell | Table sweep | Escaped/added in the hygiene commit; every table in `docs/` now passes the cell-count check |
+
+### Phase 0 self-audit, link-check and gate snapshot
+
+- **Link-check (Addon 2 §F.6, Addon 4 §K/§L.9):** 30 docs scanned; every `` `NN` §x `` citation resolves
+  against a real heading in the target document; the only two flagged strings are **recorded corrections**
+  ("`03` §16 → `04` §16", "`14` §2.3/§2.5 → `14` §1.2 / `09` §5.3") that quote the old wrong cite on
+  purpose. Every table in `docs/` passes a header/separator/cell-count sweep (0 mismatches after the
+  escaping pass). File references all resolve except deliberate forward references
+  (`PHASE0_SUMMARY.md`, `THIRD_PARTY_LICENSES.txt`, `README.txt` in the payload, and the
+  `NN_TITLE_IN_CAPS.md` format placeholder in `17`). 1,131 distinct backticked ID tokens, every one
+  matching a registered namespace or a documented fixture value.
+- **Gate snapshot at this point (`14` §15):** **55 ✅ / 3 ⬜**. Open: `GATE-01-06` (the packaging spike's
+  installer script — deliberately post-approval), `GATE-04-02` and `GATE-04-07` (the `sample-data/` negative
+  corpus, Phase 0 build step 7). Everything else in all five gates is green.
+- **Deferred by scope in this session:** the `sample-data/` build itself (generator, `.xlsx` templates,
+  ~40 plantings, `expected_exceptions.csv`, `malformed/` corpus, `--scale 250000`) — data/fixture
+  engineering, not documentation. Covered by the session's "docs only" instruction; flagged for approval in
+  `PHASE0_SUMMARY.md` §5.
 
 ### Decisions taken this session
 
@@ -244,13 +344,13 @@ None. Every unconfirmed client fact has a labelled default in `01` §12 and will
 
 ### Next step
 
-Continue Phase 0's close-out in the Addon 4 §L order: (8) refresh the Source-of-Truth Matrix (`00_INDEX` §5)
-and run the doc-header sweep across every file; (9) build `sample-data/` (the generator's inputs, the committed
-expectations incl. `expected_exceptions.csv`, the `malformed/` corpus with its expected message IDs, and the
-`--scale 250000` path) per `14` §16; (10) refresh the Addon Coverage Matrix and self-audit all five gates
-(`14` §15) with the link-check; (11) run the tabletop walkthrough through pack issuance and the cold-start
-client pass on `22`/`29` alone; (12) write `PHASE0_SUMMARY.md` and **STOP**: present it with this pack for the
-recorded Phase 0 approval (`CHANGELOG` + `SESSION_LOG` per Addon 4 §E.2). No product code before that approval.
+**STOP for approval (Addon 4 §L.12).** Present `PHASE0_SUMMARY.md` + `29_CLIENT_REQUIREMENTS_PACK.md` to the
+project owner and record the answer as `Phase 0 APPROVED — <who> — <date>` in `CHANGELOG.md` and this file. On
+approval: the **packaging spike** (`GATE-06`) runs first, then Phase 1. Two items stay open and non-blocking:
+(a) the `sample-data/` build (generator, `.xlsx` templates, ~40 plantings, `expected_exceptions.csv`,
+`malformed/` corpus, `--scale 250000`) — deferred by this session's docs-only scope, needing the owner's
+go-ahead, and the reason `GATE-04-02`/`GATE-04-07` remain ⬜; (b) `GATE-01-06`, proven by the spike itself. No
+product code before the recorded approval.
 
 ### Deferred to backlog / open questions
 
@@ -352,3 +452,10 @@ Phase 5; the KPI-card default set is client-confirmable (`PPT-KPI-DEFAULT`).
   response targets). Every decision the client must make now carries our recommendation, so the answer can
   be "agree". The pack also fixes how the client hears about change: nothing moves silently, small changes
   get a change-log line, large ones get an impact note and their decision first.
+
+- New from the approval pass: Phase 0 ends with **evidence, not a feeling** — the tabletop walkthrough traced
+  24 month-end steps to their screen/rule/output homes (finding and fixing one cross-doc claim about the
+  Windows-warning text), the cold-start pass answered twelve first-timer questions from `22`/`29` alone, the
+  link-check and table sweep are clean, and the gate snapshot is 55 of 58 with each open check named and
+  justified (installer proof after approval; the corpus awaiting a scope decision). `PHASE0_SUMMARY.md`
+  carries the approval ask and nothing that cannot be re-derived from the owning document.

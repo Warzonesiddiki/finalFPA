@@ -589,6 +589,37 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   Phase 0 close-out sequence (Source-of-Truth refresh + doc headers → `sample-data/` → Coverage Matrix +
   five-gate self-audit with the link-check → walkthroughs → `PHASE0_SUMMARY` → stop for approval).
 
+- **`docs/PHASE0_SUMMARY.md`** (Draft v0.1) — the approval artefact (Kickoff §5; Addon 4 §L.11): the product
+  in one paragraph; what the set locks (per-group counts); nineteen key decisions with their owning ADR or
+  decision and why each matters; the eight top risks with the mitigations in force; the open questions,
+  including the three answers that matter most (`OQ-014` pilot month, `OQ-016` support terms, `OQ-017`
+  delivery channel); the gate snapshot (55 of 58, each open check named and justified); what approval means
+  (recorded, dated, scoped; it releases the packaging spike, not the build); what happens next; and the
+  copy-paste approval line. Reason: Phase 0 ends by presenting evidence for a decision, not by declaring
+  itself finished.
+- **Tabletop walkthrough and cold-start pass** (`SESSION_LOG`) — the walkthrough narrates a full month in the
+  analyst's life: 24 steps, each traced to its screen (`SCR-`), rule (`EXC-`/`CALC-`/`IMP-`), output
+  (`XL-`/`PPT-`) and owning section, through pack issuance and re-issue. One defect found and fixed: `22`
+  §2.1 claims its Windows-warning text is reused verbatim in `29`, and the first `29` draft only paraphrased
+  it — `29` §11 now carries the verbatim block. The cold-start pass then answered twelve first-timer
+  questions using `22` and `29` alone; no blocking gap. Both are recorded as evidence for `GATE-02-03`.
+- **Gate audit found one dropped addon item** — `GATE-02-11` asked that Addon 1 §N's parked list be recorded
+  so nothing is dropped; thirteen of its fourteen items already mapped to `27` rows, but **"PDF export of
+  dashboards"** existed only as the v1 decision `DEC-028` (no in-app rendering) with no backlog entry. Added
+  `BL-036` (Post-v1, size M, trigger = a client workflow needs PDFs without Excel), refreshed the register's
+  counts and views (`27` §2/§3/§6), and flipped `GATE-02-11` → **✅**.
+- **Self-audit and link-check** — 30 docs scanned: every `§` citation resolves against a real heading, every
+  table passes a header/separator/cell-count sweep (0 mismatches), every one of 1,131 distinct ID tokens
+  matches a registered namespace or a documented fixture value, and all file references resolve except
+  deliberate forward references (`PHASE0_SUMMARY.md`, `THIRD_PARTY_LICENSES.txt`, the payload's `README.txt`,
+  and `17`'s format placeholder). `14` §15: **55 ✅ / 3 ⬜** — `GATE-01-06` (the installer script, proven by
+  the post-approval packaging spike) and `GATE-04-02`/`-07` (the `sample-data/malformed/` corpus, deferred by
+  this session's documentation-only scope and awaiting the owner's go-ahead).
+- **Governance** — `00_INDEX`: `PHASE0_SUMMARY.md` → Draft v0.1; `A3-H` → **INTEGRATED**; `A3-F`/`A3-J`
+  annotated with what remains; §9's gate tracker now carries per-gate counts; §12's approval log shows
+  Phase 0 **requested, awaiting recorded approval**, with the evidence named. `14` §15's `GATE-02-03` → ✅.
+  `16` §1.3 now points at the approval and the post-approval spike.
+
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's

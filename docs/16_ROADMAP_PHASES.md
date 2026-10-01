@@ -68,12 +68,12 @@
 
 | Field | Value |
 |---|---|
-| Item | **Close Phase 0: refresh the Source-of-Truth Matrix and doc headers, build `sample-data/`, refresh the Addon Coverage Matrix, run the five-gate self-audit with the link-check, run the tabletop walkthrough and the cold-start client pass, then write `PHASE0_SUMMARY.md` and stop for approval** (`00`–`29` are written; Addons 1–4 are complete on paper) |
-| Why now | Addon 4 §L steps 2–6 and 11; the Phase-0 gate (`GATE-01`…`GATE-05`) cannot run before the set is complete |
+| Item | **Present Phase 0 for recorded approval** (`PHASE0_SUMMARY.md` + `29`) and wait. Everything requested before approval is done: the Source-of-Truth Matrix and headers, the Coverage Matrix refresh, the five-gate self-audit with the link-check, the tabletop walkthrough through pack issuance and the cold-start client pass. Open and non-blocking: the `sample-data/` corpus (owner's scope decision; it feeds `GATE-04-02`/`-07`) and `GATE-01-06` (proven by the post-approval packaging spike) |
+| Why now | Addon 4 §L steps 11–12: the five gates have been self-audited (`55 ✅ / 3 ⬜`, none blocking approval) and the summary exists; approval releases the packaging spike |
 | Definition of done for this item | Every document exists with the standard header, zero blocking `TBD`s, the Coverage Matrix rows integrated, `CHANGELOG` + `SESSION_LOG` entries, and the link-check clean (`14` §13.1) |
-| Next item after this one | Addon 4 §L steps 8–11, in order: the Source-of-Truth Matrix refresh + doc headers, then `sample-data/` (generator + `expected_exceptions.csv` + `malformed/` corpus + `--scale 250000`), then the Coverage-Matrix refresh and the five-gate self-audit with the link-check |
-| Next after that | The tabletop walkthrough through pack issuance + the cold-start client pass, then `PHASE0_SUMMARY.md` and the recorded approval (Addon 4 §E.2/§L step 12), then **STOP and present** (Addon 4 §L.8–12) |
-| Blocking | None. Only the client-facing open questions (`18`/`21`) that have labelled defaults |
+| Next item after this one | On approval: step 13 — the **packaging spike** (`GATE-06`, two half-days, real Windows 11 through the SmartScreen path); then Phase 1 begins. In parallel: the `sample-data/` build (step 7) if the owner confirms it is in scope, and the two commercial answers (`OQ-016`, `OQ-017`) |
+| Next after that | Phase 1 (import & validation, 24 ideal days) on the client's real file shapes, with the mapping walkthrough from `29` §8; then Phases 2–6 to the pilot (`GATE-13`), UAT (`GATE-14`) and go-live (`GATE-15`), each with its own gate packet and demo script |
+| Blocking | None. The client-facing questions all have labelled defaults except `OQ-014` (the pilot month), which is a schedule dependency and not needed for approval |
 
 > This table is the session-start pointer. `00_INDEX` §10 and the `SESSION_LOG` "Next step" must agree with
 > it; if they disagree, this table wins and the difference is corrected in the same commit.
