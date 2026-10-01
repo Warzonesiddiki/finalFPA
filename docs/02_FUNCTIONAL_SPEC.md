@@ -902,7 +902,9 @@ Slide-by-slide structure, placeholder geometry, fonts, colours and character bud
   BvA bridge/waterfall; top variances with drivers (+ AI draft commentary when enabled and approved);
   exceptions and control risks; forecast and outlook. Content is driven by the current filter context.
 - **Acceptance:** the generated deck contains exactly the specified slides and placeholders, and every
-  chart/table is native.
+  chart/table is native. In base-deck mode (`12` §6) the six **generated** slides are asserted, and the
+  count of preserved client slides is declared on the cover; a missing input produces the documented
+  *not-available* state or an explicitly chosen omission that is stated on the cover (`DEC-029`).
 
 **FR-PPT-002 · P0 · Phase 5 — Native, editable output**
 - **Behaviour:** All text is in text frames, all tables are PowerPoint tables, all charts are native

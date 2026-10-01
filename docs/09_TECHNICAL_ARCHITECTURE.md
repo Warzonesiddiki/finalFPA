@@ -718,6 +718,7 @@ and an outcome recorded as an ADR or a `27_BACKLOG.md` entry **before** any prod
 | `SPK-05` | DuckDB performance on a 250k-row import and aggregation set on a 4-core/8 GB machine | `NFR` baseline recorded in `14` |
 | `SPK-06` | Does Playwright drive the packaged app's UI on Windows (or only the dev server)? | `14` E2E approach |
 | `SPK-07` | Which openpyxl behaviours matter for the client's real workbooks (tables, named styles, conditional formats)? | `11` notes |
+| `SPK-08` | Does the pinned `python-pptx` support a native waterfall chart (`XL_CHART_TYPE.WATERFALL`), and does PowerPoint render the generated XML correctly? If not, the documented stacked-column fallback is used | `12` §5.2 (chart decision recorded there) |
 
 **Rule:** a spike never ships partial production code; its findings update the owning document first.
 

@@ -204,8 +204,8 @@ column may not sum exactly to the displayed total.**
 | Setting | Divisor | Label always shown | Example |
 |---|---|---|---|
 | Whole units | 1 | `₹` | `₹ 30,95,801.00` |
-| Thousands | 1,000 | `₹ in thousands` | `₹ 3,095.80 thousand` |
-| Lakhs | 100,000 | `₹ in lakhs` | `₹ 30.96 lakh` |
+| Thousands | 1,000 | `₹ in thousands` | `₹ in thousands 3,095.80` |
+| Lakhs | 100,000 | `₹ in lakhs` | `₹ in lakhs 30.96` |
 
 Scale is **display-only**; the engine never computes scaled numbers. The label appears in the UI, the
 Excel pack (header block and column headers) and the deck, identically (F-page fixtures assert this).

@@ -176,6 +176,21 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   code-health guardrails; and the one-command scripts. Reason: Kickoff §4, Addon 1 §C.2/G/I/J/L,
   Addon 2 §B/C.2/F/H, Addon 3 §I, Addon 4 §I.
 
+- **`docs/12_POWERPOINT_OUTPUT_SPEC.md`** (Draft v0.1) — the deck contract: the **fixed six slides**
+  (`PPT-001`…`PPT-006`) with the default/opt-in rule for missing inputs (`DEC-029`); the universal
+  contract (inch grid + scaling to any slide size, the native-and-editable shape whitelist, the shared
+  theme, the **character-budget formula** with 29 per-placeholder budgets and the prioritized trimming
+  order that makes overlap structurally impossible, deterministic shape naming/order, stamping + footer +
+  the full disclaimer on the last slide, AI/rule-based labelling, not-available states, accessibility,
+  the ≤ 15 s aggregate-only performance budget); every slide and placeholder specified with geometry,
+  fonts, budgets and content sources; the two native charts including the waterfall decision (`SPK-08`)
+  and its documented stacked-column fallback; client base-deck mapping and refusal rules; the deck's half
+  of the cross-artifact contract; files/refresh/issuance; 24 test IDs; failures `ERR-EXP-012`…`018`.
+  Reason: Kickoff §5/§11, Addon 2 §C/§E.5, Addon 3 §F.3/F.4.
+- **Reconciliations and ripple edits** — `01` `DEC-029` (deck missing-input behaviour) and `02`
+  `FR-PPT-001` acceptance clarified for base-deck mode; `05` §6.3 scale examples aligned to the display
+  owner (`08` §15); `08` §11.1's omission example now points at `12` §2.1; `09` gained spike `SPK-08`;
+  `11` §12 gains the `ERR-EXP-012`…`018` pointer. No behaviour was invented outside the spec of record.
 - **`docs/11_EXCEL_OUTPUT_SPEC.md`** (Draft v0.1) — the complete Excel-output contract: the five
   artefact families, the universal rules (**values-only workbooks**, the 30-field machine-readable stamp,
   the four-row sheet header block, filenames/sanitisation/collision policy with the recoverable

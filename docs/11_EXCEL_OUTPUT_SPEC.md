@@ -1270,6 +1270,11 @@ Copy details) and a catalog entry (`26`), never a traceback (`FR-XC-006`).
 | `ERR-EXP-010` | Estimated workbook size > 300 MB | *"This pack is estimated at <size>, above the 300 MB limit."* | *"Nothing was written."* | Export summary-only, or narrow the filter | Estimate from row counts × the measured bytes/row for the sheet |
 | `ERR-EXP-011` | Stale derived results in scope | Warning banner in the app and in the pack (`CF-009`) | — | *"Re-run rules / recalculation before issuing this pack."* | Generation is allowed; **issuance is blocked** (`FR-XC-003`) until the stale state clears |
 
+**PowerPoint-generation failures continue the same family.** `ERR-EXP-012`…`ERR-EXP-018` are specified
+in `12` §10 (base-deck placeholder mismatch, unmeetable text budget, damaged template, chart-type
+fallback, logo, embedded chart data, size guard); the shared conditions above (`ERR-EXP-002`, `003`,
+`006`, `007`, `009`) apply to deck generation unchanged.
+
 **Hard-open guarantee:** the limitations in §3.5 (no macros, no external links, no pivot caches, no merged
 data cells, ≤ 40 styles, values only, ASCII-safe sheet names) exist so that a generated workbook opens in
 Excel, LibreOffice and Google Sheets with **no repair prompt** and no "protected view" surprise. The

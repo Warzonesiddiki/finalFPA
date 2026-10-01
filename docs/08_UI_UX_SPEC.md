@@ -553,7 +553,8 @@ scenario (default Base), commentary (per-line and executive narrative), and the 
 runs as a background job with progress and Cancel; on completion, a summary states file names, sizes, sheet
 counts, slide count, and exactly which filter context and batch IDs were stamped (`FR-XL-006`, `FR-PPT-009`).
 Missing inputs are stated, not silently skipped (e.g. *"No locked forecast version — the forecast slide
-will be omitted"* with a link to lock one).
+will show a \"Not available\" state, or you can choose to omit it (stated on the cover)"* with a link to
+lock one; the behaviour and the default are owned by `12` §2.1, `DEC-029`).
 
 ### 11.2 Pack issuance register (`SCR-030`)
 

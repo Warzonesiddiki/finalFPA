@@ -32,6 +32,8 @@ product code** (Addon 4 §L, steps 1–2).
 | `docs/08_UI_UX_SPEC.md` | **New.** IA + guided nav, global shell, **43-screen inventory** (`SCR-001`…`SCR-043`), screen-by-screen specs with 6 ASCII wireframes, **12-chart inventory** (`CHT-`), **12 centralized conditional-format rules** (`CF-`) with non-colour signals, display-formatting contract, message-catalog/wording rules, per-screen state matrix, WCAG AA accessibility baseline, design system/tokens, change control |
 | `docs/10_AI_INTEGRATION_SPEC.md` | **New.** AI policy (allowed/forbidden, off by default), provider config + `ADR-010` (OpenAI-compatible HTTP, no SDK), versioned prompt system, **the four complete prompt texts with schemas and worked examples**, redaction/minimum-data rules, 10 injection defences, 10-step output validation, **number-mismatch stance (strip and flag)**, caps + cost table + usage log, caching, model pinning/deprecation/fallback, keyless rule-based fallback, draft provenance/regeneration/approval, mapping review-queue state machine, key rotation, 14 AI test fixtures |
 | `docs/09_TECHNICAL_ARCHITECTURE.md` | **New.** **ADR-000 template + index and 9 ADRs** (stack, toolchain, signing, storage, Windows validation, process model, SQL-over-ORM, migrations, static-UI serving), headless-engine boundary + module map, CLI with 9 exit codes, data flow, storage layout + OneDrive rule + **storage-growth maths**, mutex/locks, logging, job model + cancellation + crash recovery, config layering, recompute/invalidation, data-volume rule, migration strategy, **NFR→architecture budget table**, spike policy, guardrails, one-command scripts |
+| `docs/12_POWERPOINT_OUTPUT_SPEC.md` | **New.** The deck contract: the **fixed six slides** (`PPT-001`…`PPT-006`) with the default/opt-in missing-input rule (`DEC-029`); the universal contract (inch grid + scaling, the native-and-editable whitelist, the shared theme, the **character-budget formula** with per-placeholder budgets and the prioritized trimming order, deterministic shape naming/order, stamping + footer + full disclaimer on the last slide, AI/rule-based labelling, not-available states, accessibility, the ≤ 15 s aggregate-only budget); every slide/placeholder with geometry, fonts, budgets and content sources; two native charts incl. the waterfall decision (`SPK-08`) and its stacked-column fallback; base-deck mapping/refusal rules; the deck's half of the cross-artifact contract; files/refresh/issuance; 24 test IDs; `ERR-EXP-012`…`018` |
+| `docs/01_PRD.md`, `docs/02_FUNCTIONAL_SPEC.md`, `docs/05_CALCULATION_SPEC.md`, `docs/08_UI_UX_SPEC.md`, `docs/09_TECHNICAL_ARCHITECTURE.md`, `docs/11_EXCEL_OUTPUT_SPEC.md` | **Amended (ripple).** `01`: `DEC-029`. `02`: `FR-PPT-001` acceptance clarified for base-deck mode. `05` §6.3: scale examples aligned to the display owner (`08` §15). `08` §11.1: the omission example now points at `12` §2.1. `09`: spike `SPK-08` added. `11` §12: pointer to `ERR-EXP-012`…`018` |
 | `docs/11_EXCEL_OUTPUT_SPEC.md` | **New.** The five artefact families; the universal contract (**values-only workbooks** — no formulas anywhere, the 30-field machine-readable stamp with defined names, the four-row header block, filename/sanitisation/collision policy incl. the recoverable `.recycle` habit, the 15-ID number-format dictionary with the Indian lakh/crore grouping and its boundary matrix, the `CF-001`…`CF-012` → Excel mapping with **mandatory non-colour signal columns**, freeze/autofilter/width/wrap rules, locale independence, sample-data watermarking); **eight pack sheets specified column by column** (`Cover`, `BvA Summary`, `BvA Bridge`, `Transaction Detail`, `Exception Register`, `Forecast Summary`, `Import Reconciliation`, `Audit Trail`) each with controls, empty state and print contract; the 1,048,576-row cap and lossless split algorithm; the evidence bundle (workbook + zip with hashed manifest); ad-hoc "export what you see" incl. the CSV contract and its sidecar stamp schema; the owner distribution with the exact plain-text template; house-style matching (matchable vs refused, with the profile JSON); print/PDF setup; the cross-artifact consistency contract; 11 export failure modes (`ERR-EXP-001`…`011`); a 26-item test contract |
 | `docs/03_DATA_DICTIONARY.md`, `docs/01_PRD.md`, `docs/02_FUNCTIONAL_SPEC.md`, `docs/08_UI_UX_SPEC.md` | **Amended.** `03`: `FactExport` added (§5.7 + §2.1 grain register → 41 tables). `01`: `DEC-028` + two new open questions + the `OQ-020` registry-hygiene flag. `02`: `FR-XL-009` aligned to `DEC-028`. `08`: §14 now points to `11` §3.7 for the literal Excel theme and the re-derivation test |
 | `docs/SESSION_LOG.md` | **New.** This file |
@@ -47,6 +49,10 @@ product code** (Addon 4 §L, steps 1–2).
   2 further decisions allocated (`DEC-026`, `DEC-027`).
 - Areas governed: scope (`01`), behaviour (`02`), structure (`03`), ingestion (`04`), arithmetic (`05`),
   governance/metadata (`00`), process (`CHANGELOG`, `SESSION_LOG`).
+- `12` allocates the deck namespace: **6 slide contracts** (`PPT-001`…`PPT-006`), 29 budgeted placeholders,
+  **2 native charts** (bridge + forecast) with the waterfall decision, a template obligation, 7 error codes
+  (`ERR-EXP-012`…`018`) and **24 test IDs** (`TST-PPT-01`…`24`). `01` §21 now carries
+  `DEC-001`…`DEC-029`.
 - `11` allocates the Excel-output namespace: **8 sheet contracts** (`XL-001`…`XL-008`) + 4 more artefacts
   (`XL-009`…`XL-012`), **15 number-format IDs** (`XLS-FMT-001`…`015`), **26 test IDs** (`TST-XL-01`…`26`),
   and **11 export error codes** (`ERR-EXP-001`…`011`, using the existing `EXP` error family rather than
@@ -55,10 +61,11 @@ product code** (Addon 4 §L, steps 1–2).
 ### Spec sections integrated in this session
 
 - Kickoff §5 (doc tree, quality gate), §2, §4 (stack → ADR-001), §6, §7, §8, §9, §10, §11 (reporting
-  outputs — Excel side complete, PPT pending in `12`), §12 (esp. §12.9 job UX, §12.12 locale),
-  §13 (partially, via `01`–`09`); Addon 2 §D.12/D.13 (collision policy, evidence bundle) and §E.4
-  (theme-as-data); Addon 3 §C.5 (score never shown alone), §F.1–F.4 (chart inventory, one CF rule set,
-  output conventions, cross-artifact test).
+  outputs — **complete**: Excel in `11`, the 6-slide editable deck in `12`), §12 (esp. §12.9 job UX,
+  §12.12 locale), §13 (partially, via `01`–`09`); Addon 2 §C (base deck, house style, deterministic
+  ordering), §D.12/D.13 (collision policy, evidence bundle), §E.4 (theme-as-data) and §E.5 (PPT character
+  budgets with prioritized trimming); Addon 3 §C.5 (score never shown alone), §F.1–F.4 (chart inventory,
+  one CF rule set, output conventions, cross-artifact test).
 - Addon 1 §C.2/D/N (partially, via `01`), §O (tracker only).
 - Addon 2 §A.3/C.2/D.14 (partially, via `01`/`00`).
 - Addon 3 §B.2/E (partially, via `01`).
@@ -103,15 +110,32 @@ recorded in `CHANGELOG.md`. A **full matrix refresh is required at the end of th
   `05` §7 → §6.1, `06` §11 → §2, `03` §5.5 → §5.7) plus a wrong source attribution in `CHANGELOG`
   (Addon 1 `D.12`/`D.13` → Addon 2 §D.12/D.13). The sweep script is now the standard cross-reference
   check for future docs.
+- **Doc `12` checks (all green after fixes):** geometry audit over every machine-readable placeholder
+  (bounds, footer clearance, pairwise overlap) — clean; table column widths sum to 12.43″ on both tables;
+  6/6 slide IDs; 24/24 `TST-PPT` IDs; `ERR-EXP-012`…`018` all defined; 1/1 JSON block parses.
+  **Budgets were recomputed from the §3.4 formula rather than typed by hand** — the first draft's numbers
+  did not match the geometry (23 corrections), and the audit then exposed four genuine layout collisions
+  (slide-2 narrative vs footnote, slide-5 table vs summary, slide-6 chart vs disclaimer band, slide-1
+  stamp block too short for 14 lines). All four were resolved by geometry, not by weakening the budgets.
+  **Self-audit catch:** `TST-PPT-09` asserted that a notes "stamp JSON" parses, but no schema existed —
+  the `fpa.ppt.stamp.v1` schema (incl. `omitted_slides` and `notes_full_text`) was added to §3.7 before
+  commit.
+- **Cross-document reconciliations made this pass:** `05` §6.3's scale examples contradicted the display
+  owner (`08` §15) — aligned; `08` §11.1's "the forecast slide will be omitted" example contradicted
+  `FR-PPT-001`'s "exactly six slides" — resolved as default *not-available* + explicit opt-in omission,
+  recorded as `DEC-029` and pointed at from `08`; `FR-PPT-001`'s acceptance now distinguishes generated
+  from preserved slides in base-deck mode.
 - Quality gates: **0 of 5 gates attempted** (expected — gates are run at Phase 0 completion).
 
 ### Decisions taken this session
 
-Recorded in `01_PRD.md` §21 as `DEC-001`…`DEC-028` and to be mirrored (with dates and rationale) into the
+Recorded in `01_PRD.md` §21 as `DEC-001`…`DEC-029` and to be mirrored (with dates and rationale) into the
 canonical Decided log in `18_...OPEN_QUESTIONS.md` when that doc is written. New this pass: **`DEC-028`**
 (PDF is not rendered in-app; v1 delivers tested print readiness + "Open for printing / Save as PDF") —
 raised because `FR-XL-009` implied an action the architecture cannot deliver without a bundled renderer or
-Excel automation, with the three rejected alternatives recorded in `11` §10.3.
+Excel automation, with the three rejected alternatives recorded in `11` §10.3. Also this pass:
+**`DEC-029`** (missing-input deck behaviour: not-available state by default, omission only as an explicit
+choice stated on the cover) — raised by the contradiction between `FR-PPT-001` and the `08` §11.1 example.
 
 ### Blocking questions
 
@@ -119,14 +143,14 @@ None. Every unconfirmed client fact has a labelled default in `01` §12 and will
 
 ### Next step
 
-Continue the mandated doc order: `12_POWERPOINT_OUTPUT_SPEC.md` — the six slides slide by slide (cover
-+ period + source files; executive KPIs; BvA bridge/waterfall; top variances with drivers + optional AI
-draft commentary; exceptions and control risks; forecast and outlook), with exact placeholder geometry,
-**per-placeholder character budgets and the prioritized trimming order** (Addon 2 §E.5), native/editable
-elements only (text boxes, tables, native charts — never screenshots), the editable-in-PowerPoint
-guarantee, brand colours/logo handling, the reference to `11` §3.7's theme, base-deck support for a
-client-supplied `.pptx`, deterministic element ordering, and stamping + disclaimer placement on the
-cover/back slide.
+Continue the mandated doc order: `13_SECURITY_PRIVACY.md` — local-only guarantees restated as verifiable
+statements (no network by default, AI as the single opt-in outbound call), the machine-level secret store
+(DPAPI / Credential Manager) with rotation and purge, the log-content policy (no amounts, vendor names or
+key material), file handling (raw archives, `.recycle`, exports, backups), the diagnostics-bundle
+redaction rules with the opt-in for data rows, the data-at-rest stance (plain local files, stated
+honestly, with what that does and does not protect), the supply-chain rules (pinned deps, license review,
+no GPL/AGPL in shipped binaries, `THIRD_PARTY_LICENSES.txt`, SBOM-lite, no secrets in the repo), and the
+verification checklist that proves each claim — then `14_TESTING_QA_PLAN.md`.
 
 ### Deferred to backlog / open questions
 
@@ -135,6 +159,9 @@ cover/back slide.
   direct ERP connectors → already parked with triggers.
 - Open commercial questions: support/warranty terms (`OQ-016`), delivery channel (`OQ-017`),
   signing-certificate budget (`OQ-012`).
+- New from the `12` pass: spike `SPK-08` (native waterfall support) must run before Phase 5 deck code; the
+deck template `packaging/templates/FPAMonthEndCopilot_v1.pptx` must be authored and committed before
+Phase 5; the KPI-card default set is client-confirmable (`PPT-KPI-DEFAULT`).
 - New from the `11` pass: **`BL-026`** Excel charts inside the pack — deferred with rationale, to be
   recorded in `27_BACKLOG.md`; **`OQ-021`** (client's current report format for house-style matching) and
   **`OQ-022`** (preferred pack default units); the **`OQ-020`** registry-hygiene flag for `18`/`21`.
