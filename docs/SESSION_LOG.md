@@ -33,6 +33,7 @@ product code** (Addon 4 §L, steps 1–2).
 | `docs/10_AI_INTEGRATION_SPEC.md` | **New.** AI policy (allowed/forbidden, off by default), provider config + `ADR-010` (OpenAI-compatible HTTP, no SDK), versioned prompt system, **the four complete prompt texts with schemas and worked examples**, redaction/minimum-data rules, 10 injection defences, 10-step output validation, **number-mismatch stance (strip and flag)**, caps + cost table + usage log, caching, model pinning/deprecation/fallback, keyless rule-based fallback, draft provenance/regeneration/approval, mapping review-queue state machine, key rotation, 14 AI test fixtures |
 | `docs/09_TECHNICAL_ARCHITECTURE.md` | **New.** **ADR-000 template + index and 9 ADRs** (stack, toolchain, signing, storage, Windows validation, process model, SQL-over-ORM, migrations, static-UI serving), headless-engine boundary + module map, CLI with 9 exit codes, data flow, storage layout + OneDrive rule + **storage-growth maths**, mutex/locks, logging, job model + cancellation + crash recovery, config layering, recompute/invalidation, data-volume rule, migration strategy, **NFR→architecture budget table**, spike policy, guardrails, one-command scripts |
 | `docs/14_TESTING_QA_PLAN.md` | **New.** Nine test levels + runners; the **canonical `NFR-001`…`016`** table (target, measurement, fixture, evidence) with the measurement protocol and regression rule; a **292-test catalogue** (206 owned here + 86 reserved by `10`–`13`) with per-family tables; the golden-file policy; the **planted-exception acceptance harness** (`P1`–`P32` + 8 controls, recall ≥ 90 %, zero control raises, 18/18 High, per-rule test map, worked re-run identity scenario); tolerance + 16-row edge-case matrix with message IDs; the **cross-artifact harness**; performance baselines; Playwright golden path, state sweeps, a11y/wording scans, the 14-item Windows checklist, 8 E2E journeys; security-test routing + the fault-injection set; migration/upgrade integrity tests; API/CLI contract tests; 6 UAT scripts; `scripts/check` composition, coverage bars, CI; defect severities/evidence/demo-recipe DoD; and the **58 gate checks** as authoritative checklists with evidence + status |
+| `docs/15_PACKAGING_DEPLOYMENT_RUNBOOK.md` | **New.** The build → install → validate → support runbook: the four release artefacts (`Setup-FPandAMonthEndCopilot-<version>.exe`, `…-portable.zip`, `SHA256SUMS-<version>.txt`, `THIRD_PARTY_LICENSES.txt` + SBOM-lite); build-host rules + the single-source version-stamping chain; the `packaging/` layout and the ten-step `scripts/build` with five preconditions, the automated payload audit and the `NFR-006` ≤ 500 MB budget; the installer contract (per-user, no admin, no prerequisites, HKCU-only, silent flags, the seven "must never do" rules) and the portable-zip semantics (`portable.flag`); the **24-step clean-Windows-11 validation protocol** with evidence/failure rules, four extra variations and full `TST-WIN-01`…`14` step mapping; the first-run experience (sample project, tour, no network, no key, dead-end-free failures) with `ERR-ENG-001`…`010`; uninstall/data-lifecycle semantics (data retained by default, typed confirmation, downgrade = restore-from-backup); the SmartScreen/Defender reality with the five-step ladder, the verbatim walkthrough and the WDSI procedure; the support/diagnostics flow on the user-exported metadata-only bundle + the "never ask for" list; test/gate mapping and change control. Reason: Kickoff §5/§13, Addon 1 §G.2–G.6/J/N, Addon 2 §B.6, Addon 4 §E.3/H/I; `GATE-01-06`. |
 | `docs/13_SECURITY_PRIVACY.md` | **New.** The security/privacy/supply-chain contract as **49 verifiable statements** (`SEC-001`…`049`), each with a mechanism and a planned test (`TST-SEC-01`…`22`): local-only guarantees + the exhaustive three-item outbound inventory; the threat model incl. what is explicitly **not** defended; the exact data-location tree and file-handling rules (atomic writes, `.recycle`, path limits, synced-folder block with recorded override); deletion semantics with pre-delete backup offer and the "not a secure erase" caveat; DPAPI key storage, write-only UI, rotation/revocation/purge with byte-scan proof, `.gitignore` + pre-commit + CI secret scan; log rotation and the allowed/forbidden content policy with a planted-value grep test; the metadata-only diagnostics bundle with its redaction map and manifest schema (20 MB cap); the AI data path (TLS verification not disableable, redaction, caps, provenance, non-authority) and prompt-injection defence; the plain-files data-at-rest stance (`DEC-030`); the privacy note text owned here for `22`/`29`; the audit/log/security-event boundary (`SEC-048`/`049`); error codes `ERR-SEC-001`…`008` |
 | `docs/12_POWERPOINT_OUTPUT_SPEC.md` | **New.** The deck contract: the **fixed six slides** (`PPT-001`…`PPT-006`) with the default/opt-in missing-input rule (`DEC-029`); the universal contract (inch grid + scaling, the native-and-editable whitelist, the shared theme, the **character-budget formula** with per-placeholder budgets and the prioritized trimming order, deterministic shape naming/order, stamping + footer + full disclaimer on the last slide, AI/rule-based labelling, not-available states, accessibility, the ≤ 15 s aggregate-only budget); every slide/placeholder with geometry, fonts, budgets and content sources; two native charts incl. the waterfall decision (`SPK-08`) and its stacked-column fallback; base-deck mapping/refusal rules; the deck's half of the cross-artifact contract; files/refresh/issuance; 24 test IDs; `ERR-EXP-012`…`018` |
 | `docs/00_INDEX.md`, `docs/01_PRD.md`, `docs/02_FUNCTIONAL_SPEC.md`, `docs/03_DATA_DICTIONARY.md`, `docs/09_TECHNICAL_ARCHITECTURE.md`, `docs/11_EXCEL_OUTPUT_SPEC.md` | **Amended (ripple, doc 14).** `00`: doc-map row 14, completeness, `A1-L` INTEGRATED, `TST-<FAM>` families enumerated. `01`: the M10 performance row now cites the canonical NFRs. `02`/`03`: the rule-run target is `NFR-007` (was mis-cited as `NFR-009`). `09` §14: the NFR table extended to `NFR-001`…`016` with the remap (`NFR-009` = Excel pack, `NFR-011` = logs, `NFR-012` = crash) and the new `NFR-013`…`016`; repo layout gains the new test categories and `acceptance`/`perf` scripts. `11`: the Excel-pack budget now cites `NFR-009`. |
@@ -56,6 +57,7 @@ product code** (Addon 4 §L, steps 1–2).
 - `14` owns the NFR and test namespaces: **16 NFRs**, **16 test families** (`TST-CALC` … `TST-UAT`) plus the
   86 reserved IDs, the 58 gate checks (`GATE-01-01`…`GATE-05-13`), and the acceptance/performance harnesses.
 - `13` allocates the security namespace: **49 statements** (`SEC-001`…`049`), **22 tests**
+- `15` owns the environment/lifecycle namespace: the release artefact set, the `packaging/` layout, the build steps, the installer contract, the 24-step clean-VM protocol (with its four variations), the SmartScreen ladder + verbatim walkthrough, the support flow, and **10 error codes** (`ERR-ENG-001`…`010`, extending the `ENG` family registered in `00` §8). `GATE-01-06` is now answerable by the document.
   (`TST-SEC-01`…`22`), **8 error codes** (`ERR-SEC-001`…`008`) and the `SEC` error family — registered in
   `00_INDEX` §8 before the doc was written (spec-first).
 - `12` allocates the deck namespace: **6 slide contracts** (`PPT-001`…`PPT-006`), 29 budgeted placeholders,
@@ -149,6 +151,7 @@ recorded in `CHANGELOG.md`. A **full matrix refresh is required at the end of th
   `FR-PPT-001`'s "exactly six slides" — resolved as default *not-available* + explicit opt-in omission,
   recorded as `DEC-029` and pointed at from `08`; `FR-PPT-001`'s acceptance now distinguishes generated
   from preserved slides in base-deck mode.
+- **`15` audit:** every `§`-citation verified against its target document (all resolved), every `SCR-`/`FR-`/`ERR-`/`SEC-`/`TST-`/`GATE-` ID used exists in its owning doc, the TL;DR is 10 bullets (≤ 15). Corrections made during the audit: the SmartScreen ladder is five steps (not three); the sample-data non-delivery rule points at `FR-XC-013`/`FR-ONB-008` (sample-data integrity is **Addon 4** §H, not Addon 1 §H); `SCR-003`/`SCR-040`/`SCR-043` replaced the `SCR-0xx` placeholder; the `TXT-INSTALL` marker became a proper §8.3 clause; `TST-SEC-20` is owned by `13` (not `14`).
 - Quality gates: **0 of 5 gates attempted** (expected — gates are run at Phase 0 completion).
 
 ### Decisions taken this session
@@ -167,14 +170,15 @@ None. Every unconfirmed client fact has a labelled default in `01` §12 and will
 
 ### Next step
 
-Continue the mandated doc order: `15_PACKAGING_DEPLOYMENT_RUNBOOK.md` — local-only guarantees restated as verifiable
-statements (no network by default, AI as the single opt-in outbound call), the machine-level secret store
-(DPAPI / Credential Manager) with rotation and purge, the log-content policy (no amounts, vendor names or
-key material), file handling (raw archives, `.recycle`, exports, backups), the diagnostics-bundle
-redaction rules with the opt-in for data rows, the data-at-rest stance (plain local files, stated
-honestly, with what that does and does not protect), the supply-chain rules (pinned deps, license review,
-no GPL/AGPL in shipped binaries, `THIRD_PARTY_LICENSES.txt`, SBOM-lite, no secrets in the repo), and the
-verification checklist that proves each claim — then `14_TESTING_QA_PLAN.md`.
+Continue the mandated doc order with **`16_ROADMAP_PHASES.md`** (kickoff §5 tree: phases, estimates, gate
+artefacts, release cadence), then `17_CODING_STANDARDS.md`, `18_GLOSSARY_ASSUMPTIONS_OPEN_QUESTIONS.md`
+(which absorbs the `OQ-`/`DEC-` registries), `19_VIBE_CODING_PLAYBOOK.md`, `20_REQUIREMENTS_TRACEABILITY.md`,
+then Addon 1's `21`–`25`, Addon 2's `26`, Addon 3's `27`–`28`, Addon 4's `29`, and `PHASE0_SUMMARY.md`.
+**Correction to the previous Next-step text:** it named `15` while describing doc-13 content; `15` is now
+written and this pointer is the accurate one. Open cross-doc debts owed by docs still unwritten: `17` must
+carry the repo-hygiene/dependency policy that `13` §12 and `15` §14.1 point to; `26` must aggregate the
+`ERR-IMP`/`VAL`/`STO`/`AI`/`EXP`/`SEC`/`ENG` codes with the copy owned by their documents; `24` must consume
+`15` §5/§10 as its release checklist and artefact conventions.
 
 ### Deferred to backlog / open questions
 
@@ -197,3 +201,10 @@ Phase 5; the KPI-card default set is client-confirmable (`PPT-KPI-DEFAULT`).
 - New from the `11` pass: **`BL-026`** Excel charts inside the pack — deferred with rationale, to be
   recorded in `27_BACKLOG.md`; **`OQ-021`** (client's current report format for house-style matching) and
   **`OQ-022`** (preferred pack default units); the **`OQ-020`** registry-hygiene flag for `18`/`21`.
+
+- New from the `15` pass: the packaging spike (`SPK-04`, WebView2 in the packaged build) must run before the
+  installer work; the code-signing certificate cost/lead time (`OQ-012`) is a client decision with a recorded
+  fallback (`ADR-003`); the per-machine/all-users installer variant stays parked (`Addon 1 §N`); portable
+  mode's missing Explorer file-version metadata is an accepted, documented limitation; the Inno Setup major
+  version is pinned and re-verified each release; `ERR-ENG-001`…`010` copy is owed to `26` and must obey
+  `08` §16 wording rules.

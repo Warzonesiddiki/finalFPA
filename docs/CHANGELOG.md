@@ -278,6 +278,27 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   (one row per generated export artefact: filter context, versions, content hash, row counts, outcome).
   Reason: `11` §3.9 needs a durable home for the refresh contract; the 40-table figure recorded for
   `03` in the previous entry is therefore superseded by **41 tables**.
+- **`docs/15_PACKAGING_DEPLOYMENT_RUNBOOK.md`** (Draft v0.1) — the build → install → validate → support
+  runbook: the **four release artefacts** and their exact names (`Setup-FPandAMonthEndCopilot-<version>.exe`,
+  `FPandAMonthEndCopilot-<version>-portable.zip`, `SHA256SUMS-<version>.txt`, `THIRD_PARTY_LICENSES.txt` +
+  SBOM-lite); the build host rules and the **single-source version stamping** chain (pyproject →
+  `version_info.txt` → Inno `AppVersion` → UI About — a version is never typed twice); the `packaging/`
+  layout and the ten-step `scripts/build` with five fail-fast preconditions, the automated **payload audit**
+  and the `NFR-006` ≤ 500 MB budget with the auditable-excludes rule; the **installer contract** (per-user
+  `PrivilegesRequired=lowest`, no admin, no prerequisites, HKCU-only registry, silent/IT flags, the seven
+  "must never do" rules) and the **portable-zip** semantics including the opt-in `portable.flag`;
+  the **24-step clean-Windows-11 validation protocol** with its evidence pack, failure rules and the four
+  extra variations that give full `TST-WIN-01`…`14` coverage; the **first-run experience** (sample project,
+  six-step tour, no network, no key demand, dead-end-free failure paths) with the new `ERR-ENG-001`…`010`
+  family; the **uninstall/data-lifecycle semantics** (data retained by default, typed confirmation for
+  deletion, downgrade = restore-from-backup); the **SmartScreen/Defender reality** with the five-step
+  mitigation ladder, the verbatim non-technical walkthrough and the WDSI false-positive procedure; the
+  **support/diagnostics flow** on the user-exported metadata-only bundle with the "never ask for" list and
+  the app-won't-start triage; plus the test/gate mapping and the change-control obligations.
+  Reason: Kickoff §5/§13/§14, Addon 1 §G.2–G.6/§J/§N, Addon 2 §B.6, Addon 4 §E.3/§H/§I; satisfies
+  `GATE-01-06`.
+- **Governance** — `00_INDEX`: doc-map row 15 → Draft v0.1, A1-G **INTEGRATED**, docs complete `00`–`15`.
+  The `ERR-ENG-001`…`010` family (§12 of `15`) joins the `ENG` family already registered in `00` §8.
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's
