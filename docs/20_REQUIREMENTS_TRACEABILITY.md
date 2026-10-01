@@ -311,12 +311,12 @@ will run against the FR.
 | `FR-PRJ-002` | Create project | P0 | 1 | `02` §5; `08` §6.2; `09` §7.1 | `SCR-003`, `SCR-002` | `POST /projects` | `TST-SEC-16`, `TST-E2E-01` | `Spec'd` |
 | `FR-PRJ-003` | Open and manage recent projects | P0 | 1 | `02` §5; `08` §6.1 | `SCR-002` | `GET /projects`, `POST /projects/{id}/open` | `TST-SEC-15`, `TST-UI-16` | `Spec'd` |
 | `FR-PRJ-004` | New Period wizard | P0 | 1 | `02` §5; `04` §14; `08` §6.3 | `SCR-004`, `SCR-001` | `GET /projects/{id}/periods`, `POST /projects/{id}/periods` | `TST-CALC-15`, `TST-BVA-08` | `Spec'd` |
-| `FR-PRJ-005` | Period status: Open / Closed, with audited reopen | P0 | 1 | `02` §5; `03` §3.6; `09` §11 | `SCR-001`, `SCR-004` | `POST /periods/{id}/close`, `POST /periods/{id}/reopen` | `TST-EXC-06`, `TST-CALC-15` | `Spec'd` |
+| `FR-PRJ-005` | Period status: Open / Closed, with audited reopen | P0 | 1 | `02` §5; `03` §3.6; `08` §6.3 | `SCR-001`, `SCR-004` | `POST /periods/{id}/close`, `POST /periods/{id}/reopen` | `TST-EXC-06`, `TST-CALC-15` | `Spec'd` |
 | `FR-PRJ-006` | Single instance per project | P0 | 1 | `02` §5; `09` §7.4 | `SCR-002` | `POST /projects/{id}/open` | `TST-WIN-05` | `Spec'd` |
 | `FR-PRJ-007` | Schema version check and migration on open | P0 | 1 | `02` §5; `09` §13/§16 | `SCR-002` | `POST /projects/{id}/open` | `TST-E2E-05`, `TST-WIN-09` | `Spec'd` |
-| `FR-PRJ-008` | Back up a project to a zip | P0 | 1 | `02` §5; `09` §10; `13` §9.2 | `SCR-039` | `POST /projects/{id}/backup` | `TST-E2E-06` | `Spec'd` |
-| `FR-PRJ-009` | Restore a project from a zip | P0 | 1 | `02` §5; `09` §10 | `SCR-039`, `SCR-002` | `POST /projects/restore` | `TST-E2E-06`, `TST-UI-16`, `TST-UAT-06` | `Spec'd` |
-| `FR-PRJ-010` | Period-close snapshot | P1 | 3 | `02` §5; `07` §7; `09` §11 | `SCR-030`, `SCR-001` | `GET /periods/{id}/snapshots` | `TST-E2E-02`, `TST-EXC-06` | `Spec'd` |
+| `FR-PRJ-008` | Back up a project to a zip | P0 | 1 | `02` §5; `09` §7.1; `13` §9.2 | `SCR-039` | `POST /projects/{id}/backup` | `TST-E2E-06` | `Spec'd` |
+| `FR-PRJ-009` | Restore a project from a zip | P0 | 1 | `02` §5; `09` §7.1; `13` §9.2 | `SCR-039`, `SCR-002` | `POST /projects/restore` | `TST-E2E-06`, `TST-UI-16`, `TST-UAT-06` | `Spec'd` |
+| `FR-PRJ-010` | Period-close snapshot | P1 | 3 | `02` §5; `03` §5.4; `07` §7 | `SCR-030`, `SCR-001` | `GET /periods/{id}/snapshots` | `TST-E2E-02`, `TST-EXC-06` | `Spec'd` |
 | `FR-PRJ-011` | Storage health and archive-and-delete | P1 | 3 | `02` §5; `03` §9.2; `09` §7.3 | `SCR-032`, `SCR-040` | `GET /projects/{id}/storage`, `POST /projects/{id}/archive-raw` | `TST-WIN-12`, `TST-UI-16` | `Spec'd` |
 | `FR-PRJ-012` | Delete project with typed confirmation | P1 | 1 | `02` §5; `13` §10.2; `15` §7.1 | `SCR-002` | `DELETE /projects/{id}` | `TST-SEC-15`, `TST-UI-16` | `Spec'd` |
 
@@ -353,7 +353,7 @@ will run against the FR.
 | `FR-IMP-027` | Budget and forecast file validation | P0 | 1 | `02` §6; `04` §10; `11` §8 | `SCR-007`, `SCR-009` | `POST /imports` | `TST-IMP-26`, `TST-IMP-31`, `TST-IMP-32` | `Spec'd` |
 | `FR-IMP-028` | Budget re-import replaces a version atomically | P1 | 1 | `02` §6; `04` §14 | `SCR-010` | `POST /imports/{batch}/commit` | `TST-IMP-24`, `TST-IMP-35` | `Spec'd` |
 | `FR-IMP-029` | Master-data imports | P1 | 2 | `02` §6; `03` §5; `04` §6 | `SCR-034` | `POST /master-data/{kind}/import` | `TST-UI-20`, `TST-IMP-24` | `Spec'd` |
-| `FR-IMP-030` | Long-running import UX | P0 | 1 | `02` §6; `04` §3; `09` §11 | `SCR-009`; Global (08 §3.3 shell) | `POST /imports`, `POST /imports/{batch}/cancel` | `TST-UI-13`, `TST-PRF-02`, `TST-PRF-16` | `Spec'd` |
+| `FR-IMP-030` | Long-running import UX | P0 | 1 | `02` §6; `04` §3; `09` §8.2 | `SCR-009`; Global (08 §3.3 shell) | `POST /imports`, `POST /imports/{batch}/cancel` | `TST-UI-13`, `TST-PRF-02`, `TST-PRF-16` | `Spec'd` |
 | `FR-IMP-031` | Sample-project import guard | P1 | 1 | `02` §6; `14` §16 | `SCR-005`, `SCR-010` | `POST /imports` | `TST-UI-01`, `TST-SEC-17` | `Spec'd` |
 
 ### 3.4 `FR-BVA` — budget vs actual analysis (16 FRs)
@@ -387,13 +387,13 @@ will run against the FR.
 | `FR-EXC-004` | Stable exception identity | P0 | 3 | `02` §8; `06` §D.1 | `SCR-023` | `GET /exceptions/{id}` | `TST-RUL-27`, `TST-EXC-11` | `Spec'd` |
 | `FR-EXC-005` | Re-run preserves workflow state | P0 | 3 | `02` §8; `06` §2.2 | `SCR-023` | `POST /rules/run` | `TST-RUL-27`, `TST-EXC-11` | `Spec'd` |
 | `FR-EXC-006` | Status workflow | P0 | 3 | `02` §8; `06` §1.1 | `SCR-024` | `PATCH /exceptions/{id}` | `TST-EXC-01` | `Spec'd` |
-| `FR-EXC-007` | Owner assignment | P0 | 3 | `02` §8; `03` §5.5 | `SCR-024`, `SCR-034` | `PATCH /exceptions/{id}` | `TST-EXC-05` | `Spec'd` |
+| `FR-EXC-007` | Owner assignment | P0 | 3 | `02` §8; `03` §5.6; `06` §2.6 | `SCR-024`, `SCR-034` | `PATCH /exceptions/{id}` | `TST-EXC-05` | `Spec'd` |
 | `FR-EXC-008` | Notes with history | P0 | 3 | `02` §8 | `SCR-024` | `PATCH /exceptions/{id}` | `TST-EXC-02` | `Spec'd` |
 | `FR-EXC-009` | Aging and overdue | P1 | 3 | `02` §8; `06` §1.1 | `SCR-023`, `SCR-024` | `GET /exceptions` | `TST-EXC-04` | `Spec'd` |
 | `FR-EXC-010` | Bulk operations | P1 | 3 | `02` §8 | `SCR-023` | `POST /exceptions/bulk` | `TST-EXC-03` | `Spec'd` |
 | `FR-EXC-011` | Severity | P0 | 3 | `02` §8; `06` §3 | `SCR-023`, `SCR-024` | `GET /exceptions` | `TST-RUL-25`, `TST-UI-09` | `Spec'd` |
-| `FR-EXC-012` | Per-project rule configuration | P0 | 3 | `02` §8; `06` §7; `08` §12 | `SCR-035` | `GET /rules`, `PUT /rules/{id}` | `TST-RUL-27`, `TST-UI-08` | `Spec'd` |
-| `FR-EXC-013` | Global materiality | P1 | 3 | `02` §8; `05` §4.4 | `SCR-035` | `PUT /settings` | `TST-CALC-24`, `TST-RUL-27` | `Spec'd` |
+| `FR-EXC-012` | Per-project rule configuration | P0 | 3 | `02` §8; `06` §2.11; `08` §12 | `SCR-035` | `GET /rules`, `PUT /rules/{id}` | `TST-RUL-27`, `TST-UI-08` | `Spec'd` |
+| `FR-EXC-013` | Global materiality | P1 | 3 | `02` §8; `05` §11 | `SCR-035` | `PUT /settings` | `TST-CALC-24`, `TST-RUL-27` | `Spec'd` |
 | `FR-EXC-014` | Master-data dependencies degrade gracefully | P0 | 3 | `02` §8; `03` §5; `08` §12 | `SCR-014`, `SCR-023`, `SCR-034` | `GET /rules` | `TST-RUL-26`, `TST-UI-01` | `Spec'd` |
 | `FR-EXC-015` | Rule effectiveness analytics | P1 | 3 | `02` §8; `06` §9 | `SCR-026` | `GET /exceptions/effectiveness` | `TST-RUL-28` | `Spec'd` |
 | `FR-EXC-016` | Evidence bundle | P1 | 3 | `02` §8; `11` §6 | `SCR-025`, `SCR-024` | `POST /exceptions/{id}/evidence` | `TST-XL-21`, `TST-EXC-10` | `Spec'd` |
@@ -470,9 +470,9 @@ will run against the FR.
 | `FR-SET-001` | Settings screen sections | P0 | 1 | `02` §13; `08` §12 | `SCR-032`–`SCR-038` | `GET /settings` | `TST-UI-20` | `Spec'd` |
 | `FR-SET-002` | Mapping management | P0 | 1 | `02` §13; `04` §5; `08` §12 | `SCR-033` | `GET /mapping-profiles`, `PUT /mapping-profiles/{id}` | `TST-UI-20`, `TST-IMP-15` | `Spec'd` |
 | `FR-SET-003` | Master data screens | P0 | 3 | `02` §13; `03` §5; `08` §12 | `SCR-034` | `GET /master-data/{kind}`, `PUT /master-data/{kind}` | `TST-UI-20`, `TST-EXC-05` | `Spec'd` |
-| `FR-SET-004` | Rule configuration | P0 | 3 | `02` §13; `06` §7; `08` §12 | `SCR-035` | `GET /rules`, `PUT /rules/{id}` | `TST-RUL-27`, `TST-UI-08` | `Spec'd` |
+| `FR-SET-004` | Rule configuration | P0 | 3 | `02` §13; `06` §2.11; `08` §12 | `SCR-035` | `GET /rules`, `PUT /rules/{id}` | `TST-RUL-27`, `TST-UI-08` | `Spec'd` |
 | `FR-SET-005` | Fiscal calendar configuration | P0 | 1 | `02` §13; `05` §3; `03` §3 | `SCR-003` | `POST /projects` | `TST-CALC-15`, `TST-CALC-16` | `Spec'd` |
-| `FR-SET-006` | Currency and unit display | P0 | 1 | `02` §13; `05` §10; `11` §3.6 | `SCR-036`, `SCR-003` | `PUT /settings` | `TST-CALC-23`, `TST-XL-08` | `Spec'd` |
+| `FR-SET-006` | Currency and unit display | P0 | 1 | `02` §13; `05` §6.3; `11` §3.6 | `SCR-036`, `SCR-003` | `PUT /settings` | `TST-CALC-23`, `TST-XL-08` | `Spec'd` |
 | `FR-SET-007` | Uniform display locale | P0 | 1 | `02` §13; `11` §3; `12` §3.9 | `SCR-036` | `PUT /settings` | `TST-XL-23`, `TST-WIN-13` | `Spec'd` |
 | `FR-SET-008` | Branding settings | P1 | 5 | `02` §13; `12` §3.3; `08` §19 | `SCR-037` | `PUT /settings` | `TST-PPT-10`, `TST-XL-10` | `Spec'd` |
 | `FR-SET-009` | Storage locations and sync detection | P0 | 1 | `02` §13; `09` §7.3; `13` §8 | `SCR-032` | `GET /projects/{id}/storage`, `PUT /settings` | `TST-SEC-16`, `TST-WIN-06` | `Spec'd` |
@@ -491,9 +491,9 @@ will run against the FR.
 | `FR-XC-005` | Diagnostics bundle with redaction | P0 | 1 | `02` §14; `13` §9; `15` §9.1 | `SCR-040` | `POST /diagnostics` | `TST-SEC-12`, `TST-SEC-13`, `TST-PRF-10` | `Spec'd` |
 | `FR-XC-006` | Global error handling | P0 | 1 | `02` §14; `08` §16 | `SCR-041` | `GET /meta/error-catalog` | `TST-API-02`, `TST-SEC-18` | `Spec'd` |
 | `FR-XC-007` | Logging policy | P0 | 1 | `02` §14; `13` §8; `NFR-011` | n/a — headless | `n/a (file-based logs)` | `TST-SEC-09`, `TST-SEC-13`, `TST-PRF-11` | `Spec'd` |
-| `FR-XC-008` | Crash recovery and job resumption | P0 | 1 | `02` §14; `09` §11; `04` §15 | Global (08 §3.3 shell) | `GET /jobs`, `POST /jobs/{id}/cancel` | `TST-E2E-04`, `TST-WIN-09`, `TST-IMP-35` | `Spec'd` |
+| `FR-XC-008` | Crash recovery and job resumption | P0 | 1 | `02` §14; `09` §8.3; `04` §15 | Global (08 §3.3 shell) | `GET /jobs`, `POST /jobs/{id}/cancel` | `TST-E2E-04`, `TST-WIN-09`, `TST-IMP-35` | `Spec'd` |
 | `FR-XC-009` | Offline guarantee | P0 | 1 | `02` §14; `13` §2; `NFR-008` | n/a — headless | `n/a (network policy)` | `TST-E2E-03`, `TST-SEC-01`, `TST-SEC-02` | `Spec'd` |
-| `FR-XC-010` | Data-volume rule | P0 | 2 | `02` §14; `09` §11/§12 | Global (08 §3.3 shell) | `GET /analysis/bva`, `GET /exceptions` | `TST-API-03`, `TST-API-09`, `TST-UI-15` | `Spec'd` |
+| `FR-XC-010` | Data-volume rule | P0 | 2 | `02` §14; `09` §12 | Global (08 §3.3 shell) | `GET /analysis/bva`, `GET /exceptions` | `TST-API-03`, `TST-API-09`, `TST-UI-15` | `Spec'd` |
 | `FR-XC-011` | Accessibility baseline | P0 | 1 | `02` §14; `08` §18 | Global (08 §3.3 shell) | `n/a (UI baseline)` | `TST-UI-05`, `TST-UI-07`, `TST-UI-09` | `Spec'd` |
 | `FR-XC-012` | Error message catalog compliance | P0 | 1 | `02` §14; `08` §16; `26` | `SCR-041`; Global (08 §3.3 shell) | `GET /meta/error-catalog` | `TST-API-02`, `TST-UI-10` | `Spec'd` |
 | `FR-XC-013` | Sample-data non-delivery guarantee | P1 | 5 | `02` §14; `14` §16; `15` §1.2 | n/a — headless | `n/a (release guard)` | `TST-SEC-17`, `TST-XL-26`, `TST-PPT-21` | `Spec'd` |
@@ -654,9 +654,9 @@ until `21` returns the client's answer, and the answer is then recorded as a `DE
 | Prior-year data availability | `OQ-004` | `Q-005` | `FR-BVA-002`, `FR-BVA-016`, `FR-FC-002` | PY views built; hidden with a note when no PY batch exists (`02` §16 E1) |
 | Single vs multiple currency | `OQ-005` | `Q-006` | `FR-SET-006`, `FR-IMP-011` | Single reporting currency; mixed-currency rows quarantine (`02` §16 E10) |
 | Budget versions and revisions | `OQ-006` | `Q-007` | `FR-IMP-027`, `FR-IMP-028`, `FR-BVA-003` | One budget version per period; a re-import replaces atomically (`04` §14) |
-| Approval thresholds | `OQ-007` | `Q-009` | `FR-EXC-013`, `FR-EXC-014`, `FR-SET-003` | Global materiality `max(₹500,000, 2 % × |budget|)` (`05` §4.4) |
-| Recurring-cost list | `OQ-008` | `Q-010` | `FR-EXC-014`, `FR-SET-003` | Rule auto-disables with a visible notice until the list is loaded (`06` §7) |
-| Vendor master and categories | `OQ-009` | `Q-011` | `FR-EXC-014`, `FR-SET-003`, `FR-EXC-007` | Vendor-category rules auto-disable; owner auto-assign falls back to manual (`03` §5.5) |
+| Approval thresholds | `OQ-007` | `Q-009` | `FR-EXC-013`, `FR-EXC-014`, `FR-SET-003` | Global materiality `max(₹500,000, 2 % × |budget|)` (`05` §11) |
+| Recurring-cost list | `OQ-008` | `Q-010` | `FR-EXC-014`, `FR-SET-003` | Rule auto-disables with a visible notice until the list is loaded (`06` §4 `EXC-015`, §2.9) |
+| Vendor master and categories | `OQ-009` | `Q-011` | `FR-EXC-014`, `FR-SET-003`, `FR-EXC-007` | Vendor-category rules auto-disable; owner auto-assign falls back to manual (`03` §5.6, `06` §2.6) |
 | Current Excel/PPT outputs | `OQ-010`, `OQ-021` | `Q-012` | `FR-XL-001`, `FR-XL-002`, `FR-PPT-001` | Documented layouts in `11`/`12`; pack assumed `.xlsx`/`.pptx` |
 | Pack recipients | `OQ-011` | `Q-013` | `FR-XC-003`, `FR-XC-014` | Recipients typed per issue; the product has no send path (`13` §1) |
 | Code-signing certificate | `OQ-012` | `Q-015` | — (packaging, `15` §8) | Unsigned v1 + documented SmartScreen path (`ADR-003`) |
@@ -665,7 +665,7 @@ until `21` returns the client's answer, and the answer is then recorded as a `DE
 | Logo and brand colours | `OQ-015` | `Q-019` | `FR-SET-008`, `FR-PPT-006` | PRD placeholder branding (`01` §17) |
 | Support/warranty terms | `OQ-016` | `Q-018` | `FR-XC-014`, `23` | Support flow documented in `23`; terms pending |
 | Installer delivery channel | `OQ-017` | `Q-016` | `FR-XC-015`, `15` §8 | Manual download; update check disabled by default (`FR-XC-015`) |
-| Preferred default units | `OQ-022` | `Q-006` | `FR-SET-006`, `FR-XL-002` | Whole rupees with the unit label always shown (`05` §10) |
+| Preferred default units | `OQ-022` | `Q-006` | `FR-SET-006`, `FR-XL-002` | Whole rupees with the unit label always shown (`05` §6.3) |
 
 ### 6.2 Evidence to strengthen in Phase 1 (existing tests only)
 
@@ -701,6 +701,13 @@ no renumbering** (`14` §1.2):
 - `14` §15.1 — `GATE-01-09` set to ✅; `14` §15.3 — `GATE-03-08` note clarified to "chain complete here;
   endpoint catalogue finalised by `26`".
 - `00_INDEX` — doc-map row 20 and the completeness counters; `16` §1.3 — next open item advanced to `21`.
+- **Section pointers corrected (16 cells, 2026-10-01, doc-21 pass)** — the `21` pass exposed section
+  cites that resolved to the wrong topic: `05` §4.4→§11 (materiality), `05` §10→§6.3 (units), `06` §7→§2.11
+  (rule configuration) and `06` §4 `EXC-015`/§2.9 (recurring-cost rule), `03` §5.5→§5.6 (`FR-EXC-007`) and
+  `06` §2.6 (owner assignment), `09` §10→§7.1 (backup/restore paths), `09` §11→§8.2/§8.3 (job UX, crash
+  recovery), `09` §11→§12 (`FR-XC-010` only) and `09` §11→`03` §5.4 (`FR-PRJ-010` snapshots), `09` §11→`08`
+  §6.3 (`FR-PRJ-005`). Matrix rows and §6.1 now agree with the owning documents; no FR, screen, endpoint,
+  test or status changed.
 
 ## 7. Obligations this document places elsewhere
 

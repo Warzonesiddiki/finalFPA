@@ -413,7 +413,9 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   `22`–`29`. `14` §15's `GATE-02-01` annotated (`21` done — 21/21 items carry a labelled default; `22`–`25`
   outstanding). `16` §1.3's next open item advanced to `22`–`25`, `26`, `27`, `28`, `29`, then
   `PHASE0_SUMMARY.md`. Reason: the questionnaire must not drift from the registers it seeds (`18` §3/§4) or
-  from the gate it proves.
+  from the gate it proves. Also recorded in `20` §6.4: **sixteen section-pointer corrections** in the doc-20
+  matrix and §6.1 — the cites resolved to existing but wrong-topic sections (`05` §4.4, `05` §10, `06` §7,
+  `03` §5.5, `09` §10/§11); no FR, screen, endpoint, test or status changed.
 
 #### Changed — 2026-10-01
 
