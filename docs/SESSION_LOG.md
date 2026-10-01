@@ -44,6 +44,7 @@ product code** (Addon 4 §L, steps 1–2).
 | `docs/23_CONSULTANT_HANDOVER_AND_SUPPORT.md` | **New.** The consultant runbook: dev/release/recovery loops (fresh-clone bootstrap, 8-step release checklist with evidence), config-edit procedures for the six surfaces, prompt-edit procedure, rule tuning, dependency cadence, the zip-only diagnostics workflow, upgrades/rollback, the eight-symptom incident playbook with S1–S4 targets, the support log and L1–L3 escalation, and the handover pack. |
 | `docs/24_RELEASE_AND_VERSIONING_RUNBOOK.md` | **New.** The release process: three version numbers + bump rules, the one-place version rule, branch/tag rules, the 14-step release checklist with owners/evidence/aborts, the release record, upgrade/migration with the prior-version fixture and restore-only rollback, distribution + SHA-256 publication, signing status, patch/hotfix rules, release-notes template, the evidence list and roles. |
 | `docs/25_RISK_REGISTER.md` | **New.** The single risk register (Addon 1 §C.1): the anchored 1–5 likelihood/impact scale and exposure bands; **36 `RISK-` rows** seeded from `01` §13 (R1–R10), `16` §12 (rows 1–10), the spikes, the parks and the open questions, each with a mitigation that names a document; the top-ten detail sheets; the client-fact rows seeded from `21` (`OQ-012`/`OQ-014`/`OQ-016`); eight deliberate acceptances with reopen triggers; the gate review ritual; obligations; change control; frozen constants. |
+| `docs/26_API_CONTRACT.md` | **New.** The HTTP contract (Addon 2 §B.2/§C.1): the universal envelope and error shape; pagination, filter/sort and value-encoding rules; the **95-route inventory** adopted verbatim from `20` §2.3 with request → response shapes, area error profiles, screens and FRs; the shared shapes (domain payloads by reference to `03`); the **error catalogue** (11 families, 33 new codes + the seven `ERR-API-*`, the 32-row `IMP` catalogue and 27 hardening slugs, `EXP`/`SEC`/`ENG` aggregated); the OpenAPI/type-generation workflow; the fixture layout and 16 `TST-API-*` tests; the data-volume rule; config layering; the endpoint → FR/screen/test reverse index; CLI parity; change control and frozen constants. |
 | `docs/13_SECURITY_PRIVACY.md` | **New.** The security/privacy/supply-chain contract as **49 verifiable statements** (`SEC-001`…`049`), each with a mechanism and a planned test (`TST-SEC-01`…`22`): local-only guarantees + the exhaustive three-item outbound inventory; the threat model incl. what is explicitly **not** defended; the exact data-location tree and file-handling rules (atomic writes, `.recycle`, path limits, synced-folder block with recorded override); deletion semantics with pre-delete backup offer and the "not a secure erase" caveat; DPAPI key storage, write-only UI, rotation/revocation/purge with byte-scan proof, `.gitignore` + pre-commit + CI secret scan; log rotation and the allowed/forbidden content policy with a planted-value grep test; the metadata-only diagnostics bundle with its redaction map and manifest schema (20 MB cap); the AI data path (TLS verification not disableable, redaction, caps, provenance, non-authority) and prompt-injection defence; the plain-files data-at-rest stance (`DEC-030`); the privacy note text owned here for `22`/`29`; the audit/log/security-event boundary (`SEC-048`/`049`); error codes `ERR-SEC-001`…`008` |
 | `docs/12_POWERPOINT_OUTPUT_SPEC.md` | **New.** The deck contract: the **fixed six slides** (`PPT-001`…`PPT-006`) with the default/opt-in missing-input rule (`DEC-029`); the universal contract (inch grid + scaling, the native-and-editable whitelist, the shared theme, the **character-budget formula** with per-placeholder budgets and the prioritized trimming order, deterministic shape naming/order, stamping + footer + full disclaimer on the last slide, AI/rule-based labelling, not-available states, accessibility, the ≤ 15 s aggregate-only budget); every slide/placeholder with geometry, fonts, budgets and content sources; two native charts incl. the waterfall decision (`SPK-08`) and its stacked-column fallback; base-deck mapping/refusal rules; the deck's half of the cross-artifact contract; files/refresh/issuance; 24 test IDs; `ERR-EXP-012`…`018` |
 | `docs/00_INDEX.md`, `docs/01_PRD.md`, `docs/02_FUNCTIONAL_SPEC.md`, `docs/03_DATA_DICTIONARY.md`, `docs/09_TECHNICAL_ARCHITECTURE.md`, `docs/11_EXCEL_OUTPUT_SPEC.md` | **Amended (ripple, doc 14).** `00`: doc-map row 14, completeness, `A1-L` INTEGRATED, `TST-<FAM>` families enumerated. `01`: the M10 performance row now cites the canonical NFRs. `02`/`03`: the rule-run target is `NFR-007` (was mis-cited as `NFR-009`). `09` §14: the NFR table extended to `NFR-001`…`016` with the remap (`NFR-009` = Excel pack, `NFR-011` = logs, `NFR-012` = crash) and the new `NFR-013`…`016`; repo layout gains the new test categories and `acceptance`/`perf` scripts. `11`: the Excel-pack budget now cites `NFR-009`. |
@@ -193,6 +194,13 @@ recorded in `CHANGELOG.md`. A **full matrix refresh is required at the end of th
   the real `06` §7.1/§8.3 numbers: 32 expected raises, 8 control plantings), a synced-folder mitigation that said
   "warn" where `TST-WIN-06` blocks creation, and six unbalanced backticks around section cites. The band summary
   in §6.3 is now computed (7 High / 29 Medium / 0 Low) rather than asserted.
+- **`26` audit:** 925 lines; generated by an assert-based script from `20` §2.3/§3 and `04` §10, so the
+  inventory is the matrix by construction — the 95 routes and the 95-row reverse index were re-extracted from
+  `20` and compared (exact match, no orphans, no extras); every `§`-citation resolves and every ID token
+  resolves (the only non-ID tokens are format placeholders and the `X-FPA-Token` header); the TL;DR is 15
+  bullets; the `IMP` table is 32 rows and the hardening-slug table 27 rows, both parsed from `04`; the 16
+  contract tests are parsed from `14` §12.1. The doc allocates 33 new codes plus the seven universal ones and
+  registers the 11 families in `00_INDEX` §8.
 - **`19` audit:** 497 lines; every `§`-citation resolves (`02` §3.5, `14` §14.3/§1.2/§8.3/§13.2, `16` §5.1/§5.2/§6/§9.2/§11.1/§11.2, `10` §4, `09` §3/§13, `17` §7.1/§9.2/§11.2, `08` §16/§17, `13` §7/§12); the TL;DR is 11 bullets (≤ 15); the DoD criteria are referenced rather than restated (single-source with `02`/`14`); and the doc states the Phase-0 no-code rule explicitly.
 - **`18` audit:** 451 lines; every `§`-citation verified (one draft cite to `03` §16 corrected to `04` §16 — the score inputs live in the import spec); every `Q-`/`OQ-`/`A`/`DEC-`/`BL-`/`EXC-`/`CALC-`/`GATE-` ID used resolves; the TL;DR is 10 bullets (≤ 15); `01` §14/§16 corrected for the `OQ-020` phantom and `14`'s two `18`-dependent gate rows updated.
 - **`17` audit:** 558 lines; every `§`-citation verified against its target (two first-draft cites to `14` §2.3/§2.5 corrected to `14` §1.2 items 3/5 and `09` §5.3 after the golden-file and determinism rules were located); every ID used exists (`FR-IMP-031`, `TST-WIN-03`/`13`, `SEC-0xx`, `GATE-02-09`, `BL-012`); the TL;DR is 11 bullets (≤ 15); all text owned elsewhere is cross-referenced rather than restated (the layer table, `scripts/check` composition, coverage bars and message-catalog rules remain single-sourced in `09`/`14`/`26`/`08`).
@@ -216,12 +224,14 @@ None. Every unconfirmed client fact has a labelled default in `01` §12 and will
 
 ### Next step
 
-Continue the mandated order with **`26`** (next open item: `16` §1.3): `21`–`25` are done and the Addon 1
-document set is complete; next is the API contract (`26` + `ADR-002`, adopting the 95-route set in `20` §2.3 and
-publishing the endpoint → FR reverse index), then Addon 3's `27`–`28`, Addon 4's `29` + the Source-of-Truth
-Matrix refresh and doc headers, then the `sample-data/` build, the Coverage-Matrix refresh, the five-gate
-self-audit with the link-check, the tabletop walkthrough (through pack issuance and a cold-start client pass)
-and `PHASE0_SUMMARY.md`.
+Continue the mandated order with **`27`** (next open item: `16` §1.3): `21`–`26` are done and Addons 1–2 are
+complete on paper (`ADR-002` was already integrated in `09` §3.3); next is Addon 3's backlog register (`27`,
+seeding the 25 parked items `BL-001`…`BL-025` + `BL-029`…`035` with triggers, sizes, sources and target
+phases and folding in the Phase-1 strengthening `FR`s), then `28` (acceptance, UAT and go-live — the pilot
+gate, participant list, defect severities and exit criteria, including the undeclared-default `OQ-014`),
+Addon 4's `29` + the Source-of-Truth Matrix refresh and doc headers, then the `sample-data/` build, the
+Coverage-Matrix refresh, the five-gate self-audit with the link-check, the tabletop walkthrough (through pack
+issuance and a cold-start client pass) and `PHASE0_SUMMARY.md`.
 
 ### Deferred to backlog / open questions
 
@@ -294,3 +304,12 @@ Phase 5; the KPI-card default set is client-confirmable (`PPT-KPI-DEFAULT`).
   (the sanitized real month) is the only question with no labelled default and is carried by `RISK-002` alone; the
   §6.3 band summary is re-scored at every gate and is the only Phase-0 count expected to change before approval;
   and `27` receives anything from §5 that reopens as work, with the same reopen triggers recorded here.
+
+- New from the `26` pass: the API contract now owns the **error-code catalogue**, so `08` §16.2's "populated in
+  `26`" obligation is discharged and `00_INDEX` §8's family list is authoritative in `26` §5.1 (11 families;
+  new codes start at the next free number per family — the allocated maxima are `VAL-004`, `BVA-004`, `FC-004`,
+  `RUL-003`, `STO-015`, `AI-003`, `API-007`); the **95-route set is frozen** — a route change updates `26`
+  §3/§10, `20` §2.3/§3 and `CHANGELOG` in one change, and a breaking shape change is `/api/v2` + an ADR;
+  `ui/theme/tokens.ts` (Addon 2 §E) is a Phase-5 file, so `A2-E` is integrated through the `08`/`12` contract
+  while the artefact itself lands with the UI; and the response budgets fixed here (lists ≤ 2 MB, analysis
+  ≤ 5 MB, search 50/group) are the numbers `09` §12 requires tests to enforce.

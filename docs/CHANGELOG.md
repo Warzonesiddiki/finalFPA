@@ -506,6 +506,30 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   Reason: the register closes the Addon 1 document set, so the client-fact consequences are owned rather
   than implied.
 
+- **`docs/26_API_CONTRACT.md`** (Draft v0.1) — the HTTP contract that `09`/`17`/`20` hand to Phase 1:
+  §1 what it owns (OpenAPI, envelope, grammar, catalogue, reverse index) and does not own, §2 the universal
+  contract (loopback + `X-FPA-Token` on every route, `{status, data, warnings[], errors[]}`,
+  `{code, slug, severity, message, hint, details[]}` errors with the HTTP map and the seven universal
+  `ERR-API-001`…`007` codes, `{items, total, page, pageSize, hasMore}` with default 100 / cap 200,
+  the filter/sort/column grammar, value encodings — money as strings, `n/a` for ÷ 0 — the 202 + poll job
+  contract, exports-to-file, stale/cap warnings and the safety rules), §3 the **95-route inventory in the
+  nine `20` §2.3 areas** with request → response shapes, area error profiles, consuming screens and FRs,
+  §4 the shared shapes (domain payloads by reference to `03`, never restated), §5 the **error catalogue**
+  (11 families; 33 new codes for `VAL`/`BVA`/`FC`/`RUL`/`STO`/`AI` plus the `API` set; the 32-row `IMP`
+  catalogue aligned to `IMP-001`…`032`; the 27 hardening slugs; `EXP`/`SEC`/`ENG` aggregated from their
+  owning documents), §6 the OpenAPI-as-source-of-truth workflow (`app/api/openapi.json` +
+  `ui/src/api/types.ts` generated; drift is a build error; `/docs` disabled in packaged builds), §7 the
+  fixture layout and the 16 `TST-API-*` tests, §8 the data-volume rule with the response budgets
+  (lists ≤ 2 MB, analysis ≤ 5 MB), §9 config layering and the route-to-layer map, §10 the **endpoint →
+  FR/screen/test reverse index**, §11 CLI parity, §12 obligations/change control and §13 the frozen
+  constants. Reason: Addon 2 §B/§C/§I — the last Addon 2 deliverable, and the gate (`GATE-03-02`/`-08`).
+- **Governance** — `00_INDEX`: doc-map row 26 → Draft v0.1; `A2-B`/`A2-C`/`A2-E`/`A2-I` →
+  **INTEGRATED**, docs complete `00`–`26`, remaining `27`–`29`; §8's error-family registry now points at
+  `26` §5.1 (11 families). `14` §15's `GATE-03-01`/`-02`/`-08` → **✅** (50 of 58 checks met).
+  `16` §1.3's next open item advanced to `27`, `28`, `29`, then `PHASE0_SUMMARY.md`. Reason: the endpoint
+  contract closes Addon 2, so the traceability chain (FR → spec → screen → endpoint → test) is complete on
+  paper before any handler exists.
+
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's
@@ -523,8 +547,8 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
 
 ### Notes carried into the next session
 
-- Docs `26`–`29` + `PHASE0_SUMMARY` remain to be written, in the mandated order (Addon 4 §L): Addon 2's
-  `26` (+ ADR-002, the endpoint → FR reverse index and the 95-route adoption), Addon 3's `27`–`28`
+- Docs `27`–`29` + `PHASE0_SUMMARY` remain to be written, in the mandated order (Addon 4 §L): Addon 3's
+  `27`–`28`
   (+ the four prompt texts, chart inventory and negative corpus), Addon 4's `29` + the Source-of-Truth
   Matrix refresh and doc headers, then the `sample-data/` build step, the Addon Coverage Matrix refresh,
   the five-gate self-audit with the link-check, the tabletop walkthrough (extended through pack issuance

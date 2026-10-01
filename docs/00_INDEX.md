@@ -91,7 +91,7 @@ precise, terse, and testable.
 | 23 | `23_CONSULTANT_HANDOVER_AND_SUPPORT.md` | Rebuild + release loops, config/prompt/rule editing, dependency cadence, diagnostics workflow, incident playbook, support/handover contracts | Draft v0.1 |
 | 24 | `24_RELEASE_AND_VERSIONING_RUNBOOK.md` | Semver + bump rules, tags, the 14-step release checklist and record, upgrade/migration test + prior-version fixture, distribution/checksum, signing status | Draft v0.1 |
 | 25 | `25_RISK_REGISTER.md` | Risks (RISK-) with likelihood/impact/mitigation/owner; reviewed at gates | Draft v0.1 |
-| 26 | `26_API_CONTRACT.md` | Endpoints, error envelope, pagination, error-code catalog, OpenAPI workflow | Not started |
+| 26 | `26_API_CONTRACT.md` | The 95-route contract: envelope, pagination/filter grammar, value encodings, job/bulk rules, the error-code catalogue, OpenAPI + type-generation workflow, contract tests, endpoint → FR reverse index | Draft v0.1 |
 | 27 | `27_BACKLOG.md` | Every parked item (BL-) with trigger, size, source, target phase | Not started |
 | 28 | `28_ACCEPTANCE_UAT_AND_GO_LIVE.md` | DoD, UAT mechanics, defects (DEF-), pilot tie-out, go-live, sign-off | Not started |
 | 29 | `29_CLIENT_REQUIREMENTS_PACK.md` | Plain-language client pack + sign-off block | Not started |
@@ -159,21 +159,21 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | Ref | Requirement | Owning doc(s) | Status |
 |---|---|---|---|
 | A2-A | How this addon works + Coverage Matrix mandate | `00`, `19` | INTEGRATED |
-| A2-B | Architecture & stack addenda: headless engine, CLI, doc 26 contract, data-volume rule, config layering, ADR-002, scripts, recompute/invalidation | `09`, `26` | IN PROGRESS |
+| A2-B | Architecture & stack addenda: headless engine, CLI, doc 26 contract, data-volume rule, config layering, ADR-002, scripts, recompute/invalidation | `09`, `26` | INTEGRATED (`09` §4–§5/§10–§12/§15.4; `26`) |
 | A2-C.2-08 | `08` additions: screen inventory table, virtualisation/pagination, bulk actions, accessibility baseline, stale-data indicators | `08` | INTEGRATED |
 | A2-C.2-09 | `09` additions: all of Addon 2 §B + ADR-002 | `09` | INTEGRATED |
 | A2-C.2-10 | `10` additions: §G (usage log, prompt-version stamping, regeneration policy) | `10` | INTEGRATED |
-| A2-C | Document updates: new doc 26 + 19-row additions table | `26`, owning docs | IN PROGRESS |
+| A2-C | Document updates: new doc 26 + 19-row additions table | `26`, owning docs | INTEGRATED (all 19 owning-doc additions landed in the `00`–`20` pass; `26` now written) |
 | A2-C.2-03 | `03` additions: exception stable identity fields, optional `journal_category`, rule-effectiveness fields | `03` | INTEGRATED |
 | A2-C.2-05 | `05` additions: TTM/rolling-12, forecast-accuracy metrics, control-total variance, materiality-driven default | `05` | INTEGRATED |
 | A2-C.2-06 | `06` additions: re-run/identity semantics, aging buckets, owner auto-assign, effectiveness stats, per-rule strictness tiers | `06` | INTEGRATED |
 | A2-C.2-07 | `07` additions: closed-period accuracy report feeding method-choice guidance | `07` | INTEGRATED |
 | A2-D | Functional precision FRs (exception identity/re-run, aging/bulk, period status, re-import guard, control totals, budget validation, three-way view, rolling windows, one-off tagging, rule effectiveness, materiality, export collision, evidence bundle, scope decisions) | `02`, `06` | INTEGRATED |
-| A2-E | UI/UX & brand addenda (SCR-IDs, accessibility baseline, stale indicator, theme tokens as data, PPT text fit, wizard UX) | `08`, `12`, `ui/theme` | IN PROGRESS |
+| A2-E | UI/UX & brand addenda (SCR-IDs, accessibility baseline, stale indicator, theme tokens as data, PPT text fit, wizard UX) | `08`, `12`, `ui/theme` | INTEGRATED (token contract + budgets + states in `08`/`12`; `ui/theme/tokens.ts` itself is a Phase-5 file) |
 | A2-F | Testing, CI & quality bars (coverage ≥90% engine / ≥75% backend, `scripts/check`, CI, Playwright golden path, demo recipe DoD, link-check) | `14`, `16`, `17` | INTEGRATED |
 | A2-G | AI addenda (usage log, draft provenance, regeneration policy, determinism/number-mismatch stance) | `10` | INTEGRATED |
 | A2-H | Process & governance addenda (trunk-based branching, Keep a Changelog, blocking-question protocol, disclaimer enforcement) | `17`, `19` | INTEGRATED |
-| A2-I | Phase 0 quality gate deltas (12 checks) | `00`, `14` | IN PROGRESS |
+| A2-I | Phase 0 quality gate deltas (12 checks) | `00`, `14` | INTEGRATED (documented; status tracked in `14` §15 — `GATE-03-01`…`012`) |
 | A2-J | Updated immediate next actions | `16`, `19`, `00` | INTEGRATED |
 
 ### 4.4 Addon 3 (Sections A–K) — 11 rows
@@ -303,7 +303,7 @@ as cross-references in `11`/`12`.
 | `PPT-nnn` | PowerPoint slide | `12` | `PPT-003` |
 | `SEC-nnn` | Security/privacy statement (mechanism + verification) | `13` | `SEC-009` |
 | `API-nnn` | API endpoint | `26` | `API-018` |
-| `ERR-<FAM>-nnn` | Error code (families: IMP, VAL, STO, AI, **EXP** = export, **SEC** = secret/key/support-bundle, ENG) | `26`, `08` | `ERR-IMP-004`, `ERR-EXP-003`, `ERR-SEC-004` |
+| `ERR-<FAM>-nnn` | Error code — families and allocation rules in `26` §5.1: IMP, VAL, BVA, FC, RUL, STO, AI, EXP, SEC, ENG, API | `26`, `08` | `ERR-IMP-004`, `ERR-EXP-003`, `ERR-SEC-004` |
 | `TST-<FAM>-nn` | Test case (`FAM` = CALC, IMP, RUL, FC, BVA, EXC, UI, API, E2E, PRF, WIN, UAT, AI, XL, PPT, SEC; bare `TST-nnn` kept for cross-cutting tests) | `14` | `TST-XL-07` |
 | `NFR-nnn` | Non-functional target | `14` | `NFR-004` |
 | `ADR-nnn` | Architecture decision record | `09` | `ADR-002` |
@@ -345,8 +345,8 @@ Addon 3 §G). Approvals are recorded in `CHANGELOG.md` **and** `SESSION_LOG.md` 
 |---|---|
 | Phase | **Phase 0 — Documentation** |
 | Authoritative next-action list | Addon 4 §L (supersedes Addon 3 §K → Addon 1 §P → Kickoff §15) |
-| Docs complete | `00`–`25` (drafts) + `CHANGELOG`, `SESSION_LOG` |
-| Docs remaining | `26`–`29`, `PHASE0_SUMMARY` |
+| Docs complete | `00`–`26` (drafts) + `CHANGELOG`, `SESSION_LOG` |
+| Docs remaining | `27`–`29`, `PHASE0_SUMMARY` |
 | Product code | **None. Forbidden until recorded approval.** |
 | App version / docs version | 0.1.0 (planned) / 0.1.0 (working draft) |
 | Open questions count | Tracked in `18_...OPEN_QUESTIONS.md` §Open |

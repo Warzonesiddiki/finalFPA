@@ -722,14 +722,14 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 
 | ID | Check | Provable by | Status |
 |---|---|---|---|
-| `GATE-03-01` | Addon Coverage Matrix exists; every kickoff + Addon 1 + Addon 2 row is integrated | `00_INDEX` §4 | ✅ (through `13`) |
-| `GATE-03-02` | `26` complete; OpenAPI-as-source-of-truth and type generation documented; error envelope + pagination | `26` | ⬜ |
+| `GATE-03-01` | Addon Coverage Matrix exists; every kickoff + Addon 1 + Addon 2 row is integrated | `00_INDEX` §4 | ✅ (kickoff + Addon 1 rows; all Addon 2 rows integrated — `A2-E` through the `08`/`12` token contract) |
+| `GATE-03-02` | `26` complete; OpenAPI-as-source-of-truth and type generation documented; error envelope + pagination | `26` | ✅ (`26` §2 envelope/pagination/filters, §5 catalogue, §6 generation workflow, §7 contract tests, §10 reverse index) |
 | `GATE-03-03` | Engine-boundary rule and CLI command list documented in `09` with exit codes | `09` §4/§5 | ✅ |
 | `GATE-03-04` | `ADR-002` written; every library traceable to `ADR-001`/`002` | `09` | ✅ |
 | `GATE-03-05` | Data-volume rule and config layering documented with test cases in `14` | `09` §11/§12 + `TST-API-09`, `TST-UI-15`, `TST-UI-20` | ✅ |
 | `GATE-03-06` | Exception identity/re-run semantics fully specified with a worked scenario | `06` §D.1 + §5.5 here | ✅ |
 | `GATE-03-07` | Forecast-accuracy and TTM formulas have worked examples in `05` | `05` §9 | ✅ |
-| `GATE-03-08` | Screen inventory exists in `08`; the traceability chain includes screen IDs and API endpoints | `08`, `20` (chain complete), `26` (endpoint catalogue) | ✅ (chain in `20`; catalogue finalised by `26`) |
+| `GATE-03-08` | Screen inventory exists in `08`; the traceability chain includes screen IDs and API endpoints | `08`, `20` (chain complete), `26` (endpoint catalogue) | ✅ (chain in `20`; the 95-endpoint catalogue and its reverse index are final in `26` §3/§10) |
 | `GATE-03-09` | PPT character budgets defined per placeholder | `12` §3.4 | ✅ |
 | `GATE-03-10` | Coverage bars, `scripts/check` contents and the E2E list recorded in `14` | this document §9, §13 | ✅ |
 | `GATE-03-11` | PRD scope decisions and disclaimer text resolved | `01` §15, `DEC-*` | ✅ |
