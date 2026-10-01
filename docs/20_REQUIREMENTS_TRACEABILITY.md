@@ -1,6 +1,6 @@
 > **Status:** Draft v0.1
 > **Last updated:** 2026-10-01
-> **Owning areas:** the **traceability chain** — every `FR-nnn` in `02` joined to its spec section(s),
+> **Owning FRs/areas:** the **traceability chain** — every `FR-nnn` in `02` joined to its spec section(s),
 > its screen ID(s) (`08` §4), its API endpoint(s), its test ID(s) (`14` §4) and its status; the invariants
 > a change must preserve; the reverse indexes (screen → FR, endpoint → FR, test family → FR); and the
 > **endpoint reference set** that `26` adopts
@@ -654,7 +654,7 @@ row per line below.
 | Prior-year data availability | `OQ-004` | `Q-005` | `FR-BVA-002`, `FR-BVA-016`, `FR-FC-002` | PY views built; hidden with a note when no PY batch exists (`02` §16 E1) |
 | Single vs multiple currency | `OQ-005` | `Q-006` | `FR-SET-006`, `FR-IMP-011` | Single reporting currency; mixed-currency rows quarantine (`02` §16 E10) |
 | Budget versions and revisions | `OQ-006` | `Q-007` | `FR-IMP-027`, `FR-IMP-028`, `FR-BVA-003` | One budget version per period; a re-import replaces atomically (`04` §14) |
-| Approval thresholds | `OQ-007` | `Q-009` | `FR-EXC-013`, `FR-EXC-014`, `FR-SET-003` | Global materiality `max(₹500,000, 2 % × |budget|)` (`05` §11) |
+| Approval thresholds | `OQ-007` | `Q-009` | `FR-EXC-013`, `FR-EXC-014`, `FR-SET-003` | Global materiality `max(₹500,000, 2 % × \|budget\|)` (`05` §11) |
 | Recurring-cost list | `OQ-008` | `Q-010` | `FR-EXC-014`, `FR-SET-003` | Rule auto-disables with a visible notice until the list is loaded (`06` §4 `EXC-015`, §2.9) |
 | Vendor master and categories | `OQ-009` | `Q-011` | `FR-EXC-014`, `FR-SET-003`, `FR-EXC-007` | Vendor-category rules auto-disable; owner auto-assign falls back to manual (`03` §5.6, `06` §2.6) |
 | Current Excel/PPT outputs | `OQ-010`, `OQ-021` | `Q-012` | `FR-XL-001`, `FR-XL-002`, `FR-PPT-001` | Documented layouts in `11`/`12`; pack assumed `.xlsx`/`.pptx` |

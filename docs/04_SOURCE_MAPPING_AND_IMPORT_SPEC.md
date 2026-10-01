@@ -255,7 +255,7 @@ slugs resolve to user copy through `26`.
 | X16 | Trailing `Cr`/`Dr` | Suffix match | Parsed per the profile's sign rule; the interpreted direction is stated in the report | `import.signRuleApplied` |
 | X17 | Currency symbols in numeric cells | Symbol match | Stripped per the number rule | `import.currencySymbolStripped` |
 | X18 | Accounting parentheses negatives | Pattern match | Parsed as negative when the rule says so; otherwise quarantine with the raw value shown | `import.parenthesesUnresolved` |
-| X19 | Combined dimension string (`Dept=100|CC=200`) | Column mapped as `dimension_string` | Split per §7.3; unknown keys reported; malformed tokens quarantined | `import.dimensionUnparsed` |
+| X19 | Combined dimension string (`Dept=100\|CC=200`) | Column mapped as `dimension_string` | Split per §7.3; unknown keys reported; malformed tokens quarantined | `import.dimensionUnparsed` |
 | X20 | Fiscal period as text (`FY26-P09`) | Column mapped as `period_code` | Resolved against `DimPeriod`; unknown → quarantine (IMP-018) | `import.periodNotInCalendar` |
 | X21 | Duplicate column headers | Normalised header comparison | **Blocked** until the profile renames or ignores the conflicting columns (never auto-suffixed silently) | `import.duplicateHeaders` |
 | X22 | Header-only / no data rows | Data-range emptiness after the header | Rejected by default with the zero-activity override path (§10, E3) | `import.noDataRows` |

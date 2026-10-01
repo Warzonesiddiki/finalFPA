@@ -164,7 +164,7 @@ numerator and denominator both `0` → `—`. Ratios are stored at 6 dp and disp
 | `KPI-001` | Gross margin % | `(revenue − COGS) / revenue` | revenue = 0 → `n/a` |
 | `KPI-002` | Operating expense ratio | `opex / revenue` | revenue = 0 → `n/a` |
 | `KPI-003` | Budget burn % | `YTD actual / annual budget` | annual budget = 0 → `n/a` |
-| `KPI-004` | Revenue growth % (YoY) | `(actual − PY actual) / |PY actual|` | PY actual = 0 → `n/a` |
+| `KPI-004` | Revenue growth % (YoY) | `(actual − PY actual) / \|PY actual\|` | PY actual = 0 → `n/a` |
 | `KPI-005` | Variance % (per line) | see CALC-011 | budget = 0 → `n/a` or `—` |
 | `KPI-006` | Forecast accuracy (MAPE-lite) | see §9.2 | actual = 0 → `n/a` |
 
@@ -298,9 +298,9 @@ Computed for **closed** periods by comparing the locked forecast to the actual:
 | ID | Metric | Formula | Note |
 |---|---|---|---|
 | `CALC-066` | Signed error | `actual − forecast` | Canonical direction: positive = actual exceeded forecast |
-| `CALC-067` | Absolute error | `|actual − forecast|` | |
+| `CALC-067` | Absolute error | `\|actual − forecast\|` | |
 | `CALC-068` | Signed bias | `mean(signed error)` over the compared periods | Positive = systematic under-forecasting |
-| `CALC-069` | MAPE-lite | `mean( |actual − forecast| / |actual| )` over the periods where `actual ≠ 0` | Periods with `actual = 0` are **excluded and counted** in the report (never treated as `0%` error, which would flatter the score) |
+| `CALC-069` | MAPE-lite | `mean( \|actual − forecast\| / \|actual\| )` over the periods where `actual ≠ 0` | Periods with `actual = 0` are **excluded and counted** in the report (never treated as `0%` error, which would flatter the score) |
 
 ## 10. Control-total variance and reconciliation (CALC-070 … CALC-072)
 

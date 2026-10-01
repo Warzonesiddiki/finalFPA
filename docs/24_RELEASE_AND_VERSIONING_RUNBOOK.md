@@ -1,6 +1,6 @@
 > **Status:** Draft v0.1
 > **Last updated:** 2026-10-01
-> **Owning areas:** the **release process** — semver rules, tags, the release checklist, the release record,
+> **Owning FRs/areas:** the **release process** — semver rules, tags, the release checklist, the release record,
 > upgrade/migration testing with the prior-version fixture, distribution + checksum publication, and signing
 > status (Addon 1 §C.1/§J; `15` §10 delegates the process here)
 > **TL;DR (≤ 15 lines):**

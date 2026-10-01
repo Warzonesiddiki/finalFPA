@@ -1,6 +1,6 @@
 > **Status:** Draft v0.1
 > **Last updated:** 2026-10-01
-> **Owning areas:** the phase model and the **next open item** pointer (Kickoff §14.1), phase
+> **Owning FRs/areas:** the phase model and the **next open item** pointer (Kickoff §14.1), phase
 > deliverables and Definition of Done per phase (Kickoff §5), the packaging spike that runs first after
 > approval (Addon 4 §L.13), the phase-gate contract and gate IDs beyond the five Phase-0 gates (`14`
 > owns the checklists), the phase-level cut-line rule and estimates (Addon 4 §D.2/§D.5), the release

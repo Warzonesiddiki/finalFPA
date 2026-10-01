@@ -1,6 +1,6 @@
 > **Status:** Draft v0.1
 > **Last updated:** 2026-10-01
-> **Owning areas:** repo layout and file naming (Kickoff §5), language/format/lint/type rules, the
+> **Owning FRs/areas:** repo layout and file naming (Kickoff §5), language/format/lint/type rules, the
 > engine-boundary and layering enforcement (`09` §4), money/time/determinism rules, error handling and
 > logging standards (`13` §6, `NFR-012`), dependency, licence and supply-chain rules (Addon 1 §I), secrets
 > and test-data hygiene, testing conventions, UI/React standards, git workflow and commit format (Addon 2
@@ -242,7 +242,7 @@ banned as sole names; if a name needs a comment to explain it, rename it instead
 | Rule | Detail |
 |---|---|
 | Row fingerprint | `row_fingerprint` from `engine/common`, one implementation (`03` §4) |
-| Exception identity | `identity_hash = SHA-256(rule_id|subject_key)` exactly as specified (`06` §2.2); never hashed locally |
+| Exception identity | `identity_hash = SHA-256(rule_id\|subject_key)` exactly as specified (`06` §2.2); never hashed locally |
 | Content hashes | SHA-256 through the shared helper; hex-lowercase; no home-made digests (`03`, `11` §6) |
 | Idempotency | Re-running a job on unchanged input produces identical identities (`TST-RUL` re-run scenario) |
 
@@ -425,9 +425,9 @@ downloaded at runtime.
 | Dead code | Deleted, not commented out; zero commented-out code in the repo | Lint + review |
 | `TODO`/`FIXME` | Must cite a `27` backlog ID (`TODO(BL-012): …`); an uncited marker fails the check | Lint |
 | No speculative abstraction | The smallest implementation that fully satisfies the spec (`02` §3, Kickoff §14.7) | Review |
-| No premature optimisation | Measure first (`14` §8); correctness beats speed in every conflict |
+| No premature optimisation | Measure first (`14` §8); correctness beats speed in every conflict | Review |
 | Function length | Keep functions small and single-purpose; extract when a second reason to change appears | Review |
-| Naming | Names carry meaning (`§2.3`); no abbreviations except established domain ones (`BvA`, `GL`, `KPI`) |
+| Naming | Names carry meaning (`§2.3`); no abbreviations except established domain ones (`BvA`, `GL`, `KPI`) | Review |
 | Cyclic imports | Never; move shared types down the dependency graph | Lint |
 | Unused dependencies | Removed in the same change as their last use | Review |
 | Warnings | Zero warnings policy in `scripts/check`; a warning is either fixed or promoted to an error with a reason | `scripts/check` |

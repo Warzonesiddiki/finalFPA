@@ -1,6 +1,6 @@
 > **Status:** Draft v0.1
 > **Last updated:** 2026-10-01
-> **Owning areas:** the **single risk register** — every material risk with likelihood, impact, score,
+> **Owning FRs/areas:** the **single risk register** — every material risk with likelihood, impact, score,
 > mitigation in force, early-warning trigger, owner and the document that owns the mitigation; reviewed at
 > every phase gate (Addon 1 §C.1, kickoff §5; `RISK-nnn` namespace)
 > **TL;DR (≤ 15 lines):**

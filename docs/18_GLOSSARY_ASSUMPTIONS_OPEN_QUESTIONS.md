@@ -1,6 +1,6 @@
 > **Status:** Draft v0.1
 > **Last updated:** 2026-10-01
-> **Owning areas:** the glossary of FP&A and product vocabulary; the **canonical assumption register**
+> **Owning FRs/areas:** the glossary of FP&A and product vocabulary; the **canonical assumption register**
 > with defaults and owners (Kickoff §5, `01` §12); the **`OQ-` open-question register** with every
 > unconfirmed client fact (Kickoff §5 gate item); the **`DEC-` Decided log** with dates, rationale and
 > affected docs (Addon 3 §B.2/B.3); the blocking-question protocol (Addon 2 §H.3); and registry hygiene
@@ -144,7 +144,7 @@ Raised (Q- in 21)  ──►  Open (OQ- here, default in force)  ──►  Answ
 | **Effective threshold** | The threshold actually applied, after overrides, recorded for traceability | `06` §2.10 |
 | **False positive** | A raised exception the analyst judges wrong; managed by mitigation and precision controls | `06` §8 |
 | **Golden fixture** | A frozen input/output pair with exact expected numbers | `05` §12, `14` §5 |
-| **Identity hash** | `SHA-256(rule_id|subject_key)` — the stable identity of an exception across re-runs | `06` §2.2 |
+| **Identity hash** | `SHA-256(rule_id\|subject_key)` — the stable identity of an exception across re-runs | `06` §2.2 |
 | **Idempotent** | Running twice changes nothing the second time | `06` §2.2 |
 | **Materiality AND-test** | Both the amount and the percentage thresholds must be crossed | `CALC-080` |
 | **Quarantine** | Rows held aside with a reason rather than rejected outright | `04` §11 |

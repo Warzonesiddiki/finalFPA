@@ -155,7 +155,7 @@ flagged for review on the effectiveness dashboard (§9).
 | Scope | Rules run per project over loaded periods; a run may be scoped to one period (default: all open periods, plus previously raised exceptions for closed periods so their status is preserved) |
 | Grain | Each rule declares the grain it evaluates at (transaction, voucher, account × period, account × period × cost centre, entity × period) |
 | Currency | All thresholds are in the project's reporting currency; single-currency project in v1 (`01` §6.3) |
-| Materiality | Amount thresholds default to `max(absolute_floor, materiality_pct × |budget|)` (`CALC-080`); ratio lines use the percentage-point test |
+| Materiality | Amount thresholds default to `max(absolute_floor, materiality_pct × \|budget\|)` (`CALC-080`); ratio lines use the percentage-point test |
 | Closed periods | Rules do not create **new** exceptions in closed periods (the close snapshot is frozen), but existing exceptions remain visible and workflowable; a reopen re-enables raising for that period |
 
 ### 2.9 Rule dependencies and graceful degradation
@@ -330,7 +330,7 @@ results stale (`FR-SET-010`).
 | **Depends on** | Budget loaded for the period |
 | **Subject key** | `scope\|value` where scope ∈ {`entity`, `account`, `entity_account`} |
 | **Logic** | For each loaded period, compute the set of (entity) and (entity × account) combinations with non-zero actuals. Compare with the budget coverage matrix. For each combination with actuals and **no budget line in any period of the fiscal year** → raise, with the YTD actual amount and the number of postings |
-| **Thresholds** | `min_ytd_amount` = `max(absolute_floor, materiality_pct × |entity_ytd_actual|)` — defaulting to the global materiality (`CALC-080`); `scope_grain` = `entity_account` |
+| **Thresholds** | `min_ytd_amount` = `max(absolute_floor, materiality_pct × \|entity_ytd_actual\|)` — defaulting to the global materiality (`CALC-080`); `scope_grain` = `entity_account` |
 | **Tier** | `exact` |
 | **Mitigation** | Ignores combinations with budget in *any* period of the year (a seasonal line is not an orphan). Accounts intentionally unbudgeted (e.g. some balance-sheet accounts) are excluded via an explicit "excluded from budget control" list in Settings — an explicit, versioned decision, not a blanket silencing |
 | **Sample case** | Planting P6: entity `IN02` has ₹ 4,50,000.00 of YTD actuals across 3 accounts with no budget lines in FY26 (the entity was onboarded mid-year) |
@@ -348,7 +348,7 @@ results stale (`FR-SET-010`).
 | **Depends on** | Nothing (vendor + invoice number on the transaction); invoice numbers are often absent in payroll data, which simply yields no candidates for those rows |
 | **Subject key** | `vendor_code\|invoice_no\|amount` (the invoice is the subject, not the row) |
 | **Logic** | Group expense-side rows (debit with a vendor and a non-empty invoice number) by (`vendor_code`, normalised `invoice_no`, `amount`). If a group contains ≥2 rows whose posting dates differ by ≤ `date_window_days` → raise one exception for the group, listing every matching row with voucher, date and amount. Normalisation: trim, upper-case, strip leading zeros and non-alphanumeric separators |
-| **Thresholds** | `date_window_days` = `90`; `min_amount` = `max(absolute_floor, materiality_pct × |account_budget|)`; `exact_amount_match` = `true` |
+| **Thresholds** | `date_window_days` = `90`; `min_amount` = `max(absolute_floor, materiality_pct × \|account_budget\|)`; `exact_amount_match` = `true` |
 | **Tier** | `exact` |
 | **Mitigation** | Requires an exact amount match and a strong normalised invoice number; the detail always shows every candidate row side by side so a reviewer can confirm or dismiss quickly. Partial-amount duplicates (e.g. staged payments) are deliberately **out of scope** for v1 to keep precision high — parked as a refinement (`BL-025`, recorded in `01_PRD.md` §6.2 and to be seeded into `27_BACKLOG.md`) |
 | **Sample case** | Planting P7: vendor `V-00931` invoice `INV-88213` for ₹ 45,000.00 posted twice — voucher `VCH-2026-0912-004` on 14-Sep and voucher `VCH-2026-0918-011` on 18-Sep |
@@ -366,7 +366,7 @@ results stale (`FR-SET-010`).
 | **Depends on** | Nothing |
 | **Subject key** | `company_code\|account_code\|amount\|posting_date\|cost_center_code` |
 | **Logic** | Group rows by (company, account, absolute amount, posting date, cost centre, and net sign). A group with ≥2 rows **in different vouchers** → raise. Rows in the *same* voucher with the same values are treated as normal multi-line postings and are excluded |
-| **Thresholds** | `min_amount` = `max(absolute_floor, materiality_pct × |account_budget|)`; `require_different_voucher` = `true` |
+| **Thresholds** | `min_amount` = `max(absolute_floor, materiality_pct × \|account_budget\|)`; `require_different_voucher` = `true` |
 | **Tier** | `exact` |
 | **Mitigation** | The "different voucher" requirement removes the largest class of false positives (split postings within one document). Identical recurring amounts (e.g. the same rent on the same day from two cost centres) are excluded by the cost-centre component of the key |
 | **Sample case** | Planting P8: the same ₹ 12,500.00 debit to account `5300` on 22-Sep-2026 appears in vouchers `VCH-2026-0922-007` and `VCH-2026-0922-009` |
@@ -402,7 +402,7 @@ results stale (`FR-SET-010`).
 | **Depends on** | `document_date` available on the transaction |
 | **Subject key** | `company_code\|account_code\|vendor_code\|document_date` |
 | **Logic** | For each expense-side row with a `document_date`: if `period(document_date) < period(posting_date)` **and** `posting_date ≥ period_end − cutoff_window_days` → candidate. Raise one exception per (company, account, vendor, document date) group, stating both dates, the day gap, and the amount. This is the **only** rule that uses `document_date` (`CALC-002`) |
-| **Thresholds** | `cutoff_window_days` = `7` (the last week of the period); `min_amount` = `max(absolute_floor, materiality_pct × |account_budget|)`; `max_gap_days` = `90` (beyond this the item is more likely a genuine correction than a cut-off issue, and is reported separately in the detail rather than raised) |
+| **Thresholds** | `cutoff_window_days` = `7` (the last week of the period); `min_amount` = `max(absolute_floor, materiality_pct × \|account_budget\|)`; `max_gap_days` = `90` (beyond this the item is more likely a genuine correction than a cut-off issue, and is reported separately in the detail rather than raised) |
 | **Tier** | `exact` |
 | **Mitigation** | The day-gap and materiality filters remove noise from genuinely late corrections; the detail names both dates so the reviewer sees the issue immediately. Where a valid business reason exists (goods received after period end), the closure note records it and the effectiveness dashboard learns the pattern per vendor/account |
 | **Sample case** | Planting P10: vendor `V-00412`, document dated 29-Sep-2026 for ₹ 3,20,000.00, posted 05-Oct-2026 (6 days into October, and the document date is in the prior period) |
@@ -438,7 +438,7 @@ results stale (`FR-SET-010`).
 | **Depends on** | Nothing |
 | **Subject key** | `company_code\|account_code\|cost_center_code\|period_id` |
 | **Logic** | For expense-type accounts, sum credits (`net_amount < 0`) per (company, account, cost centre, period). If the **absolute credited total** exceeds the threshold **and** the credited total is not offset within the same period by debits on the same key equal or greater in magnitude (an ordinary netting), raise one exception per key with the credited total, the debit offset, and the net, listing the largest credit rows |
-| **Thresholds** | `min_credit_amount` = `max(absolute_floor, materiality_pct × |account_budget|)`; `offset_ratio` = `0.90` (credits retain < 90% of their value after same-period same-key debits are netted off) |
+| **Thresholds** | `min_credit_amount` = `max(absolute_floor, materiality_pct × \|account_budget\|)`; `offset_ratio` = `0.90` (credits retain < 90% of their value after same-period same-key debits are netted off) |
 | **Tier** | `exact` |
 | **Mitigation** | The offset test removes the most common false positive (an accrual and its reversal inside the same period). The detail names the offsetting rows so a reviewer validates in one glance. Balance-sheet accounts are out of scope (credits there are normal) |
 | **Sample case** | Planting P12: account `5400` / `CC-110` receives credits of ₹ 6,80,000.00 in FY26-P09 with only ₹ 1,20,000.00 of offsetting debits — a 17.6% offset |
@@ -455,8 +455,8 @@ results stale (`FR-SET-010`).
 | **Owner role** | Cost Centre Owner |
 | **Depends on** | ≥ `baseline_periods` (default 3) loaded periods of actuals for the same key |
 | **Subject key** | `company_code\|account_code\|cost_center_code\|period_id` |
-| **Logic** | For each key with a full baseline: `baseline = mean(|net_amount|)` over the previous `baseline_periods` loaded periods (`CALC-062` arithmetic, absolute values so sign flips do not cancel). If `|current| ≥ spike_ratio × baseline` **and** `|current − baseline| ≥ min_deviation_amount` → raise, stating the current value, the baseline, the ratio and the baseline periods used. Zero-amount rows and accounts with fewer than the required baseline periods are excluded |
-| **Thresholds** | `baseline_periods` = `3`; `spike_ratio` = `2.5`; `min_deviation_amount` = `max(absolute_floor, materiality_pct × |account_budget|)`; `exclude_accounts` = the "noisy accounts" list (§8.2) |
+| **Logic** | For each key with a full baseline: `baseline = mean(\|net_amount\|)` over the previous `baseline_periods` loaded periods (`CALC-062` arithmetic, absolute values so sign flips do not cancel). If `\|current\| ≥ spike_ratio × baseline` **and** `\|current − baseline\| ≥ min_deviation_amount` → raise, stating the current value, the baseline, the ratio and the baseline periods used. Zero-amount rows and accounts with fewer than the required baseline periods are excluded |
+| **Thresholds** | `baseline_periods` = `3`; `spike_ratio` = `2.5`; `min_deviation_amount` = `max(absolute_floor, materiality_pct × \|account_budget\|)`; `exclude_accounts` = the "noisy accounts" list (§8.2) |
 | **Tier** | `fuzzy` |
 | **Mitigation** | Three independent filters (ratio, absolute deviation, noisy-account exclusion) plus a per-project exclusion list. The baseline uses **median-adjacent robustness**: if any baseline period is itself ≥ `spike_ratio` above the others, the baseline is recomputed excluding it and the detail says so — one prior anomaly cannot mask the next one. Tuning path: the register's "explain" and "not applicable" closures per account drive the noisy-account list on the effectiveness dashboard (§9) |
 | **Sample case** | Planting P13: account `5600` / `CC-140` runs at ₹ 42,000–₹ 48,000 for FY26-P06…P08 and hits ₹ 1,86,000.00 in FY26-P09 (ratio 4.1×, deviation ₹ 1.41 lakh) |
@@ -474,7 +474,7 @@ results stale (`FR-SET-010`).
 | **Depends on** | Prior posted history for the same vendor (≥ `min_history_rows` across ≥ `min_history_periods`) |
 | **Subject key** | `vendor_code\|account_code` |
 | **Logic** | Build the historical vendor→account matrix from posted periods strictly **before** the period under review. For each new posting pair in the current period: if the pair was never seen before **and** the vendor has otherwise consistent behaviour (≥ `min_history_rows` postings across ≥ `min_history_periods` on ≤ `max_historical_accounts` distinct accounts) **and** the amount clears materiality → raise one exception per (vendor, account) with the historical account mix shown |
-| **Thresholds** | `min_history_rows` = `3`; `min_history_periods` = `2`; `max_historical_accounts` = `3`; `min_amount` = `max(absolute_floor, materiality_pct × |account_budget|)`; `require_amount_materiality` = `true` |
+| **Thresholds** | `min_history_rows` = `3`; `min_history_periods` = `2`; `max_historical_accounts` = `3`; `min_amount` = `max(absolute_floor, materiality_pct × \|account_budget\|)`; `require_amount_materiality` = `true` |
 | **Tier** | `fuzzy` |
 | **Mitigation** | The "consistent vendor" precondition removes the largest false-positive class (vendors that legitimately bill many account types, e.g. a general contractor, a utility with multiple tariffs, a bank). The detail shows the vendor's own history so a reviewer can judge instantly. Tuning path: `max_historical_accounts` is editable, and repeated `not_applicable` closures for a vendor drive a per-vendor exception list |
 | **Sample case** | Planting P14: vendor `V-00276` has 14 postings to account `5100` (Salaries) across FY26-P05…P08 and one ₹ 2,60,000.00 posting to account `5800` (Marketing) in FY26-P09 |
@@ -510,7 +510,7 @@ results stale (`FR-SET-010`).
 | **Depends on** | ≥ `pattern_periods` (default 3) loaded prior periods for the same key, and `journal_category` where available |
 | **Subject key** | `company_code\|account_code\|cost_center_code\|period_id` |
 | **Logic** | For each (company, account, cost centre) with a **stable pre-close accrual pattern** — a credit posting in each of the last `pattern_periods` periods within the `accrual_post_window_days` window before period end, on an expense account, with period-to-period variation ≤ `stability_band` — flags the current period when no comparable posting exists in the same window. The exception states the pattern evidence (periods, amounts, dates) and the window searched |
-| **Thresholds** | `pattern_periods` = `3`; `stability_band` = `25%` (max deviation from the mean); `accrual_post_window_days` = `5`; `min_amount` = `max(absolute_floor, materiality_pct × |account_budget|)` |
+| **Thresholds** | `pattern_periods` = `3`; `stability_band` = `25%` (max deviation from the mean); `accrual_post_window_days` = `5`; `min_amount` = `max(absolute_floor, materiality_pct × \|account_budget\|)` |
 | **Tier** | `fuzzy` |
 | **Mitigation** | The stability band ensures only genuinely regular accruals qualify, and the detail shows the historical evidence explicitly so the reviewer can confirm the pattern. If a pattern legitimately stopped, the account is added to the accrual-pattern exclusion list (**the tuning path**) rather than the rule being weakened |
 | **Sample case** | Planting P16: account `6100` / `CC-120` has received ₹ 1,85,000.00 accruals on 27-Sep-2025, 28-Oct-2025 and 27-Nov-2025 in prior periods; FY26-P09 has no posting in the last 5 days of the period (loading periods FY26-P06…P09 provide the required history) |
@@ -527,8 +527,8 @@ results stale (`FR-SET-010`).
 | **Owner role** | FP&A Analyst |
 | **Depends on** | Budget loaded |
 | **Subject key** | `company_code\|account_code\|cost_center_code\|period_id` |
-| **Logic** | For each (company, account, cost centre, period) with actuals but **no budget line anywhere in the fiscal year**: if `|actual| ≥ materiality_amount` (`CALC-080`) → raise, stating the actual, the YTD actual, and the fact that no budget line exists for the year. Zero-budget variance % is `n/a` (`CALC-011` F4) and is never presented as `0%` or `inf` |
-| **Thresholds** | `materiality_amount` = `max(500,000, 2% × |budget of the account's parent group|)` when a parent budget exists, otherwise the absolute floor; `scope` = `account × cost centre` |
+| **Logic** | For each (company, account, cost centre, period) with actuals but **no budget line anywhere in the fiscal year**: if `\|actual\| ≥ materiality_amount` (`CALC-080`) → raise, stating the actual, the YTD actual, and the fact that no budget line exists for the year. Zero-budget variance % is `n/a` (`CALC-011` F4) and is never presented as `0%` or `inf` |
+| **Thresholds** | `materiality_amount` = `max(500,000, 2% × \|budget of the account's parent group\|)` when a parent budget exists, otherwise the absolute floor; `scope` = `account × cost centre` |
 | **Tier** | `fuzzy` (amount-based) |
 | **Mitigation** | Uses the account's budget parent group as the materiality denominator where possible, so a small cost centre is judged against its real scale rather than the absolute floor alone. Accounts on the "not budget-controlled" exclusion list (e.g. some intercompany or clearing accounts) are excluded explicitly and by decision |
 | **Sample case** | Planting P17: account `5450` / `CC-160` has ₹ 8,40,000.00 of FY26-P09 spend and no budget line in FY26 (a new project cost centre) |
@@ -545,7 +545,7 @@ results stale (`FR-SET-010`).
 | **Owner role** | FP&A Analyst |
 | **Depends on** | Budget loaded |
 | **Subject key** | `company_code\|account_code\|cost_center_code\|period_id` |
-| **Logic** | `CALC-010`/`CALC-011`/`CALC-080`: compute `variance = actual − budget` and `variance_pct = variance / |budget|`. Raise when `|variance| ≥ max(absolute_floor, materiality_pct × |budget|)` **AND** `|variance_pct| ≥ pct_threshold`. The AND is mandatory (`CALC-080` F13). For ratio-type lines the amount test is replaced by the percentage-point test (`CALC-013`) |
+| **Logic** | `CALC-010`/`CALC-011`/`CALC-080`: compute `variance = actual − budget` and `variance_pct = variance / \|budget\|`. Raise when `\|variance\| ≥ max(absolute_floor, materiality_pct × \|budget\|)` **AND** `\|variance_pct\| ≥ pct_threshold`. The AND is mandatory (`CALC-080` F13). For ratio-type lines the amount test is replaced by the percentage-point test (`CALC-013`) |
 | **Thresholds** | `materiality_pct` = `2%`; `absolute_floor` = `₹ 500,000`; `pct_threshold` = `5%`; `pp_threshold` = `1.0 pp` for ratio lines |
 | **Tier** | `fuzzy` |
 | **Mitigation** | The AND test is itself the primary mitigation (F13b and F13c are the canonical "should not raise" cases). Severity can be tiered per project (e.g. High above ₹20 lakh, Medium below) without changing the logic. Known-expected variances (e.g. a planned marketing push) are handled by **explaining and closing** with a note, which feeds the effectiveness dashboard — not by suppressing the rule |
@@ -599,7 +599,7 @@ results stale (`FR-SET-010`).
 | **Owner role** | Controller |
 | **Depends on** | **Required:** approval thresholds (`MasterApprovalThreshold`). Without them the rule is disabled with a notice |
 | **Subject key** | `company_code\|voucher_no\|threshold_id` |
-| **Logic** | Resolve the effective threshold for each row's (company, account, cost centre) by scope priority (`cost_center` > `account` > `company`), respecting `effective_from`. For expense-side rows with `|net_amount| ≥ threshold_amount` → raise one exception per (voucher, threshold). The exception states the threshold, its scope, whether dual approval is required, and the voucher's other lines (so the reviewer sees the whole document, not one line) |
+| **Logic** | Resolve the effective threshold for each row's (company, account, cost centre) by scope priority (`cost_center` > `account` > `company`), respecting `effective_from`. For expense-side rows with `\|net_amount\| ≥ threshold_amount` → raise one exception per (voucher, threshold). The exception states the threshold, its scope, whether dual approval is required, and the voucher's other lines (so the reviewer sees the whole document, not one line) |
 | **Thresholds** | From `MasterApprovalThreshold`, seeded with two defaults: ₹ 5,00,000 (single approval) and ₹ 25,00,000 (dual approval) at company scope |
 | **Tier** | `exact` |
 | **Mitigation** | It is a control, so volume is acceptable — but grouped at voucher level, not per line, and the register can be filtered or exported by owner in one action (`FR-EXC-017`) so the control is discharged efficiently. Vouchers already closed as approved in a prior period stay closed across re-runs |
@@ -617,7 +617,7 @@ results stale (`FR-SET-010`).
 | **Owner role** | GL Accountant |
 | **Depends on** | `journal_category` (optional — see degradation), ≥ `history_periods` loaded periods for the round-number baseline |
 | **Subject key** | `company_code\|voucher_no` |
-| **Logic** | Candidates: rows whose `journal_category = manual` (or, when the column is absent, all rows — with an explicit degradation notice) **and** whose `|net_amount|` is an exact multiple of `round_unit` (default ₹ 10,000) **and** `|net_amount| ≥ round_floor`. Raise one exception per voucher when the voucher's total meets the same test **and** the amount exceeds `mean_round_journal_amount × multiple` for that entity (a round number that is normal for the entity is not flagged) |
+| **Logic** | Candidates: rows whose `journal_category = manual` (or, when the column is absent, all rows — with an explicit degradation notice) **and** whose `\|net_amount\|` is an exact multiple of `round_unit` (default ₹ 10,000) **and** `\|net_amount\| ≥ round_floor`. Raise one exception per voucher when the voucher's total meets the same test **and** the amount exceeds `mean_round_journal_amount × multiple` for that entity (a round number that is normal for the entity is not flagged) |
 | **Thresholds** | `round_unit` = `10,000`; `round_floor` = `₹ 500,000`; `multiple` = `1.5`; `history_periods` = `3` |
 | **Tier** | `fuzzy` |
 | **Mitigation** | Low severity plus two conditions (round **and** larger than the entity's normal round journal) keep volume down. The detail names the exact round multiple and the historical comparison. Tuning path: entity-level `round_unit` adjustment and the exclusion of known estimation accounts (e.g. provisions) |
@@ -653,8 +653,8 @@ results stale (`FR-SET-010`).
 | **Owner role** | Controller |
 | **Depends on** | Accounts tagged as suspense/clearing — **required**; the tag is a master-data flag on `DimAccount` (`account_tag = suspense` \| `clearing`). Without any tagged account the rule is disabled with a notice |
 | **Subject key** | `company_code\|account_code\|period_id` |
-| **Logic** | For each tagged account and period, compute the period's closing residual (cumulative balance through the period end, per `CALC-004` window arithmetic) and the period's activity. Raise when `|residual| ≥ residual_threshold` **or** `|activity| ≥ movement_threshold` while the residual remains non-zero — i.e. either a large stale balance or a balance that moved without clearing |
-| **Thresholds** | `residual_threshold` = `max(absolute_floor, materiality_pct × |account_annual_budget|)`; `movement_threshold` = `residual_threshold × 0.5`; `ignore_sign` = `true` (both debit and credit residuals matter) |
+| **Logic** | For each tagged account and period, compute the period's closing residual (cumulative balance through the period end, per `CALC-004` window arithmetic) and the period's activity. Raise when `\|residual\| ≥ residual_threshold` **or** `\|activity\| ≥ movement_threshold` while the residual remains non-zero — i.e. either a large stale balance or a balance that moved without clearing |
+| **Thresholds** | `residual_threshold` = `max(absolute_floor, materiality_pct × \|account_annual_budget\|)`; `movement_threshold` = `residual_threshold × 0.5`; `ignore_sign` = `true` (both debit and credit residuals matter) |
 | **Tier** | `exact` |
 | **Mitigation** | The account tag is an explicit, versioned master-data decision, so untagged accounts never fire; the "moved without clearing" condition targets genuine unresolved balances rather than normal in-period flow. Where a residual is expected (e.g. a standing prepayment account), the closure note records it and the tag can be refined |
 | **Sample case** | Planting P24: account `1999` (tagged `suspense`) shows a closing residual of ₹ 12,40,000.00 at FY26-P09 and a period movement of ₹ 9,80,000.00 that did not clear |

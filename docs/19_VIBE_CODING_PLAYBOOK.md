@@ -1,6 +1,6 @@
 > **Status:** Draft v0.1
 > **Last updated:** 2026-10-01
-> **Owning areas:** the twenty zero-compromise principles (Kickoff §3, Addon 1 §B); the session protocol
+> **Owning FRs/areas:** the twenty zero-compromise principles (Kickoff §3, Addon 1 §B); the session protocol
 > (Kickoff §14 + Addon 1 §M) — reading order, change order, the regression gate, the session log; the
 > Definition of Done and its enforcement; **quote-before-code** and the paraphrase ban (Addon 4 §B);
 > approval recording and the post-approval change impact rule (Addon 4 §E.2/E.3); blocking questions

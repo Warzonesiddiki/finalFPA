@@ -1,6 +1,6 @@
 > **Status:** Draft v0.1
 > **Last updated:** 2026-10-01
-> **Owning areas:** the **acceptance path**: the project-level Definition of Done, the defect severity and
+> **Owning FRs/areas:** the **acceptance path**: the project-level Definition of Done, the defect severity and
 > workflow (`S1`–`S4`), the **real-data pilot (`GATE-13`)**, **UAT (`GATE-14`)**, the **go-live checklist
 > (`GATE-15`)**, the client sign-off template and the per-phase demo-script standard (Addon 3 §B.1/§G,
 > Addon 4 §F; the test-level detail stays in `14`, the release mechanics in `24`)

@@ -1,6 +1,6 @@
 > **Status:** Draft v0.1
 > **Last updated:** 2026-10-01
-> **Owning areas:** the **user-facing manual** — task-structured, plain language, keyed to `SCR-nnn`, and
+> **Owning FRs/areas:** the **user-facing manual** — task-structured, plain language, keyed to `SCR-nnn`, and
 > the **single source of help text** for the in-app Help panel (`FR-ONB-004`/`FR-ONB-007`); training outline
 > and screenshot contract (Addon 1 §C.1/§K, `Q-017`)
 > **TL;DR (≤ 15 lines):**

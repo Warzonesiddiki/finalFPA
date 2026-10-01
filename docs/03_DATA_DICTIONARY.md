@@ -78,7 +78,7 @@ time.
 |---|---|
 | Surrogate keys | Assigned by the loader, monotonic, never reused, never exposed to the user except in exports for support |
 | Fact de-duplication | Every fact table carries a deterministic `row_fingerprint` (SHA-256 over the canonical business fields + batch-independent source identity) with a unique constraint per batch scope; the cross-batch duplicate report uses the documented business keys in §7 |
-| Exception identity | `identity_hash = SHA-256(rule_id + '|' + subject_key)` — the stable join across re-runs (FR-EXC-004) |
+| Exception identity | `identity_hash = SHA-256(rule_id + '\|' + subject_key)` — the stable join across re-runs (FR-EXC-004) |
 | Mapping identity | `(profile_id, version_no)` — never mutable in place; edits create a new version |
 | Idempotency | Re-running any derivation after a failure must produce the same rows, not duplicates (enforced by unique constraints, not by app logic alone) |
 
@@ -458,7 +458,7 @@ setting that generated them.
 | Column | Type | Null | Description |
 |---|---|---|---|
 | `exception_id` | `BIGINT` | PK | |
-| `identity_hash` | `VARCHAR(64)` | No | `SHA-256(rule_id + '|' + subject_key)` — UNIQUE |
+| `identity_hash` | `VARCHAR(64)` | No | `SHA-256(rule_id + '\|' + subject_key)` — UNIQUE |
 | `rule_id` | `VARCHAR(20)` | No | FK `DimRule` |
 | `rule_version` | `VARCHAR(20)` | No | The rule version that raised it |
 | `subject_key` | `VARCHAR(200)` | No | Rule-specific canonical subject (defined in `06`) |
@@ -640,7 +640,7 @@ never silently merged (P13, FR-IMP-017/018).
 
 | exception_id | identity_hash (prefix) | rule_id | subject_key | period_id | amount_at_risk | severity | status | owner_name | first_seen_period_id | flagged_again | effective_threshold |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 9021 | `9f2c…` | `EXC-004` | `company=1|vendor=V-00931|invoice=INV-88213|amount=45000.00` | 69 | 45000.00 | high | open | `Rahul` | 69 | FALSE | `materiality 2.0% or ₹500,000` |
+| 9021 | `9f2c…` | `EXC-004` | `company=1\|vendor=V-00931\|invoice=INV-88213\|amount=45000.00` | 69 | 45000.00 | high | open | `Rahul` | 69 | FALSE | `materiality 2.0% or ₹500,000` |
 
 **`FactImportBatch`:**
 

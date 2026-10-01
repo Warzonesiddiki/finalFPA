@@ -1,6 +1,6 @@
 > **Status:** Draft v0.1
 > **Last updated:** 2026-10-01
-> **Owning areas:** the **consultant-facing runbook** — rebuild the environment, ship a release, edit
+> **Owning FRs/areas:** the **consultant-facing runbook** — rebuild the environment, ship a release, edit
 > configuration/prompts/rules with the client, update dependencies, run the diagnostics workflow, and
 > escalate support (Addon 1 §C.1/§I/§K, Addon 2 §H.2, Addon 4 §I.2; `Q-018`)
 > **TL;DR (≤ 15 lines):**

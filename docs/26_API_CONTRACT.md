@@ -1,6 +1,6 @@
 > **Status:** Draft v0.1
 > **Last updated:** 2026-10-01
-> **Owning areas:** the **HTTP contract** at `/api/v1/`: the OpenAPI document as the single source of truth,
+> **Owning FRs/areas:** the **HTTP contract** at `/api/v1/`: the OpenAPI document as the single source of truth,
 > the universal envelope, pagination/filter/sort grammar, value encodings, the long-job contract, the
 > **error-code catalogue** (`ERR-<FAM>-nnn`, families registered in `00_INDEX` §8), the type-generation and
 > contract-test workflow, and the endpoint → FR/screen reverse index (Addon 2 §B.2/§B.3/§B.4/§B.6/§H.4)
@@ -252,7 +252,7 @@ Area error profile: `ERR-STO-001`/`003`/`006`/`008`/`010`/`012`/`013`/`014`, `ER
 
 | Endpoint | Purpose | Request → Response | Errors (beyond §2.3) | Screen(s) | FR(s) |
 |---|---|---|---|---|---|
-| `GET /bootstrap` | First-run state: ensure/share the sample project, resolve the last project, launch target | `— → {app:{appVersion, docsVersion, schemaVersion}, sample:{exists, path|null, convertPending}, lastProject:ProjectRef|null, firstRun:bool}` | — | `SCR-001`, `SCR-002` | `FR-ONB-001`, `FR-ONB-006` |
+| `GET /bootstrap` | First-run state: ensure/share the sample project, resolve the last project, launch target | `— → {app:{appVersion, docsVersion, schemaVersion}, sample:{exists, path\|null, convertPending}, lastProject:ProjectRef\|null, firstRun:bool}` | — | `SCR-001`, `SCR-002` | `FR-ONB-001`, `FR-ONB-006` |
 | `GET /projects` | Recent-project list (path, last opened, last period, status) | `?q?, ?page, ?pageSize → Page<ProjectRef>` | — | `SCR-002` | `FR-PRJ-003` |
 | `POST /projects` | Create a project (fiscal calendar, currency, units, entities, optional branding) | `{name, path, fiscalStart, currency, units, entities[], sample:bool=false, branding?} → Project` | — | `SCR-002`, `SCR-003` | `FR-PRJ-002`, `FR-SET-005` |
 | `POST /projects/{id}/open` | Open a project: single-instance mutex, schema check/migration, period state | `{} → {project:Project, period:PeriodState, migration?:MigrationNote}` | — | `SCR-002` | `FR-PRJ-003`, `FR-PRJ-006`, `FR-PRJ-007` |
@@ -261,7 +261,7 @@ Area error profile: `ERR-STO-001`/`003`/`006`/`008`/`010`/`012`/`013`/`014`, `ER
 | `POST /projects/{id}/backup` | Backup zip (databases, archives, settings, mappings, master data; manifest; no secrets) | `{outPath} → 202 Job → {file:FileRef, manifest:{entries, sha256}}` | — | `SCR-039` | `FR-PRJ-008` |
 | `POST /projects/restore` | Validate a backup zip and restore it to a chosen folder | `{zipPath, targetPath, confirm:true} → 202 Job → {project:ProjectRef}` | `ERR-STO-008`/`009` (zip invalid, target not empty) | `SCR-002`, `SCR-039` | `FR-PRJ-009` |
 | `POST /projects/{id}/convert` | Convert a sample project to a normal project (typed confirmation, audit-logged) | `{confirmText, keepSampleCopy:bool} → Project` | — | `SCR-001` | `FR-ONB-008` |
-| `GET /projects/{id}/storage` | Storage breakdown, low-storage warning inputs, archive sizes | `— → {areas:[{name, bytes}], archiveBytes, freeBytes, warning:Finding|null}` | — | `SCR-032`, `SCR-040` | `FR-PRJ-011`, `FR-SET-009` |
+| `GET /projects/{id}/storage` | Storage breakdown, low-storage warning inputs, archive sizes | `— → {areas:[{name, bytes}], archiveBytes, freeBytes, warning:Finding\|null}` | — | `SCR-032`, `SCR-040` | `FR-PRJ-011`, `FR-SET-009` |
 | `POST /projects/{id}/archive-raw` | Archive raw files to a user-chosen zip, then remove them after confirmation | `{outPath, batchIds?} → 202 Job → {file:FileRef, removedBytes}` | — | `SCR-032`, `SCR-040` | `FR-PRJ-011` |
 | `GET /projects/{id}/versions` | Version history for mappings, thresholds, master data, assumptions, prompts, branding | `?kind=, ?page, ?pageSize → Page<VersionRef>` | — | `SCR-033`, `SCR-035`, `SCR-037` | `FR-SET-011` |
 | `POST /projects/{id}/versions/{v}/revert` | Revert a versioned artefact to a named version | `{confirm:true} → VersionRef` | — | `SCR-033`, `SCR-035`, `SCR-037` | `FR-SET-011` |
@@ -279,7 +279,7 @@ Area error profile: `ERR-IMP-001`…`032`, `ERR-VAL-002`, `ERR-STO-002`.
 | Endpoint | Purpose | Request → Response | Errors (beyond §2.3) | Screen(s) | FR(s) |
 |---|---|---|---|---|---|
 | `POST /imports/pre-scan` | Source type, SHA-256 fingerprint, size/rows/estimate, limit checks | `{path, sourceType?} → PreScan` | — | `SCR-001`, `SCR-005`, `SCR-006`, `SCR-007`, `SCR-009` | `FR-ONB-003`, `FR-IMP-001`, `FR-IMP-002`, `FR-IMP-003`, `FR-IMP-007`, `FR-IMP-019` |
-| `POST /imports` | Stage → parse → validate a file (long-running job; 202 + `GET /jobs` poll) | `{path, sourceType, sheetName?, headerRow?, profileId|null, dryRun:bool=false, overLimitAck?} → 202 Job → BatchRef` | `ERR-IMP-002`/`003` (over-limit confirmation), `ERR-IMP-001` (unreadable), `ERR-STO-002` | `SCR-005`, `SCR-007`, `SCR-008`, `SCR-009`, `SCR-010`, `SCR-014` | `FR-IMP-009`, `FR-IMP-010`, `FR-IMP-012`, `FR-IMP-014`, `FR-IMP-015`, `FR-IMP-027`, `FR-IMP-030`, `FR-IMP-031` |
+| `POST /imports` | Stage → parse → validate a file (long-running job; 202 + `GET /jobs` poll) | `{path, sourceType, sheetName?, headerRow?, profileId\|null, dryRun:bool=false, overLimitAck?} → 202 Job → BatchRef` | `ERR-IMP-002`/`003` (over-limit confirmation), `ERR-IMP-001` (unreadable), `ERR-STO-002` | `SCR-005`, `SCR-007`, `SCR-008`, `SCR-009`, `SCR-010`, `SCR-014` | `FR-IMP-009`, `FR-IMP-010`, `FR-IMP-012`, `FR-IMP-014`, `FR-IMP-015`, `FR-IMP-027`, `FR-IMP-030`, `FR-IMP-031` |
 | `GET /imports` | Batch history (status, counts, score, links to report and archive) | `?period, ?status, ?page, ?pageSize → Page<BatchRef>` | — | `SCR-011` | `FR-IMP-023` |
 | `PUT /imports/{batch}/mapping` | Column mapping with preview, overrides, profile apply/save | `{columns:[{source, target, rule?}], multiHeaderRows?, saveProfileAs?} → MappingPreview` | — | `SCR-008`, `SCR-011`, `SCR-033` | `FR-IMP-004`, `FR-IMP-011`, `FR-IMP-026` |
 | `GET /imports/{batch}/report` | Validation report (per-check pass/fail, counts, samples, control totals, timings) | `?page, ?pageSize, ?check → Report` | — | `SCR-009`, `SCR-010`, `SCR-012` | `FR-IMP-016`, `FR-IMP-017`, `FR-IMP-021` |
@@ -296,17 +296,17 @@ Area error profile: `ERR-VAL-003`, `ERR-STO-002`/`010`.
 
 | Endpoint | Purpose | Request → Response | Errors (beyond §2.3) | Screen(s) | FR(s) |
 |---|---|---|---|---|---|
-| `GET /mapping-profiles` | List/version mapping profiles; header-fingerprint suggestion source | `?sourceType, ?q → {items:[ProfileRef], suggestion:ProfileRef|null}` | — | `SCR-008`, `SCR-033` | `FR-IMP-005`, `FR-IMP-006`, `FR-SET-002` |
+| `GET /mapping-profiles` | List/version mapping profiles; header-fingerprint suggestion source | `?sourceType, ?q → {items:[ProfileRef], suggestion:ProfileRef\|null}` | — | `SCR-008`, `SCR-033` | `FR-IMP-005`, `FR-IMP-006`, `FR-SET-002` |
 | `PUT /mapping-profiles/{id}` | Create/edit/clone a profile (column map, overrides, date/number rules) | `ProfileBody → ProfileRef` | — | `SCR-008`, `SCR-033` | `FR-IMP-005`, `FR-SET-002` |
 | `GET /master-data/{kind}` | Master-data tables (vendor categories, recurring costs, approval thresholds, owners) | `?page, ?pageSize, ?q → Page<MasterRow>` | — | `SCR-034` | `FR-SET-003` |
 | `PUT /master-data/{kind}` | Edit master data (versioned, revertable) | `{rows[], versionNote} → MasterTable` | — | `SCR-034` | `FR-SET-003` |
 | `POST /master-data/{kind}/import` | Import master data through the standard validation/archive path | `{path, dryRun:bool=false} → 202 Job → MasterTable` | — | `SCR-034` | `FR-IMP-029` |
-| `GET /rules` | Rule catalogue with per-project enable state, defaults and effective thresholds | `— → {items:[RuleState], engine:{runAt|null, stale:bool}}` | — | `SCR-014`, `SCR-023`, `SCR-034`, `SCR-035` | `FR-EXC-012`, `FR-EXC-014`, `FR-SET-004` |
+| `GET /rules` | Rule catalogue with per-project enable state, defaults and effective thresholds | `— → {items:[RuleState], engine:{runAt\|null, stale:bool}}` | — | `SCR-014`, `SCR-023`, `SCR-034`, `SCR-035` | `FR-EXC-012`, `FR-EXC-014`, `FR-SET-004` |
 | `PUT /rules/{id}` | Edit a rule's threshold/enable state (versioned; marks derived results stale) | `{enabled?, threshold?, severity?, note} → RuleState` | — | `SCR-035` | `FR-EXC-012`, `FR-SET-004` |
 | `POST /rules/run` | Run the enabled rule set over the loaded data (job; run summary) | `{period, scope?} → 202 Job → RunSummary` | — | `SCR-014`, `SCR-023` | `FR-EXC-001`, `FR-EXC-003`, `FR-EXC-005`, `FR-EXC-020` |
 | `GET /settings` | All settings (machine vs project scope) for the Settings screens | `— → {machine:{...}, project:{...}, precedence:[AppLevel, ProjectLevel]}` | — | `SCR-032`, `SCR-038` | `FR-AI-001`, `FR-SET-001` |
-| `PUT /settings` | Update settings (display, thresholds, branding, storage, rule defaults) | `{scope:'machine'|'project', patch} → SettingsView` | — | `SCR-003`, `SCR-032`, `SCR-035`, `SCR-036`, `SCR-037` | `FR-EXC-013`, `FR-PPT-006`, `FR-SET-006`, `FR-SET-007`, `FR-SET-008`, `FR-SET-009` |
-| `PUT /settings/ai-key` | Store the AI key via DPAPI (write-only; status returned, never the key) | `{key, endpoint, model, deployment?} → {status:'stored'|'rejected'|'unreachable', checked:bool}` | `ERR-SEC-001`/`002` (DPAPI/key rejection), `ERR-SEC-004`/`005` (TLS/network) | `SCR-038` | `FR-AI-002` |
+| `PUT /settings` | Update settings (display, thresholds, branding, storage, rule defaults) | `{scope:'machine'\|'project', patch} → SettingsView` | — | `SCR-003`, `SCR-032`, `SCR-035`, `SCR-036`, `SCR-037` | `FR-EXC-013`, `FR-PPT-006`, `FR-SET-006`, `FR-SET-007`, `FR-SET-008`, `FR-SET-009` |
+| `PUT /settings/ai-key` | Store the AI key via DPAPI (write-only; status returned, never the key) | `{key, endpoint, model, deployment?} → {status:'stored'\|'rejected'\|'unreachable', checked:bool}` | `ERR-SEC-001`/`002` (DPAPI/key rejection), `ERR-SEC-004`/`005` (TLS/network) | `SCR-038` | `FR-AI-002` |
 | `DELETE /settings/ai-key` | Rotate/revoke: purge the old value from config and memory, audit-logged | `{confirm:true} → Ack` | — | `SCR-038` | `FR-AI-003` |
 | `PUT /ui-state` | UI state: tour dismissal, last screen per project, sticky display preferences | `{tourDismissed?, lastScreenByProject?, stickyDisplay?} → UiState` | — | `SCR-001`, `SCR-002`, `SCR-043` | `FR-ONB-002`, `FR-ONB-006` |
 | `GET /filters` | Shared filter context for the current project | `— → FilterContext` | — |  | `FR-BVA-015` |
@@ -326,7 +326,7 @@ Area error profile: `ERR-BVA-001`…`003`, `ERR-VAL-003`.
 | `GET /analysis/kpis` | KPI/ratio cards with target comparison and drill target | `?period, ?window → KpiCards` | — | `SCR-020` | `FR-BVA-010` |
 | `GET /analysis/drill` | Transaction detail for exactly one displayed figure (source-file evidence) | `?figure, ?key, ?page, ?pageSize → Page<DrillRow> (each row carries its source file + batch)` | `ERR-BVA-004` (ambiguous figure) | `SCR-021` | `FR-BVA-004` |
 | `GET /search` | Grouped search across vouchers, vendors, descriptions, accounts | `?q, ?groups → {groups:[{name, total, items[]}], capped:true}` | — | `SCR-022` | `FR-BVA-012` |
-| `POST /exports/ad-hoc` | Export what you see (current filter/sort/columns) to Excel or CSV | `{grid, filter, sort, columns, format:'xlsx'|'csv', outPath?} → 202 Job → FileRef` | — | `SCR-015`, `SCR-022` | `FR-BVA-011` |
+| `POST /exports/ad-hoc` | Export what you see (current filter/sort/columns) to Excel or CSV | `{grid, filter, sort, columns, format:'xlsx'\|'csv', outPath?} → 202 Job → FileRef` | — | `SCR-015`, `SCR-022` | `FR-BVA-011` |
 
 ### 3.5 Exceptions (7)
 
@@ -349,7 +349,7 @@ Area error profile: `ERR-FC-001`…`003`, `ERR-STO-002`.
 | Endpoint | Purpose | Request → Response | Errors (beyond §2.3) | Screen(s) | FR(s) |
 |---|---|---|---|---|---|
 | `GET /forecast/versions` | Forecast versions, scenarios, locks and provenance | `?scenario → {items:[VersionRef], locked:[VersionRef]}` | — | `SCR-027` | `FR-FC-001`, `FR-FC-004` |
-| `POST /forecast/versions` | Create/copy/rename/delete a scenario/version | `{op:'create'|'copy'|'rename'|'delete', from?, name?, scenario?} → VersionRef` | — | `SCR-027`, `SCR-028` | `FR-FC-003` |
+| `POST /forecast/versions` | Create/copy/rename/delete a scenario/version | `{op:'create'\|'copy'\|'rename'\|'delete', from?, name?, scenario?} → VersionRef` | — | `SCR-027`, `SCR-028` | `FR-FC-003` |
 | `POST /forecast/run` | Generate the forecast (method per line/group; job) | `{period, scope, methods?, scenario} → 202 Job → RunSummary` | — | `SCR-027` | `FR-FC-002`, `FR-FC-005` |
 | `PATCH /forecast/cells` | Manual override with a mandatory reason (audited) | `{cells:[{line, period, value}], reason} → {applied, auditId}` | — | `SCR-027` | `FR-FC-006` |
 | `POST /forecast/versions/{v}/lock` | Lock a version (read-only; referenced by issued packs) | `{confirm:true} → VersionRef` | — | `SCR-027`, `SCR-028` | `FR-FC-009` |
@@ -371,7 +371,7 @@ Area error profile: `ERR-EXP-001`…`018`, `ERR-STO-002`, `ERR-VAL-001`.
 | `POST /issuance/{id}/reissue` | Re-issue: new pack version; the previous version stays immutable | `{reason, changesAck} → IssuanceRef (version+1)` | — | `SCR-030` | `FR-XC-003` |
 | `GET /commentary` | Commentary for lines/periods (typed, rule-based or approved AI draft) | `?period, ?scope, ?page → Page<CommentaryRow>` | — | `SCR-029`, `SCR-031` | `FR-AI-013`, `FR-XC-001` |
 | `PUT /commentary` | Save commentary (locked after issuance until a re-issue) | `{rows:[{key, text, source}], lock:bool=false} → CommentaryRows` | — | `SCR-029`, `SCR-031` | `FR-XC-001` |
-| `POST /templates/export` | Write a blank input template (actuals/budget/forecast/master data) to a chosen path | `{kind:'actuals'|'budget'|'forecast'|'master-data', outPath} → FileRef` | — | `SCR-001`, `SCR-005` | `FR-ONB-005` |
+| `POST /templates/export` | Write a blank input template (actuals/budget/forecast/master data) to a chosen path | `{kind:'actuals'\|'budget'\|'forecast'\|'master-data', outPath} → FileRef` | — | `SCR-001`, `SCR-005` | `FR-ONB-005` |
 
 ### 3.8 Optional AI (7)
 
@@ -379,8 +379,8 @@ Area error profile: `ERR-SEC-001`…`005`, `ERR-AI-001`…`003`, `ERR-STO-002`.
 
 | Endpoint | Purpose | Request → Response | Errors (beyond §2.3) | Screen(s) | FR(s) |
 |---|---|---|---|---|---|
-| `POST /ai/test-connection` | Manual connectivity test for the configured endpoint (user-triggered only) | `{} → {reachable, latencyMs, models?[], finding:Finding|null}` | — | `SCR-038` | `FR-AI-014` |
-| `POST /ai/drafts` | Run one of the four AI features (variance commentary, mapping suggestion, exception summary, follow-up draft) | `{feature:'variance'|'mapping'|'exception'|'commentary', scope, promptVersion?, evidenceAck:true} → 202 Job → Draft` | — | `SCR-008`, `SCR-023`, `SCR-029`, `SCR-031`, `SCR-038` | `FR-AI-004`, `FR-AI-006`, `FR-AI-007`, `FR-AI-008`, `FR-AI-010`, `FR-AI-012` |
+| `POST /ai/test-connection` | Manual connectivity test for the configured endpoint (user-triggered only) | `{} → {reachable, latencyMs, models?[], finding:Finding\|null}` | — | `SCR-038` | `FR-AI-014` |
+| `POST /ai/drafts` | Run one of the four AI features (variance commentary, mapping suggestion, exception summary, follow-up draft) | `{feature:'variance'\|'mapping'\|'exception'\|'commentary', scope, promptVersion?, evidenceAck:true} → 202 Job → Draft` | — | `SCR-008`, `SCR-023`, `SCR-029`, `SCR-031`, `SCR-038` | `FR-AI-004`, `FR-AI-006`, `FR-AI-007`, `FR-AI-008`, `FR-AI-010`, `FR-AI-012` |
 | `GET /ai/drafts` | Draft history with provenance, evidence and status | `?feature, ?status, ?page → Page<Draft>` | — | `SCR-031` | `FR-AI-005`, `FR-AI-011` |
 | `POST /ai/drafts/{id}/approve` | Human approval of a draft (the only path into a pack) | `{editedText?} → Draft` | — | `SCR-029`, `SCR-031` | `FR-XC-001` |
 | `POST /ai/mapping-suggestions` | Propose column mappings with confidence and evidence | `{batch, columns[]} → {suggestions:[{source, target, confidence, evidence}]}` | — | `SCR-008` | `FR-IMP-008` |
@@ -401,7 +401,7 @@ Area error profile: `ERR-SEC-006`, `ERR-ENG-001`…`010`.
 | `GET /audit` | Filterable audit log with export | `?actor, ?event, ?from, ?to, ?page → Page<AuditEntry>` | — | `SCR-040` | `FR-SET-012` |
 | `GET /instrumentation` | Local job timings (import, rules, exports, cold start) surfaced in Diagnostics | `— → {timings:[{stage, p50Ms, p95Ms, samples}]}` | — | `SCR-040` | `FR-XC-016` |
 | `GET /help` | Help topics keyed by `SCR-nnn` (single-sourced with `22`) | `?scr → {topics:[{scr, title, bodyMd, version}]}` | — | `SCR-040`, `SCR-042` | `FR-ONB-004`, `FR-ONB-007`, `FR-XC-014` |
-| `POST /update-check` | Manual update check against the documented channel (disabled by default; never auto-installs) | `{manual:true} → {status:'disabled'|'up-to-date'|'update-available', version?}` | — | `SCR-040` | `FR-XC-015` |
+| `POST /update-check` | Manual update check against the documented channel (disabled by default; never auto-installs) | `{manual:true} → {status:'disabled'\|'up-to-date'\|'update-available', version?}` | — | `SCR-040` | `FR-XC-015` |
 | `GET /meta/error-catalog` | The error-code catalog: code → user message + hint, keyed by the `26` families | `?family, ?q → {items:[{code, slug, severity, message, hint, httpStatus, ownerDoc}]}` | — (pure read; the catalogue is generated from §5) | `SCR-041` | `FR-XC-006`, `FR-XC-012` |
 
 ## 4. Shared shapes
@@ -413,7 +413,7 @@ Area error profile: `ERR-SEC-006`, `ERR-ENG-001`…`010`.
 | `—` | No request body or parameters |
 | `T[]` | Array of `T` |
 | `Page<T>` | `{items: T[], total, page, pageSize, hasMore}` (§2.4) |
-| `T|null` | Nullable; `null` is a value, absence is not (§2.6) |
+| `T\|null` | Nullable; `null` is a value, absence is not (§2.6) |
 | `202 Job → X` | Returns `202` with a job id; the job's `result` is `X` when it succeeds (§2.7) |
 | `Ack` | `{ok: true}` — the command did what its name says, nothing more |
 

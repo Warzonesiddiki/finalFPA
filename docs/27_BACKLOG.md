@@ -1,6 +1,6 @@
 > **Status:** Draft v0.1
 > **Last updated:** 2026-10-01
-> **Owning areas:** the **single backlog register** — every parked item with a one-line scope, the trigger
+> **Owning FRs/areas:** the **single backlog register** — every parked item with a one-line scope, the trigger
 > that promotes it, a rough size, its source and a target phase; reviewed at every phase gate with the
 > decision register (`18`) and the risk register (`25`) (Addon 3 §B.1/§H, Addon 1 §N)
 > **TL;DR (≤ 15 lines):**

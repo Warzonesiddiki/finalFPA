@@ -166,7 +166,7 @@ fixture, asserting **every** value in the fixture's expected-output table, inclu
 | `TST-CALC-21` | KPI library: every `KPI-001`…`006` formula, guard and label, including the "never shown alone" score rule |
 | `TST-CALC-22` | Rounding is half-up and display-only; the sum-of-rounded footnote appears whenever a column sums to a different total (`CALC-030`/`031`) |
 | `TST-CALC-23` | Scale whole/thousands/lakhs: label always present, values scaled once, negatives in parentheses (`CALC-032`/`033`) |
-| `TST-CALC-24` | Data-quality score formula, weight table and the "score never masks a failure" guarantees; materiality default `max(₹500,000, 2 % × |budget|)` (`CALC-050`, `CALC-080`) |
+| `TST-CALC-24` | Data-quality score formula, weight table and the "score never masks a failure" guarantees; materiality default `max(₹500,000, 2 % × \|budget\|)` (`CALC-050`, `CALC-080`) |
 
 ### 4.3 `TST-IMP` — import, validation and batches (36)
 
@@ -214,7 +214,7 @@ fixture, asserting **every** value in the fixture's expected-output table, inclu
 | `TST-BVA-08` | Empty states: no budget, first-ever period, no PY data — explicit messages, no zero masquerade |
 | `TST-BVA-09` | Prior-year comparison and the `n/a` vs `—` distinctions |
 | `TST-BVA-10` | Control-total variance row (`CALC-070`…`072`) with its own display rules |
-| `TST-BVA-11` | Top-N rule: ordered by |variance| with ties broken deterministically, and the same rows in app/Excel/deck |
+| `TST-BVA-11` | Top-N rule: ordered by \|variance\| with ties broken deterministically, and the same rows in app/Excel/deck |
 | `TST-BVA-12` | Chart inventory (`CHT-001`…`012`): every chart renders, exposes exact values on hover and has its table view |
 | `TST-EXC-01` | Status workflow transitions (Open → In Review → Explained → Corrected → Closed) with the allowed/blocked matrix |
 | `TST-EXC-02` | Notes are append-only; editing an earlier note creates a new entry; who/when recorded |
