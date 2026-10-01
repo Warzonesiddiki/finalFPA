@@ -545,6 +545,27 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   ⬜ with the remaining Addon 3 rows named (it cannot claim "all integrated" while `A3-B`/`A3-F`/`A3-G` wait on
   `28` and the corpus). `16` §1.3's next open item advanced to `28`, `29`, then `PHASE0_SUMMARY.md`.
 
+- **`docs/28_ACCEPTANCE_UAT_AND_GO_LIVE.md`** (Draft v0.1) — the acceptance path (Addon 3 §B.1/§G, Addon 4
+  §F): §1 ownership boundaries, §2 the **project-level Definition of Done** (five gates, coverage bars,
+  clean-Windows E2E golden path, docs `00`–`29` with a live Coverage Matrix, the never-cut list, the
+  handover/training items) plus the per-feature DoD additions, §3 the defect workflow with `S1`–`S4` meanings
+  from `14` §14.1, `23` §10's response targets as **labelled defaults until `OQ-016`**, the `DEF-nnn` log and
+  the closure/regression rules, §4 the **real-data pilot (`GATE-13`)** with preconditions, the run, the
+  four-class difference taxonomy (spec bug / mapping error / client-data-or-methodology / expected), the
+  tie-out worksheet template and the exit criteria (including `OQ-014`'s missing default and `RISK-002`),
+  §5 **UAT (`GATE-14`)** with environment/participants/timing/fallback, the six `TST-UAT-*` scripts and their
+  pass criteria, §6 the **22-item go-live checklist (`GATE-15`)** (delivery + hash, install, smoke, backup
+  and **restore verified on the client machine**, diagnostics, training, support targets, restore-only
+  rollback, disclaimer surfaces, the sample-data non-delivery assertion), §7 the acceptance evidence set and
+  the sign-off template, §8 hypercare and the post-go-live review, §9 the 3–5 minute demo-script standard,
+  §10 obligations and §11 the frozen constants. Reason: Addon 3 §G/§I.5 and Addon 4 §F — the last Addon 3
+  document, and the mechanics `16` §2.1 reserved for `GATE-13`…`GATE-15`.
+- **Governance** — `00_INDEX`: doc-map row 28 → Draft v0.1; `A3-B`/`A3-E`/`A3-G` → **INTEGRATED**, docs
+  complete `00`–`28`, remaining `29`; §8's `DEF-nnn` namespace now has its allocating document. `14` §15's
+  `GATE-04-01` and `-11` → **✅**. `16` §1.3's next open item advanced to `29`, then `PHASE0_SUMMARY.md`.
+  Also corrected `25` §3.4's acceptance bar to the full `06` §7.1/§7.2 wording (recall ≥ 90 % of the 32
+  raises **including 18/18 High-severity**, zero of the 8 control plantings).
+
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's
@@ -562,11 +583,10 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
 
 ### Notes carried into the next session
 
-- Docs `28`–`29` + `PHASE0_SUMMARY` remain to be written, in the mandated order (Addon 4 §L): Addon 3's
-  `28` (+ its owning-doc additions), Addon 4's `29` + the Source-of-Truth Matrix refresh and doc headers,
-  then the `sample-data/` build step, the Addon Coverage Matrix refresh, the five-gate self-audit with the
-  link-check, the tabletop walkthrough (extended through pack issuance and a cold-start client pass) and
-  `PHASE0_SUMMARY.md`.
+- Docs `29` + `PHASE0_SUMMARY` remain to be written, in the mandated order (Addon 4 §L): Addon 4's `29` +
+  the Source-of-Truth Matrix refresh and doc headers, then the `sample-data/` build step, the Addon Coverage
+  Matrix refresh, the five-gate self-audit with the link-check, the tabletop walkthrough (extended through
+  pack issuance and a cold-start client pass) and `PHASE0_SUMMARY.md`.
 - Cross-addon additions are folded into the owning documents as they are written (never a parallel tree).
 - **No product code may be written before recorded Phase 0 approval** (Addon 4 §L.12).
 

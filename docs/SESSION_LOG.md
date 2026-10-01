@@ -319,3 +319,10 @@ Phase 5; the KPI-card default set is client-confirmable (`PPT-KPI-DEFAULT`).
   scope addition; `BL-027`/`BL-028` stay reserved so ids are never reused; the four `S` items (`BL-020`,
   `BL-021`, `BL-033`, `BL-034`) are the only pre-sized candidates for riding a phase slice; and `28` must read
   §4.1's gate ritual so the backlog review is part of the gate packet.
+
+- New from the `28` pass: acceptance now has a **named evidence set and a sign-off template** (pilot, UAT,
+  go-live), so `23` §12's handover pack is the carrier and `24` §5's release record only references it; the
+  defect log is `DEF-nnn` and `S1` blocks every release; `OQ-016` must confirm the `23` §10 response targets
+  before go-live (they are labelled defaults, not promises); the pilot bans sample data outright and `OQ-014`
+  has no default — `RISK-002` is its only mitigation; and every phase gate now demonstrably includes a 3–5
+  minute demo script per `16` §5.1 item 11, templated in `28` §9.

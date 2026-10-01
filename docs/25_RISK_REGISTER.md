@@ -146,7 +146,7 @@ Every register row carries: `RISK-nnn` · risk statement (cause → effect) · c
 |---|---|
 | Cause chain | 24 rules on real data raise too much noise (or miss something obvious) → the register loses credibility and gets ignored |
 | Why it matters | The exception engine is a headline feature; trust is binary and hard to rebuild |
-| Mitigation in force | Recall **≥ 90 % of the 32 expected raises** with **zero** raises on the **8 control plantings** (`06` §7.1, `06` §8.3); effective-threshold traceability on every raise; effectiveness analytics (`06` §9); suppression mechanics ordered by preference (`06` §8.2) |
+| Mitigation in force | Recall **≥ 90 % of the 32 expected raises** including **18/18 High-severity** plantings, with **zero** raises on the **8 control plantings** (`06` §7.1/§7.2, `06` §8.3); effective-threshold traceability on every raise; effectiveness analytics (`06` §9); suppression mechanics ordered by preference (`06` §8.2) |
 | Contingency if it fires | Tune the rule in `06` first (spec → defaults → tests), then settings; never hide a rule to pass a bar; report precision before/after to the client |
 | Residual risk | Some client data will always produce judgement calls; the wording ("potential exception") keeps the frame honest |
 | Evidence | Acceptance harness report, false-positive log, `TST-RUL-*` |

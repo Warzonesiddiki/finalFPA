@@ -739,7 +739,7 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 
 | ID | Check | Provable by | Status |
 |---|---|---|---|
-| `GATE-04-01` | Docs 27 and 28 exist and are complete; backlog seeded from Addon 1 §N + §E.3 | `27`, `28` | ⬜ |
+| `GATE-04-01` | Docs 27 and 28 exist and are complete; backlog seeded from Addon 1 §N + §E.3 | `27`, `28` | ✅ (`27` seeds all 33 parks from `01` §6.2 / `11` §14 / `13` §15; `28` carries the DoD, the three gates and the sign-off) |
 | `GATE-04-02` | Coverage Matrix extended with Addon 3 rows; all integrated | `00_INDEX` §4 | ⬜ (Addon 3 rows present; `A3-B`/`A3-F`/`A3-G` complete when `28` and the `sample-data/` corpus land) |
 | `GATE-04-03` | Four full initial prompt texts exist in `10` with worked examples | `10` §4/§5 | ✅ |
 | `GATE-04-04` | Mapping Review Queue, commentary lock-on-issue and the issuance register fully specified | `02`, `03`, `08` | ✅ |
@@ -749,7 +749,7 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 | `GATE-04-08` | Data-quality score formula has a worked example in `05` | `05` §8 | ✅ |
 | `GATE-04-09` | Success metrics, IP/licensing stance and the forced in/out list resolved in the PRD | `01` §16, §5 | ✅ |
 | `GATE-04-10` | Error-code catalog families defined in `26`; message-catalog rule in `08` | `26`, `08` §16 | ✅ (11 families + codes in `26` §5; shape and wording in `08` §16) |
-| `GATE-04-11` | Project DoD, UAT mechanics, defect severities, go-live checklist and sign-off template in `28` | `28` | ⬜ |
+| `GATE-04-11` | Project DoD, UAT mechanics, defect severities, go-live checklist and sign-off template in `28` | `28` | ✅ (`28` §2 DoD · §3 `S1`–`S4` + `DEF-` log · §4 pilot · §5 UAT · §6 the 22-item go-live checklist · §7 sign-off) |
 | `GATE-04-12` | "Decided" section active in `18`; `ADR-000` index lists `ADR-001`/`002` (+ any new) | `18`, `09` | ✅ |
 
 ### 15.5 `GATE-05` — Addon 4 §K deltas (13 checks)

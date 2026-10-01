@@ -93,7 +93,7 @@ precise, terse, and testable.
 | 25 | `25_RISK_REGISTER.md` | Risks (RISK-) with likelihood/impact/mitigation/owner; reviewed at gates | Draft v0.1 |
 | 26 | `26_API_CONTRACT.md` | The 95-route contract: envelope, pagination/filter grammar, value encodings, job/bulk rules, the error-code catalogue, OpenAPI + type-generation workflow, contract tests, endpoint → FR reverse index | Draft v0.1 |
 | 27 | `27_BACKLOG.md` | Every parked item (`BL-`) with one-line scope, promotion trigger, size, source and target phase; reviewed at every gate | Draft v0.1 |
-| 28 | `28_ACCEPTANCE_UAT_AND_GO_LIVE.md` | DoD, UAT mechanics, defects (DEF-), pilot tie-out, go-live, sign-off | Not started |
+| 28 | `28_ACCEPTANCE_UAT_AND_GO_LIVE.md` | DoD, UAT mechanics, defects (`DEF-`), pilot tie-out, go-live, sign-off | Draft v0.1 |
 | 29 | `29_CLIENT_REQUIREMENTS_PACK.md` | Plain-language client pack + sign-off block | Not started |
 | — | `CHANGELOG.md` | Every doc/spec change (Keep a Changelog + semver) and gate approvals | Living |
 | — | `SESSION_LOG.md` | Append-only session memory: what changed, FRs touched, tests, next step | Living |
@@ -181,7 +181,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | Ref | Requirement | Owning doc(s) | Status |
 |---|---|---|---|
 | A3-A | How this addon works + Coverage Matrix extension | `00`, `19` | INTEGRATED |
-| A3-B | Document updates: new docs 27–28 + 14-row additions table | `27`, `28`, owning docs | IN PROGRESS (`27` written; `28` outstanding; the 14 owning-doc additions landed in the `00`–`26` passes) |
+| A3-B | Document updates: new docs 27–28 + 14-row additions table | `27`, `28`, owning docs | INTEGRATED (`27`/`28` written; the 14 owning-doc additions landed in the `00`–`26` passes) |
 | A3-B.2-03 | `03` additions: `FactPackIssue`, `MappingSuggestion`, template-version stamps on batches | `03` | INTEGRATED |
 | A3-B.2-05 | `05` additions: data-quality score formula with worked example | `05` | INTEGRATED |
 | A3-B.2-06 | `06` additions: cross-system tie-out rule family with v1 scope decision (file-level control totals only) | `06` | INTEGRATED |
@@ -190,9 +190,9 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A3-B.2-10 | `10` additions: the four full prompt texts, model pinning/deprecation, mapping-queue state machine, prompt-edit process | `10` | INTEGRATED |
 | A3-C | Feature precision part 2 (AI mapping review queue, mapping preview/profile auto-match, commentary workflow, pack issuance register, data-quality score, storage/health, budget re-import, persistence/destructive actions, home screen, no login, import UX, display locale) | `02`, `08`, `10` | IN PROGRESS |
 | A3-D | AI feature depth (four full prompt texts, model pinning/deprecation, golden fixtures, prompt-edit discipline) | `10`, `02` | INTEGRATED |
-| A3-E | Decisions that must be settled (success metrics, IP/licensing, forced in/out list, support/warranty) | `01`, `18`, `28` | IN PROGRESS (`28` pending) |
+| A3-E | Decisions that must be settled (success metrics, IP/licensing, forced in/out list, support/warranty) | `01`, `18`, `28` | INTEGRATED (`01` §16/§5; the support/warranty placeholder is in `28` §3.1 and `OQ-016`) |
 | A3-F | Charts, formatting & test corpus (chart inventory, centralised conditional formatting, output conventions, cross-artifact consistency test, negative file corpus) | `08`, `11`, `12`, `14`, `sample-data/` | IN PROGRESS |
-| A3-G | Acceptance, UAT & go-live (project DoD, UAT mechanics, defect severities, per-phase demo scripts, go-live checklist) | `28` | PENDING (`28` is the next document) |
+| A3-G | Acceptance, UAT & go-live (project DoD, UAT mechanics, defect severities, per-phase demo scripts, go-live checklist) | `28` | INTEGRATED |
 | A3-H | Backlog governance (entry schema, seed, reviewed at gates) | `27` | PENDING |
 | A3-I | Process & quality deltas (exception perf NFR, ADR-000 index, local-only crash dumps, prompt-edit + feedback intake, DoD additions) | `14`, `09`, `19` | INTEGRATED |
 | A3-J | Phase 0 quality gate deltas (12 checks) | `00`, `14` | IN PROGRESS |
@@ -345,8 +345,8 @@ Addon 3 §G). Approvals are recorded in `CHANGELOG.md` **and** `SESSION_LOG.md` 
 |---|---|
 | Phase | **Phase 0 — Documentation** |
 | Authoritative next-action list | Addon 4 §L (supersedes Addon 3 §K → Addon 1 §P → Kickoff §15) |
-| Docs complete | `00`–`27` (drafts) + `CHANGELOG`, `SESSION_LOG` |
-| Docs remaining | `28`–`29`, `PHASE0_SUMMARY` |
+| Docs complete | `00`–`28` (drafts) + `CHANGELOG`, `SESSION_LOG` |
+| Docs remaining | `29`, `PHASE0_SUMMARY` |
 | Product code | **None. Forbidden until recorded approval.** |
 | App version / docs version | 0.1.0 (planned) / 0.1.0 (working draft) |
 | Open questions count | Tracked in `18_...OPEN_QUESTIONS.md` §Open |
