@@ -176,6 +176,30 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   code-health guardrails; and the one-command scripts. Reason: Kickoff §4, Addon 1 §C.2/G/I/J/L,
   Addon 2 §B/C.2/F/H, Addon 3 §I, Addon 4 §I.
 
+- **`docs/10_AI_INTEGRATION_SPEC.md`** (Draft v0.1) — the complete AI contract: the one-sentence policy
+  (*AI drafts words for humans to check; it never computes, decides, applies or sends anything*); optional
+  and off-by-default status with the keyless default; the **complete allowed-use list** (four features)
+  and the **nine forbidden categories** with their architectural enforcement (AI code has no store handle,
+  no write path, no send capability); provider configuration for Azure OpenAI (preferred) and
+  OpenAI-compatible endpoints over the **OpenAI-compatible HTTP interface with no vendor SDK**
+  (`ADR-010`); the failure-handling matrix; the versioned prompt-template system with the five-step
+  prompt-edit process; **the four complete initial prompt texts with verbatim system prompts, user payload
+  templates, input schemas, data-block shapes, output JSON schemas, guardrail tables and worked examples
+  on the sample dataset** (`PROMPT-01` variance commentary, `PROMPT-02` mapping suggestion with evidence,
+  `PROMPT-03` exception summary, `PROMPT-04` follow-up message draft — the last with no send capability
+  anywhere in the product); redaction and minimum-data rules with per-feature caps and the documented
+  masking trade-off (vendor names masked, account/cost-centre codes not, disclosed to the client);
+  **ten prompt-injection defences** with two planted adversarial descriptions in the sample data; the
+  ten-step output-validation pipeline; the **number-mismatch stance** (`DEC-026`: strip and flag, never
+  trust) including the normalisation test cases; schema-failure handling; caps (per-call, hourly, monthly
+  tokens and cost) with the cost-estimate table; the usage log schema; caching with its key and
+  invalidation rules; model pinning, deprecation handling and the five-step fallback order ending in the
+  rule-based narrative; the data-residency statement; keyless mode and the rule-based fallback quality
+  bar; draft provenance, regeneration and approval; the mapping review-queue state machine (never applied
+  in the same run); key storage, rotation and logging rules; and **fourteen AI test fixtures**
+  (`TST-AI-01`…`TST-AI-14`) with the gate rule. Reason: Kickoff §10, Addon 1 §C.2/I/K, Addon 2 §C.2/G,
+  Addon 3 §B.2/D, Addon 4 §J.
+
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's

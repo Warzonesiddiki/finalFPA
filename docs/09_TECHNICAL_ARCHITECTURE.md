@@ -76,6 +76,7 @@
 | `ADR-007` | Hand-written SQL over DuckDB/SQLite; no ORM (§3.8) | **Accepted** | 2026-10-01 | Cheap |
 | `ADR-008` | Forward-only schema migrations with mandatory backup (§3.9) | **Accepted** | 2026-10-01 | Costly |
 | `ADR-009` | The local API serves the built UI as static assets (§3.10) | **Accepted** | 2026-10-01 | Cheap |
+| `ADR-010` | AI providers are reached over the OpenAI-compatible HTTP interface; no vendor SDK (§3.11) | **Accepted** | 2026-10-01 | Cheap |
 
 ### 3.2 `ADR-001` — Authoritative technical stack
 
@@ -311,6 +312,43 @@ story (no browser extension, no separate server install). Negative: the UI and A
 fix requires a rebuild — acceptable at this scale.
 
 **Reversibility.** Cheap.
+
+### 3.11 `ADR-010` — AI providers over the OpenAI-compatible HTTP interface, no vendor SDK
+
+**Status:** Accepted · **Date:** 2026-10-01 · **Source:** Kickoff §10, Addon 1 §I, Addon 3 §D
+
+**Context.** The optional AI features need exactly one capability: a single chat-completions call that
+returns JSON. Two provider families must be supported (Azure OpenAI preferred; any OpenAI-compatible
+endpoint), the key must be handled locally, and the whole thing ships inside a frozen PyInstaller bundle
+where every extra dependency costs installer size and increases the supply-chain surface (Addon 1 §I).
+Prompt-injection defence, redaction and output validation must sit **in our code**, not inside a vendor
+client we do not control.
+
+**Decision.** Talk to providers over the **OpenAI-compatible HTTP interface using `httpx`** (already in
+`ADR-001`). No vendor SDK is added. We own:
+
+| Owned by us | Detail |
+|---|---|
+| Request assembly | Model/deployment, messages (system + user), response-format hint, temperature fixed at `0.2`, token caps |
+| Retry/backoff | 2 retries with exponential backoff on 429/5xx, 30 s timeout, cancellation-aware |
+| Response parsing | Strict JSON parse + schema validation + guardrails (doc `10` §8) |
+| Error taxonomy | Classified outcomes (`schema_error`, `timeout`, `cap_exceeded`, `refused`, `network_error`, `model_retired`) mapped to the usage log and to user-facing hints |
+| Security | Redaction, delimiter escaping, injection defences, key from DPAPI, log hygiene |
+
+**Alternatives considered.** Vendor SDK (adds a large dependency, hides error taxonomy, and its own
+version drift would leak into our behaviour); a provider-agnostic AI framework (forbidden by `ADR-001`'s
+"no AI agent frameworks for core logic"); direct REST with `requests` (rejected: `httpx` is already
+approved and supports timeouts/cancellation better).
+
+**Consequences.** Positive: tiny dependency surface, complete control over redaction and validation,
+provider-swappable by configuration, and the same code path is unit-testable with a recorded-response
+double. Negative: we track API-version changes ourselves (owned in `24` release notes), and we implement
+retry/backoff rather than inheriting it.
+
+**Reversibility.** Cheap — a provider or transport swap touches only `engine/ai/`.
+
+**Affected docs.** `10` (§3 provider configuration), `13` (secrets), `14` (AI fixtures), `24` (API-version
+notes in release notes), `26` (endpoints that trigger AI actions).
 
 ## 4. Module boundaries and repo structure
 

@@ -30,6 +30,7 @@ product code** (Addon 4 §L, steps 1–2).
 | `docs/06_EXCEPTION_RULES_CATALOG.md` | **New.** Engine model (identity/re-run, statuses, severity SLAs, aging, owner auto-assign, degradation, effective thresholds, implementation contract) + **24 fully specified rules** with 13 fields each + dependency matrix + enablement defaults + **40-planting sample plan (32 raises, 8 precision controls)** + false-positive management + effectiveness analytics + change control |
 | `docs/07_FORECAST_METHODS_SPEC.md` | **New.** Forecast lifecycle, eligibility guards, method resolver, scenarios, version lifecycle/locks, accuracy report, method-choice guidance, overrides, 8 integrity guarantees, worked example, config reference |
 | `docs/08_UI_UX_SPEC.md` | **New.** IA + guided nav, global shell, **43-screen inventory** (`SCR-001`…`SCR-043`), screen-by-screen specs with 6 ASCII wireframes, **12-chart inventory** (`CHT-`), **12 centralized conditional-format rules** (`CF-`) with non-colour signals, display-formatting contract, message-catalog/wording rules, per-screen state matrix, WCAG AA accessibility baseline, design system/tokens, change control |
+| `docs/10_AI_INTEGRATION_SPEC.md` | **New.** AI policy (allowed/forbidden, off by default), provider config + `ADR-010` (OpenAI-compatible HTTP, no SDK), versioned prompt system, **the four complete prompt texts with schemas and worked examples**, redaction/minimum-data rules, 10 injection defences, 10-step output validation, **number-mismatch stance (strip and flag)**, caps + cost table + usage log, caching, model pinning/deprecation/fallback, keyless rule-based fallback, draft provenance/regeneration/approval, mapping review-queue state machine, key rotation, 14 AI test fixtures |
 | `docs/09_TECHNICAL_ARCHITECTURE.md` | **New.** **ADR-000 template + index and 9 ADRs** (stack, toolchain, signing, storage, Windows validation, process model, SQL-over-ORM, migrations, static-UI serving), headless-engine boundary + module map, CLI with 9 exit codes, data flow, storage layout + OneDrive rule + **storage-growth maths**, mutex/locks, logging, job model + cancellation + crash recovery, config layering, recompute/invalidation, data-volume rule, migration strategy, **NFR→architecture budget table**, spike policy, guardrails, one-command scripts |
 | `docs/CHANGELOG.md` | **New.** Keep a Changelog + semver policy for app and schema, Phase 0 entries, approval-record table, release history placeholder |
 | `docs/SESSION_LOG.md` | **New.** This file |
@@ -40,7 +41,9 @@ product code** (Addon 4 §L, steps 1–2).
 - 16 `CALC-*`/`KPI-*` formula IDs registered with fixtures (`05` §14); 32 `IMP-nnn` validation checks
   catalogued (`04` §10); 24 `EXC-nnn` rules fully specified with a 40-planting plan (`06`), all 15 seed
   rules covered; 6 new decisions allocated (`DEC-020`…`DEC-025`) in `01_PRD.md` §21; 43 `SCR-` screens and
-  12 `CHT-` charts inventoried with 12 `CF-` formatting rules (`08`); 9 ADRs written and indexed (`09`).
+  12 `CHT-` charts inventoried with 12 `CF-` formatting rules (`08`); **10 ADRs** written and indexed
+  (`09`, including `ADR-010` added this turn); 4 versioned prompt templates specified (`10`);
+  2 further decisions allocated (`DEC-026`, `DEC-027`).
 - Areas governed: scope (`01`), behaviour (`02`), structure (`03`), ingestion (`04`), arithmetic (`05`),
   governance/metadata (`00`), process (`CHANGELOG`, `SESSION_LOG`).
 
@@ -65,7 +68,14 @@ recorded in `CHANGELOG.md`. A **full matrix refresh is required at the end of th
   example values reconciled (the `03` batch score was corrected to match `CALC-050`); cross-references
   written only to docs that are planned in `00_INDEX.md` §3 (the full link-check runs once all docs
   exist); **reference integrity verified**: 43/43 `SCR-` inventory rows referenced in the body, 12/12
-  `CHT-` rows, 12/12 `CF-` rules, all 9 ADR index rows backed by a section.
+  `CHT-` rows, 12/12 `CF-` rules, all ADR index rows backed by a section; all 16 JSON blocks in `10`
+  parse; all four prompts verified COMPLETE (system prompt + user payload + input schema + output schema
+  + guardrails + worked example).
+- **Self-audit catch (fixed in the same turn):** the first pass of `10` §5 shipped `PROMPT-02`…`PROMPT-04`
+  without explicit input/output JSON schema blocks — a gate requirement. Added all five missing schemas
+  via scripted inserts with existence assertions, then re-ran the structural check until all four prompts
+  reported COMPLETE. The check (`assert every prompt has all six components`) is now part of the doc
+  verification routine.
 - **Incident (self-inflicted, resolved):** a fuzzy edit to `00_INDEX.md` truncated the file from 362 to
   191 lines. Restored from git (`git checkout HEAD -- docs/00_INDEX.md`) and re-applied all 13 pending
   updates with a script that asserts exactly one match per replacement; verified 366 lines with the
@@ -84,12 +94,12 @@ None. Every unconfirmed client fact has a labelled default in `01` §12 and will
 
 ### Next step
 
-Continue the mandated doc order: `10_AI_INTEGRATION_SPEC.md` — the AI policy in full, the **four complete
-initial prompt texts** (variance commentary, mapping suggestion with evidence, exception grouping,
-follow-up message draft) each with system prompt, input schema, output JSON schema, guardrails and a
-worked example on sample data; model pinning/deprecation handling; redaction rules; caps and usage log;
-prompt-injection hardening; number-mismatch stance; provenance/regeneration policy — then
-`11_EXCEL_OUTPUT_SPEC.md` and `12_POWERPOINT_OUTPUT_SPEC.md`.
+Continue the mandated doc order: `11_EXCEL_OUTPUT_SPEC.md` — every exported workbook sheet by sheet
+(names, order, header blocks, column layouts, number formats, conditional formatting from the single
+`CF-` rule set, freeze panes, autofilters, widths, print/PDF setup, the row-cap rule at 1,048,576 rows,
+file-naming and collision policy, evidence-bundle layout, the audit-trail sheet, stamping, and the
+cross-artifact consistency requirements) — then `12_POWERPOINT_OUTPUT_SPEC.md` with the six slides and
+per-placeholder character budgets.
 
 ### Deferred to backlog / open questions
 

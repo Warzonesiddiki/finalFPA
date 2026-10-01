@@ -536,4 +536,6 @@ This table is an index of the rulings made in this document; IDs are allocated h
 | `DEC-023` | Cross-batch duplicate handling **reports and asks** (skip / import anyway / cancel) — never auto-skip, never auto-import | §6.3 |
 | `DEC-024` | Exception rules are **registered and catalogued**; an unregistered rule module cannot run, and a new rule requires a catalogue entry + planting + golden test | §6.1 |
 | `DEC-025` | Forecast: default project method `remaining_budget`, `N = 3` for run-rate, three scenarios with **default, unconfirmed** adjustment percentages | §6.1, §12 |
+| `DEC-026` | AI number-mismatch policy: figures not present in the payload are **stripped and flagged**, never trusted | §6.1, §15.3 |
+| `DEC-027` | AI redaction defaults: vendor names and descriptions masked; account/cost-centre/entity codes **not** masked (required for the task) and disclosed to the client | §15.3 |
 
