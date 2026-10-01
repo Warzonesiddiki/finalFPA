@@ -313,3 +313,9 @@ Phase 5; the KPI-card default set is client-confirmable (`PPT-KPI-DEFAULT`).
   `ui/theme/tokens.ts` (Addon 2 §E) is a Phase-5 file, so `A2-E` is integrated through the `08`/`12` contract
   while the artefact itself lands with the UI; and the response budgets fixed here (lists ≤ 2 MB, analysis
   ≤ 5 MB, search 50/group) are the numbers `09` §12 requires tests to enforce.
+
+- New from the `27` pass: the backlog is now the **only** place a deferral exists — `01` §6.2, `11` §14 and
+  `13` §15 keep their views and all point here; promotion is a decision (FR + `18` + `16`), never a quiet
+  scope addition; `BL-027`/`BL-028` stay reserved so ids are never reused; the four `S` items (`BL-020`,
+  `BL-021`, `BL-033`, `BL-034`) are the only pre-sized candidates for riding a phase slice; and `28` must read
+  §4.1's gate ritual so the backlog review is part of the gate packet.

@@ -530,6 +530,21 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   contract closes Addon 2, so the traceability chain (FR → spec → screen → endpoint → test) is complete on
   paper before any handler exists.
 
+- **`docs/27_BACKLOG.md`** (Draft v0.1) — the single backlog register (Addon 3 §B.1/§H, Addon 1 §N): §1 what
+  belongs here versus a risk/defect/question, the verbatim entry schema (name · one-line scope · trigger ·
+  size S/M/L · source · target phase) and the three rules (nothing lives in chat; a park with a downside links
+  a risk row; promotion is a decision), §2 the **33 registered items** — `BL-001`…`BL-025` from `01` §6.2,
+  `BL-026` from `11` §14 (`XL-CHART-DEFER`), `BL-029`…`BL-035` from `13` §15 — each with the observable trigger
+  that promotes it, a rough size and a target phase (`Phase 6 candidate` / `Post-v1` / `On trigger` /
+  `Not planned`), §3 the views (four small wins, by-source, the five trigger families), §4 the gate ritual and
+  the promotion/retirement states, §5 the obligations on `01`/`02`/`16`/`18`/`19`/`25`/`28`/`24`, §6 change
+  control and the frozen constants (`BL-027`/`BL-028` reserved and unallocated). Reason: Addon 3 §H,
+  `GATE-04-01`, and the "nothing may live only in chat" rule.
+- **Governance** — `00_INDEX`: doc-map row 27 → Draft v0.1; `A1-N` and `A3-H` → **INTEGRATED**, `A3-B` →
+  IN PROGRESS, docs complete `00`–`27`, remaining `28`–`29`. `14` §15's `GATE-04-10` → **✅**; `GATE-04-02` →
+  ⬜ with the remaining Addon 3 rows named (it cannot claim "all integrated" while `A3-B`/`A3-F`/`A3-G` wait on
+  `28` and the corpus). `16` §1.3's next open item advanced to `28`, `29`, then `PHASE0_SUMMARY.md`.
+
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's
@@ -547,12 +562,11 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
 
 ### Notes carried into the next session
 
-- Docs `27`–`29` + `PHASE0_SUMMARY` remain to be written, in the mandated order (Addon 4 §L): Addon 3's
-  `27`–`28`
-  (+ the four prompt texts, chart inventory and negative corpus), Addon 4's `29` + the Source-of-Truth
-  Matrix refresh and doc headers, then the `sample-data/` build step, the Addon Coverage Matrix refresh,
-  the five-gate self-audit with the link-check, the tabletop walkthrough (extended through pack issuance
-  and a cold-start client pass) and `PHASE0_SUMMARY.md`.
+- Docs `28`–`29` + `PHASE0_SUMMARY` remain to be written, in the mandated order (Addon 4 §L): Addon 3's
+  `28` (+ its owning-doc additions), Addon 4's `29` + the Source-of-Truth Matrix refresh and doc headers,
+  then the `sample-data/` build step, the Addon Coverage Matrix refresh, the five-gate self-audit with the
+  link-check, the tabletop walkthrough (extended through pack issuance and a cold-start client pass) and
+  `PHASE0_SUMMARY.md`.
 - Cross-addon additions are folded into the owning documents as they are written (never a parallel tree).
 - **No product code may be written before recorded Phase 0 approval** (Addon 4 §L.12).
 
