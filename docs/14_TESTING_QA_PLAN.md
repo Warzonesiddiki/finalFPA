@@ -759,11 +759,11 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 | `GATE-05-01` | Coverage Matrix has Addon 4 rows; all integrated | `00_INDEX` §4 | ✅ (through `13`) |
 | `GATE-05-02` | Standard doc header on every doc; TL;DR ≤ 15 lines | every doc; doc-14 header check script | ✅ |
 | `GATE-05-03` | Source-of-Truth Matrix in `00_INDEX`; no duplicated formula/threshold; conflict rule documented | `00_INDEX` §5 + the conflict rule | ✅ |
-| `GATE-05-04` | Quote-before-code and FR-citation rules written into `19` | `19` | ⬜ |
+| `GATE-05-04` | Quote-before-code and FR-citation rules written into `19` | `19` | ✅ |
 | `GATE-05-05` | Every FR has P0/P1/P2; never-cut list and cut process in `02`/`16` | `02` priorities, `16` | ✅ (priorities; process with `16`) |
 | `GATE-05-06` | Per-phase estimates in `16` | `16` | ⬜ |
 | `GATE-05-07` | `29_CLIENT_REQUIREMENTS_PACK.md` complete and jargon-free; sign-off block present | `29` | ⬜ |
-| `GATE-05-08` | Approval-recording convention and post-approval impact rule in `19` | `19`, `CHANGELOG` | ⬜ |
+| `GATE-05-08` | Approval-recording convention and post-approval impact rule in `19` | `19`, `CHANGELOG` | ✅ |
 | `GATE-05-09` | Real-data pilot gate defined in `28` with tie-out worksheet + classification log | `28` | ⬜ |
 | `GATE-05-10` | Tolerance policy in `05`; full edge-case matrix in `02`/`14` with message IDs | `05` §6, this doc §6 | ✅ |
 | `GATE-05-11` | Sample-data watermark + project-type flag + non-delivery rule specified | `03`/`09` + §16 here | ✅ |

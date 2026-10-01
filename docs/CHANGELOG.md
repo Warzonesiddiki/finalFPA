@@ -352,6 +352,24 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   annotated with their remaining owners. `01` §14's registry-hygiene flag is **closed** and §16's phantom
   `OQ-020` reference corrected to `OQ-016`. `14`'s `GATE-01-08` and `GATE-04-12` now read ✅ on the doc
   side. `16` §1.3's next open item advanced to `19`.
+- **`docs/19_VIBE_CODING_PLAYBOOK.md`** (Draft v0.1) — the working protocol: the **twenty principles**
+  `P1`…`P20` in one canonical list, each with its violation signature and cost, and the mechanism that
+  enforces it; the **session protocol** (start: the reading plan, the session plan and the quote-before-code
+  pre-flight; during: the fixed change order, small commits, ask-when-blocked, sample-data-only; end: the
+  ten-step closing checklist, the regression gate, the `SESSION_LOG` format and the append-only rule); the
+  **Definition of Done enforcement** (per feature and per phase) with the demo-recipe rule; **change
+  control** (the never-reversed order, the post-approval impact note, what needs a decision before code,
+  client-feedback intake); **approvals and gates** (the recorded approval pattern, the stop-and-present
+  sequence, non-gate approvals, and the Phase-0 no-code rule); blocking questions and the escalation
+  ladder; the three evidence levels (demo recipe, phase demo script, tabletop + cold-start walks); the
+  **AI-session rules** (paraphrase ban, no invented requirements, no fabricated numbers, context
+  discipline, prompt-edit discipline); the 16-item **anti-pattern list**; roles and the one-writer rule;
+  and the 30-minute onboarding ramp. Reason: Kickoff §3/§14, Addon 1 §B/§M, Addon 2 §F.5/§H.3, Addon 3
+  §I.4/§I.5, Addon 4 §B/§E.2/§E.3/§L.12; satisfies `GATE-05-04` and `GATE-05-08`.
+- **Governance** — `00_INDEX`: doc-map row 19 → Draft v0.1; docs complete `00`–`19`; `K-S3`, `K-S14`,
+  `K-S15`, `A1-B`, `A1-M`, `A1-P`, `A2-H`, `A2-J`, `A3-I`, `A3-K`, `A4-I`, `A4-L` **INTEGRATED** with
+  `A4-E` now pending only on `24`/`29`. `14`'s `GATE-05-04`/`GATE-05-08` now read ✅. `16` §1.3's next
+  open item advanced to `20`.
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's

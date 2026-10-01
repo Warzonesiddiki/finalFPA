@@ -84,7 +84,7 @@ precise, terse, and testable.
 | 16 | `16_ROADMAP_PHASES.md` | Phases, estimates, gate artifacts, release cadence, next open item | Draft v0.1 |
 | 17 | `17_CODING_STANDARDS.md` | Repo layout, naming, commits, branching, engine boundary, code health | Draft v0.1 |
 | 18 | `18_GLOSSARY_ASSUMPTIONS_OPEN_QUESTIONS.md` | Glossary, assumptions, open questions (OQ-), **Decided log (DEC-)** | Draft v0.1 |
-| 19 | `19_VIBE_CODING_PLAYBOOK.md` | Session protocol, principles P1–P20, quote-before-code, gates/approvals | Not started |
+| 19 | `19_VIBE_CODING_PLAYBOOK.md` | Session protocol, principles P1–P20, quote-before-code, gates/approvals | Draft v0.1 |
 | 20 | `20_REQUIREMENTS_TRACEABILITY.md` | FR → spec → SCR → API → test → status chain | Not started |
 | 21 | `21_CLIENT_ONBOARDING_QUESTIONNAIRE.md` | Every client question (Q-), why it matters, default if unanswered | Not started |
 | 22 | `22_END_USER_GUIDE.md` | Task-structured user manual keyed to SCR-IDs; in-app help source | Not started |
@@ -118,7 +118,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 |---|---|---|---|
 | K-S1 | Role: lead product engineer/architect/delivery lead; spec-first; docs before code | `19`, `01` | PENDING |
 | K-S2 | Product & client context: current manual workflow, Windows 11 x64, non-technical user, offline, self-contained installer, clean start | `01`, `21` | IN PROGRESS |
-| K-S3 | Zero-compromise principles P1–P10 | `19` (canonical list), `01` | PENDING |
+| K-S3 | Zero-compromise principles P1–P10 | `19` (canonical list), `01` | INTEGRATED |
 | K-S4 | Authoritative stack (ADR-001) + forbidden technologies + environment open questions | `09` | INTEGRATED |
 | K-S5 | Phase 0 documentation set & quality gate (the doc tree, gate checklist) | `00`, `14` | IN PROGRESS |
 | K-S6 | Approved product scope v1 (9 in-scope areas) + explicit out-of-scope list | `01`, `16` | INTEGRATED |
@@ -129,15 +129,15 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | K-S11 | Reporting outputs: Excel pack + PPT pack (6 slides), native/editable, stamping | `11`, `12` | INTEGRATED |
 | K-S12 | UX for non-technical users: guided nav, sample project, error copy, confirmations, help, diagnostics | `08` | INTEGRATED |
 | K-S13 | Quality, testing & acceptance: unit/golden tests, planted-exception acceptance, UAT script, error handling, packaging validation | `14` | PENDING |
-| K-S14 | Session protocol (vibe coding rules) | `19` | PENDING |
-| K-S15 | Immediate next actions + Phase 0 stop gate | `16`, `19`, `00` | IN PROGRESS (19 pending) |
+| K-S14 | Session protocol (vibe coding rules) | `19` | INTEGRATED |
+| K-S15 | Immediate next actions + Phase 0 stop gate | `16`, `19`, `00` | INTEGRATED |
 
 ### 4.2 Addon 1 (Sections A–P) — 16 rows
 
 | Ref | Requirement | Owning doc(s) | Status |
 |---|---|---|---|
 | A1-A | How this addon works: spec of record, integrate into existing docs, no parallel tree | `00`, `19` | IN PROGRESS |
-| A1-B | Principles P11–P20 (monthly rhythm, atomic imports, nothing silently discarded, versioned edits, upgrades, end-user docs, supply chain, hostile input, no colour-only signals, tabletop walkthrough) | `19`, `01` | PENDING |
+| A1-B | Principles P11–P20 (monthly rhythm, atomic imports, nothing silently discarded, versioned edits, upgrades, end-user docs, supply chain, hostile input, no colour-only signals, tabletop walkthrough) | `19`, `01` | INTEGRATED |
 | A1-C.1 | New docs 21–25 | `21`–`25` | PENDING |
 | A1-C.2 | Required additions inside original docs (26-row table) | `01`–`20` (owning docs) | IN PROGRESS |
 | A1-D | Domain completeness checklist (20 items → decisions + defaults) | `21`, `18` | IN PROGRESS (defaults registered in `18`; checklist with `21`) |
@@ -149,10 +149,10 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A1-J | Delivery, release & upgrade addenda (semver, release checklist, migration test, distribution, no schema drift, signing ADR) | `15`, `16`, `24` | IN PROGRESS (24 pending) |
 | A1-K | Client enablement (task-structured guide, first-run tour, 60-min training, error dialog, support flow) | `22`, `23` | PENDING |
 | A1-L | NFR numbers (cold start, import, dashboard, PPT, offline, installer size, memory, logs, diagnostics, screen, crash behaviour) | `14` (numbers), `16`, `09` | INTEGRATED |
-| A1-M | Session protocol addenda (SESSION_LOG, regression gate, Windows evidence, schema change process, sample data sacred, roadmap discipline) | `19`, `14` | PENDING |
+| A1-M | Session protocol addenda (SESSION_LOG, regression gate, Windows evidence, schema change process, sample data sacred, roadmap discipline) | `19`, `14` | INTEGRATED |
 | A1-N | Explicitly parked backlog list | `27`, `01` | IN PROGRESS |
 | A1-O | Combined Phase 0 quality gate deltas (12 checks) | `00`, `14` | IN PROGRESS |
-| A1-P | Updated immediate next actions | `16`, `19`, `00` | IN PROGRESS (19 pending) |
+| A1-P | Updated immediate next actions | `16`, `19`, `00` | INTEGRATED |
 
 ### 4.3 Addon 2 (Sections A–J) — 10 rows
 
@@ -172,9 +172,9 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A2-E | UI/UX & brand addenda (SCR-IDs, accessibility baseline, stale indicator, theme tokens as data, PPT text fit, wizard UX) | `08`, `12`, `ui/theme` | IN PROGRESS |
 | A2-F | Testing, CI & quality bars (coverage ≥90% engine / ≥75% backend, `scripts/check`, CI, Playwright golden path, demo recipe DoD, link-check) | `14`, `16`, `17` | INTEGRATED |
 | A2-G | AI addenda (usage log, draft provenance, regeneration policy, determinism/number-mismatch stance) | `10` | INTEGRATED |
-| A2-H | Process & governance addenda (trunk-based branching, Keep a Changelog, blocking-question protocol, disclaimer enforcement) | `17`, `19` | IN PROGRESS (17 done; 19 pending) |
+| A2-H | Process & governance addenda (trunk-based branching, Keep a Changelog, blocking-question protocol, disclaimer enforcement) | `17`, `19` | INTEGRATED |
 | A2-I | Phase 0 quality gate deltas (12 checks) | `00`, `14` | IN PROGRESS |
-| A2-J | Updated immediate next actions | `16`, `19`, `00` | IN PROGRESS (19 pending) |
+| A2-J | Updated immediate next actions | `16`, `19`, `00` | INTEGRATED |
 
 ### 4.4 Addon 3 (Sections A–K) — 11 rows
 
@@ -194,9 +194,9 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A3-F | Charts, formatting & test corpus (chart inventory, centralised conditional formatting, output conventions, cross-artifact consistency test, negative file corpus) | `08`, `11`, `12`, `14`, `sample-data/` | IN PROGRESS |
 | A3-G | Acceptance, UAT & go-live (project DoD, UAT mechanics, defect severities, per-phase demo scripts, go-live checklist) | `28` | PENDING |
 | A3-H | Backlog governance (entry schema, seed, reviewed at gates) | `27` | PENDING |
-| A3-I | Process & quality deltas (exception perf NFR, ADR-000 index, local-only crash dumps, prompt-edit + feedback intake, DoD additions) | `14`, `09`, `19` | PENDING |
+| A3-I | Process & quality deltas (exception perf NFR, ADR-000 index, local-only crash dumps, prompt-edit + feedback intake, DoD additions) | `14`, `09`, `19` | INTEGRATED |
 | A3-J | Phase 0 quality gate deltas (12 checks) | `00`, `14` | IN PROGRESS |
-| A3-K | Updated immediate next actions | `16`, `19`, `00` | IN PROGRESS (19 pending) |
+| A3-K | Updated immediate next actions | `16`, `19`, `00` | INTEGRATED |
 
 ### 4.5 Addon 4 (Sections A–L) — 12 rows
 
@@ -206,14 +206,14 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A4-B | Spec consumption protocol (standard doc header, session reading plan, quote-before-code, decisions accumulate forward, paraphrase ban) | `19`, `00` | IN PROGRESS |
 | A4-C | Source-of-Truth Matrix & doc hygiene (one owner per fact, conflict resolution, no duplication, length discipline, link-check) | `00` | IN PROGRESS |
 | A4-D | FR prioritisation & cut-line policy (P0/P1/P2, phase gate rule, never-cut list, cut process, estimates) | `02`, `16`, `20` | IN PROGRESS (20 pending) |
-| A4-E | Doc 29 + approval mechanics (plain-language pack, approval recording, post-approval change impact rule) | `29`, `19`, `24`, `18` | IN PROGRESS (19, 24, 29 pending) |
+| A4-E | Doc 29 + approval mechanics (plain-language pack, approval recording, post-approval change impact rule) | `29`, `19`, `24`, `18` | IN PROGRESS (24, 29 pending) |
 | A4-F | Real-data pilot gate (one sanitized real month, tie-out acceptance, classification, exit criteria) | `28`, `14` | PENDING |
 | A4-G | Tolerance & edge-case data matrix (no epsilon in money maths, display rounding, cross-artifact equality, 13 edge cases) | `05`, `02`, `14` | IN PROGRESS |
 | A4-H | Sample-data integrity (watermark, project_type flag, no interleave, not delivered to client) | `14`, `16`, `02` | INTEGRATED |
-| A4-I | Engineering discipline deltas (spike policy, fresh-clone bootstrap test, code-health guardrails, storage growth maths) | `09`, `14`, `17`, `19` | IN PROGRESS (19 pending) |
+| A4-I | Engineering discipline deltas (spike policy, fresh-clone bootstrap test, code-health guardrails, storage growth maths) | `09`, `14`, `17`, `19` | INTEGRATED |
 | A4-J | Security & config deltas (AI key rotation, keyless mode default) | `13` | IN PROGRESS |
 | A4-K | Phase 0 quality gate deltas (13 checks) | `00`, `14` | IN PROGRESS |
-| A4-L | Updated immediate next actions (the current authoritative list) | `16`, `19`, `00` | IN PROGRESS (19 pending) |
+| A4-L | Updated immediate next actions (the current authoritative list) | `16`, `19`, `00` | INTEGRATED |
 
 **Gate rule:** any row not `INTEGRATED` fails the Phase 0 gate (Addon 2 §A.3, Addon 3 §A.3, Addon 4 §A.3).
 
@@ -345,8 +345,8 @@ Addon 3 §G). Approvals are recorded in `CHANGELOG.md` **and** `SESSION_LOG.md` 
 |---|---|
 | Phase | **Phase 0 — Documentation** |
 | Authoritative next-action list | Addon 4 §L (supersedes Addon 3 §K → Addon 1 §P → Kickoff §15) |
-| Docs complete | `00`–`18` (drafts) + `CHANGELOG`, `SESSION_LOG` |
-| Docs remaining | `19`–`29`, `PHASE0_SUMMARY` |
+| Docs complete | `00`–`19` (drafts) + `CHANGELOG`, `SESSION_LOG` |
+| Docs remaining | `20`–`29`, `PHASE0_SUMMARY` |
 | Product code | **None. Forbidden until recorded approval.** |
 | App version / docs version | 0.1.0 (planned) / 0.1.0 (working draft) |
 | Open questions count | Tracked in `18_...OPEN_QUESTIONS.md` §Open |
