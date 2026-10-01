@@ -404,9 +404,9 @@ Added by the `11` pass (non-blocking, defaults in place): `OQ-021` client's curr
 (`.xlsx` / `.xlsm` / protected / paper) for house-style matching · `OQ-022` preferred pack default units
 (whole units vs lakhs).
 
-**Registry hygiene flag (2026-10-01):** `OQ-020` is referenced in §16 but does not appear in the list
-above or in any written document. `18_...OPEN_QUESTIONS.md` must register it or renumber the reference
-when that document is written; numbers `018`–`020` are treated as reserved until then.
+**Registry hygiene flag — resolved (`18` §4.4).** `OQ-020` was referenced in §16 but defined nowhere; it is
+now a **retired tombstone** and the §16 reference above has been corrected to `OQ-016`. `OQ-018` and
+`OQ-019` were never allocated and remain reserved, never reused (`18` §4.4, `00_INDEX` §8).
 
 None of these blocks Phase 0: each has a labelled default (§12) that is safe to build against and cheap
 to change (mapping profiles, settings, brand config). Any question that later proves **unsafe** to
@@ -465,7 +465,7 @@ configured endpoint, with redaction applied. Crash dumps and logs are local-only
 | Third-party licences | No GPL/AGPL in shipped binaries; `THIRD_PARTY_LICENSES.txt` shipped with the installer (A1 §I, `13`, `17`) |
 
 **Action:** the user (commercial owner) must confirm or amend these terms before delivery; recorded as
-the open commercial question `OQ-016`/`OQ-020` and mirrored in `28` §sign-off.
+the open commercial question `OQ-016` (`18` §4.1) and mirrored in `28` §sign-off.
 
 ## 17. Branding
 

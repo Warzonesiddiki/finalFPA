@@ -83,7 +83,7 @@ precise, terse, and testable.
 | 15 | `15_PACKAGING_DEPLOYMENT_RUNBOOK.md` | Build → installer → clean-Win11 validation → SmartScreen → diagnostics | Draft v0.1 |
 | 16 | `16_ROADMAP_PHASES.md` | Phases, estimates, gate artifacts, release cadence, next open item | Draft v0.1 |
 | 17 | `17_CODING_STANDARDS.md` | Repo layout, naming, commits, branching, engine boundary, code health | Draft v0.1 |
-| 18 | `18_GLOSSARY_ASSUMPTIONS_OPEN_QUESTIONS.md` | Glossary, assumptions, open questions (OQ-), **Decided log (DEC-)** | Not started |
+| 18 | `18_GLOSSARY_ASSUMPTIONS_OPEN_QUESTIONS.md` | Glossary, assumptions, open questions (OQ-), **Decided log (DEC-)** | Draft v0.1 |
 | 19 | `19_VIBE_CODING_PLAYBOOK.md` | Session protocol, principles P1–P20, quote-before-code, gates/approvals | Not started |
 | 20 | `20_REQUIREMENTS_TRACEABILITY.md` | FR → spec → SCR → API → test → status chain | Not started |
 | 21 | `21_CLIENT_ONBOARDING_QUESTIONNAIRE.md` | Every client question (Q-), why it matters, default if unanswered | Not started |
@@ -140,7 +140,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A1-B | Principles P11–P20 (monthly rhythm, atomic imports, nothing silently discarded, versioned edits, upgrades, end-user docs, supply chain, hostile input, no colour-only signals, tabletop walkthrough) | `19`, `01` | PENDING |
 | A1-C.1 | New docs 21–25 | `21`–`25` | PENDING |
 | A1-C.2 | Required additions inside original docs (26-row table) | `01`–`20` (owning docs) | IN PROGRESS |
-| A1-D | Domain completeness checklist (20 items → decisions + defaults) | `21`, `18` | IN PROGRESS |
+| A1-D | Domain completeness checklist (20 items → decisions + defaults) | `21`, `18` | IN PROGRESS (defaults registered in `18`; checklist with `21`) |
 | A1-E | Additional FRs (import history/void, new-period wizard, cross-batch dupes, in-app templates, master data, KPI library, rollups, export-what-you-see, job UX, search, owner distribution, backup/restore, close snapshot, diagnostics) | `02` | INTEGRATED |
 | A1-F | Excel/CSV ingestion hardening (every quirk handled-or-rejected with named error; reject-vs-quarantine; validation report) | `04` | INTEGRATED |
 | A1-G | Windows 11 & environment hardening (OneDrive trap, no admin, SmartScreen ladder, DPI, single instance, real-Windows protocol, offline proof) | `08`, `09`, `14`, `15` | INTEGRATED |
@@ -190,7 +190,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A3-B.2-10 | `10` additions: the four full prompt texts, model pinning/deprecation, mapping-queue state machine, prompt-edit process | `10` | INTEGRATED |
 | A3-C | Feature precision part 2 (AI mapping review queue, mapping preview/profile auto-match, commentary workflow, pack issuance register, data-quality score, storage/health, budget re-import, persistence/destructive actions, home screen, no login, import UX, display locale) | `02`, `08`, `10` | IN PROGRESS |
 | A3-D | AI feature depth (four full prompt texts, model pinning/deprecation, golden fixtures, prompt-edit discipline) | `10`, `02` | INTEGRATED |
-| A3-E | Decisions that must be settled (success metrics, IP/licensing, forced in/out list, support/warranty) | `01`, `18`, `28` | IN PROGRESS |
+| A3-E | Decisions that must be settled (success metrics, IP/licensing, forced in/out list, support/warranty) | `01`, `18`, `28` | IN PROGRESS (`28` pending) |
 | A3-F | Charts, formatting & test corpus (chart inventory, centralised conditional formatting, output conventions, cross-artifact consistency test, negative file corpus) | `08`, `11`, `12`, `14`, `sample-data/` | IN PROGRESS |
 | A3-G | Acceptance, UAT & go-live (project DoD, UAT mechanics, defect severities, per-phase demo scripts, go-live checklist) | `28` | PENDING |
 | A3-H | Backlog governance (entry schema, seed, reviewed at gates) | `27` | PENDING |
@@ -206,7 +206,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A4-B | Spec consumption protocol (standard doc header, session reading plan, quote-before-code, decisions accumulate forward, paraphrase ban) | `19`, `00` | IN PROGRESS |
 | A4-C | Source-of-Truth Matrix & doc hygiene (one owner per fact, conflict resolution, no duplication, length discipline, link-check) | `00` | IN PROGRESS |
 | A4-D | FR prioritisation & cut-line policy (P0/P1/P2, phase gate rule, never-cut list, cut process, estimates) | `02`, `16`, `20` | IN PROGRESS (20 pending) |
-| A4-E | Doc 29 + approval mechanics (plain-language pack, approval recording, post-approval change impact rule) | `29`, `19`, `24`, `18` | IN PROGRESS |
+| A4-E | Doc 29 + approval mechanics (plain-language pack, approval recording, post-approval change impact rule) | `29`, `19`, `24`, `18` | IN PROGRESS (19, 24, 29 pending) |
 | A4-F | Real-data pilot gate (one sanitized real month, tie-out acceptance, classification, exit criteria) | `28`, `14` | PENDING |
 | A4-G | Tolerance & edge-case data matrix (no epsilon in money maths, display rounding, cross-artifact equality, 13 edge cases) | `05`, `02`, `14` | IN PROGRESS |
 | A4-H | Sample-data integrity (watermark, project_type flag, no interleave, not delivered to client) | `14`, `16`, `02` | INTEGRATED |
@@ -345,8 +345,8 @@ Addon 3 §G). Approvals are recorded in `CHANGELOG.md` **and** `SESSION_LOG.md` 
 |---|---|
 | Phase | **Phase 0 — Documentation** |
 | Authoritative next-action list | Addon 4 §L (supersedes Addon 3 §K → Addon 1 §P → Kickoff §15) |
-| Docs complete | `00`–`17` (drafts) + `CHANGELOG`, `SESSION_LOG` |
-| Docs remaining | `18`–`29`, `PHASE0_SUMMARY` |
+| Docs complete | `00`–`18` (drafts) + `CHANGELOG`, `SESSION_LOG` |
+| Docs remaining | `19`–`29`, `PHASE0_SUMMARY` |
 | Product code | **None. Forbidden until recorded approval.** |
 | App version / docs version | 0.1.0 (planned) / 0.1.0 (working draft) |
 | Open questions count | Tracked in `18_...OPEN_QUESTIONS.md` §Open |

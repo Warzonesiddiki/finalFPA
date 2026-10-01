@@ -334,6 +334,24 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
 - **Governance** — `00_INDEX`: doc-map row 17 → Draft v0.1; docs complete `00`–`17`; `A1-I` and `A2-F`
   **INTEGRATED**; `A2-H`/`A4-I` now show `19` as the only pending owner. `14`'s `GATE-05-12` status now
   reads ✅ (the code-health rules exist in `17` §12). `16` §1.3's next open item advanced to `18`.
+- **`docs/18_GLOSSARY_ASSUMPTIONS_OPEN_QUESTIONS.md`** (Draft v0.1) — the register of record for what we
+  do not know and what we have ruled: the question lifecycle and register rules; the **glossary** (money/
+  period/FP&A terms, method and control vocabulary, product/engineering terms, each with its owning doc and
+  the rule that the owner wins); the **assumption register** `A1`…`A20` (mirrored from `01` §12 with default,
+  impact, cost-to-change and `Q-` links) plus `A21`…`A29` (engineering/delivery assumptions from `09`–`17`);
+  the **`OQ-` register** with all 19 live questions (17 design/data + 2 formatting), the blocking-question
+  rules and the ask format (Addon 2 §H.3), and the resolution of the `01` §14 hygiene flag (`OQ-018`/`019`
+  reserved, `OQ-020` retired as a tombstone with the `01` §16 reference corrected to `OQ-016`); the
+  **`DEC-` Decided log** consolidating `DEC-001`…`DEC-030` (with rationale, rejected alternatives where
+  recorded, and the docs each binds) plus `DEC-031`…`DEC-037` from the `15`–`17` passes (gate numbering,
+  the next-open-item pointer, ideal-day estimates and the variance rule, demo-script timing, the
+  never-cut list's absoluteness, the `ERR-ENG` family, machine-enforced standards); and the maintenance
+  cadence that makes the register a gate artefact. Reason: Kickoff §5/§14.5, Addon 1 §C.2, Addon 2 §H.3,
+  Addon 3 §B.2/§J.10, Addon 4 §C.
+- **Governance** — `00_INDEX`: doc-map row 18 → Draft v0.1; docs complete `00`–`18`; `A1-D`/`A3-E`/`A4-E`
+  annotated with their remaining owners. `01` §14's registry-hygiene flag is **closed** and §16's phantom
+  `OQ-020` reference corrected to `OQ-016`. `14`'s `GATE-01-08` and `GATE-04-12` now read ✅ on the doc
+  side. `16` §1.3's next open item advanced to `19`.
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's

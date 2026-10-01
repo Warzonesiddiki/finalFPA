@@ -698,7 +698,7 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 | `GATE-01-05` | `12` defines 4–6 slides exactly, slide by slide, editable/native, brand handling | `12` (6 slides, 29 placeholders) | ✅ |
 | `GATE-01-06` | `15` is a step-by-step script producing a working installer on a clean Windows 11 machine | `15` | ⬜ |
 | `GATE-01-07` | NFR numbers stated | `14` §3 (`NFR-001`…`016`) | ✅ |
-| `GATE-01-08` | `18` lists every unconfirmed item | `18` (with `21` `Q-` items) | ⬜ |
+| `GATE-01-08` | `18` lists every unconfirmed item | `18` (with `21` `Q-` items) | ✅ (doc side; `Q-` items with `21`) |
 | `GATE-01-09` | `20` links every FR to at least one future test | `20` + `14` §4 | ⬜ |
 
 ### 15.2 `GATE-02` — Addon 1 §O deltas (12 checks)
@@ -750,7 +750,7 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 | `GATE-04-09` | Success metrics, IP/licensing stance and the forced in/out list resolved in the PRD | `01` §16, §5 | ✅ |
 | `GATE-04-10` | Error-code catalog families defined in `26`; message-catalog rule in `08` | `26`, `08` §16 | ⬜ (`26`) |
 | `GATE-04-11` | Project DoD, UAT mechanics, defect severities, go-live checklist and sign-off template in `28` | `28` | ⬜ |
-| `GATE-04-12` | "Decided" section active in `18`; `ADR-000` index lists `ADR-001`/`002` (+ any new) | `18`, `09` | ⬜ (`18`) |
+| `GATE-04-12` | "Decided" section active in `18`; `ADR-000` index lists `ADR-001`/`002` (+ any new) | `18`, `09` | ✅ |
 
 ### 15.5 `GATE-05` — Addon 4 §K deltas (13 checks)
 
