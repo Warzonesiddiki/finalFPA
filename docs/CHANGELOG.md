@@ -317,6 +317,23 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   **INTEGRATED**; the `GATE-nn` registry row now records the full allocation (`GATE-01`…`05` = Phase-0 gates
   owned by `14`, `GATE-06`…`12` owned by `16`, `GATE-13`…`15` owned by `28`), and §9's downstream-gate
   paragraph names the build gates and the universal contract.
+- **`docs/17_CODING_STANDARDS.md`** (Draft v0.1) — the how-we-write-code contract: the canonical folder
+  layout and its rules; naming conventions (Python/TS/test/SQL/migration/doc); formatting, lint and type
+  expectations per language (ruff/mypy strict on the engine, `tsc`/ESLint on the UI, hand-written SQL with
+  parameterisation only); the **engine-boundary import rules** and their `import-linter` enforcement; the
+  money/time/determinism rules (Decimal-only money with the float ban, one rounding owner, no epsilon,
+  UTC + display-time localisation, stable ordering, timestamp-free machine payloads); **error-handling and
+  logging conventions** (catalogued codes, the envelope, no raw tracebacks, the "never logged" list,
+  redaction helpers shared with the diagnostics bundle); dependency, licence and supply-chain rules
+  (deliberate additions, lockfiles, no GPL/AGPL, no vendoring/binaries without review, SBOM, `pip-audit`
+  clock); secrets and test-data hygiene; testing conventions; UI/React standards (generated types, one API
+  client, four states per screen, accessibility as code); **trunk-based git workflow** (Conventional
+  Commits, docs/code separation, tags per `24`); the code-health guardrails; the 12-item review checklist;
+  and the enforcement map that ties every rule to a check and a gate item. Reason: Kickoff §5/§14,
+  Addon 1 §I, Addon 2 §F/§H.1/B.1/B.2, Addon 4 §I.1–§I.3, `13` §12, `14` §13, `09` §4/§15.
+- **Governance** — `00_INDEX`: doc-map row 17 → Draft v0.1; docs complete `00`–`17`; `A1-I` and `A2-F`
+  **INTEGRATED**; `A2-H`/`A4-I` now show `19` as the only pending owner. `14`'s `GATE-05-12` status now
+  reads ✅ (the code-health rules exist in `17` §12). `16` §1.3's next open item advanced to `18`.
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's

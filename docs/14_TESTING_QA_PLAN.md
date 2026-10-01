@@ -767,7 +767,7 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 | `GATE-05-09` | Real-data pilot gate defined in `28` with tie-out worksheet + classification log | `28` | ⬜ |
 | `GATE-05-10` | Tolerance policy in `05`; full edge-case matrix in `02`/`14` with message IDs | `05` §6, this doc §6 | ✅ |
 | `GATE-05-11` | Sample-data watermark + project-type flag + non-delivery rule specified | `03`/`09` + §16 here | ✅ |
-| `GATE-05-12` | Spike policy, fresh-clone gate, code-health rules, storage math in `09`/`14`/`17` | `09` §14, §13 here, `17` | ✅ (with `17` pending) |
+| `GATE-05-12` | Spike policy, fresh-clone gate, code-health rules, storage math in `09`/`14`/`17` | `09` §14–§15, §13 here, `17` | ✅ |
 | `GATE-05-13` | Key-rotation procedure in `13` | `13` §5.3 | ✅ |
 
 ## 16. Test-data governance and sample-data integrity

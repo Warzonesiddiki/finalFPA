@@ -68,7 +68,7 @@
 
 | Field | Value |
 |---|---|
-| Item | **Write the remaining Phase 0 documents in order: `16` (this), `17`, `18`, `19`, `20`, `21`–`25`, `26`, `27`, `28`, `29`, then `PHASE0_SUMMARY.md`** |
+| Item | **Write the remaining Phase 0 documents in order: `18`, `19`, `20`, `21`–`25`, `26`, `27`, `28`, `29`, then `PHASE0_SUMMARY.md`** (`16` and `17` are written) |
 | Why now | Addon 4 §L steps 2–6 and 11; the Phase-0 gate (`GATE-01`…`GATE-05`) cannot run before the set is complete |
 | Definition of done for this item | Every document exists with the standard header, zero blocking `TBD`s, the Coverage Matrix rows integrated, `CHANGELOG` + `SESSION_LOG` entries, and the link-check clean (`14` §13.1) |
 | Next item after this one | Build `sample-data/` (generator + `expected_exceptions.csv` + `malformed/` corpus + `--scale 250000`) — Addon 4 §L.7, `14` §16 |
@@ -637,7 +637,7 @@ Both walks are **Phase-0 evidence** and both must be repeated at the pilot with 
 | AI model/provider specifics | Keyless default; the provider is configured per client (`10`, `Q-*` in `21`) |
 | Per-machine installer, MSIX, auto-update | Parked (`27`, Addon 1 §N) |
 | Backlog items returning at a trigger | `27` owns the register; §9.3 is the only way back in |
-| Coverage-matrix rows still `IN PROGRESS` | Closed by `17`–`29` in Phase 0 (§3) |
+| Coverage-matrix rows still `IN PROGRESS` | Closed by `18`–`29` in Phase 0 (§3) |
 
 **Assumptions.** (a) One senior engineer builds the product with AI assistance; (b) the client's analyst is
 available for the pilot and UAT as planned; (c) the reference machine is available for baselines; (d) the

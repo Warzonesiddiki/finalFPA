@@ -82,7 +82,7 @@ precise, terse, and testable.
 | 14 | `14_TESTING_QA_PLAN.md` | Test cases, NFR numbers, perf baselines, coverage bars, 58 gate checks | Draft v0.1 |
 | 15 | `15_PACKAGING_DEPLOYMENT_RUNBOOK.md` | Build → installer → clean-Win11 validation → SmartScreen → diagnostics | Draft v0.1 |
 | 16 | `16_ROADMAP_PHASES.md` | Phases, estimates, gate artifacts, release cadence, next open item | Draft v0.1 |
-| 17 | `17_CODING_STANDARDS.md` | Repo layout, naming, commits, branching, engine boundary, code health | Not started |
+| 17 | `17_CODING_STANDARDS.md` | Repo layout, naming, commits, branching, engine boundary, code health | Draft v0.1 |
 | 18 | `18_GLOSSARY_ASSUMPTIONS_OPEN_QUESTIONS.md` | Glossary, assumptions, open questions (OQ-), **Decided log (DEC-)** | Not started |
 | 19 | `19_VIBE_CODING_PLAYBOOK.md` | Session protocol, principles P1–P20, quote-before-code, gates/approvals | Not started |
 | 20 | `20_REQUIREMENTS_TRACEABILITY.md` | FR → spec → SCR → API → test → status chain | Not started |
@@ -145,7 +145,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A1-F | Excel/CSV ingestion hardening (every quirk handled-or-rejected with named error; reject-vs-quarantine; validation report) | `04` | INTEGRATED |
 | A1-G | Windows 11 & environment hardening (OneDrive trap, no admin, SmartScreen ladder, DPI, single instance, real-Windows protocol, offline proof) | `08`, `09`, `14`, `15` | INTEGRATED |
 | A1-H | Financial-correctness addenda (fiscal calendar, posting vs document date, rounding, ratio maths, sign conventions, comparability guard, forecast integrity) | `05`, `07` | INTEGRATED |
-| A1-I | Security, privacy & supply chain (prompt injection, diagnostics redaction, log policy, secrets, dependency policy, data at rest) | `10`, `13`, `17` | IN PROGRESS (13 done; 17 pending) |
+| A1-I | Security, privacy & supply chain (prompt injection, diagnostics redaction, log policy, secrets, dependency policy, data at rest) | `10`, `13`, `17` | INTEGRATED |
 | A1-J | Delivery, release & upgrade addenda (semver, release checklist, migration test, distribution, no schema drift, signing ADR) | `15`, `16`, `24` | IN PROGRESS (24 pending) |
 | A1-K | Client enablement (task-structured guide, first-run tour, 60-min training, error dialog, support flow) | `22`, `23` | PENDING |
 | A1-L | NFR numbers (cold start, import, dashboard, PPT, offline, installer size, memory, logs, diagnostics, screen, crash behaviour) | `14` (numbers), `16`, `09` | INTEGRATED |
@@ -170,9 +170,9 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A2-C.2-07 | `07` additions: closed-period accuracy report feeding method-choice guidance | `07` | INTEGRATED |
 | A2-D | Functional precision FRs (exception identity/re-run, aging/bulk, period status, re-import guard, control totals, budget validation, three-way view, rolling windows, one-off tagging, rule effectiveness, materiality, export collision, evidence bundle, scope decisions) | `02`, `06` | IN PROGRESS |
 | A2-E | UI/UX & brand addenda (SCR-IDs, accessibility baseline, stale indicator, theme tokens as data, PPT text fit, wizard UX) | `08`, `12`, `ui/theme` | IN PROGRESS |
-| A2-F | Testing, CI & quality bars (coverage ≥90% engine / ≥75% backend, `scripts/check`, CI, Playwright golden path, demo recipe DoD, link-check) | `14`, `16`, `17` | IN PROGRESS (14, 16 done; 17 pending) |
+| A2-F | Testing, CI & quality bars (coverage ≥90% engine / ≥75% backend, `scripts/check`, CI, Playwright golden path, demo recipe DoD, link-check) | `14`, `16`, `17` | INTEGRATED |
 | A2-G | AI addenda (usage log, draft provenance, regeneration policy, determinism/number-mismatch stance) | `10` | INTEGRATED |
-| A2-H | Process & governance addenda (trunk-based branching, Keep a Changelog, blocking-question protocol, disclaimer enforcement) | `17`, `19` | PENDING |
+| A2-H | Process & governance addenda (trunk-based branching, Keep a Changelog, blocking-question protocol, disclaimer enforcement) | `17`, `19` | IN PROGRESS (17 done; 19 pending) |
 | A2-I | Phase 0 quality gate deltas (12 checks) | `00`, `14` | IN PROGRESS |
 | A2-J | Updated immediate next actions | `16`, `19`, `00` | IN PROGRESS (19 pending) |
 
@@ -210,7 +210,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A4-F | Real-data pilot gate (one sanitized real month, tie-out acceptance, classification, exit criteria) | `28`, `14` | PENDING |
 | A4-G | Tolerance & edge-case data matrix (no epsilon in money maths, display rounding, cross-artifact equality, 13 edge cases) | `05`, `02`, `14` | IN PROGRESS |
 | A4-H | Sample-data integrity (watermark, project_type flag, no interleave, not delivered to client) | `14`, `16`, `02` | INTEGRATED |
-| A4-I | Engineering discipline deltas (spike policy, fresh-clone bootstrap test, code-health guardrails, storage growth maths) | `09`, `14`, `17`, `19` | IN PROGRESS |
+| A4-I | Engineering discipline deltas (spike policy, fresh-clone bootstrap test, code-health guardrails, storage growth maths) | `09`, `14`, `17`, `19` | IN PROGRESS (19 pending) |
 | A4-J | Security & config deltas (AI key rotation, keyless mode default) | `13` | IN PROGRESS |
 | A4-K | Phase 0 quality gate deltas (13 checks) | `00`, `14` | IN PROGRESS |
 | A4-L | Updated immediate next actions (the current authoritative list) | `16`, `19`, `00` | IN PROGRESS (19 pending) |
@@ -345,8 +345,8 @@ Addon 3 §G). Approvals are recorded in `CHANGELOG.md` **and** `SESSION_LOG.md` 
 |---|---|
 | Phase | **Phase 0 — Documentation** |
 | Authoritative next-action list | Addon 4 §L (supersedes Addon 3 §K → Addon 1 §P → Kickoff §15) |
-| Docs complete | `00`–`16` (drafts) + `CHANGELOG`, `SESSION_LOG` |
-| Docs remaining | `17`–`29`, `PHASE0_SUMMARY` |
+| Docs complete | `00`–`17` (drafts) + `CHANGELOG`, `SESSION_LOG` |
+| Docs remaining | `18`–`29`, `PHASE0_SUMMARY` |
 | Product code | **None. Forbidden until recorded approval.** |
 | App version / docs version | 0.1.0 (planned) / 0.1.0 (working draft) |
 | Open questions count | Tracked in `18_...OPEN_QUESTIONS.md` §Open |
