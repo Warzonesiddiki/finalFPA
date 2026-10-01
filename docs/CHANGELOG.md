@@ -135,6 +135,47 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   arithmetic is referenced to `CALC-060`…`CALC-069`, never restated. Reason: Kickoff §6/§8, Addon 1
   §C.2/H, Addon 2 §C.2, Addon 3 §B.2.
 
+- **`docs/08_UI_UX_SPEC.md`** (Draft v0.1) — the complete UI contract: information architecture with the
+  fixed guided left-nav (Home → Import → Check → Analyze → Exceptions → Forecast → Reports → Settings) and
+  the global shell (filter bar, stale banner, job drawer, sample banner); the **43-screen inventory**
+  (`SCR-001`…`SCR-043`) with purpose, linked FRs and dominant states; screen-by-screen specification with
+  ASCII wireframes for Home, the project/period wizards, the six import steps (including the mapping
+  screen with profile auto-match, overrides and the AI suggestion queue), Check, the Analyze family
+  (matrix, bridge, trends, top-N, three-way, KPIs, drill-through, search), the Exceptions family
+  (register, detail, effectiveness), the Forecast family, Reports/issuance/commentary, all Settings
+  sections, and the global error dialog / help panel / first-run tour; the **12-chart inventory**
+  (`CHT-001`…`CHT-012`) with type, grain, screen, drill target and empty state; the **single centralized
+  conditional-format rule set** (`CF-001`…`CF-012`) shared by app, Excel and PPT with mandatory
+  non-colour signals and the greyscale print test; the display-formatting contract (symbol, grouping,
+  scale, decimals, negatives, dates, pp-vs-%, rounding footnote, simple-sum label, `—` vs `n/a` vs `0.00`);
+  the message-catalog and wording rules with banned words and the catalog field shape; the per-screen
+  state matrix (empty/loading/error/first-run/stale/offline); the WCAG AA accessibility baseline
+  (keyboard, focus, ARIA, contrast, 1366×768, 100–150% scaling); the design system (spacing, type scale,
+  semantic colour roles, component inventory); screen-to-document traceability; and change control.
+  Reason: Kickoff §12, Addon 1 §C.2/G/K, Addon 2 §E, Addon 3 §B.2/C/F, Addon 4 §G.
+- **`docs/09_TECHNICAL_ARCHITECTURE.md`** (Draft v0.1) — the architecture record: architectural
+  principles; the **ADR programme** (`ADR-000` template + index, with **`ADR-001`** the authoritative
+  stack recorded verbatim, **`ADR-002`** the pinned toolchain, **`ADR-003`** the unsigned-installer
+  decision with the five-step SmartScreen mitigation ladder, **`ADR-004`** storage in `%LOCALAPPDATA%`
+  never a synced folder, **`ADR-005`** real-Windows-11 validation evidence at every gate with the
+  `SPK-01`…`SPK-07` spike list, **`ADR-006`** single process with worker-thread jobs and one writer per
+  store, **`ADR-007`** hand-written SQL over an ORM, **`ADR-008`** forward-only migrations with a
+  mandatory backup, **`ADR-009`** the local API serving the built UI); the **headless-engine boundary
+  rule** with an import-linter enforcement and the module map; the engine module responsibilities; the
+  **CLI** (10 commands, `--json`, dry-run, non-interactive, and **nine documented exit codes**); the data
+  flow with its four invariants; the on-disk layout; the OneDrive rule; the **storage-growth maths**
+  (assumptions, 1-month/1-year/3-year projections, low-storage threshold, archive-and-delete, retention
+  default) reconciled with `03` §9.2; the single-instance mutex and lock behaviour; logging/error
+  strategy including the no-amounts/no-vendor-names log policy; the job model, progress/ETA honesty
+  rule, cooperative cancellation and crash/sleep recovery matrix; the local API and security posture;
+  **configuration layering** with precedence and the no-secrets-in-backups guarantee; **recompute and
+  invalidation semantics** with the no-silent-staleness rule and the bounded-cache policy;
+  the **data-volume rule** (server-side everything, page sizes, payload budget, virtualisation);
+  the schema-migration strategy; **performance budgets mapped to `NFR-001`…`NFR-011` and the
+  architectural decision protecting each**; the spike policy; the fresh-clone bootstrap gate; the
+  code-health guardrails; and the one-command scripts. Reason: Kickoff §4, Addon 1 §C.2/G/I/J/L,
+  Addon 2 §B/C.2/F/H, Addon 3 §I, Addon 4 §I.
+
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's
