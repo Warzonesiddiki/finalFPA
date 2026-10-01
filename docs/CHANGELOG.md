@@ -525,7 +525,7 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   constants. Reason: Addon 2 §B/§C/§I — the last Addon 2 deliverable, and the gate (`GATE-03-02`/`-08`).
 - **Governance** — `00_INDEX`: doc-map row 26 → Draft v0.1; `A2-B`/`A2-C`/`A2-E`/`A2-I` →
   **INTEGRATED**, docs complete `00`–`26`, remaining `27`–`29`; §8's error-family registry now points at
-  `26` §5.1 (11 families). `14` §15's `GATE-03-01`/`-02`/`-08` → **✅** (50 of 58 checks met).
+  `26` §5.1 (11 families). `14` §15's `GATE-03-01`/`-02`/`-08` → **✅** (49 of 58 checks met at that point; the counts are recomputed in `14` §15, never copied).
   `16` §1.3's next open item advanced to `27`, `28`, `29`, then `PHASE0_SUMMARY.md`. Reason: the endpoint
   contract closes Addon 2, so the traceability chain (FR → spec → screen → endpoint → test) is complete on
   paper before any handler exists.
