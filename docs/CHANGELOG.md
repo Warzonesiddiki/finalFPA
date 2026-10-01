@@ -441,6 +441,27 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   source, so it must not drift from `08`/`15`/`13`, and a screen without a task would be an unguided
   screen.
 
+- **`docs/23_CONSULTANT_HANDOVER_AND_SUPPORT.md`** (Draft v0.1) — the successor's runbook: §2 the **dev
+  loop** (preconditions table; the fresh-clone bootstrap `uv sync --frozen` → `npm ci` → `doctor` →
+  `scripts/check`, Addon 4 §I.2; the CLI (`09` §5.2) for reproducing client issues without their data),
+  §3 the **release loop** as an 8-step operator checklist that cites `15` §3.2/§5.2 and `24` and names the
+  evidence for each step, §4 the **config-edit procedures** for all six surfaces (`SCR-033`–`SCR-038`) with
+  owner, procedure and traceability, §5 the **prompt-edit procedure** (immutable shipped versions,
+  template + `10` §5 in one change, eval re-run), §6 **rule/threshold tuning** under `06` §10's change
+  control, §7 the **dependency cadence** (monthly `pip-audit` and license scan, per-release SBOM and
+  `THIRD_PARTY_LICENSES.txt`, frozen toolchain per `ADR-002`), §8 the **diagnostics workflow** (zip-only,
+  contents/redaction per `13` §7, support triage steps, the never-ask list), §9 **upgrades/migrations and
+  rollback** (backup-first, forward-only, restore-not-reverse), §10 the **incident playbook** (eight
+  symptoms → checks → cause → action; S1–S4 response targets as labelled defaults), §11 the **support
+  model and support log** with escalation on `15` §9.3's L1–L3 ladder, §12 the **handover pack** (what the
+  client gets and what stays internal), and the obligations/change-control/frozen constants. Reason:
+  Addon 1 §C.1/§I/§K, Addon 2 §H.2, Addon 4 §I.2, `Q-018`, `GATE-02-10`.
+- **Governance** — `00_INDEX`: doc-map row 23 → Draft v0.1; `A1-C.1` → IN PROGRESS (`21`–`23` done),
+  `A1-K` → **INTEGRATED** (through `23`), docs complete `00`–`23`, remaining `24`–`29`. `14` §15's
+  `GATE-02-10` → **✅**. `16` §1.3's next open item advanced to `24`, `25`, `26`, `27`, `28`, `29`, then
+  `PHASE0_SUMMARY.md`. Reason: the support/handover contract is proof for the enablement gate, and the
+  runbook must cite the build/security owners rather than restate them.
+
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's

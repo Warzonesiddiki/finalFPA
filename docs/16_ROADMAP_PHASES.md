@@ -68,7 +68,7 @@
 
 | Field | Value |
 |---|---|
-| Item | **Write the remaining Phase 0 documents in order: `23`–`25`, `26`, `27`, `28`, `29`, then `PHASE0_SUMMARY.md`** (`16`–`22` are written) |
+| Item | **Write the remaining Phase 0 documents in order: `24`, `25`, `26`, `27`, `28`, `29`, then `PHASE0_SUMMARY.md`** (`16`–`23` are written) |
 | Why now | Addon 4 §L steps 2–6 and 11; the Phase-0 gate (`GATE-01`…`GATE-05`) cannot run before the set is complete |
 | Definition of done for this item | Every document exists with the standard header, zero blocking `TBD`s, the Coverage Matrix rows integrated, `CHANGELOG` + `SESSION_LOG` entries, and the link-check clean (`14` §13.1) |
 | Next item after this one | Build `sample-data/` (generator + `expected_exceptions.csv` + `malformed/` corpus + `--scale 250000`) — Addon 4 §L.7, `14` §16 |
