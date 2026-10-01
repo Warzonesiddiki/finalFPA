@@ -395,6 +395,26 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   `FR-XC-001`→`SCR-029`, `FR-XC-012`→`SCR-041`, `FR-IMP-026`→`SCR-033`), plus a global-shell-components
   note; `08` §4's stale state-matrix pointer corrected from §15 to **§17**. Reason: the join must not
   drift from its owner, and a screen with no FR would be an orphan screen.
+- **`docs/21_CLIENT_ONBOARDING_QUESTIONNAIRE.md`** (Draft v0.1) — the client-facing question set and the
+  proof that **nothing blocks**: all **21 questions** (`Q-001`…`Q-021`, five groups — data access/volumes,
+  finance model/calendar, systems/file shapes, outputs/audience/branding, delivery/enablement/support) with
+  the wording to use, **why it matters**, the **labelled default already implemented** and the owning docs/FRs
+  it lives in, and the date each answer is needed. The document rules that defaults are labelled *default,
+  unconfirmed* and never presented as facts (`01` §12), fixes the **ask format** (≤ 3 options + recommendation
+  + default, `18` §4.3), gives an **impact-ordered ask sequence** (§2.3), maps **Addon 1 §D's 20-item domain
+  checklist** to the question/assumption/decision that settles each one (§6.2, 20 of 20), registers the
+  **delivery/IT confirmations `A21`–`A28`** (§3.6), lists the **eight already-ruled items** that must not be
+  re-opened (§4), and defines the six-step **answer → `DEC-nnn` → `OQ-` closure → owning-doc update** flow with
+  the status vocabulary `Open · default in force` / `Answered` / `Withdrawn` and the append-only change rules
+  (§5, §8). Reason: Addon 1 §C.1/§D, Addon 2 §H.3, Addon 4 §B/§K (the `A1-D` coverage row; `GATE-02-01`).
+- **Governance** — `00_INDEX`: doc-map row 21 → Draft v0.1; Coverage-Matrix row `A1-C.1` → IN PROGRESS
+  (`21` done, `22`–`25` outstanding), `A1-D` → **INTEGRATED** (20/20 §D items mapped, §6.2), `K-S2`
+  annotated (question set in `21`; `23`/`25` outstanding); docs complete `00`–`20` → `00`–`21`; remaining
+  `22`–`29`. `14` §15's `GATE-02-01` annotated (`21` done — 21/21 items carry a labelled default; `22`–`25`
+  outstanding). `16` §1.3's next open item advanced to `22`–`25`, `26`, `27`, `28`, `29`, then
+  `PHASE0_SUMMARY.md`. Reason: the questionnaire must not drift from the registers it seeds (`18` §3/§4) or
+  from the gate it proves.
+
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's
