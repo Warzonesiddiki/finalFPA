@@ -299,6 +299,24 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   `GATE-01-06`.
 - **Governance** — `00_INDEX`: doc-map row 15 → Draft v0.1, A1-G **INTEGRATED**, docs complete `00`–`15`.
   The `ERR-ENG-001`…`010` family (§12 of `15`) joins the `ENG` family already registered in `00` §8.
+- **`docs/16_ROADMAP_PHASES.md`** (Draft v0.1) — the phase plan and the session-start pointer: the live
+  **next open item** (§1.3); the phase model with **gate IDs `GATE-06`…`GATE-15`** (packaging spike, phases
+  1–6, and the pilot/UAT/go-live gates reserved to `28`); the scope→phase mapping of all 156 FRs with the
+  P0/P1/P2 split per phase (110 P0 / 42 P1 / 4 P2); the Phase-0 completion plan (the remaining documents,
+  the `sample-data/` build step, the coverage-matrix refresh, the two walkthroughs, the stop-and-present
+  rule); the **packaging spike** contract (scope, two half-day timeboxes, evidence, exit criteria, failure
+  rule); the **14-item universal gate contract** with its evidence pack, approval/waiver/re-entry rules and
+  what a gate is not; per-phase plans for Phases 1–6 (deliverables, dependencies, phase-specific Definition
+  of Done, 3–5 minute demo outlines, risks and contingencies); estimates (**96 ideal days** across the six
+  build phases + a per-P0-epic breakdown) with the re-estimation and > 50 % variance rules; the **release
+  cadence** and freeze windows; the phase-level **cut-line policy** and the never-cut list; the
+  client-visible checkpoints; the demo-script rule and the two closing walkthroughs; and the cross-phase risk
+  register. Reason: Kickoff §5/§14.1, Addon 1 §C.2/§O, Addon 2 §F.2, Addon 3 §G.6/§K.4, Addon 4
+  §D.4/§D.5/§L; satisfies `GATE-05-05` (cut process) and `GATE-05-06` (per-phase estimates).
+- **Governance** — `00_INDEX`: doc-map row 16 → Draft v0.1; docs complete `00`–`16`; `K-S6` and `A4-H`
+  **INTEGRATED**; the `GATE-nn` registry row now records the full allocation (`GATE-01`…`05` = Phase-0 gates
+  owned by `14`, `GATE-06`…`12` owned by `16`, `GATE-13`…`15` owned by `28`), and §9's downstream-gate
+  paragraph names the build gates and the universal contract.
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's
