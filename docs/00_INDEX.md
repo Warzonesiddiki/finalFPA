@@ -90,7 +90,7 @@ precise, terse, and testable.
 | 22 | `22_END_USER_GUIDE.md` | Task-structured user manual (T-01…T-21 keyed to SCR-IDs), training outline, screenshot contract; the in-app help source | Draft v0.1 |
 | 23 | `23_CONSULTANT_HANDOVER_AND_SUPPORT.md` | Rebuild + release loops, config/prompt/rule editing, dependency cadence, diagnostics workflow, incident playbook, support/handover contracts | Draft v0.1 |
 | 24 | `24_RELEASE_AND_VERSIONING_RUNBOOK.md` | Semver + bump rules, tags, the 14-step release checklist and record, upgrade/migration test + prior-version fixture, distribution/checksum, signing status | Draft v0.1 |
-| 25 | `25_RISK_REGISTER.md` | Risks (RISK-) with likelihood/impact/mitigation/owner; reviewed at gates | Not started |
+| 25 | `25_RISK_REGISTER.md` | Risks (RISK-) with likelihood/impact/mitigation/owner; reviewed at gates | Draft v0.1 |
 | 26 | `26_API_CONTRACT.md` | Endpoints, error envelope, pagination, error-code catalog, OpenAPI workflow | Not started |
 | 27 | `27_BACKLOG.md` | Every parked item (BL-) with trigger, size, source, target phase | Not started |
 | 28 | `28_ACCEPTANCE_UAT_AND_GO_LIVE.md` | DoD, UAT mechanics, defects (DEF-), pilot tie-out, go-live, sign-off | Not started |
@@ -138,7 +138,7 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 |---|---|---|---|
 | A1-A | How this addon works: spec of record, integrate into existing docs, no parallel tree | `00`, `19` | INTEGRATED |
 | A1-B | Principles P11–P20 (monthly rhythm, atomic imports, nothing silently discarded, versioned edits, upgrades, end-user docs, supply chain, hostile input, no colour-only signals, tabletop walkthrough) | `19`, `01` | INTEGRATED |
-| A1-C.1 | New docs 21–25 | `21`–`25` | IN PROGRESS (`21`–`24` done; `25` outstanding) |
+| A1-C.1 | New docs 21–25 | `21`–`25` | INTEGRATED (`21`–`25` written) |
 | A1-C.2 | Required additions inside original docs (26-row table) | `01`–`20` (owning docs) | INTEGRATED (through `20`) |
 | A1-D | Domain completeness checklist (20 items → decisions + defaults) | `21`, `18` | INTEGRATED (through `21`: 20 of 20 §D items mapped, §6.2) |
 | A1-E | Additional FRs (import history/void, new-period wizard, cross-batch dupes, in-app templates, master data, KPI library, rollups, export-what-you-see, job UX, search, owner distribution, backup/restore, close snapshot, diagnostics) | `02` | INTEGRATED |
@@ -345,8 +345,8 @@ Addon 3 §G). Approvals are recorded in `CHANGELOG.md` **and** `SESSION_LOG.md` 
 |---|---|
 | Phase | **Phase 0 — Documentation** |
 | Authoritative next-action list | Addon 4 §L (supersedes Addon 3 §K → Addon 1 §P → Kickoff §15) |
-| Docs complete | `00`–`24` (drafts) + `CHANGELOG`, `SESSION_LOG` |
-| Docs remaining | `25`–`29`, `PHASE0_SUMMARY` |
+| Docs complete | `00`–`25` (drafts) + `CHANGELOG`, `SESSION_LOG` |
+| Docs remaining | `26`–`29`, `PHASE0_SUMMARY` |
 | Product code | **None. Forbidden until recorded approval.** |
 | App version / docs version | 0.1.0 (planned) / 0.1.0 (working draft) |
 | Open questions count | Tracked in `18_...OPEN_QUESTIONS.md` §Open |

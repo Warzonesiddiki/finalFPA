@@ -642,10 +642,10 @@ document keeps the FR → endpoint direction.
 ### 6.1 Non-blocking client-fact dependencies
 
 These `OQ-` items change *detail*, never the promise: each FR below behaves per its documented default
-until `21` returns the client's answer, and the answer is then recorded as a `DEC` row (`18` §4/§5).
+until `21` returns the client's answer, and the answer is then recorded as a `DEC` row (`18` §4/§5). The
+**question ↔ risk** join (what happens if the answer never comes) is kept in `25_RISK_REGISTER.md` §4, one
+row per line below.
 
-| Client fact | `OQ-` | `Q-` | FRs whose detail it changes | Default in force today |
-|---|---|---|---|---|
 | Client fact | `OQ-` | `Q-` | FRs whose detail it changes | Default in force today |
 |---|---|---|---|---|
 | D365 edition/export column set | `OQ-001` | `Q-002` | `FR-IMP-002`, `FR-IMP-004`, `FR-IMP-005`, `FR-IMP-011` | Generic D365-style template + documented dimension parsing (`04` §2/§7) |

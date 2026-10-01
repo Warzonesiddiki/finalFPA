@@ -705,7 +705,7 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 
 | ID | Check | Provable by | Status |
 |---|---|---|---|
-| `GATE-02-01` | Docs 21–25 exist and are complete; every questionnaire item has a decision or a labelled default | `21`–`25` | ⬜ (`21` done — 21/21 items carry a labelled default; `22`–`25` outstanding) |
+| `GATE-02-01` | Docs 21–25 exist and are complete; every questionnaire item has a decision or a labelled default | `21`–`25` | ✅ (docs `21`–`25` exist with the standard headers; all 21/21 `Q-` items carry a labelled default; `25` registers the consequences) |
 | `GATE-02-02` | All Addon 1 §C.2 additions are present in the owning docs; `CHANGELOG` shows the integration | `CHANGELOG` + docs | ✅ (through `13`) |
 | `GATE-02-03` | Tabletop walkthrough executed and recorded — every month-end step maps to a screen/rule/export | `SESSION_LOG` entry (Phase 0 close) | ⬜ |
 | `GATE-02-04` | Excel hardening list: each quirk has a documented handle-or-reject behaviour with error copy | `04` (32 checks, 59 messages) | ✅ |

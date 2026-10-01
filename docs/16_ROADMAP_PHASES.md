@@ -68,7 +68,7 @@
 
 | Field | Value |
 |---|---|
-| Item | **Write the remaining Phase 0 documents in order: `25`, `26`, `27`, `28`, `29`, then `PHASE0_SUMMARY.md`** (`16`–`24` are written) |
+| Item | **Write the remaining Phase 0 documents in order: `26`, `27`, `28`, `29`, then `PHASE0_SUMMARY.md`** (`16`–`25` are written; the Addon 1 set `21`–`25` is complete) |
 | Why now | Addon 4 §L steps 2–6 and 11; the Phase-0 gate (`GATE-01`…`GATE-05`) cannot run before the set is complete |
 | Definition of done for this item | Every document exists with the standard header, zero blocking `TBD`s, the Coverage Matrix rows integrated, `CHANGELOG` + `SESSION_LOG` entries, and the link-check clean (`14` §13.1) |
 | Next item after this one | Build `sample-data/` (generator + `expected_exceptions.csv` + `malformed/` corpus + `--scale 250000`) — Addon 4 §L.7, `14` §16 |
@@ -627,6 +627,10 @@ Both walks are **Phase-0 evidence** and both must be repeated at the pilot with 
 | 8 | A doc contradiction is found late | Any session | Fix the owning doc + `CHANGELOG` in the same pass; the conflict rule is in `00_INDEX` §6 | doc owner |
 | 9 | Key-person dependency | Any phase | The handover doc (`23`) is written from Phase 1 onward, not at the end; demo scripts double as knowledge transfer | project owner |
 | 10 | UAT participants unavailable | Pre-UAT | The UAT plan (`28`) lists participants and a fallback week; the scripts (`TST-UAT-*`) are runnable by one person | project owner |
+
+> These ten rows are operationalised as risk rows in `25_RISK_REGISTER.md` §2 (row order → rows 1–10 →
+> `RISK-002`, `RISK-003`, `RISK-006`, `RISK-004`, `RISK-010`, `RISK-007`, `RISK-013`, `RISK-014`, `RISK-011`,
+> `RISK-012`); this table keeps the roadmap contingency view and `25` is the operational detail.
 
 ## 13. Open items, deferrals and assumptions
 

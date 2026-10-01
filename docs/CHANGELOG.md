@@ -484,6 +484,28 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   from the first released build). `16` §1.3's next open item advanced to `25`, `26`, `27`, `28`, `29`, then
   `PHASE0_SUMMARY.md`. Reason: the upgrade gate needs a named fixture and a process, not an intention.
 
+- **`docs/25_RISK_REGISTER.md`** (Draft v0.1) — the single risk register that `01` §13 and `16` §12 hand
+  their detail to: §1 the anchored 1–5 likelihood/impact scale, exposure bands and the row contract
+  (cause → effect, mitigation in force, early-warning trigger, owner, links, status), §2 the **36 `RISK-`
+  rows** seeded from `01` §13 (R1–R10), `16` §12 (rows 1–10), the spike list, the parks and the open
+  questions — each row's mitigation names a document that owns it, §3 the **top-ten detail sheets**
+  (`RISK-001`…`RISK-010`) with cause chain, contingency and residual risk, §4 the client-fact rows seeded
+  from `21` (`OQ-012`, `OQ-014`, `OQ-016`, thresholds, outputs, branding, retention, headcount, compliance
+  and install day), §5 **eight deliberate acceptances** each with a reopen trigger (unsigned v1, no RBAC,
+  plain-zip backups, no secure erase, sample-data non-delivery, keyless AI, no in-app PDF, P&L-only),
+  §6 the source list plus the gate review ritual and the current band summary (7 High / 29 Medium / 0 Low),
+  §7 the obligations on `01`/`16`/`21`/`23`/`24`/`27`/`28`, §8 change control and §9 frozen constants.
+  Reason: Addon 1 §C.1, the `09` `ADR-003` pointer that names `25` for the SmartScreen risk, and
+  `GATE-02-01`; `OQ-014` is the only question left with no labelled default and is carried by `RISK-002`, and
+  §4 now joins all 18 client facts of `20` §6.1 to their risk rows. Also fixed this pass: `20` §6.1's
+  duplicated table header (one stray header row removed).
+- **Governance** — `00_INDEX`: doc-map row 25 → Draft v0.1; `A1-C.1` → **INTEGRATED** (`21`–`25` written);
+  docs complete `00`–`25`, remaining `26`–`29`. `14` §15's `GATE-02-01` → **✅** (docs 21–25 exist with the
+  standard headers; all 21/21 `Q-` items carry a labelled default). `16` §1.3's next open item advanced to
+  `26`, `27`, `28`, `29`, then `PHASE0_SUMMARY.md`, and `16` §12 now points at the operationalised rows.
+  Reason: the register closes the Addon 1 document set, so the client-fact consequences are owned rather
+  than implied.
+
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's
@@ -501,12 +523,12 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
 
 ### Notes carried into the next session
 
-- Docs `21`–`29` + `PHASE0_SUMMARY` remain to be written, in the mandated order (Addon 4 §L): Addon 1's
-  `21`–`25`, Addon 2's `26` (+ ADR-002), Addon 3's `27`–`28` (+ the four prompt texts, chart inventory
-  and negative corpus), Addon 4's `29` + the Source-of-Truth Matrix refresh and doc headers, then the
-  `sample-data/` build step, the Addon Coverage Matrix refresh, the five-gate self-audit with the
-  link-check, the tabletop walkthrough (extended through pack issuance and a cold-start client pass) and
-  `PHASE0_SUMMARY.md`.
+- Docs `26`–`29` + `PHASE0_SUMMARY` remain to be written, in the mandated order (Addon 4 §L): Addon 2's
+  `26` (+ ADR-002, the endpoint → FR reverse index and the 95-route adoption), Addon 3's `27`–`28`
+  (+ the four prompt texts, chart inventory and negative corpus), Addon 4's `29` + the Source-of-Truth
+  Matrix refresh and doc headers, then the `sample-data/` build step, the Addon Coverage Matrix refresh,
+  the five-gate self-audit with the link-check, the tabletop walkthrough (extended through pack issuance
+  and a cold-start client pass) and `PHASE0_SUMMARY.md`.
 - Cross-addon additions are folded into the owning documents as they are written (never a parallel tree).
 - **No product code may be written before recorded Phase 0 approval** (Addon 4 §L.12).
 
