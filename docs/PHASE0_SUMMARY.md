@@ -115,7 +115,7 @@ screen, workbook and slide reads the same engine output.
 | **`OQ-017`** — the approved installer delivery channel | You | Secure link + published SHA-256 | Before the pilot; sized for a ~500 MB file plus its hash |
 | `OQ-012` — code-signing certificate budget | You | Not purchased; mitigation ladder applies | Before the packaging spike's install step |
 | 15 further design/data questions (`OQ-001`…`OQ-013`, `OQ-015`, `OQ-021`/`022`) | Client | Each has a labelled default, so no work is blocked | Answered through `21`/`29` §7 as the build reaches each area |
-| **Scope question for this session** — build `sample-data/` now, or after approval? | You | Not built (this session was documentation-only) | Before `GATE-04-02`/`-07` can close |
+| **Scope decision (made 2026-10-01)** — build `sample-data/` now, or after approval? | You | **After approval** — the owner confirmed the document set is complete and directed that the fixture build wait until Phase 0 is approved | First task after the packaging spike; until then `GATE-04-02`/`-07` stay ⬜ with this reason recorded |
 
 ## 6. Gate snapshot
 
@@ -150,7 +150,7 @@ above plus the installer script. Both are execution items, not specification gap
 
 | When | What |
 |---|---|
-| On approval | Record the approval; then answer §5's first three rows in parallel with the packaging spike |
+| On approval | Record the approval; then answer §5's first three rows in parallel with the packaging spike, and start the `sample-data/` build (the owner's sequencing decision, §5) |
 | Week 1 | Packaging spike (`GATE-06`) → corrected `15` if reality differed |
 | After the spike | Phase 1 (import & validation) begins, with your mapping walkthrough and the sample files from `29` §8 |
 | Before UAT | The pilot month (`GATE-13`) with the tie-out worksheet and the signed classification log |

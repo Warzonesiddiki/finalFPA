@@ -352,6 +352,18 @@ approval: the **packaging spike** (`GATE-06`) runs first, then Phase 1. Two item
 go-ahead, and the reason `GATE-04-02`/`GATE-04-07` remain ⬜; (b) `GATE-01-06`, proven by the spike itself. No
 product code before the recorded approval.
 
+### Owner checkpoint (recorded, 2026-10-01)
+
+| Item | Owner's answer | Effect |
+|---|---|---|
+| "All docs completed" | **Confirmation that the document set is complete — not the approval line.** No `Phase 0 APPROVED` entry exists in `CHANGELOG` or here | The project stays at the approval gate; nothing is recorded as approved, and no product code may start (`00_INDEX` §12 still reads "Requested — awaiting recorded approval") |
+| `sample-data/` build timing | **After approval** — explicitly sequenced behind Phase 0's approval, not run in this documentation session | `GATE-04-02`/`-07` remain ⬜ for that reason (not for a missing definition); the build becomes the first parallel task after the packaging spike (`16` §1.3, `PHASE0_SUMMARY` §5) |
+
+The completion evidence behind the confirmation: 30 docs `00`–`29` all `Draft v0.1` with the standard
+header, `PHASE0_SUMMARY` present, link-check and table sweep clean, 1,133 ID tokens all registered,
+`55 ✅ / 3 ⬜` of 58 with none of the three blocking approval. Verified at `42a46ac`; the working tree was
+re-synced to that commit after the sandbox re-cloned the repository (all work had been pushed, nothing lost).
+
 ### Deferred to backlog / open questions
 
 - All 25 parked scope items from `01` §6.2 → to be seeded into `27_BACKLOG.md` as `BL-001`…`BL-025`.
