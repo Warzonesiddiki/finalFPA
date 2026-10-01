@@ -462,6 +462,28 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   `PHASE0_SUMMARY.md`. Reason: the support/handover contract is proof for the enablement gate, and the
   runbook must cite the build/security owners rather than restate them.
 
+- **`docs/24_RELEASE_AND_VERSIONING_RUNBOOK.md`** (Draft v0.1) — the release process that `15` §10
+  delegates here: §2 the **three version numbers** (app semver, per-project schema integer, docs version),
+  the **bump decision table** (`MAJOR`/`MINOR`/`PATCH` with examples) and the one-place rule
+  (`pyproject.toml` is the source; a mismatch fails the release), §3 branch/tag rules (annotated
+  `vMAJOR.MINOR.PATCH` on `main`, never moved or reused, tagged only after the checklist), §4 the
+  **14-step release checklist** with owner, evidence and abort condition for each step and the two
+  overriding rules (an unevidenced step is failed; a failure after the tag ships as the next patch), §5
+  the **release record** (`packaging/out/<version>/`, twelve files, retention rule), §6 upgrade/migration
+  (**what the user sees**, the six `09` §13 rules, the **prior-version fixture** — a real project made by
+  the previous released build, never hand-edited to make a test pass — and the documented rollback: restore,
+  not reverse-migrate), §7 distribution and **checksum publication** (hash in the notes and the delivery
+  message; client verification; never "an exe"), §8 **signing status** (unsigned v1 ladder, the certificate
+  checklist when `OQ-012` is answered, expiry handling), §9 **patch/hotfix rules** (P0 only, minimal change
+  + regression test, affected gate items re-run), §10 the release-notes template, §11 the **release evidence
+  list**, §12 roles, and the obligations/change-control/frozen constants. Reason: Addon 1 §C.1/§J,
+  `15` §10, `16` §8, `ADR-008`, `14` `TST-E2E-05`, `GATE-02-07`.
+- **Governance** — `00_INDEX`: doc-map row 24 → Draft v0.1; `A1-C.1` → IN PROGRESS (`21`–`24` done), `A1-J`
+  → **INTEGRATED**, docs complete `00`–`24`, remaining `25`–`29`. `14` §15's `GATE-02-07` → **✅** (the
+  fixture path, creation/refresh and never-edit rules are fixed in `24` §6.3; the first fixture is created
+  from the first released build). `16` §1.3's next open item advanced to `25`, `26`, `27`, `28`, `29`, then
+  `PHASE0_SUMMARY.md`. Reason: the upgrade gate needs a named fixture and a process, not an intention.
+
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's

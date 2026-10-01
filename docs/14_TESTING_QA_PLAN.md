@@ -711,7 +711,7 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 | `GATE-02-04` | Excel hardening list: each quirk has a documented handle-or-reject behaviour with error copy | `04` (32 checks, 59 messages) | ✅ |
 | `GATE-02-05` | OneDrive/storage decision made, with its test case listed in `14` | `09` `ADR-004` + `TST-WIN-06` | ✅ |
 | `GATE-02-06` | SmartScreen/signing decision is an ADR with a non-technical-user mitigation path | `09` `ADR-003` | ✅ |
-| `GATE-02-07` | Upgrade/migration test case exists and names the fixture (a real prior-version project) | `TST-E2E-05`, `24` | ⬜ (test defined; fixture with `24`) |
+| `GATE-02-07` | Upgrade/migration test case exists and names the fixture (a real prior-version project) | `TST-E2E-05`, `24` | ✅ (`24` §6.3 names the fixture path, creation/refresh rules and the never-edit rule; the first fixture is created from the first released build) |
 | `GATE-02-08` | Injection test case (planted malicious description) exists in `14` | `TST-SEC-14` | ✅ |
 | `GATE-02-09` | License allow-list, secret-scan and SBOM steps documented; `THIRD_PARTY_LICENSES.txt` planned in the installer manifest | `13` §12, `15`, `24` | ✅ (doc side) |
 | `GATE-02-10` | End-user guide outline (task-structured) approved-ready; training outline exists | `22`, `23` | ✅ (`22`: 21 tasks, 43-screen map, 60-min training outline, screenshot contract; `23`: diagnostics workflow, incident playbook, escalation ladder) |
