@@ -566,6 +566,29 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
   Also corrected `25` §3.4's acceptance bar to the full `06` §7.1/§7.2 wording (recall ≥ 90 % of the 32
   raises **including 18/18 High-severity**, zero of the 8 control plantings).
 
+- **`docs/29_CLIENT_REQUIREMENTS_PACK.md`** (Draft v0.1) — the client-facing pack (Addon 4 §E.1), plain
+  language for a finance director with no IT background and deliberately free of requirement codes: what the
+  tool does in the client's month-end words with every screen as a one-liner, a month in the tool, the
+  explicit boundaries (no ERP writes, no consolidation, single-user, P&L focus, no automatic sending), what
+  the AI does and does not do (drafts only, off by default, never computes/decides/sends), **17 decisions
+  each with a recommendation**, what we need from the client and when, the timeline in plain terms (96 ideal
+  build days and the honest elapsed driver), how the trial month / acceptance test / go-live prove it, the
+  machine and install reality including the unsigned-installer prompt, backups/retention/support, the
+  verbatim advisory disclaimer, the **"requirements understood and agreed" sign-off block**, and the
+  post-sign-off change process. Reason: the last document of the Phase 0 set and the only one written for
+  the client to read and sign.
+- **Table and header hygiene** — docs `16`–`29` now carry the mandatory `Owning FRs/areas:` header label
+  (`00_INDEX` §6.1); 51 pipes inside inline code spans on table rows (e.g. `` `|budget|` ``) are escaped so
+  they render as cell content instead of splitting columns (docs `03`/`04`/`05`/`06`/`11`/`14`/`17`/`18`/`20`/
+  `21`/`26`), `14` §4.1's Top-N test wording is escaped, and `17` §12's two rows regained their missing
+  "Enforced by" cell. Reason: a table that renders with a phantom column is a documentation defect the
+  link-check cannot see; every table in `docs/` now passes a header/separator/cell-count sweep.
+- **Governance** — `00_INDEX`: doc-map row 29 → Draft v0.1; `A4-E`/`A4-F` → **INTEGRATED**; `A4-K` now
+  records 11 of 13 green; docs complete `00`–`29`, remaining `PHASE0_SUMMARY` plus the build/audit steps.
+  `14` §15's `GATE-05-07` and `-09` → **✅**. `16` §1.3's next open item advanced from "write `29`" to the
+  Phase 0 close-out sequence (Source-of-Truth refresh + doc headers → `sample-data/` → Coverage Matrix +
+  five-gate self-audit with the link-check → walkthroughs → `PHASE0_SUMMARY` → stop for approval).
+
 #### Changed — 2026-10-01
 
 - **`docs/03_DATA_DICTIONARY.md`** — corrected the `FactImportBatch` example row's

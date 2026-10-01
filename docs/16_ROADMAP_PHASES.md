@@ -68,11 +68,11 @@
 
 | Field | Value |
 |---|---|
-| Item | **Write the remaining Phase 0 documents in order: `29`, then `PHASE0_SUMMARY.md`** (`16`–`28` are written; Addons 1–3 are complete) |
+| Item | **Close Phase 0: refresh the Source-of-Truth Matrix and doc headers, build `sample-data/`, refresh the Addon Coverage Matrix, run the five-gate self-audit with the link-check, run the tabletop walkthrough and the cold-start client pass, then write `PHASE0_SUMMARY.md` and stop for approval** (`00`–`29` are written; Addons 1–4 are complete on paper) |
 | Why now | Addon 4 §L steps 2–6 and 11; the Phase-0 gate (`GATE-01`…`GATE-05`) cannot run before the set is complete |
 | Definition of done for this item | Every document exists with the standard header, zero blocking `TBD`s, the Coverage Matrix rows integrated, `CHANGELOG` + `SESSION_LOG` entries, and the link-check clean (`14` §13.1) |
-| Next item after this one | Build `sample-data/` (generator + `expected_exceptions.csv` + `malformed/` corpus + `--scale 250000`) — Addon 4 §L.7, `14` §16 |
-| Next after that | Refresh the Addon Coverage Matrix, self-audit all five gates, run the tabletop walkthrough and the cold-start client pass, write `PHASE0_SUMMARY.md`, then **STOP and present** (Addon 4 §L.8–12) |
+| Next item after this one | Addon 4 §L steps 8–11, in order: the Source-of-Truth Matrix refresh + doc headers, then `sample-data/` (generator + `expected_exceptions.csv` + `malformed/` corpus + `--scale 250000`), then the Coverage-Matrix refresh and the five-gate self-audit with the link-check |
+| Next after that | The tabletop walkthrough through pack issuance + the cold-start client pass, then `PHASE0_SUMMARY.md` and the recorded approval (Addon 4 §E.2/§L step 12), then **STOP and present** (Addon 4 §L.8–12) |
 | Blocking | None. Only the client-facing open questions (`18`/`21`) that have labelled defaults |
 
 > This table is the session-start pointer. `00_INDEX` §10 and the `SESSION_LOG` "Next step" must agree with

@@ -14,7 +14,7 @@
 > - **We need one sanitized real month as early as possible** — that single request unlocks the most.
 > - **We need about a dozen decisions** (§7), each with a recommendation, so you can simply tick.
 > - **Your files stay on your machine.** The tool runs offline; there is no server, no cloud account and
->   no telemetry.
+>   no usage tracking and nothing that reports back about how you work.
 > - **Money is handled exactly**: whole rupees, no rounding drift, and every figure on a screen or a
 >   slide ties back to the same transaction rows.
 > - **Themes, not black boxes:** every exception rule is written down, threshold by threshold, in the
@@ -122,7 +122,7 @@
 | It never decides | It cannot change data, set a threshold, approve an exception, close a period or issue a pack |
 | It never sends | It cannot email or upload; drafts wait for a human to accept, edit or reject |
 | Your data | Only the small extract you see on the drafting screen is sent to the provider **you** configure; nothing else, ever |
-| You choose the provider | Any OpenAI-compatible endpoint you approve, with your own key; the key is stored protected on the machine and is never exported in a backup |
+| You choose the provider | Any AI service you approve that uses the industry-standard interface (the same style as OpenAI), with your own account key; the key is stored protected on the machine and is never included in a backup |
 | Review is mandatory | Every draft is marked as a draft until a person approves it, and the approved version is what appears in the pack |
 | Turn it off later | One switch; the audit trail records that the feature was used, and nothing breaks when it is off |
 
@@ -146,7 +146,7 @@ recommendation, write "agree" — that is enough.
 | 11 | AI assistant: on or off for the first months? | A data-handling and support decision, not a technical one | Keep it off for v1; turn it on later with a written data-handling note | |
 | 12 | Which Excel and PowerPoint examples define the house style? | Fonts, colours, slide order and the KPI set on the summary slide | Share one recent pack; we match what Excel and PowerPoint can reproduce reliably | |
 | 13 | Product name, logo and two brand colours | App header, workbook cover and deck title slide | The finance function's own name and brand; provide the logo file and the colours | |
-| 14 | Delivery channel for the installer, and whether to buy a signing certificate | Affects how the installer is distributed and whether an install-day security warning appears | Internal file share with a published checksum; buy a certificate only if your policy blocks an unsigned installer | |
+| 14 | Delivery channel for the installer, and whether to buy a signing certificate | Affects how the installer is distributed and whether an install-day security warning appears | Internal file share with a published fingerprint number; buy a certificate only if your policy blocks an unsigned installer | |
 | 15 | Training format | Determines what is prepared and who attends | All three: a live 60-minute session, a recorded walkthrough and the written guide | |
 | 16 | Support terms after go-live, and who is called first | Sets the response promise you can hold us to | The analyst calls the consultant directly for two month-ends; formal terms confirmed before go-live | |
 | 17 | Retention and deletion expectations | Determines how long projects and backups stay, and what "delete" means | Keep 13 months of projects, delete means removed from disk, backups are yours to manage | |
@@ -207,7 +207,7 @@ plan once your §7 answers are in, and we will flag any schedule risk as soon as
 | What a security warning means | The installer is not code-signed for v1, so Windows may show a "Windows protected your PC" prompt; the steps to proceed safely and verify the file are in the written guide, and a signing certificate is decision 13 in §7 |
 | Network | Not required to use the tool; you may keep the machine offline |
 | Where your data lives | On that machine, under your Windows user profile — never in a cloud folder by default, never on our systems |
-| Updates | Manual in v1: you are told a new version exists and given the file plus its checksum; nothing updates itself |
+| Updates | Manual in v1: you are told a new version exists and given the file plus a fingerprint number so you can check it arrived unchanged; nothing updates itself |
 | Uninstalling | Removes the application; your project folders and backups are yours and stay where you put them |
 
 ## 12. Care and feeding: backups, retention and support

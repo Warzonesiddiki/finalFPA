@@ -47,6 +47,7 @@ product code** (Addon 4 §L, steps 1–2).
 | `docs/26_API_CONTRACT.md` | **New.** The HTTP contract (Addon 2 §B.2/§C.1): the universal envelope and error shape; pagination, filter/sort and value-encoding rules; the **95-route inventory** adopted verbatim from `20` §2.3 with request → response shapes, area error profiles, screens and FRs; the shared shapes (domain payloads by reference to `03`); the **error catalogue** (11 families, 33 new codes + the seven `ERR-API-*`, the 32-row `IMP` catalogue and 27 hardening slugs, `EXP`/`SEC`/`ENG` aggregated); the OpenAPI/type-generation workflow; the fixture layout and 16 `TST-API-*` tests; the data-volume rule; config layering; the endpoint → FR/screen/test reverse index; CLI parity; change control and frozen constants. |
 | `docs/27_BACKLOG.md` | **New.** The backlog register (Addon 3 §B.1/§H): the entry schema and rules; **33 items** (`BL-001`…`BL-025` from `01` §6.2, `BL-026` from `11` §14, `BL-029`…`BL-035` from `13` §15) each with the trigger that promotes it, a size (S/M/L), its source and a target phase; the small-wins and by-source/by-trigger views; the gate review ritual; promotion/retirement states; obligations; change control and frozen constants. |
 | `docs/28_ACCEPTANCE_UAT_AND_GO_LIVE.md` | **New.** The acceptance path (Addon 3 §G, Addon 4 §F): the project-level Definition of Done; the `S1`–`S4` defect workflow with the `DEF-nnn` log and response targets as labelled defaults until `OQ-016`; the real-data pilot (`GATE-13`) with the four-class difference taxonomy and the tie-out worksheet template; UAT (`GATE-14`) with the six `TST-UAT-*` scripts; the 22-item go-live checklist (`GATE-15`); the acceptance evidence set and sign-off template; hypercare and post-go-live review; the demo-script standard. |
+| `docs/29_CLIENT_REQUIREMENTS_PACK.md` | **New.** The client-facing pack (Addon 4 §E.1), written so a finance director with no IT background can read it end to end: what the tool does in their month-end words with every screen as a one-liner; a month in the tool; the explicit boundaries; what the AI does and does not do (drafts only, off by default, never computes or sends); **17 decisions** each with a recommendation; what we need from the client and when; the timeline in plain terms; how the trial month, acceptance test and go-live will prove it; the machine and install reality incl. the unsigned-installer prompt; backups, retention and support; the verbatim advisory disclaimer; the "requirements understood and agreed" sign-off block; and the post-sign-off change process. No requirement codes and no document numbers in the body by design. |
 | `docs/13_SECURITY_PRIVACY.md` | **New.** The security/privacy/supply-chain contract as **49 verifiable statements** (`SEC-001`…`049`), each with a mechanism and a planned test (`TST-SEC-01`…`22`): local-only guarantees + the exhaustive three-item outbound inventory; the threat model incl. what is explicitly **not** defended; the exact data-location tree and file-handling rules (atomic writes, `.recycle`, path limits, synced-folder block with recorded override); deletion semantics with pre-delete backup offer and the "not a secure erase" caveat; DPAPI key storage, write-only UI, rotation/revocation/purge with byte-scan proof, `.gitignore` + pre-commit + CI secret scan; log rotation and the allowed/forbidden content policy with a planted-value grep test; the metadata-only diagnostics bundle with its redaction map and manifest schema (20 MB cap); the AI data path (TLS verification not disableable, redaction, caps, provenance, non-authority) and prompt-injection defence; the plain-files data-at-rest stance (`DEC-030`); the privacy note text owned here for `22`/`29`; the audit/log/security-event boundary (`SEC-048`/`049`); error codes `ERR-SEC-001`…`008` |
 | `docs/12_POWERPOINT_OUTPUT_SPEC.md` | **New.** The deck contract: the **fixed six slides** (`PPT-001`…`PPT-006`) with the default/opt-in missing-input rule (`DEC-029`); the universal contract (inch grid + scaling, the native-and-editable whitelist, the shared theme, the **character-budget formula** with per-placeholder budgets and the prioritized trimming order, deterministic shape naming/order, stamping + footer + full disclaimer on the last slide, AI/rule-based labelling, not-available states, accessibility, the ≤ 15 s aggregate-only budget); every slide/placeholder with geometry, fonts, budgets and content sources; two native charts incl. the waterfall decision (`SPK-08`) and its stacked-column fallback; base-deck mapping/refusal rules; the deck's half of the cross-artifact contract; files/refresh/issuance; 24 test IDs; `ERR-EXP-012`…`018` |
 | `docs/00_INDEX.md`, `docs/01_PRD.md`, `docs/02_FUNCTIONAL_SPEC.md`, `docs/03_DATA_DICTIONARY.md`, `docs/09_TECHNICAL_ARCHITECTURE.md`, `docs/11_EXCEL_OUTPUT_SPEC.md` | **Amended (ripple, doc 14).** `00`: doc-map row 14, completeness, `A1-L` INTEGRATED, `TST-<FAM>` families enumerated. `01`: the M10 performance row now cites the canonical NFRs. `02`/`03`: the rule-run target is `NFR-007` (was mis-cited as `NFR-009`). `09` §14: the NFR table extended to `NFR-001`…`016` with the remap (`NFR-009` = Excel pack, `NFR-011` = logs, `NFR-012` = crash) and the new `NFR-013`…`016`; repo layout gains the new test categories and `acceptance`/`perf` scripts. `11`: the Excel-pack budget now cites `NFR-009`. |
@@ -212,6 +213,14 @@ recorded in `CHANGELOG.md`. A **full matrix refresh is required at the end of th
   allocated here; the six `TST-UAT-*` scripts and the four `S1`–`S4` severities are cited from `14` §12.4/§14.1
   rather than restated; the go-live checklist is 22 numbered items each with an owner and evidence; the TL;DR
   is 15 bullets.
+- **`29` audit:** the body carries **no requirement codes, no test IDs and no document numbers** (checked by
+  token sweep; the only such tokens in the file are the `20`/`23` provenance cites in the internal header
+  block); 15 sections, 15 TL;DR bullets, zero odd backticks; every table passes the header/separator/cell-count
+  check; the sign-off block uses the mandated "requirements understood and agreed" wording; every figure
+  quoted (96 ideal build days, the threshold starting point, the response targets, core-machine requirements)
+  is taken from the owning document rather than restated. Corrected in this entry: the doc-25 audit bullet in
+  the doc-21–25 pass said 320 lines; the shipped file is 332 (fixed in place, recorded here per the
+  append-only rule).
 - **`19` audit:** 497 lines; every `§`-citation resolves (`02` §3.5, `14` §14.3/§1.2/§8.3/§13.2, `16` §5.1/§5.2/§6/§9.2/§11.1/§11.2, `10` §4, `09` §3/§13, `17` §7.1/§9.2/§11.2, `08` §16/§17, `13` §7/§12); the TL;DR is 11 bullets (≤ 15); the DoD criteria are referenced rather than restated (single-source with `02`/`14`); and the doc states the Phase-0 no-code rule explicitly.
 - **`18` audit:** 451 lines; every `§`-citation verified (one draft cite to `03` §16 corrected to `04` §16 — the score inputs live in the import spec); every `Q-`/`OQ-`/`A`/`DEC-`/`BL-`/`EXC-`/`CALC-`/`GATE-` ID used resolves; the TL;DR is 10 bullets (≤ 15); `01` §14/§16 corrected for the `OQ-020` phantom and `14`'s two `18`-dependent gate rows updated.
 - **`17` audit:** 558 lines; every `§`-citation verified against its target (two first-draft cites to `14` §2.3/§2.5 corrected to `14` §1.2 items 3/5 and `09` §5.3 after the golden-file and determinism rules were located); every ID used exists (`FR-IMP-031`, `TST-WIN-03`/`13`, `SEC-0xx`, `GATE-02-09`, `BL-012`); the TL;DR is 11 bullets (≤ 15); all text owned elsewhere is cross-referenced rather than restated (the layer table, `scripts/check` composition, coverage bars and message-catalog rules remain single-sourced in `09`/`14`/`26`/`08`).
@@ -235,12 +244,13 @@ None. Every unconfirmed client fact has a labelled default in `01` §12 and will
 
 ### Next step
 
-Continue the mandated order with **`29`** (next open item: `16` §1.3): `21`–`28` are done and Addons 1–3 are
-complete; next is the client-facing requirements pack (`29`: plain language, no FR IDs; what the product does,
-what the AI does not do, the decisions needed with recommendations, what we need from the client, and the
-timeline/UAT/training plus the sign-off block), then the Source-of-Truth Matrix refresh and the doc-header
-sweep, then the `sample-data/` build, the five-gate self-audit with the link-check, the tabletop walkthrough
-(through pack issuance and a cold-start client pass) and `PHASE0_SUMMARY.md`.
+Continue Phase 0's close-out in the Addon 4 §L order: (8) refresh the Source-of-Truth Matrix (`00_INDEX` §5)
+and run the doc-header sweep across every file; (9) build `sample-data/` (the generator's inputs, the committed
+expectations incl. `expected_exceptions.csv`, the `malformed/` corpus with its expected message IDs, and the
+`--scale 250000` path) per `14` §16; (10) refresh the Addon Coverage Matrix and self-audit all five gates
+(`14` §15) with the link-check; (11) run the tabletop walkthrough through pack issuance and the cold-start
+client pass on `22`/`29` alone; (12) write `PHASE0_SUMMARY.md` and **STOP**: present it with this pack for the
+recorded Phase 0 approval (`CHANGELOG` + `SESSION_LOG` per Addon 4 §E.2). No product code before that approval.
 
 ### Deferred to backlog / open questions
 
@@ -335,3 +345,10 @@ Phase 5; the KPI-card default set is client-confirmable (`PPT-KPI-DEFAULT`).
   before go-live (they are labelled defaults, not promises); the pilot bans sample data outright and `OQ-014`
   has no default — `RISK-002` is its only mitigation; and every phase gate now demonstrably includes a 3–5
   minute demo script per `16` §5.1 item 11, templated in `28` §9.
+
+- New from the `29` pass: `29` is the **only** client-facing document, and it deliberately contains no
+  requirement codes — the coded truth stays in `20`, and the pack quotes the owning documents rather than
+  restating them (the disclaimer verbatim, the 96 ideal build days, the threshold starting point, the
+  response targets). Every decision the client must make now carries our recommendation, so the answer can
+  be "agree". The pack also fixes how the client hears about change: nothing moves silently, small changes
+  get a change-log line, large ones get an impact note and their decision first.

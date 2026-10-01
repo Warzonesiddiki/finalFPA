@@ -94,7 +94,7 @@ precise, terse, and testable.
 | 26 | `26_API_CONTRACT.md` | The 95-route contract: envelope, pagination/filter grammar, value encodings, job/bulk rules, the error-code catalogue, OpenAPI + type-generation workflow, contract tests, endpoint → FR reverse index | Draft v0.1 |
 | 27 | `27_BACKLOG.md` | Every parked item (`BL-`) with one-line scope, promotion trigger, size, source and target phase; reviewed at every gate | Draft v0.1 |
 | 28 | `28_ACCEPTANCE_UAT_AND_GO_LIVE.md` | DoD, UAT mechanics, defects (`DEF-`), pilot tie-out, go-live, sign-off | Draft v0.1 |
-| 29 | `29_CLIENT_REQUIREMENTS_PACK.md` | Plain-language client pack + sign-off block | Not started |
+| 29 | `29_CLIENT_REQUIREMENTS_PACK.md` | Plain-language client pack (no requirement codes): what it does, what the AI does not do, the decisions needed with recommendations, what we need from the client, timeline/UAT/training, disclaimer, sign-off block | Draft v0.1 |
 | — | `CHANGELOG.md` | Every doc/spec change (Keep a Changelog + semver) and gate approvals | Living |
 | — | `SESSION_LOG.md` | Append-only session memory: what changed, FRs touched, tests, next step | Living |
 | — | `PHASE0_SUMMARY.md` | One-page Phase 0 presentation (written at the end of Phase 0) | Not started |
@@ -206,13 +206,13 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A4-B | Spec consumption protocol (standard doc header, session reading plan, quote-before-code, decisions accumulate forward, paraphrase ban) | `19`, `00` | INTEGRATED |
 | A4-C | Source-of-Truth Matrix & doc hygiene (one owner per fact, conflict resolution, no duplication, length discipline, link-check) | `00` | INTEGRATED |
 | A4-D | FR prioritisation & cut-line policy (P0/P1/P2, phase gate rule, never-cut list, cut process, estimates) | `02`, `16`, `20` | INTEGRATED |
-| A4-E | Doc 29 + approval mechanics (plain-language pack, approval recording, post-approval change impact rule) | `29`, `19`, `24`, `18` | IN PROGRESS (24, 29 pending) |
-| A4-F | Real-data pilot gate (one sanitized real month, tie-out acceptance, classification, exit criteria) | `28`, `14` | PENDING |
+| A4-E | Doc 29 + approval mechanics (plain-language pack, approval recording, post-approval change impact rule) | `29`, `19`, `24`, `18` | INTEGRATED (`29` §14 sign-off, §15 change process; approval recording in `19` and the `CHANGELOG` convention) |
+| A4-F | Real-data pilot gate (one sanitized real month, tie-out acceptance, classification, exit criteria) | `28`, `14` | INTEGRATED (`28` §4: preconditions, four-class taxonomy, tie-out worksheet, `GATE-13` exit criteria) |
 | A4-G | Tolerance & edge-case data matrix (no epsilon in money maths, display rounding, cross-artifact equality, 13 edge cases) | `05`, `02`, `14` | INTEGRATED |
 | A4-H | Sample-data integrity (watermark, project_type flag, no interleave, not delivered to client) | `14`, `16`, `02` | INTEGRATED |
 | A4-I | Engineering discipline deltas (spike policy, fresh-clone bootstrap test, code-health guardrails, storage growth maths) | `09`, `14`, `17`, `19` | INTEGRATED |
 | A4-J | Security & config deltas (AI key rotation, keyless mode default) | `13` | INTEGRATED (rotation `13` §5.3; keyless default `10` §2.1/§11) |
-| A4-K | Phase 0 quality gate deltas (13 checks) | `00`, `14` | IN PROGRESS |
+| A4-K | Phase 0 quality gate deltas (13 checks) | `00`, `14` | IN PROGRESS (11 of 13 ✅; `GATE-05-07`/`-09` now green with `28`/`29`; the self-audit and link-check at Phase-0 close remain) |
 | A4-L | Updated immediate next actions (the current authoritative list) | `16`, `19`, `00` | INTEGRATED |
 
 **Gate rule:** any row not `INTEGRATED` fails the Phase 0 gate (Addon 2 §A.3, Addon 3 §A.3, Addon 4 §A.3).
@@ -345,8 +345,8 @@ Addon 3 §G). Approvals are recorded in `CHANGELOG.md` **and** `SESSION_LOG.md` 
 |---|---|
 | Phase | **Phase 0 — Documentation** |
 | Authoritative next-action list | Addon 4 §L (supersedes Addon 3 §K → Addon 1 §P → Kickoff §15) |
-| Docs complete | `00`–`28` (drafts) + `CHANGELOG`, `SESSION_LOG` |
-| Docs remaining | `29`, `PHASE0_SUMMARY` |
+| Docs complete | `00`–`29` (drafts) + `CHANGELOG`, `SESSION_LOG` |
+| Docs remaining | `PHASE0_SUMMARY` (plus the `sample-data/` build step and the self-audit passes) |
 | Product code | **None. Forbidden until recorded approval.** |
 | App version / docs version | 0.1.0 (planned) / 0.1.0 (working draft) |
 | Open questions count | Tracked in `18_...OPEN_QUESTIONS.md` §Open |
