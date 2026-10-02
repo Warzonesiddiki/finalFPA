@@ -1,0 +1,36 @@
+=== AGENT 1 FR-001 to FR-003 ===
+### FR-001: Multi-Format File Ingestion (P0)
+- **Description:** Ingests GL actuals, budgets, and master data from Excel workbooks (`.xlsx`, `.xlsb`, `data_only` mode) and delimited text (`.csv`, `.tsv`, `.txt`).
+- **Inputs:** User-selected local file path via drag-and-drop or Windows native file picker.
+- **Processing Logic:** 
+  1. Detects file format, compression, and file size.
+  2. For CSVs, automatically sniffs encoding (UTF-8, UTF-8 with BOM, Windows-1252) and delimiter (comma, semicolon, tab, pipe) via standard statistical delimiter frequency.
+  3. Pre-scans row count and estimates memory impact. If rows > 250,000, prompts user for confirmation.
+- **Outputs:** Ingestion staging token, raw metadata summary (row count, column count, encoding, detected headers).
+- **Edge Cases:** Locked files (open in Excel), zero-byte files, password-protected sheets, files exceeding 100 MB.
+- **Acceptance Criteria:** Successfully ingests a 250k-row CSV in ≤ 30s and a 100k-row XLSX in ≤ 45s without memory exhaustion; emits explicit error hint if file is locked.
+- **Screen:** `SCR-002` | **API:** `POST /api/v1/imports/upload`
+
+### FR-002: Dynamic Header Fingerprinting & Profile Auto-Match (P0)
+- **Description:** Automatically matches uploaded file columns to known system profiles (e.g., Dynamics 365 F&O, Dynamics 365 Business Central, Payroll Summary, Procurement Ledger) using header fingerprint similarity.
+- **Inputs:** Raw column headers from uploaded file.
+- **Processing Logic:** Computes Jaro-Winkler string similarity against saved profile header dictionaries. If match confidence ≥ 85%, auto-selects the profile.
+- **Outputs:** Selected profile ID, matched column pairings, confidence score, list of unmatched required canonical columns.
+- **Edge Cases:** Extra unmapped columns, renamed headers, multi-row merged headers (handles rows 1–3 banner stripping).
+- **Acceptance Criteria:** Correctly matches D365 standard GL exports with 100% precision; surfaces clear mapping wizard if match score is below threshold.
+- **Screen:** `SCR-002` | **API:** `POST /api/v1/imports/match-profile`
+
+### FR-003: Flexible Column Mapping & Transformation Profile Editor (P0)
+- **Description:** Interactive interface enabling users to map arbitrary source columns to canonical star schema fields and save profiles for reuse.
+- **Inputs:** Source file column list, canonical schema target list, sample row preview.
+- **Processing Logic:** Validates that all mandatory canonical fields (`PostingDate`, `Voucher`, `AccountCode`, `Amount` or `Debit`/`Credit`) are mapped.
+- **Outputs:** Saved profile JSON stored in project SQLite database with version stamp.
+- **Edge Cases:** Splitting compound dimension strings (e.g., `Dept=100|CC=200|Proj=P99`) into discrete columns using user-defined regex/delimiters.
+- **Acceptance Criteria:** Allows saving named profile; subsequent imports of identical file layout automatically apply saved mappings without manual intervention.
+- **Screen:** `SCR-002`, `SCR-011` | **API:** `POST /api/v1/mappings/profiles`
+
+
+
+=== AGENT 2 Section 4 and Section 6 start ===
+
+

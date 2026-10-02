@@ -1,0 +1,10 @@
+# Wave 4 gate-count verification — 2026-10-01
+Method: direct section reads + grep.
+docs/14_TESTING_QA_PLAN.md §15: GATE-01 (9) + GATE-02 (12) + GATE-03 (12) + GATE-04 (12) + GATE-05 (13) + GATE-05B provisional Addon 5 (8) = 66 checks. All rows Status ✅.
+docs/00_INDEX.md §9 tracker: 9+12+12+12+13+8 = 66, all ✅. §9 header disambiguates packaging spike GATE-06 (owned by 16, not a Phase-0 checklist).
+docs/00_INDEX.md §4 Coverage Matrix: 15 (K) + 16 (A1) + 17 (A2 traced) + 17 (A3 traced) + 12 (A4) + 8 (A5) = 85 expanded rows over 72 contract sections; zero PENDING/IN PROGRESS (grep verified).
+Stale-ref sweep: grep "58 checks|five quality gates|five Phase-0 gates|00–29.*complete|sample-data.*scope decision" must return only historical CHANGELOG/SESSION_LOG lines and the hygiene-rule mention of TBD; zero live spec contradictions post-Wave-4.
+Gate-collision note: GATE-06 = packaging spike only (16 §2.1, DEC-031, 00 §8 registry, 19 §6.1). Addon 5 checklist = provisional GATE-05B (14 §15.6) pending Addon 5 contract numbering confirmation (F-015 escalated).
+
+--- CORRECTION (Wave 5, 2026-10-01, independent auditor) ---
+The "Coverage Matrix ... = 85 expanded rows" claim above is WITHDRAWN as false. Independent Wave-5 recount of docs/00_INDEX.md section 4 = 86 data rows (4.1=15, 4.2=17, 4.3=17, 4.4=17, 4.5=12, 4.6=8); the 4.2 header at docs/00_INDEX.md:136 says 16 rows but holds 17 (A1-C split into C.1/C.2). Evidence: independent Wave-5 recount of docs/00_INDEX.md section 4; audit/recompute_wave5.log (74 checks, 1 mismatch). Finding: F-027. Original line retained unaltered for audit trail.

@@ -1,0 +1,45 @@
+### Wave 5 — Independent Re-Verification (Read-Only, No docs/ Edits)
+- **Execution Date:** 2026-10-01
+- **Snapshot:** Label `20261001-185914` — timestamped snapshot discipline.
+  - No git executable on PATH this wave; the SHA-256 manifest, not a commit hash, is the immutability anchor.
+  - Per-file SHA-256 manifest written to `audit/snapshot_20261001-185914.sha256` covering `docs/`, `sample-data/`, `evidence/`, `audit/`.
+  - Contract baseline unchanged: combined file SHA-256 `df6abd2976e4489a7caa3874dc641ce8156787c5cca3bd1fbf1fd926d2605598`, 1035 lines, 4 ADDON headers, Addon 5 absent.
+  - Deliverable tree (`docs/`, `sample-data/`, `evidence/`, `audit/`) fully re-hashed at snapshot time; Wave-4 baseline treated as prior claim, not assumed unchanged.
+- **Scope:** Full re-run of the A1–A7 audit suite against the Wave-4 state.
+  - **A1:** Coverage matrix recount → 86 rows (independent recount, not the prior claimed count).
+  - **A2:** Hygiene sweep across all 34 files, executed via subagent plus personal spot-check.
+  - **A3:** Arithmetic recompute via `audit/recompute_wave5.py` → 74 checks, 1 mismatch (`F6`).
+  - **A4:** Traceability sample of 4 FRs → 0 guesses, 5 non-blocking link suggestions.
+  - **A5:** All six gates re-verified item-by-item via 4 subagents, with personal verification of every FAIL.
+  - **A6:** Author/auditor claim sampling — `PHASE0_SUMMARY.md`, evidence logs.
+  - **A7:** Watermark, privacy, project-type, and prompt-injection fixture scans.
+- **Method:**
+  - Read-only on `docs/` and `sample-data/`; `audit/` and `evidence/` writable.
+  - Prior gate ✅s treated as claims under audit (A6), not inherited as evidence.
+  - Delegation: A2 and A5 executed via subagents (4 subagents for A5 alone); A1/A3/A4/A7 verified with direct recount, `audit/recompute_wave5.py`, sampling, and fixture scans.
+  - Every subagent report personally spot-checked before acceptance: numeric claims re-counted; one subagent's matrix count of 85 rejected in favor of independent recount 86.
+- **Findings Count (new, this wave):**
+  - **BLOCKER:** 8 new open (`F-020`, `F-021`, `F-022`, `F-023`, `F-024`, `F-025`, `F-026`, `F-029`) + `F-033` BLOCKER remediated-by-auditor.
+    - Gate-linked blockers: `F-022` (K10), `F-023` (K2 examples), `F-024` (A3J-3), `F-025` (A3J-11), `F-026` (strict-vs-literal fixture).
+    - `F-033` remediated by the auditor; excluded from the 8 new open BLOCKERs above.
+  - **MAJOR:** 6 new (`F-027`, `F-028`, `F-030`, `F-031`, `F-032`, `F-034`).
+  - **MINOR:** 2 new (`F-035`, `F-036`).
+  - **Reopens:** `F-013` reopened via `F-030`; `F-016` reopened via `F-027`.
+  - **Carry-over:** `F-015` (Addon 5 contract absent) remains `ESCALATED-TO-OWNER`.
+  - **Totals now:** 9 open BLOCKERs incl. `F-015` escalated, 6 open MAJORs, 2 open MINORs.
+- **Quality Gate Verdicts (independent, this wave):**
+  - `GATE-01` (Kickoff §5): **FAIL** (8/9 checks; K2 forecast-method examples → `F-023`)
+  - `GATE-02` (Addon 1 §O): **PASS literal** (12/12 checks per contract L474; caveat `F-026` strict reading)
+  - `GATE-03` (Addon 2 §I): **PASS** (12/12 checks)
+  - `GATE-04` (Addon 3 §J): **FAIL** (10/12 checks; A3J-3 → `F-024`, A3J-11 → `F-025`)
+  - `GATE-05` (Addon 4 §K): **FAIL** (12/13 checks; K10 → `F-022`)
+  - `GATE-05B` (Addon 5 §M, provisional number): provisional **PASS** (8/8 checks, `F-015` caveat)
+  - **Overall checks:** **62/66 checks green**
+  - **Overall gates:** **3 of 6 gates FAIL → NOT READY**
+- **Wave 5 Escalations:**
+  - `ESC-01`: Addon 5 supply-or-rescind decision still owed by owner (blocks `GATE-05B` finalization and `F-015`).
+  - Scale stance: 85 vs 86 matrix rows / expanded-matrix reading to be ratified by owner.
+  - `F-026`: strict-vs-literal gate-evidence reading; recommendation to plant the fixture rather than rely on literal contract wording.
+  - Evidence-bar confirmation: owner to confirm what counts as Level 2/3 evidence.
+- **Wave 5 Verdict:** **NOT READY (9 BLOCKERs, 6 MAJORs)** — four open escalations above (`ESC-01`, scale stance, `F-026` strict-vs-literal, evidence bar); shortest path to green documented in `REPORT.md` Wave 5.
+- **Remediation Status:** Read-only wave; zero edits to `docs/` or `sample-data/`. `audit/`/`evidence/` written only (snapshot manifest, `audit/recompute_wave5.py`); this entry drafted to `scratch/waves_wave5.md` for merge into the log.

@@ -1,0 +1,155 @@
+=== Kickoff Sec 5 (Doc 02 context) (lines 71-124) ===
+## SECTION 5 — PHASE 0: THE DOCUMENTATION SET (THE ONLY WORK ALLOWED FIRST)
+
+Create this exact tree and fill every file. Cross-link documents from `00_INDEX.md`. No placeholders, no "TBD" on anything that blocks implementation.
+
+```
+docs/
+  00_INDEX.md                       — map of all docs, reading order, status of each
+  01_PRD.md                         — personas, jobs-to-be-done, in/out of scope, success metrics, branding
+  02_FUNCTIONAL_SPEC.md             — every feature as numbered FR-001…; inputs, outputs, edge cases, acceptance criteria
+  03_DATA_DICTIONARY.md             — canonical star schema: every table, column, type, nullability, grain, example row
+  04_SOURCE_MAPPING_AND_IMPORT_SPEC.md — import wizard, D365-style template + flexible mapping profiles, validation rules
+  05_CALCULATION_SPEC.md            — every formula with a worked example (input table → expected output) usable as a golden test
+  06_EXCEPTION_RULES_CATALOG.md     — ≥15 rules, each with ID, business intent, exact logic/pseudocode, default thresholds, severity, suggested owner, false-positive mitigation, sample case, expected verdict
+  07_FORECAST_METHODS_SPEC.md       — rolling forecast logic, methods, scenarios, locks
+  08_UI_UX_SPEC.md                  — screen-by-screen: layout, components, navigation, copy, empty/loading/error states, ASCII wireframes
+  09_TECHNICAL_ARCHITECTURE.md      — ADR-001 (Section 4), module boundaries, data flow, folder structure, logging/error strategy
+  10_AI_INTEGRATION_SPEC.md         — provider config, prompt templates (versioned files), redaction rules, JSON output schema, token/cost caps, offline fallback
+  11_EXCEL_OUTPUT_SPEC.md           — every exported workbook: sheet list, layout, number formats, conditional formatting, freeze/filter/print setup
+  12_POWERPOINT_OUTPUT_SPEC.md      — slide-by-slide spec (exact slides, placeholders, editable elements, brand colors/logo)
+  13_SECURITY_PRIVACY.md            — local-only guarantees, key storage (Windows DPAPI / Credential Manager), audit log, file handling
+  14_TESTING_QA_PLAN.md             — unit/golden tests tied to FR IDs, planted-exception acceptance dataset, UAT script vs client's manual month pack
+  15_PACKAGING_DEPLOYMENT_RUNBOOK.md — exact build→installer→clean-Win11-VM test steps, first-run UX, uninstall, SmartScreen/code-signing notes, support "export diagnostics" flow
+  16_ROADMAP_PHASES.md              — phases with deliverables and Definition of Done per phase
+  17_CODING_STANDARDS.md            — repo layout, naming, commits, error handling, logging, coverage bar
+  18_GLOSSARY_ASSUMPTIONS_OPEN_QUESTIONS.md — FP&A terms, every assumption, every open question with owner
+  19_VIBE_CODING_PLAYBOOK.md        — session protocol for future agents (Section 14), DoD, change process
+  20_REQUIREMENTS_TRACEABILITY.md   — FR → spec section → test ID → status
+  CHANGELOG.md                      — doc changes with dates
+```
+
+**Supporting build artifacts created during Phase 0 (still no product code):**
+
+- `sample-data/` — generator script producing a realistic fictional dataset: 2–3 entities, full-year budget, 9+ months actuals (~100k–250k GL rows), vendors, cost centres, projects, D365-style raw exports (plus one "other system" format), and **~40 planted known exceptions** with `expected_exceptions.csv` (golden answer key for acceptance testing).
+- Input templates as actual `.xlsx` files mirroring `04_…` and `03_…`.
+- `README.md` at repo root: what this project is, how to open the docs, current phase.
+
+**Repo skeleton (folders + `.gitkeep` only):** `docs/`, `app/` (backend package), `ui/` (React), `sample-data/`, `tests/`, `packaging/` (PyInstaller spec + Inno Setup script), `scripts/` (dev bootstrap, build).
+
+**Phase 0 quality gate — self-audit against this checklist before requesting approval:**
+
+- [ ] Every FR is numbered, testable, and has acceptance criteria; zero blocking TBDs.
+- [ ] `05_CALCULATION_SPEC` contains worked examples with exact numbers for: MTD/YTD variance, variance %, favorability rules (state explicitly: revenue lines — actual > budget = favorable; expense lines — actual < budget = favorable; define treatment for balance-sheet/other), prior-year comparison, rounding, and each forecast method.
+- [ ] `06_EXCEPTION_RULES_CATALOG` has ≥15 fully specified rules, each with a planted test case in the sample dataset.
+- [ ] `08_UI_UX_SPEC` covers every screen including empty, loading, error, and first-run states, written for a non-technical user.
+- [ ] `12_POWERPOINT_OUTPUT_SPEC` defines 4–6 slides exactly, slide by slide, with editable text/tables/native charts (no screenshots), and brand color/logo handling.
+- [ ] `15_…RUNBOOK` is a step-by-step script that results in a working installer on a clean Windows 11 machine.
+- [ ] NFR numbers stated: max import size (target: 250k rows / ~100 MB per file, import ≤ 60 s on a 4-core laptop), dashboard interaction ≤ 2 s, PowerPoint generation ≤ 15 s, cold start ≤ 10 s, installer ≤ 500 MB, memory ≤ 1.5 GB — adjust only with justification in the doc.
+- [ ] `18_…OPEN_QUESTIONS` lists every unconfirmed item (D365 edition, the two other systems, currency, fiscal calendar, signing cert, branding assets, real sample data access).
+- [ ] `20_REQUIREMENTS_TRACEABILITY` links every FR to at least one future test.
+
+**Gate:** when Phase 0 is complete, write `docs/PHASE0_SUMMARY.md` (one page: product in a paragraph, key decisions, top risks, open questions) and **STOP. Present it to me and wait for explicit approval before writing any product code.**
+
+---
+
+
+
+=== Kickoff Sec 6 (lines 125-142) ===
+## SECTION 6 — APPROVED PRODUCT SCOPE (v1)
+
+**In scope, delivered in phases (final ordering in `16_ROADMAP_PHASES.md`):**
+
+1. **Import & validation** — import wizard for Excel/CSV, saved column-mapping profiles (D365 profile included), raw-file archive with checksum, validation dashboard: row counts, debit = credit balance, unmapped accounts/dimensions, date/period checks, duplicate candidates at import.
+2. **Budget vs Actual analysis** — at the lowest shared grain (period + entity + cost centre + GL), MTD/YTD/PY, variance amount/%, favorability, interactive matrix + bridge/waterfall + trend charts, **drill-down from any figure to the underlying transactions with source-file evidence**.
+3. **Exception engine & register** — ≥15 rules (Section 9), severity, suggested owner, statuses, notes, re-assignment, audit trail, bulk export to Excel.
+4. **Rolling forecast** — closed periods locked to actuals; remaining periods via budget-remaining, run-rate (avg of last N actual months), 3-month average, and manual override; Base/Best/Worst scenarios; forecast vs budget vs actual comparison views.
+5. **Excel reporting pack** — refreshable-from-project export per `11_EXCEL_OUTPUT_SPEC`.
+6. **PowerPoint management pack** — 4–6 editable slides per `12_POWERPOINT_OUTPUT_SPEC`, generated from the current filtered view, ≤ 15 s.
+7. **AI commentary (optional, off by default)** — Section 10.
+8. **Settings** — mappings, thresholds, company/branding, currency display, data-file locations, AI key config.
+9. **First-run experience** — sample project loads immediately so the app is demoable on day one; guided tour.
+
+**Explicitly OUT of scope for v1 (list in PRD):** posting/writing anything back to D365, replacing the ERP, journal approval workflows, multi-user/cloud/collaboration, mobile, auto-update, direct ERP API connectors, auto-generated Power BI files (backlog: "export star-schema CSVs for Power BI" may be a Phase 6 item — document, don't build).
+
+---
+
+
+
+=== Addon 1 Sec E (lines 339-357) ===
+## SECTION E — ADDITIONAL FUNCTIONAL REQUIREMENTS (seed FRs for doc 02)
+
+1. **Import History screen** — every batch: file name, checksum, row counts, balance result, status (committed/staged/voided), timestamp; **void/reverse a batch** (all-or-nothing, audited) without touching other batches.
+2. **New Period wizard** — "Start September close": opens the period, checks which sources are loaded, reminds what's missing, carries forward mappings/assumptions (never numbers).
+3. **Cross-batch duplicate detection** — same voucher/invoice re-imported in a later file is flagged, not double-counted; documented dedup keys.
+4. **Download blank templates from inside the app** — actuals, budget, forecast, master data — so the client never hunts for files.
+5. **Master Data screens** — vendor categories, recurring-cost list, approval thresholds, exception-rule enable/thresholds; all versioned and revertable.
+6. **KPI/ratio library** — gross margin %, Opex %, cost per head (if headcount provided), budget-burn %, etc.; each formula in doc 05 with divide-by-zero behavior; shown as cards + trend.
+7. **Hierarchy rollups** — COA parent levels and cost-centre/department tree: expand/collapse with numbers that always tie to the sum of children (tested).
+8. **Export-what-you-see** — every table view exports exactly the current filter/sort/columns to Excel/CSV.
+9. **Long-running job UX** — progress %, ETA, cancel button for imports, large exports, and PPT generation; UI never freezes.
+10. **Search** — voucher, vendor, description, account across loaded periods with a documented performance target.
+11. **Owner-wise exception distribution** — export/CSV grouped per accounting owner plus a copyable plain-text summary for pasting into Teams/email.
+12. **Project backup/restore** — one-click "backup project to a zip" and "restore from zip"; documented recovery drill in QA plan.
+13. **Period-close snapshot** — archiving the numbers behind each issued pack (immutable) so a later re-import can't rewrite history behind an already-sent deck.
+14. **About/Diagnostics screen** — version, build date, data folder, storage used, "Export diagnostics zip", "Check for updates" (manual: shows latest version + link; no auto-update in v1).
+
+---
+
+
+
+=== Addon 2 Sec D (lines 592-610) ===
+## SECTION D — FUNCTIONAL PRECISION (seed FRs for doc 02)
+
+1. **Exception identity & re-run semantics.** Key = `rule_id + subject_key`. Re-running rules (after mapping/threshold changes) **never wipes workflow state**: open stays open, closed stays closed; re-flagged closed items show a "flagged again" badge, never auto-reopen. Full history per key.
+2. **Aging & bulk operations.** Days-open per exception, aging buckets (0–7 / 8–30 / 31+), overdue highlight; multi-select bulk status/owner changes with one audit entry per item; owner auto-assign from cost-centre/account mapping, manual override always possible.
+3. **Period status (Open/Closed).** Closing a period locks its actuals: void/re-import into a closed period requires an explicit, warned "reopen period" action, audit-logged.
+4. **Re-import guard.** Identical file checksum → blocked with "already imported on <date>". Different checksum with overlapping vouchers → cross-batch duplicate report before commit.
+5. **Control-total reconciliation.** Optional control-totals block in the actuals template; validation report compares file totals vs loaded totals vs (if provided) client control totals; variance fails the import or requires explicit acceptance — documented decision.
+6. **Budget & forecast file validation.** Duplicate budget lines vs key; negative amounts; coverage matrix (which entity × account × period cells are missing, as %); sum-vs-approved-total check when provided; unmapped-account list.
+7. **Three-way view + forecast accuracy.** Actual vs Budget vs Forecast in one view; for closed periods show Forecast vs Actual columns with signed error — formulas in doc 05, view in Analyze, feeds commentary.
+8. **Rolling windows.** MTD, YTD, and TTM (trailing 12 periods) where data exists; window labels always visible so no ambiguous "period totals".
+9. **One-off / exceptional item tagging.** PRD must decide explicitly: minimal v1 (tag actual rows → "adjusted" toggle views + AI mentions them) **or** park with rationale. Never left undecided.
+10. **Rule effectiveness analytics.** Per rule: times raised, % closed as explained, average days to close, last threshold tuning — a tuning dashboard so the engine improves month over month without code changes.
+11. **Global materiality setting** (e.g., % of budget or absolute floor) feeding default thresholds; per-rule overrides win.
+12. **Export collision policy.** Existing file at target path → prompt (overwrite / keep-both with next `vN`); batch exports follow Addon 1 naming; never silent overwrite.
+13. **Evidence bundle.** One click per exception → workbook/zip containing subject rows, relevant validation report, mapping version, and audit trail — ready to send to an accounting team.
+14. **Scope decisions the PRD must settle (with defaults):** financial statements in v1 (default: P&L focus; balance sheet/cash flow parked); budget creation in-app (default: import-only); journal-category column (default: optional via mapping profile).
+
+---
+
+
+
+=== Addon 3 Sec C (lines 730-746) ===
+## SECTION C — FEATURE PRECISION PART 2 (seed FRs for doc 02)
+
+1. **AI Mapping Review Queue.** AI may only *propose* mappings: each suggestion carries source column, target field, confidence, and evidence (examples of previously accepted rows). States: `suggested → accepted | edited | rejected`. Accepted mappings apply to future imports; **never auto-applied in the same run**. Bulk accept/edit with audit trail; queue visible on every import using an unprofiled file.
+2. **Mapping preview & profile auto-match.** Mapping screen shows the first N rows with detected types and sample values; saved profiles auto-suggest by header fingerprint when a file matches ≥ threshold of known headers; template files carry a **version stamp** and import warns on outdated templates.
+3. **Commentary workflow.** Two levels: per-variance-line commentary and a per-period executive narrative (for slide 2). AI drafts are editable; every save versions text (author, timestamp, old→new). Commentary **locks when the pack is issued**; post-issue edits require a re-issue (C.4).
+4. **Pack issuance register.** "Issue pack" freezes the underlying snapshot, increments pack version, records date + recipient list, and marks commentary locked. Re-issue creates a new version; issued packs are immutable; exports carry pack version (Addon 1 stamping).
+5. **Data-quality score.** Composite 0–100 on the Check screen from weighted validation checks (formula + weights in doc 05) — always displayed **alongside** the individual failed checks so a single score can never mask a failure.
+6. **Storage & health management.** CLI `doctor`: DB integrity check, disk space, project/schema version compatibility, WebView2 presence, data-dir permissions — with `--json`. In-app storage usage display; **archive-and-delete** flow (export raw archives to zip first, typed confirmation to delete); non-blocking backup reminder when a period is closed.
+7. **Budget re-import semantics.** Re-importing a budget **replaces the selected budget version atomically** — never merges silently. A diff summary (old vs new totals by entity/period, with deltas) is shown before commit.
+8. **Persistence & destructive actions.** Forms auto-save with visible "Saved" state; there is no global undo. Destructive actions (delete project, void batch, reopen period, archive-and-delete) require **typed confirmation naming the object** (e.g., type the period code).
+9. **Home screen.** Open/recent project, current period + status, last import summary, KPI strip, quick actions (Import / Check / Generate pack), and health warnings (failed checks, stale derived results, storage low).
+10. **No login in v1.** Single-user local app; privacy = OS user account; no in-app authentication — recorded as an explicit decision in docs 01/13 (multi-user auth backlogged).
+11. **Import UX.** Drag-and-drop **and** file picker; after drop: fingerprint → profile match → preview → validation report → commit (all-or-nothing per Addon 1 P12).
+12. **Display locale (project setting).** Date format (default `dd-mm-yyyy`), digit grouping — **Indian lakh/crore grouping option** (`₹ 1,23,456`) vs international, decimal places, negatives-in-parentheses toggle. Applies uniformly to app, Excel, and PPT (enforced by F.4 test).
+
+---
+
+
+
+=== Addon 4 Sec D (lines 906-915) ===
+## SECTION D — FR PRIORITIZATION & CUT-LINE POLICY (docs 02/16)
+
+1. Every FR gets a priority: **P0** (phase cannot close without it), **P1** (should ship), **P2** (could ship). Priorities assigned during Phase 0, stored in doc 02, mirrored in traceability (doc 20).
+2. **Phase gate rule:** all P0 FRs of that phase green; P1/P2 gaps listed explicitly with a decision (finish vs defer).
+3. **Never-cut list** — these may never be deferred, descope, or "simplified": exact money math (Decimal/minor units), atomic all-or-nothing imports, versioned audit of edits, offline/local-only data behavior, the Windows installer + real-Windows validation, the advisory disclaimer, backup/restore, golden tests, cross-artifact consistency test.
+4. **Cut process:** any cut outside the never-cut list requires (a) your proposal with impact, (b) my explicit approval, (c) a `27_BACKLOG.md` entry with trigger condition. Silent under-delivery is a protocol violation — as is building P2s while P0s remain open.
+5. **Estimates:** doc 16 carries an ideal-effort estimate per phase (and per P0 epic); re-estimate at every gate; report variance > 50% to me immediately.
+
+---
+
+
+

@@ -1,0 +1,18 @@
+# Wave 4 recompute log — Decimal execution, 2026-10-01
+Method: python Decimal (ROUND_HALF_UP), no binary float. Source: docs/05_CALCULATION_SPEC.md §12 fixtures.
+
+TTM inputs (12): 900000.00, 920000.00, 1010000.00, 880000.00, 890000.00, 940000.00, 960000.00, 975000.00, 985000.00, 1080000.00, 1020500.55, 995300.45
+TTM_TOTAL: 11555801.00 (doc: 11,555,801.00) MATCH
+TTM_AVG (half-up 2dp): 962983.42 (doc: 962,983.42) MATCH
+F6 YTD actual: 1080000.00 + 1020500.55 + 995300.45 = 3095801.00 (doc: 3,095,801.00) MATCH
+F6 YTD var: 3095801.00 - 3000000.00 = +95801.00; pct 95801/3000000 = 0.0319336 -> 3.2% MATCH
+F12 score: 100*(1 - 11/238) = 95.37815... -> 95 (half-up 0dp); cap 96 satisfied MATCH
+F14d bias: (+30000 - 12000 + 6000)/3 = +8000.00 MATCH
+F14d MAPE-lite: (30000/1080000 + 12000/1020500.55 + 6000/995300.45)/3 = 0.0151883... -> 1.5% MATCH
+F1: +80000.00 / +8.0% Favourable MATCH
+F2: -25000.00 / -6.6% Favourable MATCH
+F10: +1.5pp (not +3.9%) MATCH; F11: +3.0pp MATCH
+Verdict: 100% MATCH, zero money-math mismatches.
+
+--- CORRECTION (Wave 5, 2026-10-01, independent auditor) ---
+The "Verdict: 100% MATCH, zero money-math mismatches." claim above is WITHDRAWN as false. Independent Wave-5 re-run (audit/recompute_wave5.py -> audit/recompute_wave5.log) = 74 checks, 1 MISMATCH: F6 YTD variance % (6 dp): docs/05_CALCULATION_SPEC.md:419 states 0.031933; exact 95801/3000000 = 0.0319336666... -> half-up 6 dp = 0.031934; rounding rule docs/05_CALCULATION_SPEC.md:182 = half-up. Evidence: audit/recompute_wave5.log (74 checks, 1 mismatch). Finding: F-021. Original line retained unaltered for audit trail.

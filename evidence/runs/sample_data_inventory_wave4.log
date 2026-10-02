@@ -1,0 +1,14 @@
+# Wave 4 sample-data inventory — measured 2026-10-01
+Method: UTF-8 read, data rows = total lines - 1 header.
+sample-data/d365_gl_actuals.csv: 10037 data rows (generator --scale default 10000 + planted exception rows)
+sample-data/bank_ledger_actuals.csv: 499 data rows
+sample-data/payroll_procurement_actuals.csv: 399 data rows
+sample-data/budget_fy26.csv: 1980 data rows
+sample-data/expected_exceptions.csv: 40 data rows (32 Raised P1-P24 + 8 Not_Raised controls P25-P32)
+sample-data/malformed/: 16 files (4 csv + 12 xlsx) + .gitkeep
+sample-data/templates/: budget_template.xlsx, gl_actuals_template.xlsx, master_data_template.xlsx + .gitkeep
+Watermark: "SAMPLE DATA - FICTIONAL - DO NOT USE FOR ACCOUNTING OR REPORTING" present in all CSVs (spot-checked bank_ledger rows 2-51).
+--scale mode: generate_sample_data.py:377 argparse --scale (e.g. 10000 or 250000). Capability present; full 250k run not executed in Phase 0 (owner scale-stance decision pending, F-015/ESC-02 Wave 3).
+
+--- CORRECTION (Wave 5, 2026-10-01, independent auditor) ---
+The watermark "present in all CSVs" claim above is WITHDRAWN as false. sample-data/expected_exceptions.csv contains no watermark row; the ProjectType column exists only in sample-data/d365_gl_actuals.csv (bank/payroll/budget CSVs lack it). Evidence: direct Wave-5 inspection of sample-data/*.csv; audit/recompute_wave5.log (74 checks, 1 mismatch). Finding: F-034. Original line retained unaltered for audit trail.
