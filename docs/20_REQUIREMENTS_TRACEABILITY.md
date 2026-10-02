@@ -1,5 +1,5 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** the **traceability chain** — every `FR-nnn` in `02` joined to its spec section(s),
 > its screen ID(s) (`08` §4), its API endpoint(s), its test ID(s) (`14` §4) and its status; the invariants
 > a change must preserve; the reverse indexes (screen → FR, endpoint → FR, test family → FR); and the
@@ -646,7 +646,7 @@ row per line below.
 | Pack recipients | `OQ-011` | `Q-013` | `FR-XC-003`, `FR-XC-014` | Recipients typed per issue; the product has no send path (`13` §1) |
 | Code-signing certificate | `OQ-012` | `Q-015` | — (packaging, `15` §8) | Unsigned v1 + documented SmartScreen path (`ADR-003`) |
 | Real file sizes seen in practice | `OQ-013` | `Q-014` | `FR-IMP-003`, `FR-IMP-030`, `FR-XC-010` | Limits per `NFR-002` (250k rows / ~100 MB) with explicit over-limit confirmation |
-| One sanitized real month | `OQ-014` | `Q-001` | all analysis FRs at UAT (`28`) | Sample-data corpus until the real month arrives (`14` §16) |
+| One sanitized real month, isolated local pilot only | `OQ-014` | `Q-001` | all analysis FRs at UAT (`28`) | Sample-data corpus until the real month is made available locally at `GATE-13`; never sent into development (`14` §16, `13` §3.1) |
 | Logo and brand colours | `OQ-015` | `Q-019` | `FR-SET-008`, `FR-PPT-006` | PRD placeholder branding (`01` §17) |
 | Support/warranty terms | `OQ-016` | `Q-018` | `FR-XC-014`, `23` | Support flow documented in `23`; terms pending |
 | Installer delivery channel | `OQ-017` | `Q-016` | `FR-XC-015`, `15` §8 | Manual download; update check disabled by default (`FR-XC-015`) |

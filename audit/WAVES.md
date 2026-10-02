@@ -16,7 +16,7 @@ Per Section 2 of the Audit Charter, the contract consists of the Kickoff prompt 
 | 4 | **Addon 3 — Domain Workflows, AI Feature Depth & Acceptance** | `project prompt/# FP&A MONTH-END COPILOT - AGENTIC.txt` (lines 680–833) | `c73def27fe0adc1e44ade1cba98bc1b191e0ec6d1d95995284fcb8ce03de5662` | Confirmed / Anchored |
 | 5 | **Addon 4 — Spec Consumption, Prioritization & Real-Data Acceptance** | `project prompt/# FP&A MONTH-END COPILOT - AGENTIC.txt` (lines 834–1035) | `ea8aaed55eced9ee532552bb4f29bac5b5ab936adb67016f009f4ce742a475ae` | Confirmed / Anchored |
 | * | **Combined Contract File (Docs 1–5)** | `project prompt/# FP&A MONTH-END COPILOT - AGENTIC.txt` (1,035 lines) | `df6abd2976e4489a7caa3874dc641ce8156787c5cca3bd1fbf1fd926d2605598` | Confirmed / Anchored |
-| 6 | **Addon 5 — Independent Verification & Governance Extension** | *Not present in workspace or project prompt folder* | `MISSING` | **ESCALATED TO OWNER (ESC-01)** |
+| 6 | **Addon 5 — Owner Control, Evidence & Data-Egress Extension** | `project prompt/ADDON_5_OWNER_CONTROL_EVIDENCE_DATA_EGRESS_EXTENSION.md` | `cfbb69411d586194d2ad8ef6034a74e19bcb0ae976b466485adda75a97372b11` | **Supplied by owner 2026-10-02; integrated/re-audited (Wave 7); approval still pending** |
 
 ---
 
@@ -66,6 +66,33 @@ Per Section 2 of the Audit Charter, the contract consists of the Kickoff prompt 
 ---
 
 ## 3. Wave Execution Log
+
+### Wave 7 — Official Addon 5 Intake & Evidence-Backed Documentation Re-Audit
+- **Execution Date:** 2026-10-02
+- **Contract delta:** Owner supplied the official Addon 5 source at
+  `project prompt/ADDON_5_OWNER_CONTROL_EVIDENCE_DATA_EGRESS_EXTENSION.md`; SHA-256
+  `cfbb69411d586194d2ad8ef6034a74e19bcb0ae976b466485adda75a97372b11`.
+- **Scope:** Rebuilt Doc 30 as `30_OWNER_OPERATING_HANDBOOK.md`; integrated Addon 5 A–N; applied
+  development-time egress, Golden Month/oracle, hygiene, operations-loop and freeze controls; converted
+  `GATE-05B` from inferred 8 rows to official 12 rows.
+- **Evidence executed:** `audit/phase0_reaudit.py` → exit 0 / **70 of 70 PASS**; repository-local Markdown
+  link check PASS; synthetic-only fixed-seed sample regeneration PASS (40 finance plantings + `INJ-01`,
+  3 templates, 16 malformed files); `openpyxl 3.1.5` OOXML workbook load + ZIP integrity PASS; analyst
+  month-end and cold-start-client paper walkthroughs PASS. Evidence:
+  `evidence/2026-10-02-phase0-re-audit/`.
+- **Final egress-copy review:** A final owner-presentation review found that former client-facing text could
+  be read as requesting real/sanitized files before build. It was repaired and paper-retested in
+  `evidence/2026-10-02-phase0-re-audit/tabletop_walkthroughs.md`; the current rule is metadata/style-only
+  material during development and isolated-local real data only after a release candidate. No data-exposure
+  incident occurred.
+- **Finding state:** `F-015` transitions from `ESCALATED-TO-OWNER` to
+  `SOURCE-SUPPLIED-RE-AUDITED`. Historical wave statements about a missing source, an old Doc-30 name,
+  provisional 8 checks or 66 total checks remain history only.
+- **Verdict:** **READY FOR OWNER PRESENTATION — NOT APPROVED.** No product build, installer, Windows run,
+  pilot, UAT or go-live was claimed. The only next work is presentation and a recorded owner decision;
+  packaging spike `GATE-06` is post-approval.
+
+---
 
 ### Wave 0 — Structure & Baseline Audit (Read-Only)
 - **Execution Date:** 2026-10-01

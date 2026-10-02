@@ -8,6 +8,110 @@ anything deferred to the backlog or the open-questions log.
 
 ---
 
+## Session 006 — 2026-10-02 (Final data-egress decision-table sweep & audit safeguard)
+
+| Done (with FR IDs) | Evidence refs | Tests status (with transcript path) | Decisions needed from me | Next session plan | Risks / blocked |
+|---|---|---|---|---|---|
+| Governance/documentation only — no FR or product code. Completed the whole-cell review of `29` §7, corrected residual real-data wording in prior-year (item 4) and recurring-cost/vendor (item 9) recommendations, and added a persistent auxiliary egress-copy safeguard to the documentary auditor. | `29` §7 items 4/9; `evidence/2026-10-02-phase0-re-audit/tabletop_walkthroughs.md` follow-on sweep; `audit/phase0_reaudit.py`; `audit/FINDINGS.md` `F-037`; `docs/CHANGELOG.md` | **PASS (documentary only):** `PYTHONPATH=/tmp/phase0-openpyxl python audit/phase0_reaudit.py --report evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` → exit `0`, **70/70 PASS** plus four auxiliary safeguards (links, no product code, official source hash, client-facing egress copy); exact command/report SHA/tail: `evidence/2026-10-02-phase0-re-audit/command.txt` | (1) Approve or reject Phase 0 using the exact line in `PHASE0_SUMMARY.md` §9. (2) Before go-live, decide `OQ-023`: `N` and business/calendar-day basis for the final default sweep. | Present the final reviewed `PHASE0_SUMMARY.md`, `29_CLIENT_REQUIREMENTS_PACK.md`, `30_OWNER_OPERATING_HANDBOOK.md`, and dated evidence pack; wait for the recorded decision. If approved, run only `GATE-06` packaging spike. | **Blocked on recorded owner approval.** The residual wording was corrected before presentation; no actual extract, vendor list, payment record, client file, row, amount, identifier or screenshot entered this workspace, agent, repository, cloud/web service or evidence pack. |
+
+### Correction to the prior review entry
+
+Session 005 recorded the first targeted egress correction. A subsequent whole-cell review correctly found
+two remaining `29` §7 recommendation cells that still implied a pre-build data transfer: a prior-year GL
+extract and recurring-cost/vendor records. They are now metadata-only questions; actual records remain local
+until installed-app use after a release candidate. This is a correction to documentation completeness, not a
+data incident and not an approval to use real data.
+
+### Persistent safeguard added
+
+`audit/phase0_reaudit.py` now reports a fourth **auxiliary safeguard** without changing the 70 required gate
+rows. It verifies that the client pack and sendable questionnaire state the explicit non-transmission rule,
+metadata/style-only discovery, isolated-local pilot route, and absence of the two known unsafe legacy
+requests. This turns the specific review lesson into a repeatable future check.
+
+### Next step (unchanged)
+
+The presentation set is ready for the owner, not approved by the owner. Do not begin packaging or product
+code. Record the exact Phase 0 approval line or a scoped rejection first.
+
+---
+
+## Session 005 — 2026-10-02 (Final owner-presentation review: data-egress correction)
+
+| Done (with FR IDs) | Evidence refs | Tests status (with transcript path) | Decisions needed from me | Next session plan | Risks / blocked |
+|---|---|---|---|---|---|
+| Governance/documentation only — no FR or product code. Found and corrected a client-facing data-egress copy conflict (`F-037`): pre-build requests now permit metadata or style-only/blank material only; a real month is isolated-local pilot/UAT work after a release candidate. | `evidence/2026-10-02-phase0-re-audit/tabletop_walkthroughs.md` (correction + four targeted re-tests); `13` §3.1; `29` §1/§7–§10; `21` §1.2/`Q-001`; `audit/FINDINGS.md` `F-037`; `docs/CHANGELOG.md` | **PASS (documentary only):** `PYTHONPATH=/tmp/phase0-openpyxl python audit/phase0_reaudit.py --report evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` → exit `0`, **70/70 PASS**; exact command, report SHA-256 and final transcript tail: `evidence/2026-10-02-phase0-re-audit/command.txt` | (1) Approve or reject Phase 0 using the exact line in `PHASE0_SUMMARY.md` §9. (2) Before go-live, decide `OQ-023`: `N` and business/calendar-day basis for the final default sweep. | Present the reviewed `PHASE0_SUMMARY.md`, `29_CLIENT_REQUIREMENTS_PACK.md`, `30_OWNER_OPERATING_HANDBOOK.md`, and dated evidence pack; wait for the recorded decision. If approved, run only `GATE-06` packaging spike. | **Blocked on recorded owner approval.** `F-037` was documentation copy, not an incident: no real client file, row, amount, vendor name, screenshot or identifier entered this workspace, agent, repository, cloud/web service or evidence pack. |
+
+### Why this entry exists
+
+The mandatory final presentation review found a substantive ambiguity in former client-facing wording: it
+could have been read as asking a client to send sanitized real exports, a budget workbook or a recent pack
+before a release candidate existed. Sanitising does not make a real client export acceptable for a cloud
+agent, web form, repository or development channel. That contradicted the binding development-time egress
+rule in `13` §3.1 and official Addon 5 §E.
+
+### Correction and re-verification
+
+- Replaced the unsafe interpretation with a plain-language “do not email/upload/share real files” boundary
+  in `29`; made the email/Teams-copyable `21` questions safe; and aligned pilot, UAT, risk, traceability,
+  test and roadmap references.
+- Added a transparent correction to the cold-start paper walkthrough rather than silently retaining its
+  original PASS. The four targeted re-tests cover the client instruction, metadata-only discovery,
+  style-only materials, and isolated-local pilot/UAT evidence boundary.
+- No scope, product FR, application code, sample output, client data, installer or dependency was added.
+  The correction strengthens the already-required governance boundary; it does not authorise work.
+- Re-ran the all-six-source documentary audit after the correction. The green result still means only
+  **ready for owner presentation**, never owner approval or an executable-product claim.
+
+### Next step (unchanged in substance)
+
+Do not infer approval from this repair, the 70/70 result, or a review meeting. The owner must record either
+the exact Phase 0 approval line in `PHASE0_SUMMARY.md` §9 or a scoped rejection. Until then there is no
+packaging spike and no product code.
+
+---
+
+## Session 004 — 2026-10-02 (Official Addon 5 integration & Phase 0 presentation evidence)
+
+| Done (with FR IDs) | Evidence refs | Tests status (with transcript path) | Decisions needed from me | Next session plan | Risks / blocked |
+|---|---|---|---|---|---|
+| Governance only — no FR or product code. Official Addon 5 was source-anchored; docs/controls, hygiene, oracle and presentation material were integrated; 70 documentation-gate rows were re-audited. | Official source SHA-256 `cfbb69411d586194d2ad8ef6034a74e19bcb0ae976b466485adda75a97372b11`; `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md`; `command.txt`; `tabletop_walkthroughs.md`; `sample_data_regeneration.md`; `oracle_workbook_validation.md` | **PASS (documentary only):** `PYTHONPATH=/tmp/phase0-openpyxl python audit/phase0_reaudit.py --report evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` → exit `0`, **70/70 PASS**; transcript `evidence/2026-10-02-phase0-re-audit/command.txt` | (1) Approve or reject Phase 0 using the exact line in `PHASE0_SUMMARY.md` §9. (2) Before go-live, decide `OQ-023`: `N` and business/calendar-day basis for the final default sweep; 10 business days is proposed only. | Present `PHASE0_SUMMARY.md`, `29_CLIENT_REQUIREMENTS_PACK.md`, `30_OWNER_OPERATING_HANDBOOK.md` and the evidence pack; wait. If approved, run only `GATE-06` packaging spike. | **Blocked on recorded owner approval.** No product build/installer/Windows run/pilot/UAT/go-live was performed or claimed. Real data remains prohibited from this session; current evidence is synthetic/metadata-only. |
+
+### Objective
+
+Replace the former inferred Addon 5 treatment with the owner-supplied official contract, complete its
+Phase-0 integration, and produce an evidence-backed presentation pack without starting packaging or product
+implementation.
+
+### What changed
+
+| Area | Completed, with current status |
+|---|---|
+| Contract source and governance | Persisted official Addon 5 in `project prompt/ADDON_5_OWNER_CONTROL_EVIDENCE_DATA_EGRESS_EXTENSION.md`, hash-anchored it, recorded `DEC-038`…`040`, and treated Kickoff + Addons 1–5 as frozen. New needs route through `18`, explicit owner approval and a numbered addon. |
+| Doc 30 and session process | Renamed/rebuilt Doc 30 as `30_OWNER_OPERATING_HANDBOOK.md`; this entry is the first newest-first six-column session-report block required by its §3. |
+| Data and fixture hygiene | Added `.gitignore`, local-only synthetic regeneration instructions, a generated-output policy, source-only `sample-data/`, and the synthetic formula-visible oracle workbook plus SHA-256 sidecar. Generated blobs were removed from Git tracking. |
+| Oracle repair and validation | Corrected the hand-authored OOXML style definition after the first library load exposed an invalid `wrapText` placement. Revalidated successfully with `openpyxl 3.1.5` with warnings-as-errors and `ZipFile.testzip()`; 4 sheets and 10 visible formulas. |
+| Independent checks | Completed `audit/phase0_reaudit.py`: Kickoff 9/9, Addon 1 12/12, Addon 2 12/12, Addon 3 12/12, Addon 4 13/13, official Addon 5 12/12; repository-local Markdown links passed. |
+| Walkthroughs | Completed the analyst month-end through issuance/re-issue tabletop (18 steps) and the cold-start client paper walkthrough using only `22`/`29` (12 questions). Both are documentation tabletops, not product tests. |
+| Presentation status | Updated `README`, `PHASE0_SUMMARY`, `00`, `14`, `16`, `CHANGELOG`, and audit current-status layers to **ready for owner presentation, not approved**. |
+
+### Explicit non-claims
+
+- The 70/70 result verifies written Phase-0 documentation and safe fixtures; it does not say the future
+  application, installer or Windows validation works.
+- Golden Month remains **planned** until the first complete product build and explicit owner blessing.
+- A real-data oracle/tie-out is local-only at the pilot; no real rows, values, screenshots or workbooks
+  entered this repository, this agent, a cloud service or support channel.
+- The owner has **not** approved Phase 0. The packaging spike and all product code remain forbidden.
+
+### Next step
+
+Present `PHASE0_SUMMARY.md`, `29_CLIENT_REQUIREMENTS_PACK.md`, `30_OWNER_OPERATING_HANDBOOK.md`, and
+`evidence/2026-10-02-phase0-re-audit/` to the owner. Record either the exact approval line or a scoped
+rejection. Do not infer approval from silence, a review, or the 70/70 documentary result.
+
+---
+
 ## Session 003 — 2026-10-01 (Wave 4 Remediation Window, Owner-Declared)
 
 ### Objective

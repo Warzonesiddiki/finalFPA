@@ -1,5 +1,5 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** the phase model and the **next open item** pointer (Kickoff §14.1), phase
 > deliverables and Definition of Done per phase (Kickoff §5), the packaging spike that runs first after
 > approval (Addon 4 §L.13), the phase-gate contract and gate IDs beyond the Phase-0 checklists (`14`
@@ -52,12 +52,12 @@
 
 | Field | Value |
 |---|---|
-| Item | **Present Phase 0 for recorded approval** (`PHASE0_SUMMARY.md` + `29`) and wait. Everything requested before approval is done: the Source-of-Truth Matrix and headers, the Coverage Matrix refresh (85 expanded rows, all `INTEGRATED`), the six-checklist self-audit (`GATE-01`…`05` + provisional `GATE-05B`, 66/66 ✅) with the link-check, the tabletop walkthrough through pack issuance and the cold-start client pass, and the `sample-data/` suite (D365 + 2 non-D365 shapes, templates, 40 plantings, 16 malformed files). Open and non-blocking: owner decisions on Addon 5 final numbering (`F-015`), sample-data scale stance (10k physical + `--scale 250000` vs full-scale run), and `GATE-01-06` live-installer proof (proven by the post-approval packaging spike) |
-| Why now | Addon 4 §L steps 11–12: the six Phase-0 checklists have been self-audited (66/66 ✅, provisional `GATE-05B` pending Addon 5 source) and the summary exists; approval releases the packaging spike (`GATE-06`) |
-| Definition of done for this item | Every document exists with the standard header, zero blocking `TBD`s, the Coverage Matrix rows integrated, `CHANGELOG` + `SESSION_LOG` entries, and the link-check clean (`14` §13.1) |
-| Next item after this one | On approval: step 13 — the **packaging spike** (`GATE-06`, two half-days, real Windows 11 through the SmartScreen path, proving `GATE-01-06` on live iron); then Phase 1 begins. In parallel: the two commercial answers (`OQ-016`, `OQ-017`) and the Addon 5 contract decision (`F-015`: supply text or rescind, confirming provisional `GATE-05B` numbering) |
-| Next after that | Phase 1 (import & validation, 24 ideal days) on the client's real file shapes, with the mapping walkthrough from `29` §8; then Phases 2–6 to the pilot (`GATE-13`), UAT (`GATE-14`) and go-live (`GATE-15`), each with its own gate packet and demo script |
-| Blocking | None. The client-facing questions all have labelled defaults except `OQ-014` (the pilot month), which is a schedule dependency and not needed for approval |
+| Item | **Present Phase 0 for owner approval.** Review `PHASE0_SUMMARY`, `29`, `30` and the dated evidence pack; record an explicit approval or rejection. Do not start packaging or product code. |
+| Why now | Official Addon 5 integration, the 70-check documentary re-audit, link check and two paper tabletops are complete. The required next action is the owner decision, not another engineering task. |
+| Definition of done for this item | Owner has reviewed the materials and either records the exact Phase 0 approval in both process logs or returns a scoped correction request. Silence is not approval. No product code is introduced. |
+| Next item after this one | If approved, execute only the documented packaging spike (`GATE-06`). If rejected, repair only the named scope, re-run affected evidence and re-present. |
+| Next after approval | Only the documented packaging spike (`GATE-06`): hello-world → build → installer → clean Windows 11 launch/SmartScreen evidence. Phase 1 starts only after the spike outcome is recorded. |
+| Blocking | Recorded Phase 0 approval is absent. Real client data is prohibited from this workspace/agents; all Phase 0 evidence remains synthetic or metadata-only. |
 
 > This table is the session-start pointer. `00_INDEX` §10 and the `SESSION_LOG` "Next step" must agree with
 > it; if they disagree, this table wins and the difference is corrected in the same commit.
@@ -68,7 +68,7 @@
 
 | Phase | ID | Goal (one line) | Exit gate | Gate owner |
 |---|---|---|---|---|
-| **Phase 0 — Documentation** | `P0` | The complete Phase 0 documentation set; no product code | `GATE-01`…`GATE-05` + provisional `GATE-05B` (66 checks) | `14` §15, `00_INDEX` §9 |
+| **Phase 0 — Documentation** | `P0` | The complete Phase 0 documentation set; no product code | `GATE-01`…`GATE-05` + official `GATE-05B` (70 checks) | `14` §15, `00_INDEX` §9 |
 | **Packaging spike** | `P-S` | Prove build → installer → installed launch on real Windows 11 | `GATE-06` | this document §4, `15` §3/§5 |
 | **Phase 1 — Import & validation** | `P1` | Take the client's messy files to a validated, reconciled, committed dataset | `GATE-07` | this document §6.1 |
 | **Phase 2 — BvA & drill-down** | `P2` | Answer "why is this number different?" down to the transaction | `GATE-08` | §6.2 |
@@ -76,13 +76,13 @@
 | **Phase 4 — Forecast** | `P4` | Rolling forecast with scenarios and accuracy feedback | `GATE-10` | §6.4 |
 | **Phase 5 — Excel + PowerPoint packs** | `P5` | One-click, editable, client-ready month-end pack | `GATE-11` | §6.5 |
 | **Phase 6 — AI & polish** | `P6` | Optional AI assistance, accessibility, performance, hardening | `GATE-12` | §6.6 |
-| **Real-data pilot** | `P-RDP` | One sanitized real month end-to-end (no sample data) | `GATE-13` | `28` (Addon 4 §F) |
+| **Real-data pilot** | `P-RDP` | One sanitized real month end-to-end, **isolated local environment only** (no sample data) | `GATE-13` | `28` (Addon 4 §F) |
 | **UAT** | `P-UAT` | The client's analyst runs their own month end | `GATE-14` | `28` (Addon 3 §G) |
 | **Go-live** | `P-GL` | Install, train, hand over, support live | `GATE-15` | `28`, `23` |
 
-**Rule:** gate numbers are allocated once and never reused; `GATE-01`…`GATE-05` plus provisional `GATE-05B` are the Phase-0 checklists
-defined by `14` §15, `GATE-06`…`GATE-12` are defined here, and `GATE-13`…`GATE-15` are reserved to
-`28` with the names above.
+**Rule:** gate numbers are allocated once and never reused; `GATE-01`…`GATE-05` plus official `GATE-05B`
+are the Phase-0 checklists defined by `14` §15, `GATE-06`…`GATE-12` are defined here, and `GATE-13`…`GATE-15`
+are reserved to `28` with the names above.
 
 ### 2.2 Scope → phase mapping (from `01` §18)
 
@@ -136,34 +136,34 @@ export shapes, the input `.xlsx` templates, ~40 planted exceptions with `expecte
 | 27 | `27_BACKLOG.md` | Parked items with triggers; entry schema; reviewed at gates |
 | 28 | `28_ACCEPTANCE_UAT_AND_GO_LIVE.md` | Project DoD, the real-data pilot, UAT, defect workflow, `GATE-13`…`15` |
 | 29 | `29_CLIENT_REQUIREMENTS_PACK.md` | The plain-language client pack with the sign-off block |
-| — | `PHASE0_SUMMARY.md` | Product paragraph, key decisions, top risks, open questions, what is next |
+| 30 | `30_OWNER_OPERATING_HANDBOOK.md` | Plain-language owner cadence, evidence/review, red flags, sampling, stuck escalation and independent oracle |
+| — | `PHASE0_SUMMARY.md` | Product paragraph, key decisions, top risks, open questions, gate evidence and what is next |
 
-### 3.2 Phase 0 completion steps (Addon 4 §L)
+### 3.2 Phase 0 completion steps (Addon 5 §N — authoritative)
 
 | Step | Work | Evidence |
-|---|---|---|
-| 1 | Repo skeleton + README | Done (Session 001) |
-| 2 | Docs `00`–`20` | `CHANGELOG` + `SESSION_LOG` rows per doc |
-| 3 | Addon 1: docs `21`–`25` + its in-doc additions | Coverage-matrix `A1-*` rows integrated |
-| 4 | Addon 2: doc `26` + `ADR-002` + its additions | `A2-*` rows integrated |
-| 5 | Addon 3: docs `27`–`28`, the four prompt texts, chart inventory, negative corpus spec | `A3-*` rows integrated |
-| 6 | Addon 4: doc `29`, Source-of-Truth Matrix, doc headers, FR priorities, tolerance/edge matrices | `A4-*` rows integrated |
-| 7 | Build `sample-data/` per `14` §16 | Corpus + fixtures + `--scale` run |
-| 8 | Refresh the **Addon Coverage Matrix** (all five documents) | `00_INDEX` §4 all `INTEGRATED` |
-| 9 | Self-audit against all six gates; fix every gap; run the link-check | `14` §15 evidence pack |
-| 10 | Tabletop month-end walkthrough (Addon 1 §P20) and the cold-start client pass (Addon 4 §L.10) | Walkthrough notes in `SESSION_LOG` |
-| 11 | `PHASE0_SUMMARY.md` + `SESSION_LOG` entry | The summary document |
-| 12 | **STOP. Present `PHASE0_SUMMARY` + doc `29` and wait for recorded approval. No product code.** | Approval recorded in `CHANGELOG` + `SESSION_LOG` (`19`) |
+|---:|---|---|
+| 1 | Preserve the skeleton and empty `evidence/`; write the original docs `00`–`20` and `CHANGELOG` | Repository tree + changelog |
+| 2 | Integrate Addons 1–4 (`21`–`29` and their in-document updates) | Coverage Matrix rows `A1`–`A4` |
+| 3 | Integrate Addon 5: `30_OWNER_OPERATING_HANDBOOK`, data-egress rules, Golden Month/oracle plan, hygiene, questionnaire and post-go-live controls | Coverage Matrix rows `A5-A`…`A5-N` + `CHANGELOG` |
+| 4 | Keep sample data generated, watermarked and project-typed; commit its generator/configuration, not generated output blobs | `.gitignore`, generator docs and regeneration record |
+| 5 | Refresh the all-six-document Coverage Matrix | `00_INDEX` §4: 92 expanded rows / 78 contract sections |
+| 6 | Re-audit all six gate sources and fix every failure; run the link check | 70-check re-audit record + command transcript |
+| 7 | Run the two tabletop walkthroughs: analyst month-end through pack issuance, then cold-start client using only `22`/`29` | Recorded safe outcomes in `SESSION_LOG` |
+| 8 | Update `PHASE0_SUMMARY.md` and add the session report block mandated by `30` §3 | Summary + newest session report |
+| 9 | **STOP. Present `PHASE0_SUMMARY`, `29` and `30`; wait for recorded approval. No product code.** | `Phase 0 APPROVED — <name> — <date>` in both `CHANGELOG` and `SESSION_LOG` |
+| 10 | **After approval only:** packaging spike first, then Phase 1. The first full build blesses the Golden Month; the first phase gate ships an oracle worksheet. | `GATE-06` evidence, then phase-gate evidence |
 
 ### 3.3 What "Phase 0 done" means (the only definition that counts)
 
 1. All 31 specification documents (`00`–`30`) exist, each with the standard header and a TL;DR ≤ 15 lines. The two process files (`CHANGELOG`, `SESSION_LOG`) follow their own simpler header convention.
 2. Every FR is numbered, prioritised, testable and traced (doc `20`); zero blocking `TBD`s remain.
-3. The six Phase-0 checklists (`GATE-01`…`GATE-05` + provisional `GATE-05B`, 66 checks) are green with evidence, including the link-check.
+3. The six Phase-0 checklists (`GATE-01`…`GATE-05` + official `GATE-05B`, **70 checks**) are green with evidence, including the link-check.
 4. The Coverage Matrix shows every spec section integrated (no `PENDING`, no `IN PROGRESS`).
-5. The sample-data corpus and its fixtures exist and the planted-exception expectations are frozen.
-6. `PHASE0_SUMMARY.md` is written and the set has been presented for approval.
-**Until all six hold, no product code is written** (Addon 4 §L.12).
+5. The sample-data generator/configuration exists, its local outputs are generated rather than blob-committed, and the planted-exception expectations are reproducible.
+6. The Golden Month blessing plan and formula-visible oracle template exist; blessing occurs only at the first complete build.
+7. `PHASE0_SUMMARY.md` is written and the set has been presented with `29` and `30` for approval.
+**Until all seven conditions hold, no product code is written** (Addon 4 §L.12).
 
 ## 4. The packaging spike (`GATE-06`, first work after approval)
 
@@ -495,7 +495,7 @@ the two audit passes ≈ **10–14 ideal days** of documentation and fixture wor
 |---|---|---|
 | Packaging spike | A hello-world installer | The project owner |
 | Each build gate | An internal, installable build of the phase's scope (a release candidate when the gate is green) | The project owner; the client at the phase demo |
-| Pilot | The first build run on a sanitized real month | The project owner + the client's analyst |
+| Pilot | The first build run on a sanitized real month **only in the isolated local pilot environment** | The project owner + the client's analyst |
 | UAT | The UAT build (feature-complete for v1) | The client's UAT participants |
 | Go-live | The released installer + checksums | The client |
 
@@ -567,7 +567,7 @@ Nothing here is a release; these are the moments the client sees progress withou
 | Phase 4 gate | A forecast with its method visible and an accuracy report | Demo |
 | Phase 5 gate | The Excel pack and the deck, opened live in Office | Demo |
 | Phase 6 gate | The AI draft with provenance and the offline guarantee | Demo |
-| Pilot | Their own sanitized month | Joint session |
+| Pilot | Their own sanitized month, in the isolated local pilot environment only | Joint session |
 | UAT | The product, in their hands | `28` |
 
 **Rule:** the client's view is only ever the *installed* product (or a recorded run of it). A developer
@@ -592,7 +592,7 @@ Both walks are **Phase-0 evidence** and both must be repeated at the pilot with 
 
 ### 11.3 What each demo must never do
 
-- Never use real client data (the pilot is the only real-data moment, and it is governed by `28`).
+- Never use real client data in development, agents, cloud services or this repository (the pilot is the only real-data moment, runs only in an isolated local environment, and is governed by `28`/`13` §3.1).
 - Never show a feature that is not behind a passing test.
 - Never rely on the Internet (the offline guarantee is part of the story, `NFR-008`).
 - Never skip the failure path: at least one step shows a named error and its recovery.

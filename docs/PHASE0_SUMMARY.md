@@ -1,15 +1,16 @@
-> **Status:** Draft v0.1 (the approval artefact)
-> **Last updated:** 2026-10-01
+> **Status:** Draft v0.2 — **ready for owner presentation; not approved**
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** the one-page Phase 0 close-out summary (Kickoff §5; Addon 1 §P.7, Addon 2 §H.4,
-> Addon 3 §K.10, Addon 4 §L.11): the product, what the documentation set locks, the key decisions, the top
-> risks, the open questions, the gate snapshot and what approval means. Approval is recorded in
-> `CHANGELOG.md` and `SESSION_LOG.md` (Addon 4 §E.2).
+> Addon 3 §K.10, Addon 4 §L.11 and Addon 5 §N): product, documentation locks, key decisions, risks,
+> open questions, gate evidence and the exact meaning of approval. Approval is recorded in `CHANGELOG.md`
+> and `SESSION_LOG.md` (Addon 4 §E.2).
 > **TL;DR (≤ 15 lines):**
-> - **Phase 0 specification:** 31 comprehensive specification documents (00–30) defining architecture, rules, UI, and QA.
-> - **The product:** Offline Windows month-end copilot automating GL reconciliation, variance triage, and board pack generation.
-> - **Deterministic core:** 156 FRs, 24 exception rules, 95 API endpoints, and 14 recomputed golden calculation fixtures.
-> - **Zero compromises:** Exact money math, offline isolation, and traceability locked across all functional specifications.
-> - **Phase readiness:** Core structural and documentation requirements remediated; sample data regenerated at 250k scale; open findings: F-015 (Addon 5 escalated), F-020–F-026, F-029 tracked in audit/FINDINGS.md. Owner sign-off pending resolution.
+> - **Phase 0 specification:** 31 numbered documents (`00`–`30`) define architecture, rules, UX and QA; no product code exists.
+> - **Official contract:** Addon 5 is anchored locally at `project prompt/ADDON_5_OWNER_CONTROL_EVIDENCE_DATA_EGRESS_EXTENSION.md` (SHA-256 `cfbb69411d586194d2ad8ef6034a74e19bcb0ae976b466485adda75a97372b11`).
+> - **Documentary gates:** the six-source re-audit passed **70/70** rows (9+12+12+12+13+12); report, link check, synthetic regeneration, oracle validation and tabletops are in `evidence/2026-10-02-phase0-re-audit/`.
+> - **Scope boundary:** this is evidence that the Phase 0 documentation is ready to present, not an installer/build/pilot/UAT/go-live claim.
+> - **Data boundary:** development and evidence use synthetic data only; real pilot work is isolated locally and never enters this repo, agent or cloud service.
+> - **Decision still required:** the owner must approve or reject the presented set in writing. Until then packaging and product code are prohibited.
 
 # PHASE 0 SUMMARY — for approval
 
@@ -35,16 +36,16 @@ screen, workbook and slide reads the same engine output.
 |---|---|---|
 | Core specification | `00`–`20` | Scope and personas; 156 FRs with priorities and acceptance criteria; data model; import rules and 32 validation checks; calculation formulas and tolerances; exception rules; forecast methods; screens, charts and wording; architecture and ADRs; AI policy and prompts; Excel and PowerPoint contracts; security; tests and quality bars; packaging; roadmap and gates; coding standards; decisions and open questions; process rules; traceability |
 | Onboarding & handover | `21`–`25` | The 21-question client questionnaire with defaults; the end-user guide (43 screens, 21 tasks); consultant handover and support; the release runbook; the risk register (36 risks) |
-| Interface & governance | `26`–`27` | The frozen API contract (95 routes, envelope, error catalogue, contract tests); the backlog register (34 items with promotion triggers) |
-| Acceptance | `28` | The project DoD, `S1`–`S4` defect workflow, the real-data pilot, UAT with six scripts, the go-live checklist and the sign-off template |
+| Interface & governance | `26`–`27` | The frozen API contract (95 routes, envelope, error catalogue, contract tests); the backlog register (35 items with promotion triggers) |
+| Acceptance | `28` | The project DoD, `S1`–`S4` defect workflow, isolated-local real-data pilot, UAT with six scripts, the **23-item** go-live checklist and sign-off template |
 | Client-facing | `29` | The plain-language requirements pack with the 17 decisions and the sign-off block |
-| Review & Verification | `30` | Documentation set review guide, 5-minute pre-flight checklist, evidence ladder, red flags, sampling protocol |
+| Owner control & verification | `30` | Owner operating handbook: cadence, session-report standard, evidence/review, red flags, sampling, stuck escalation and independent oracle |
 | Memory & control | `CHANGELOG`, `SESSION_LOG`, this file | Every change with its reason; the session bridge; the approval record |
 
 **Frozen by this set** (cite the owning doc, never a copy): 156 FRs in 11 families (P0 110 · P1 39 · P2 7) ·
 43 screens · 12 charts · 24 exception rules · 8 Excel sheets · 6 slides · 3 source-system shapes (D365-style + two others) ·
-32 import checks · 59 import messages · 95 API routes · 11 error families · 34 backlog items · 36 risks ·
-19 open questions with labelled defaults · 10 ADRs · 37 decisions · 292 test slots in 16 families (206 owned by the doc set, 86 reserved for later phases) ·
+32 import checks · 59 import messages · 95 API routes · 11 error families · 35 backlog items · 36 risks ·
+20 live open questions with labelled/proposed defaults · 10 ADRs · 40 decisions · 292 test slots in 16 families (206 owned by the doc set, 86 reserved for later phases) ·
 9 never-cut items.
 
 ## 3. Key decisions (each with its reasoning in the owning doc)
@@ -70,50 +71,49 @@ screen, workbook and slide reads the same engine output.
 | 17 | **Docs-first, quote-before-code**: no code before recorded approval; every change updates its owning doc first | `19` §2 | The reason this phase exists |
 | 18 | **Deferrals live in one place** with a trigger that would promote them | `27` §4 | A "later" without a trigger is a lost requirement |
 | 19 | **Sample data is never delivered to the client**, and never mixed with real data | `13`/`14` §16 | Contamination safety; go-live checks it explicitly |
+| 20 | **No activation, expiry, licence key or usage-control mechanism in v1**; any future control needs explicit owner-approved PRD scope and `BL-037` | `01` §16, `18` `DEC-040`, `27` `BL-037` | Protects the offline/perpetual v1 boundary from commercial-scope drift |
 
 ## 4. Top risks (full register: `25`; scores are impact × likelihood, 1–5)
 
 | Risk | Why it would hurt | Mitigation in force |
 |---|---|---|
 | **Messy real files break the importer** (`RISK-001`, 20) | Nothing else matters if month one does not load | 32 validation checks, quarantine rather than silent repair, mapping profiles, a malformed-file corpus, and the pilot month before go-live |
-| **The sanitized real month never arrives** (`RISK-002`, 20) | The pilot, UAT and trust all depend on it (`OQ-014`) | Named as a schedule dependency; a fallback (UAT on sample data with a written limitation) and an early ask in `29` §7 |
+| **The isolated-local sanitized real month is not scheduled** (`RISK-002`, 20) | The pilot, UAT and trust all depend on it (`OQ-014`) | Named as a schedule dependency; a fallback (UAT on sample data with a written limitation) and a metadata-only early ask in `29` §7 — never an upload request |
 | **Unsigned installer blocked** (`RISK-003`, 20) | The client cannot install | SmartScreen ladder, hash verification, portable-zip fallback, and a certificate decision (`OQ-012`) |
 | **Rule precision disappoints** (`RISK-004`, 20) | Too many false positives and the register is ignored | Recall ≥ 90 % with zero control raises, effective-threshold traceability, suppression, effectiveness analytics |
 | **App numbers differ from the client's manual pack** (`RISK-005`, 16) | Trust collapses at the first tie-out | Tie-out worksheet, four-class difference taxonomy, drill-through to the source row, frozen mapping profiles |
-| **Real volumes exceed the envelope** (`RISK-006`, 16) | The tool becomes unusable in month two | 250k-row performance work with committed baselines and a > 20 % regression gate |
+| **Real volumes exceed the envelope** (`RISK-006`, 16) | The tool becomes unusable in month two | local regenerated 250k-row performance work with recorded baselines and a > 20 % regression gate |
 | **Scope pressure pushes P1/P2 into P0 time** (`RISK-007`, 16) | A gate slips or quality drops | The cut-line process, the never-cut list, and every deferral with a trigger (`27`) |
 | **Windows-only evidence gap** (`RISK-008`, 12) | It works on the dev machine and fails on the client's | Real-Windows checks at every gate, with screenshots and run sheets |
 
-## 5. Open questions and the three answers that matter most
+## 5. Open questions and the answers that matter most
 
-| Question | Owner | Default in force | When it is needed |
+| Question / control | Owner | Current position | When it is needed |
 |---|---|---|---|
-| **`OQ-014`** — when will one sanitized real month arrive? | Client | **None — this one has no default** | Before the pilot (`GATE-13`); the biggest schedule dependency |
-| **`OQ-016`** — support/warranty terms after go-live | You (project owner) | Consultant-first support with the `23` §10 response targets as labelled defaults | Before go-live; `28` §3.1 marks the placeholder |
-| **`OQ-017`** — the approved installer delivery channel | You | Secure link + published SHA-256 | Before the pilot; sized for a ~500 MB file plus its hash |
-| `OQ-012` — code-signing certificate budget | You | Not purchased; mitigation ladder applies | Before the packaging spike's install step |
-| 15 further design/data questions (`OQ-001`…`OQ-013`, `OQ-015`, `OQ-021`/`022`) | Client | Each has a labelled default, so no work is blocked | Answered through `21`/`29` §7 as the build reaches each area |
-| **Sample Data Deliverable** — `sample-data/` corpus & templates | Implemented | **Regenerated at 250k scale (Wave 6); watermark + project_type on all CSVs; injection fixture planted.** | Verified green in `14` §15.4 (`GATE-04-02`, `GATE-04-07`); ready for packaging spike |
+| **`OQ-014`** — when can one sanitized real month be made available locally? | Client | **None — no default.** The pilot cannot run without it; it is a schedule dependency, not a reason to use real data in development or transmit it through a cloud/repository channel. | Before the isolated local pilot (`GATE-13`) |
+| **`OQ-016`** — support/warranty terms after go-live | Project owner | Consultant-first support is only a planning default; owner-approved client response targets are required before go-live. | Before go-live |
+| **`OQ-017`** — approved installer delivery channel | Project owner | Secure link + published SHA-256 is a labelled default. | Before the pilot/delivery |
+| **`OQ-023`** — final default-sweep deadline `N` | Project owner | Addon 5 leaves `N` unspecified. **10 business days is proposed only**; the owner must decide the number and business/calendar-day basis. | Before scheduling the final go-live sweep |
+| **`OQ-012`** — code-signing certificate budget | Project owner | Not purchased; the documented SmartScreen mitigation ladder applies. | Before packaging-spike install validation |
+| Other questions | Client / owner | 15 further live questions (`OQ-001`…`017`, `OQ-021`/`022`, excluding reserved/retired IDs) have labelled defaults; defaults never become client facts silently. | At their named phase/gate |
+| **Synthetic sample-data control** | Engineering | Generator/instructions are versioned; outputs are ignored and regenerated locally. The dated regeneration evidence confirms 40 finance plantings plus `INJ-01`, three templates and 16 malformed cases. | Whenever a test/demo needs synthetic data |
 
 ## 6. Gate snapshot
 
-| Gate | Checks | Pass | Fail | Status |
-|---|---|---|---|---|
-| GATE-01 Kickoff | 9 | 8 | 1 (K2) | FAIL |
-| GATE-02 Addon 1 §O | 12 | 12 | 0 | PASS |
-| GATE-03 Addon 2 §I | 12 | 12 | 0 | PASS |
-| GATE-04 Addon 3 §J | 12 | 10 | 2 (A3J-3, A3J-11) | FAIL |
-| GATE-05 Addon 4 §K | 13 | 12 | 1 (K10) | FAIL |
-| GATE-05B provisional | 8 | 8 | 0 | PASS* |
-| **Total** | **66** | **62** | **4** | **NOT READY** |
+| Gate | Checks | Pass | Fail | Current status |
+|---|---:|---:|---:|---|
+| `GATE-01` Kickoff | 9 | 9 | 0 | PASS — documentary re-audit |
+| `GATE-02` Addon 1 §O | 12 | 12 | 0 | PASS — documentary re-audit |
+| `GATE-03` Addon 2 §I | 12 | 12 | 0 | PASS — documentary re-audit |
+| `GATE-04` Addon 3 §J | 12 | 12 | 0 | PASS — documentary re-audit |
+| `GATE-05` Addon 4 §K | 13 | 13 | 0 | PASS — documentary re-audit |
+| `GATE-05B` official Addon 5 §M | 12 | 12 | 0 | PASS — documentary re-audit |
+| **Total** | **70** | **70** | **0** | **Phase 0 documents ready to present — owner approval pending** |
 
-*Subject to F-015 (Addon 5 contract absent). See audit/REPORT.md Wave 5.
-
-**Wave-5 verdict: NOT READY (9 BLOCKERs incl. 1 escalated, 6 MAJORs). Wave-6 remediation in progress. See audit/FINDINGS.md for live register.**
-
-The independent audit and verification ran in this pass: every citation resolves, every table is well-formed,
-every ID token matches a registered namespace, arithmetic is 100% recomputed, and sample-data fixtures
-with expected exceptions are fully in place.
+**Evidence:** `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` (70 rows),
+`command.txt` (exit 0/link check/client-egress-copy safeguard), `tabletop_walkthroughs.md`, `sample_data_regeneration.md` and
+`oracle_workbook_validation.md`. The audit verifies the written Phase 0 specification and safe fixtures.
+It does **not** claim an executable product, installer, Windows validation, client pilot, UAT or go-live.
 
 ## 7. What approval means
 
@@ -122,8 +122,8 @@ with expected exceptions are fully in place.
 2. **It releases the packaging spike first** (two half-days: hello-world → PyInstaller → Inno Setup →
    installed launch on real Windows 11 through the SmartScreen path). If that path cannot be made to work,
    the project stops and escalates rather than building features on an unproven installer.
-3. **It releases Phases 1–6** after the spike (`16` §6): import & validation, BvA & drill-down, exceptions,
-   forecast, packs, then AI and polish — with your answers to §5 arriving as the build reaches each area.
+3. **It permits Phase 1 only after the spike outcome is recorded.** Later phases remain individually gated
+   (`16`); import & validation does not grant permission to skip directly to forecasting, packs or AI.
 4. **It does not freeze the spec forever.** Any material change afterwards gets an **impact note** first
    (affected FRs, docs, tests, size S/M/L), and the gate is re-opened rather than edited quietly.
 5. **No product code exists yet.** The repository contains documentation, the skeleton and `.gitkeep`
@@ -133,12 +133,12 @@ with expected exceptions are fully in place.
 
 | When | What |
 |---|---|
-| On approval | Record the approval; then answer §5's first three rows in parallel with the packaging spike (`sample-data/` suite already generated and verified) |
-| Week 1 | Packaging spike (`GATE-06`) → corrected `15` if reality differed |
-| After the spike | Phase 1 (import & validation) begins, with your mapping walkthrough and the sample files from `29` §8 |
-| Before UAT | The pilot month (`GATE-13`) with the tie-out worksheet and the signed classification log |
-| Before go-live | UAT (`GATE-14`, ≤ 5 business days, six scripts), training (`22` §10), then the 22-item go-live checklist (`GATE-15`) |
-| After go-live | Two month-ends of hypercare, the first accuracy review, and the feedback intake that turns requests into `27` items before any code |
+| On approval | Record the approval in both process logs; then start only the packaging spike. The synthetic generator is available for local regeneration — its outputs are not a delivered corpus. |
+| Packaging spike | `GATE-06`: hello-world → build → installer → clean Windows 11 launch/SmartScreen evidence; correct `15` if reality differs. |
+| After a recorded spike outcome | Begin Phase 1 (import & validation) only if the spike exit criteria are met; run the mapping walkthrough with synthetic files. |
+| Before UAT | The isolated local pilot month (`GATE-13`) with tie-out, local oracle metadata and signed classification log. |
+| Before go-live | UAT (`GATE-14`, ≤ 5 business days, six scripts), training (`22` §10), then the **23-item** go-live checklist (`GATE-15`), including owner-approved `OQ-023` deadline. |
+| After go-live | Two month-ends of hypercare, first accuracy review, and support/issue → release or request → `27` backlog loop before any enhancement code. |
 
 ## 9. The approval ask
 

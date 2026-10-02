@@ -8,7 +8,23 @@ _The Keystone Artifact of the Phase 0 Documentation Audit. Independently extract
 - `MISSING`: Required document, section, table, script, or directory does not exist.
 - `CONTRADICTION`: Target deliverable contradicts another document or contradicts the contract.
 - `UNVERIFIABLE`: Artifact or test cannot be verified due to missing dependencies/data.
-- `PENDING-ADDON-5`: Requirement stems from Addon 5, which is missing from the workspace and currently escalated to the project owner.
+- `PENDING-ADDON-5`: Historical status only: it describes the pre-source-supply period when the official Addon 5 text was unavailable. It is not a current status after the 2026-10-02 source intake.
+
+---
+
+## Current re-audit addendum — 2026-10-02
+
+The original rows and Wave-5 change log below are retained as historical audit evidence. They pre-date the
+official Addon 5 source. Current status is governed by the official source at
+`project prompt/ADDON_5_OWNER_CONTROL_EVIDENCE_DATA_EGRESS_EXTENSION.md` (SHA-256
+`cfbb69411d586194d2ad8ef6034a74e19bcb0ae976b466485adda75a97372b11`) and the dated documentary re-audit:
+`evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` (**70/70 PASS**, command exit 0).
+
+This re-audit verifies Phase-0 documentation and safe fixtures only. It does not assert a product build,
+installer, Windows run, pilot, UAT, go-live or owner approval. A final paper re-test corrected former
+client-facing data-request copy: development requests metadata/style-only material only, while real data is
+isolated-local pilot/UAT work after a release candidate (`tabletop_walkthroughs.md`). `F-015` is
+source-supplied/re-audited; recorded Phase 0 approval remains the next action.
 
 ---
 
@@ -129,22 +145,30 @@ _The Keystone Artifact of the Phase 0 Documentation Audit. Independently extract
 
 ---
 
-## 6. Addon 5 Requirements Inventory (Audit Prompt References — PROVISIONAL, contract text pending `F-015`)
+## 6. Official Addon 5 Requirements Inventory (source supplied 2026-10-02)
 
-> Wave 4 note: the Addon 5 contract text is absent from the workspace (only audit-prompt §8 references exist). Rows below are traced against those references as a provisional stand-in and renumbered to provisional `GATE-05B` (`GATE-06` is the packaging spike). Final verification awaits the owner supplying Addon 5 or rescinding it. `REQ-A5-01`/`04`/`06`/`07`/`08` therefore cannot be `VERIFIED` against a contract source.
+> **Authority:** `project prompt/ADDON_5_OWNER_CONTROL_EVIDENCE_DATA_EGRESS_EXTENSION.md`, SHA-256
+> `cfbb69411d586194d2ad8ef6034a74e19bcb0ae976b466485adda75a97372b11`. The old inferred eight-row treatment
+> is historical only. `GATE-05B` is the stable local label for the official Section-M 12-row checklist;
+> `GATE-06` remains the post-approval packaging spike.
 
 | Req ID | Contract Source | Requirement Description | Target Deliverable Doc & Section | Audit Status | Evidence / Audit Pointer |
 |---|---|---|---|---|---|
-| `REQ-A5-01` | Addon 5 Contract (missing — provisional) | Contract Document #6 delivery and workspace presence | `project prompt/` | `PENDING-ADDON-5` | Addon 5 text absent; Doc 30 + provisional `GATE-05B` + §A.4 notice built from audit-prompt refs only (`F-015` escalated) |
-| `REQ-A5-02` | Addon 5 (Audit §8.1, provisional) | Document `30_DOCUMENTATION_SET_REVIEW_GUIDE.md` exists, headered, TL;DR <= 15 lines | `docs/30_...` | `VERIFIED` | `docs/30_DOCUMENTATION_SET_REVIEW_GUIDE.md` authored (305 lines, TL;DR: 6 lines) |
-| `REQ-A5-03` | Addon 5 (Audit §8.15, provisional) | Doc 30 contents: session-report format, 5-minute checklist, evidence matrix, red-flag list with response ladder, Phase 0 review guide, spot-check sampling, stuck options, oracle procedure | `docs/30_...` | `VERIFIED` | All required sections fully articulated in `docs/30_DOCUMENTATION_SET_REVIEW_GUIDE.md` §1–§8 |
-| `REQ-A5-04` | Addon 5 (Audit §6-A5, provisional) | Provisional Phase-0 Addon 5 checklist (`GATE-05B`, 8 checks) integrated and independently verified | `00_INDEX.md` §9; `14_TESTING_QA_PLAN.md` §15.6 | `VERIFIED` | Provisional `GATE-05B` (8 checks) in `14_TESTING_QA_PLAN.md` §15.6 and `00_INDEX.md` §9; verified 8/8 green; number provisional pending Addon 5 source |
-| `REQ-A5-05` | Addon 5 (Audit §8.18, provisional) | Divergence notice (Addon 5 §A.4) recorded in `00_INDEX.md` and `19_VIBE_CODING_PLAYBOOK.md` | `00_INDEX.md`, `19_VIBE_CODING_PLAYBOOK.md` | `VERIFIED` | Canonical Divergence Notice integrated into `19_VIBE_CODING_PLAYBOOK.md` §5.5 and `00_INDEX.md` §6.3 |
-| `REQ-A5-06` | Addon 5 (Audit §4, §8.1, provisional) | `evidence/` directory live with evidence conventions | `evidence/` | `VERIFIED` | `evidence/` live with Wave 4 Level 2/3 logs (`evidence/runs/recompute_wave4.log`, `evidence/runs/sample_data_inventory_wave4.log`, `evidence/gates/gate_counts_wave4.log`) |
-| `REQ-A5-07` | Addon 5 (Audit §2.2, provisional) | Coverage Matrix covers all six contract documents with all rows verified | `00_INDEX.md` §4 | `GAP` | All 6 contract docs covered and every row `INTEGRATED`, but the count claim is false: actual 86 data rows (15+17+17+17+12+8) — `00:109` claims "85 expanded rows" and `00:136` §4.2 header claims "16 rows" while the table holds 17 (`00:140`–`156`, `A1-C` split into `C.1`/`C.2`); Addon 2 §A.3 gate rule cannot be checked against a false denominator (`F-027`, reopens `F-016`) |
-| `REQ-A5-08` | Addon 5 (Audit §6-A6) | Author claims & evidence audit: every 'done/green/integrated' claim backed by existing artifacts | `SESSION_LOG.md`; `CHANGELOG.md` | `VERIFIED` | Session 002 volumes/names corrected by Session 003 supersession note (Wave 4, `F-014`); `CHANGELOG.md` Wave 4 block; `evidence/` holds 3 real Wave 4 logs |
+| `REQ-A5-01` | Addon 5 §A | Six-document contract, integrated matrix, frozen-convergence route and all-gates re-audit | `00` §§4/6/9/10; `18`; `19` | `VERIFIED (documentary)` | `A5-A`; `DEC-038`; 70/70 report `GATE-05B-01/12` |
+| `REQ-A5-02` | Addon 5 §B | Owner handbook with cadence, six-column session report, review guide, sampling, red flags, stuck choices and oracle | `30` §§2–10 | `VERIFIED (documentary)` | `GATE-05B-02` |
+| `REQ-A5-03` | Addon 5 §C | Evidence/claims protocol and committed dated-evidence convention | `30` §7; `19`; `evidence/` | `VERIFIED (documentary)` | `GATE-05B-03`; `command.txt` |
+| `REQ-A5-04` | Addon 5 §D | Thirteen red flags and response ladder | `30` §8; `19` | `VERIFIED (documentary)` | `GATE-05B-04` |
+| `REQ-A5-05` | Addon 5 §E | Development-time data-egress controls, metadata-only discovery and S1 incident handling | `13` §3.1; `19` | `VERIFIED (documentary)` | `GATE-05B-05` |
+| `REQ-A5-06` | Addon 5 §F | Golden Month selection/blessing/diff/regeneration plan | `14` §5.6; `17`; `tests/golden/` | `VERIFIED (documentary)` | `GATE-05B-06`; first blessing remains post-build |
+| `REQ-A5-07` | Addon 5 §G | Independent formula-visible oracle and isolated local real-pilot rule | `14` §5.7; `28` §4.4; `tests/oracle/` | `VERIFIED (documentary)` | `GATE-05B-07`; OOXML validation transcript |
+| `REQ-A5-08` | Addon 5 §H | Git exclusions, generated synthetic data, survivability, What’s New and no-activation decision | `.gitignore`; `01`; `17`; `24`; `22` | `VERIFIED (documentary)` | `GATE-05B-08`; regeneration transcript |
+| `REQ-A5-09` | Addon 5 §I | Two-failures/2× estimate stop, rollback and exactly three owner choices | `19` §7.5; `30` §9; `18` `DEC-039` | `VERIFIED (documentary)` | `GATE-05B-09` |
+| `REQ-A5-10` | Addon 5 §J | Sendable questionnaire, response tracker and time-limited final default sweep | `21` §5.3/§5.4; `28` §6; `18` `OQ-023` | `VERIFIED (documentary)` | `GATE-05B-10`; `N` remains owner decision |
+| `REQ-A5-11` | Addon 5 §K | Post-go-live intake → severity → release/request → backlog loop | `23` §11.1; `24` §10; `27` §4.4; `28` §8 | `VERIFIED (documentary)` | `GATE-05B-11` |
+| `REQ-A5-12` | Addon 5 §L | Required cross-document updates | `00`, `01`, `13`, `14`, `17`, `19`, `21`, `23`, `24`, `27`, `28`, `30` | `VERIFIED (documentary)` | `A5-A`…`A5-L` matrix rows; report cross-checks |
+| `REQ-A5-13` | Addon 5 §M | Twelve additional Phase-0 delta checks | `14` §15.6; `00` §9 | `VERIFIED (documentary)` | `GATE-05B-01`…`12` all PASS |
+| `REQ-A5-14` | Addon 5 §N | Updated immediate-action order: integrate → re-audit/link/tabletops → present/stop → post-approval spike | `16` §1.3/§3.2; `PHASE0_SUMMARY`; `SESSION_LOG` | `VERIFIED (documentary)` | re-audit report, tabletop record, presentation state |
 
----
 
 ## Wave 5 Status Changes
 

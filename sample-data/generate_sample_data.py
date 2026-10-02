@@ -355,7 +355,7 @@ def generate_dataset(base_dir, scale=250000):
         for acct, name, atype in ACCOUNTS:
             ws_m.append([acct, name, atype, "TRUE"])
         wb_m.save(t_md)
-        print("Generated .xlsx templates in sample-data/templates/")
+        print(f"Generated .xlsx templates in {templates_dir}")
 
     # 7. Generate 16 Malformed Negative Corpus Files
     malformed_specs = [

@@ -1,5 +1,5 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** the **single risk register** — every material risk with likelihood, impact, score,
 > mitigation in force, early-warning trigger, owner and the document that owns the mitigation; reviewed at
 > every phase gate (Addon 1 §C.1, kickoff §5; `RISK-nnn` namespace)
@@ -48,7 +48,7 @@ Every register row carries: `RISK-nnn` · risk statement (cause → effect) · c
 | ID | Risk (cause → effect) | Cat | L | I | Exp | Mitigation in force | Early-warning trigger | Owner | Links |
 |---|---|---|---|---|---|---|---|---|---|
 | `RISK-001` | Messy real files (headers, encodings, accounting formats, merged cells) → the importer fails or silently mis-reads on the client's own exports | Data | 4 | 5 | 20 | `04` §7–§9 hardening rules (32 checks, handle-or-reject); 16-file malformed corpus in `14` §16; quarantine instead of drop; dry-run validate | First real file after go-live produces a check failure or a quarantine rate above the pilot's | Engineering | `04`, `14` §16, `IMP-*` |
-| `RISK-002` | The sanitized real month never arrives (`Q-001`/`A29`) → the pilot and UAT cannot run on real shape | Client | 3 | 5 | 15 | Sample-data corpus is the testbed; the pilot gate (`GATE-13`) is explicitly dependent; the ask is first in the `21` §2.3 order | The needed-by date passes with no file | Project owner | `Q-001`, `A29`, `28` |
+| `RISK-002` | The sanitized real month is not scheduled/made available in the isolated local pilot (`Q-001`/`A29`) → the pilot and UAT cannot run on real shape | Client | 3 | 5 | 15 | Sample-data corpus is the testbed; the pilot gate (`GATE-13`) is explicitly dependent; early asks are metadata-only and `Q-001` schedules local availability | The needed-by date passes with no isolated-local pilot appointment | Project owner | `Q-001`, `A29`, `28`, `13` §3.1 |
 | `RISK-003` | Unsigned installer is blocked by SmartScreen/Defender → the client cannot install | Delivery | 4 | 4 | 16 | `ADR-003` mitigation ladder; verbatim non-technical walkthrough (`15` §8.3); SHA-256 verification; portable fallback (`15` §4.3); `SPK-01`/`SPK-02` spike | A client install attempt shows a dialog beyond the documented ones, or Defender quarantines the build | Engineering | `ADR-003`, `15` §8, `Q-015` |
 | `RISK-004` | Rule precision disappoints (too many false positives or a visible miss) → the register is ignored | Quality | 4 | 4 | 16 | Precision targets (`06` §8.3), 8 precision plantings, effectiveness analytics (`06` §9), tuning via Settings with before/after counts | Precision below the target in the acceptance harness or ≥ 3 client complaints about the same rule | Engineering | `06` §8–§9 |
 | `RISK-005` | The app's numbers differ from the client's manual pack → trust collapse at UAT | Quality | 3 | 5 | 15 | Real-data pilot tie-out with difference classification (`28`); drill-through to source lines; exact-Decimal money; round-trip fixtures | Any unexplained difference at the pilot tie-out | Engineering | `01` R5, `28` |
@@ -213,7 +213,7 @@ Every register row carries: `RISK-nnn` · risk statement (cause → effect) · c
 | Pack recipients | `OQ-011` | `Q-013` | `RISK-036` | Recipients typed per issue; no send path exists by design (`13` §1) |
 | Code-signing certificate | `OQ-012` | `Q-015` | `RISK-003`, `RISK-016` | Unsigned v1 + documented SmartScreen path (`ADR-003`) |
 | Real file sizes seen in practice | `OQ-013` | `Q-014` | `RISK-006`, `RISK-019` | Limits per `NFR-002` with explicit over-limit confirmation |
-| One sanitized real month | `OQ-014` | `Q-001` | `RISK-002` | **No default exists** — the pilot gate (`GATE-13`) depends on it |
+| One sanitized real month, isolated-local only | `OQ-014` | `Q-001` | `RISK-002` | **No default exists** — the pilot gate (`GATE-13`) depends on locally available data only |
 | Logo and brand colours | `OQ-015` | `Q-019` | `RISK-022` | Placeholder branding is settings-driven; re-branding is a data change |
 | Support/warranty terms | `OQ-016` | `Q-018` | `RISK-032` | Support flow documented in `23`; response targets are labelled defaults |
 | Installer delivery channel | `OQ-017` | `Q-016` | `RISK-017` | Manual download with published SHA-256; update check off by default |

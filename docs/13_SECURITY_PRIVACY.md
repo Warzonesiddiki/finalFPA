@@ -1,5 +1,5 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** `FR-XC-004`…`FR-XC-009`, `FR-XC-013`…`FR-XC-015`, `FR-PRJ-008`…`012`,
 > `FR-AI-001`…`FR-AI-003`, `FR-AI-007`, `FR-AI-009`; Addon 1 §I (security, privacy, supply chain),
 > Addon 1 §L (log/diagnostics budgets), Addon 3 §J (key rotation), Addon 4 §D.2 (no login), §K (gates)
@@ -53,7 +53,39 @@ access, mobile, macOS/Linux, and network deployment.
 | T11 | **Ransomware / compromised Windows account / physical theft without BitLocker / admin-level malware** | Possible | Full data access | **Explicitly not defended**; reliance on OS protections and backups; stated to the client (`SEC-024`) |
 | T12 | **TLS interception by corporate proxy breaks AI calls** | Plausible in enterprises | Feature unavailable (fail-closed) | Verification never disabled; clear message; proxy support parked (`SEC-020`, `BL-029`) |
 
-## 3. Local-only guarantees
+## 3. Development-time data-egress policy and local-only guarantees
+
+### 3.1 Development-time data-egress policy (Addon 5 §E — binding)
+
+This section governs the **development process**, not only the installed application. It applies to every
+engineer, cloud agent, LLM, chat, web form, issue tracker, test service, screenshot and demonstration.
+
+| Rule | Required practice |
+|---|---|
+| No real client data in development | Real client data never enters a cloud agent, LLM, web form, third-party service, repository, test runner, screenshot or this development session. Development, tests, demos and evidence use sample/synthetic data only. |
+| File-shape discovery | When a real file's shape is needed, use metadata only: column names, data types, row counts, sheet names, date ranges and format facts. Never supply data rows, vendor/customer names, document numbers, free text or amounts. |
+| Real-data work | The installed app processes client data only in an isolated local environment on the consultant's or client's machine. The Real-Data Pilot (`28` §4) is performed there, never in a cloud-hosted sandbox or agent session. |
+| Optional in-app AI | For real data, AI remains disabled unless the authorized local session explicitly enables it. The redaction/minimum-data rules in `10`/§8 still apply; enabling AI does not authorize development-time sharing. |
+| Evidence | Development evidence contains only synthetic/sample data or metadata. A screenshot or transcript that may include real data is not committed or uploaded. |
+
+**Severity-1 incident procedure — suspected or actual breach of the first rule.**
+
+1. **Stop immediately:** stop the task, do not copy or forward the material, and do not continue debugging.
+2. **Contain:** identify the channel/service and time; prevent further sharing; revoke any credential or
+   share link that could extend access. Do not paste the data into an incident report.
+3. **Escalate:** notify the project owner and the client data owner immediately; follow the client's
+   incident process where one exists.
+4. **Record safely:** create a metadata-only incident entry in `SESSION_LOG.md` and the evidence folder:
+   incident id, discovery time, category of data, channel, who was notified, containment state and next
+   review time — never the affected rows, names, amounts, files or secrets.
+5. **Assess and recover:** determine exposure with the service/operator, complete required notification
+   and remediation, then obtain the owner's written authorization before resuming. The affected session is
+   re-verified in full under the red-flag response ladder in `30` §8.
+
+There is no known incident at the time of this update. This is a mandatory response plan, not evidence that
+a breach has occurred.
+
+### 3.2 Installed-app local-only guarantees
 
 Each statement below is a **claim with a mechanism and a verification**; §13 indexes them.
 
@@ -65,7 +97,7 @@ Each statement below is a **claim with a mechanism and a verification**; §13 in
 | `SEC-004` | No cloud storage, no remote database, no server component | Single process (`ADR-006`); DuckDB/SQLite files; the API binds `127.0.0.1` with a per-launch token and a random port | `TST-SEC-04` |
 | `SEC-005` | Client files are read in place and copied into the project archive; nothing is uploaded or "synced" | Import pipeline is local; the raw archive is a local copy | `TST-SEC-01`, `TST-SEC-02` |
 | `SEC-006` | The app never changes a source workbook | openpyxl is opened read-only for imports; no Office automation; write-back exists only in explicit exports with new filenames (`11`) | `TST-SEC-05` (source-file hash unchanged after import) |
-| `SEC-007` | Client data never enters the repository, the installer, the sample project, or a test fixture | `.gitignore` covers project/data folders; the sample project is synthetic; fixtures are sanitised; `FR-XC-013` gate | `TST-SEC-17` (repo scan for client markers), go-live checklist (`28`) |
+| `SEC-007` | Client data never enters the repository, the installer, the sample project, or a test fixture | `.gitignore` covers project/data folders; the sample project and all repository fixtures are synthetic; real pilot evidence stays isolated local with metadata/hash references only; `FR-XC-013` gate | `TST-SEC-17` (repo scan for client markers), go-live checklist (`28`) |
 | `SEC-008` | Loopback API requires a per-launch token; no other local process can drive the engine without it | Token generated per launch, passed to the webview, required on every endpoint; CORS closed to the app origin | `TST-SEC-06` |
 
 **Design note — why "no telemetry" is a test, not a promise.** The strongest guarantee for an offline-first
@@ -573,12 +605,13 @@ path containing a user name, or any client data (`TST-SEC-09`/`10`).
 |---|---|
 | Implement `TST-SEC-01`…`22`; include the injection fixture, the log-content scan and the audit-integrity test in the suite | `14` |
 | Installer manifest ships `THIRD_PARTY_LICENSES.txt`; release checklist includes the secret scan, license scan, vulnerability triage, SBOM-lite and diagnostics-size check | `15`, `24` |
-| Secret scan in pre-commit and CI; `.gitignore` entries; logging/error-handling standards; the "no binaries without review" rule | `17` |
+| Secret/binary scan in pre-commit and CI; `.gitignore` entries; generated sample-output exclusions; logging/error-handling standards; the "no binaries without review" rule | `17` |
 | Error codes `ERR-SEC-001`…`008` in the catalog with this copy; the diagnostics/update endpoints documented | `26` |
 | Risks T1…T12 mirrored with likelihood/impact/mitigation and gate reviews | `25` |
 | The client questionnaire carries the storage, BitLocker, proxy and retention questions | `21` |
 | The user guide carries the privacy note (`SEC-043`), the key-rotation steps, "what is in a support bundle", delete-project semantics, and the synced-folder warning | `22` |
 | The handover doc carries the key-revocation runbook and the diagnostics workflow | `23` |
+| The session playbook stops and safely records a development-time data-egress incident; it must not reproduce or paste client data while investigating | `19` |
 | The API contract documents the loopback token requirement and exposes no secret values | `26` |
 | `00_INDEX` hosts the `SEC-nnn` prefix, the `TST-SEC` family and the `SEC` error family (done, §8) | `00` |
 
@@ -588,6 +621,7 @@ path containing a user name, or any client data (`TST-SEC-09`/`10`).
 |---|---|
 | A new statement (`SEC-nnn`) | A mechanism, a test ID, and a `13` + `CHANGELOG` entry; `14` updated in the same pass |
 | A new outbound call | An ADR in `09`, a client-visible disclosure update (`SEC-039`), the static inventory test updated, and `.gitignore`/diagnostics review |
+| A development-time egress incident | Apply §3.1 first; record metadata only, notify the owner/data owner, and re-verify the affected session before resuming |
 | A change to log or diagnostics content | `SEC-014`/`SEC-017` update + `TST-SEC-09`/`12` fixtures updated + `22` copy updated if the user-visible statement changes |
 | Any weakening of a control | Written rationale, risk register entry (`25`), and explicit sign-off recorded in `CHANGELOG` + `SESSION_LOG` (`Addon 4 §E.2`) — **never** a silent relaxation |
 | Enabling encryption at rest | New ADR (key recovery design first), migration/restore plan, and this document rewritten before code |

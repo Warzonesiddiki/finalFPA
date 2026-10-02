@@ -1,5 +1,5 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** the twenty zero-compromise principles (Kickoff §3, Addon 1 §B); the session protocol
 > (Kickoff §14 + Addon 1 §M) — reading order, change order, the regression gate, the session log; the
 > Definition of Done and its enforcement; **quote-before-code** and the paraphrase ban (Addon 4 §B);
@@ -22,7 +22,7 @@
 | Fact | Owner |
 |---|---|
 | The twenty principles and their consequences | **`19` (this document)** |
-| The session protocol (start, during, end) and the session-log format | **`19`**, with Addon 1 §M |
+| The session protocol (start, during, end) and enforcement of the session-log block | **`19`**, with Addon 1 §M; the owner-facing report fields/evidence rules are owned by `30` |
 | Quote-before-code, the paraphrase ban and the reading plan's use | **`19`**, with Addon 4 §B and `00_INDEX` §2 |
 | The Definition of Done's *enforcement* (the text's owners are `02` §3.5 and `14` §14.3) | **`19`** |
 | Approval recording and the post-approval impact rule | **`19`**, with Addon 4 §E.2/E.3 |
@@ -30,7 +30,7 @@
 | Demo recipes, the tabletop and cold-start walkthroughs | **`19`**, with `16` §11 |
 | Prompt-edit discipline and client-feedback intake | **`19`**, with `10` §4 |
 | Code standards and the review checklist | `17` |
-| Gate checklists and evidence formats | `14` §15, `16` §5 |
+| Gate checklists and evidence formats | `14` §15, `16` §5; evidence/claim rules and red flags are owned by `30` §7/§8 |
 | The next open item | `16` §1.3 |
 | Client facts, assumptions and decisions | `18` |
 
@@ -133,17 +133,25 @@ behaviour question, stop and raise it (§7) — never improvise (Addon 4 §B.3/�
 
 ### 3.4 The `SESSION_LOG` entry format
 
-```
-## Session <nnn> — <date>
+`30_OWNER_OPERATING_HANDBOOK.md` §3 owns the owner-facing report. **Newest first**, every session begins
+with this required block at the top of its `SESSION_LOG.md` entry. A session without it is **not closed**.
 
+```markdown
+### Session <number> — YYYY-MM-DD — <focus>
+
+| Done (with FR IDs) | Evidence refs | Tests status (with transcript path) | Decisions needed from me | Next session plan | Risks / blocked |
+|---|---|---|---|---|---|
+| <completed outcome and FR IDs, or governance-only> | <repository-relative evidence paths, commands, commit hash, observed output> | <green / red / not applicable, command, exit code, transcript path> | <decision/options/recommendation, or none> | <one roadmap item> | <risk/blocker IDs, or none> |
+```
+
+Below that block, retain the engineering detail needed for the memory bridge:
+
+```markdown
 ### Objective
 <the next open item, quoted from 16 §1.3>
 
 ### What changed
 | File | Change |
-
-### FRs / areas touched
-- <FR IDs and areas>
 
 ### Spec sections integrated in this session
 - <quotes or precise references>
@@ -154,18 +162,12 @@ behaviour question, stop and raise it (§7) — never improvise (Addon 4 §B.3/�
 ### Decisions taken this session
 - <DEC IDs, or "none">
 
-### Blocking questions
-- <with owner and date, or "none">
-
-### Next step
-<the new open item, in 16 §1.3's words>
-
 ### Deferred to backlog / open questions
 - <BL/OQ IDs>
 ```
 
 **Append-only.** A wrong past entry is corrected by a new entry that says so — history is evidence, not a
-draft (Addon 1 §M.1).
+draft. The report's claim/evidence matrix, retention and evidence-folder naming are in `30` §7.
 
 ### 3.5 What ends a session immediately
 
@@ -173,9 +175,23 @@ draft (Addon 1 §M.1).
 2. A newly discovered **blocking question** touching money semantics, data loss or a client fact (`18`
    §4.2) — stop that thread and ask.
 3. A **security or data incident** (a secret committed, client data in the repo, an unexpected outbound
-   call): stop, record it, and follow `13` §12 (`17` §8) before anything else.
+   call): stop, record only safe metadata, and follow `13` §3.1 before anything else. Real client data
+   must never be pasted into the incident record, an agent or a support channel.
 4. A **spec contradiction** that changes behaviour: stop the implementation, fix the owning doc first
    (`00_INDEX` §6 conflict rule), then continue.
+
+### 3.6 Evidence claims and red-flag response (Addon 5 §C/§D)
+
+`30` §7 owns the **no claim without evidence** matrix. Every completion, green-test, UI, performance,
+installer, documentation or contract claim in this playbook, a gate or `SESSION_LOG` must point to its
+repository-relative evidence artifact. “Should be green” is a violation, not a status. Use
+`evidence/YYYY-MM-DD-<task>/` for the command transcript, verification note, hashes and safe screenshots.
+
+`30` §8 owns the thirteen red flags. When any red flag appears: stop the affected work; write the safe
+facts, explanation and remediation plan in `SESSION_LOG`; repair and verify it. A repeated or severe
+flag (product code before approval, weakened tests/golden files, unevidenced green claims, or a data/secret
+commit) stops all progress and triggers a full re-verification of that session before work resumes. A claim
+of evidence that was not actually run is the most severe process violation.
 
 ## 4. The Definition of Done and its enforcement
 
@@ -250,6 +266,10 @@ does not enter the product through a chat message.
 
 When specification text and code/prototype artifacts diverge, the specification text is the sole authority of record. Any divergence found between code and spec must be resolved by bringing code into compliance with the specification, or, if the specification itself is demonstrably flawed, by formally amending the specification through a documented CHANGELOG.md entry prior to updating code. Silent divergence is a protocol violation.
 
+**Convergence / freeze notice.** Kickoff plus Addons 1–5 form the frozen Phase 0 and v1 contract. New needs
+route through `18` → explicit owner approval → a numbered future addon. No session may silently expand the
+contract or self-generate Addon 6.
+
 ## 6. Approvals and gates
 
 ### 6.1 What an approval is
@@ -260,7 +280,7 @@ When specification text and code/prototype artifacts diverge, the specification 
 | Recorded | `Phase <n> gate APPROVED — <who> — <date>` in `CHANGELOG.md` **and** `SESSION_LOG.md` (Addon 4 §E.2) |
 | Scoped | It approves the state presented at that moment; material changes after it re-open the gate via §5.2 |
 | Evidence-backed | Every approval references its evidence pack (`16` §5.2); an approval without evidence is a wish |
-| Hard gates | Phase 0 (after `GATE-01`…`05` + provisional `GATE-05B`), the packaging spike (`GATE-06`), each phase gate (`GATE-07`…`12`), the real-data pilot (`GATE-13`), UAT (`GATE-14`), go-live (`GATE-15`) |
+| Hard gates | Phase 0 (after `GATE-01`…`05` + official Addon 5 `GATE-05B`: **70 checks**), the packaging spike (`GATE-06`), each phase gate (`GATE-07`…`12`), the real-data pilot (`GATE-13`), UAT (`GATE-14`), go-live (`GATE-15`) |
 | The Phase-0 stop | **No product code before the recorded Phase-0 approval** (Addon 4 §L.12) — this is the one rule with no exception |
 
 ### 6.2 The stop-and-present pattern (every gate)
@@ -316,6 +336,23 @@ A question that remains unanswered past the gate that needs it becomes a **gate 
 a silent default (`18` §4.2). A question that stays unanswered and stops a phase is escalated explicitly,
 in writing, in the gate summary.
 
+### 7.5 Stuck / rollback protocol (Addon 5 §I)
+
+A task stops after the **second failed attempt** or after it exceeds **twice its estimate**. There is no
+third blind attempt. Record the symptoms, what was tried, affected requirement, evidence and the last green
+commit in `SESSION_LOG`; roll back to that green commit/tag. `main` never remains red while the team thinks.
+
+The project owner is then offered **exactly three choices**, with a recommendation:
+
+| Option | Meaning | Owner decision |
+|---|---|---|
+| **A — Simpler approach within the specification** | Preserve the approved requirement with a smaller/safer implementation | Approve if the original technique is optional and the requirement remains intact |
+| **B — Timeboxed spike** | Run the documented Addon 4 spike to answer one concrete feasibility risk | Approve if the requirement is clear but the technical unknown is material |
+| **C — Descope proposal** | Use the cut process to move eligible work to `27` with impact stated | Approve only if it is not P0/never-cut and the value no longer justifies the delay |
+
+Only the owner's explicit choice permits another attempt. The choice is recorded as a `DEC` in `18` or a
+`BL` item in `27` **before** new code. The plain-language owner guidance is `30` §9.
+
 ## 8. Walkthroughs, demos and evidence
 
 ### 8.1 The three levels
@@ -329,11 +366,11 @@ in writing, in the gate summary.
 ### 8.2 Evidence discipline
 
 - Every gate number comes from an artefact: a transcript, a JSON report or a signed checklist. No "it felt
-  fast" (`14` §1.2 item 4).
+  fast" (`14` §1.2 item 4; `30` §7).
 - Screenshots and logs are redacted by the same rules as the diagnostics bundle (`13` §7) before they leave
-  the machine.
-- Real data never appears in demos, screenshots, issues or the repo (`14` §16); the pilot is the only real
-  data moment and it is governed by `28`.
+  the machine. Evidence uses `evidence/YYYY-MM-DD-<task>/` and stays traceable from the repository.
+- Real data never appears in development demos, screenshots, issues, agents, web forms or the repo (`13`
+  §3.1). The Real-Data Pilot is local and isolated (`28` §4).
 - A failed check is recorded in the gate summary with its cause — never omitted, never softened.
 
 ## 9. Working with the AI session

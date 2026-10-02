@@ -1,5 +1,5 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** scope, personas, jobs-to-be-done, success metrics, branding, disclaimer, IP stance; FR families referenced by `02_FUNCTIONAL_SPEC.md`
 > **TL;DR (≤ 15 lines):** The product is a local, offline, single-user Windows 11 desktop app that runs the
 > client's monthly FP&A rhythm: import ERP exports → validate → analyse budget vs actual → review
@@ -398,7 +398,7 @@ The complete open-question list is `18` §Open. The **blocking set for design de
 `OQ-004` prior-year availability · `OQ-005` currency/multi-currency · `OQ-006` budget versions ·
 `OQ-007` approval thresholds · `OQ-008` recurring-cost list · `OQ-009` vendor master ·
 `OQ-010` current Excel/PPT outputs for house-style matching · `OQ-011` pack audience ·
-`OQ-012` signing certificate budget · `OQ-013` real file sizes · `OQ-014` sample real data for the
+`OQ-012` signing certificate budget · `OQ-013` real file sizes · `OQ-014` isolated-local real data for the
 pilot · `OQ-015` branding assets · `OQ-016` support/warranty terms · `OQ-017` delivery channel.
 Added by the `11` pass (non-blocking, defaults in place): `OQ-021` client's current report format
 (`.xlsx` / `.xlsm` / protected / paper) for house-style matching · `OQ-022` preferred pack default units
@@ -460,12 +460,15 @@ configured endpoint, with redaction applied. Crash dumps and logs are local-only
 | Client branding (name, logo, colours) | Owned by the client; used only inside their installed build |
 | Application IP (source, architecture, docs, prompts) | Retained by the consultant |
 | Delivered build | Client receives a **perpetual usage licence** for the delivered build, for internal business use, on their machines |
+| Licensing mechanism | **None in v1:** no activation, no expiry, no licence key, no phoning-home and no usage-control service. The delivered build remains usable under the agreed perpetual licence (`DEC-040`). |
 | Redistribution | Client may not resell or redistribute the app |
 | Source code handover | Not part of v1 delivery; support/handover is via `23` (rebuild capability retained by the consultant) |
 | Third-party licences | No GPL/AGPL in shipped binaries; `THIRD_PARTY_LICENSES.txt` shipped with the installer (A1 §I, `13`, `17`) |
 
 **Action:** the user (commercial owner) must confirm or amend these terms before delivery; recorded as
-the open commercial question `OQ-016` (`18` §4.1) and mirrored in `28` §sign-off.
+the open commercial question `OQ-016` (`18` §4.1) and mirrored in `28` §sign-off. If a future engagement
+needs expiry, activation, a licence key or usage reporting, it is an explicit owner-approved PRD decision
+and `BL-037` backlog item first — never an improvised mid-build control.
 
 ## 17. Branding
 
@@ -493,7 +496,7 @@ immediately after Phase 0 approval and before Phase 1 (Addon 4 §L.13).
 
 First-run/onboarding (scope item 9) is delivered progressively with each phase but must be complete
 before UAT. The application is not considered delivered until: all gates green, docs `00`–`28` complete,
-user guide written, UAT signed, and a real sanitized month reconciled (`28` §Pilot/§UAT).
+user guide written, UAT signed, and a real sanitized month reconciled **only in the isolated local pilot/UAT environment** (`28` §Pilot/§UAT).
 
 ## 19. Commercial placeholders (flagged, not decided here)
 

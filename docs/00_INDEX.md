@@ -1,13 +1,13 @@
 > **Status:** Draft v0.1 — living document (updated every session)
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** meta — navigation, coverage, ownership, IDs, gates
-> **TL;DR (≤ 15 lines):** This is the entry point for the whole documentation set. Read section 2 for
-> the reading plans, section 3 for the document map, section 4 for the Addon Coverage Matrix (all 31
-> spec sections (00–30) plus CHANGELOG, PHASE0_SUMMARY, SESSION_LOG → owning doc → status), section 5 for the Source-of-Truth Matrix (one owner per fact
-> type), section 6 for the document standard and header template, section 8 for the permanent ID
-> registry, and section 9 for the live quality-gate tracker. Phase 0 is complete only when every row of
-> section 4 reads `INTEGRATED` and all six gates in section 9 tracked. Never bulk-read the whole doc set:
-> follow the session reading plan (2.2). No product code until approval is recorded (section 12).
+> **TL;DR (≤ 15 lines):** Start here for the reading plan, document map, Coverage Matrix, source-of-truth
+> matrix, ID registry and gate tracker. The official Addon 5 source is stored at
+> `project prompt/ADDON_5_OWNER_CONTROL_EVIDENCE_DATA_EGRESS_EXTENSION.md` (SHA-256 in `30`).
+> The frozen contract is Kickoff plus Addons 1–5; new needs use `18` then explicit owner approval and a
+> numbered addon. The matrix has 92 expanded rows over 78 contract sections; all Addon 5 rows point to
+> their owners. Phase 0 remains **not approved** while the six gate sources (70 checks) are re-audited.
+> Never bulk-read the whole set: use the session reading plan. No product code before recorded approval.
 
 ---
 
@@ -23,7 +23,7 @@ dropped. It is a living document: it is updated at every session and every phase
 It owns four things (nothing else lives here):
 
 1. The **document map** and reading order (sections 2–3).
-2. The **Addon Coverage Matrix** — every section of the kickoff prompt and Addons 1–4, mapped to the
+2. The **Addon Coverage Matrix** — every section of the kickoff prompt and Addons 1–5, mapped to the
    document that owns it, with integration status (section 4).
 3. The **Source-of-Truth Matrix**, the document standard, and conflict-resolution rules (sections 5–6).
 4. The **ID namespace registry** and the **quality-gate tracker** (sections 8–9).
@@ -79,7 +79,7 @@ precise, terse, and testable.
 | 11 | `11_EXCEL_OUTPUT_SPEC.md` | Excel pack layouts, naming, formats, row caps, consistency | Draft v0.1 |
 | 12 | `12_POWERPOINT_OUTPUT_SPEC.md` | Slide-by-slide spec, placeholders, character budgets, base deck | Draft v0.1 |
 | 13 | `13_SECURITY_PRIVACY.md` | Local-only guarantees, secrets, key rotation, logs, redaction, data at rest | Draft v0.1 |
-| 14 | `14_TESTING_QA_PLAN.md` | Test cases, NFR numbers, perf baselines, coverage bars, 66 Phase-0 checklist checks | Draft v0.1 |
+| 14 | `14_TESTING_QA_PLAN.md` | Test cases, NFR numbers, perf baselines, coverage bars, 70 Phase-0 checklist checks | Draft v0.1 |
 | 15 | `15_PACKAGING_DEPLOYMENT_RUNBOOK.md` | Build → installer → clean-Win11 validation → SmartScreen → diagnostics | Draft v0.1 |
 | 16 | `16_ROADMAP_PHASES.md` | Phases, estimates, gate artifacts, release cadence, next open item | Draft v0.1 |
 | 17 | `17_CODING_STANDARDS.md` | Repo layout, naming, commits, branching, engine boundary, code health | Draft v0.1 |
@@ -95,20 +95,23 @@ precise, terse, and testable.
 | 27 | `27_BACKLOG.md` | Every parked item (`BL-`) with one-line scope, promotion trigger, size, source and target phase; reviewed at every gate | Draft v0.1 |
 | 28 | `28_ACCEPTANCE_UAT_AND_GO_LIVE.md` | DoD, UAT mechanics, defects (`DEF-`), pilot tie-out, go-live, sign-off | Draft v0.1 |
 | 29 | `29_CLIENT_REQUIREMENTS_PACK.md` | Plain-language client pack (no requirement codes): what it does, what the AI does not do, the decisions needed with recommendations, what we need from the client, timeline/UAT/training, disclaimer, sign-off block | Draft v0.1 |
-| 30 | `30_DOCUMENTATION_SET_REVIEW_GUIDE.md` | Review guide, 5-minute pre-flight checklist, session-report standard, evidence matrix, red-flag ladder, oracle procedure | Approved v1.0 |
+| 30 | `30_OWNER_OPERATING_HANDBOOK.md` | Plain-language owner cadence, evidence, red flags, sampling, stuck protocol and independent oracle | Draft v0.2 — re-audit pending |
 | — | `CHANGELOG.md` | Every doc/spec change (Keep a Changelog + semver) and gate approvals | Living |
 | — | `SESSION_LOG.md` | Append-only session memory: what changed, FRs touched, tests, next step | Living |
 | — | `PHASE0_SUMMARY.md` | One-page Phase 0 presentation for approval: product, what the set locks, key decisions, top risks, open questions, gate snapshot, approval ask | Draft v0.1 (awaiting recorded approval) |
 
-**Supporting artifacts** (created at Phase 0 completion, governed by the docs above):
-`sample-data/` (generator, D365 + two non-D365 shapes, `.xlsx` templates, ~40 planted exceptions,
-`expected_exceptions.csv`, `malformed/` corpus, `--scale 250000` mode), root `README.md`.
+**Supporting artifacts** (governed by the docs above): `sample-data/` contains the fixed-seed generator
+and regeneration instructions for the D365 + two non-D365 shapes, `.xlsx` templates, ~40 planted exceptions,
+`expected_exceptions.csv`, malformed corpus and `--scale 250000` mode. Its generated outputs are ignored
+rather than blob-committed; the root `README.md` states that boundary.
 
 ## 4. Addon Coverage Matrix (Addon 2 §A.3, extended by Addons 3 §A.3 and 4 §A.3)
 
-**86 expanded rows covering 72 contract sections (15 + 17 + 17 + 17 + 12 + 8).** Addon 2 §C and Addon 3 §B each expand one contract section into multiple traced rows (hence 17 rows under each of §4.3/§4.4 instead of 10/11). The matrix is
-complete only when every row reads `INTEGRATED`. A row is `INTEGRATED` when the owning doc contains
-the requirement **and** the change is recorded in `CHANGELOG.md`.
+**92 expanded rows covering 78 contract sections (15 + 16 + 10 + 11 + 12 + 14).** Addon 2 §C and Addon 3 §B each expand one contract section into multiple traced rows (hence 17 rows under each of §4.3/§4.4 instead of 10/11). The official Addon 5 has fourteen sections, A–N; it supersedes the former inferred eight-row treatment.
+
+The matrix is complete only when every row reads `INTEGRATED`. A row is `INTEGRATED` when the owning
+doc contains the requirement **and** the change is recorded in `CHANGELOG.md`. `INTEGRATED` means coverage
+is present; a gate does not pass until its separately cited evidence is re-audited.
 
 Status legend: `PENDING` = owning doc not yet written · `IN PROGRESS` = owning doc drafted, additions
 still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELOG entry.
@@ -192,11 +195,11 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A3-C | Feature precision part 2 (AI mapping review queue, mapping preview/profile auto-match, commentary workflow, pack issuance register, data-quality score, storage/health, budget re-import, persistence/destructive actions, home screen, no login, import UX, display locale) | `02`, `08`, `10` | INTEGRATED |
 | A3-D | AI feature depth (four full prompt texts, model pinning/deprecation, golden fixtures, prompt-edit discipline) | `10`, `02` | INTEGRATED |
 | A3-E | Decisions that must be settled (success metrics, IP/licensing, forced in/out list, support/warranty) | `01`, `18`, `28` | INTEGRATED (`01` §16/§5; the support/warranty placeholder is in `28` §3.1 and `OQ-016`) |
-| A3-F | Charts, formatting & test corpus (chart inventory, centralised conditional formatting, output conventions, cross-artifact consistency test, negative file corpus) | `08`, `11`, `12`, `14`, `sample-data/` | INTEGRATED (charts/formatting/conventions in docs; `sample-data/malformed/` corpus generated) |
+| A3-F | Charts, formatting & test corpus (chart inventory, centralised conditional formatting, output conventions, cross-artifact consistency test, negative file corpus) | `08`, `11`, `12`, `14`, `sample-data/` | INTEGRATED (charts/formatting/conventions in docs; generator emits the local ignored `sample-data/malformed/` corpus) |
 | A3-G | Acceptance, UAT & go-live (project DoD, UAT mechanics, defect severities, per-phase demo scripts, go-live checklist) | `28` | INTEGRATED |
 | A3-H | Backlog governance (entry schema, seed, reviewed at gates) | `27` | INTEGRATED (`27` §2 schema + 34 seeded items with triggers; §4 review ritual at every gate) |
 | A3-I | Process & quality deltas (exception perf NFR, ADR-000 index, local-only crash dumps, prompt-edit + feedback intake, DoD additions) | `14`, `09`, `19` | INTEGRATED |
-| A3-J | Phase 0 quality gate deltas (12 checks) | `00`, `14` | INTEGRATED (all 12 checks green; sample-data suite generated) |
+| A3-J | Phase 0 quality gate deltas (12 checks) | `00`, `14` | INTEGRATED (checklist content integrated; pass status comes only from the dated re-audit) |
 | A3-K | Updated immediate next actions | `16`, `19`, `00` | INTEGRATED |
 
 ### 4.5 Addon 4 (Sections A–L) — 12 rows
@@ -208,28 +211,34 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A4-C | Source-of-Truth Matrix & doc hygiene (one owner per fact, conflict resolution, no duplication, length discipline, link-check) | `00` | INTEGRATED |
 | A4-D | FR prioritisation & cut-line policy (P0/P1/P2, phase gate rule, never-cut list, cut process, estimates) | `02`, `16`, `20` | INTEGRATED |
 | A4-E | Doc 29 + approval mechanics (plain-language pack, approval recording, post-approval change impact rule) | `29`, `19`, `24`, `18` | INTEGRATED (`29` §14 sign-off, §15 change process; approval recording in `19` and the `CHANGELOG` convention) |
-| A4-F | Real-data pilot gate (one sanitized real month, tie-out acceptance, classification, exit criteria) | `28`, `14` | INTEGRATED (`28` §4: preconditions, four-class taxonomy, tie-out worksheet, `GATE-13` exit criteria) |
+| A4-F | Real-data pilot gate (one sanitized real month **only in the isolated local pilot**, tie-out acceptance, classification, exit criteria) | `28`, `14` | INTEGRATED (`28` §4: preconditions, data-location boundary, four-class taxonomy, tie-out worksheet, `GATE-13` exit criteria) |
 | A4-G | Tolerance & edge-case data matrix (no epsilon in money maths, display rounding, cross-artifact equality, 13 edge cases) | `05`, `02`, `14` | INTEGRATED |
 | A4-H | Sample-data integrity (watermark, project_type flag, no interleave, not delivered to client) | `14`, `16`, `02` | INTEGRATED |
 | A4-I | Engineering discipline deltas (spike policy, fresh-clone bootstrap test, code-health guardrails, storage growth maths) | `09`, `14`, `17`, `19` | INTEGRATED |
 | A4-J | Security & config deltas (AI key rotation, keyless mode default) | `13` | INTEGRATED (rotation `13` §5.3; keyless default `10` §2.1/§11) |
-| A4-K | Phase 0 quality gate deltas (13 checks) | `00`, `14` | INTEGRATED (all 13 checks green; headers strictly ≤ 15 lines) |
+| A4-K | Phase 0 quality gate deltas (13 checks) | `00`, `14` | INTEGRATED (checklist content integrated; pass status comes only from the dated re-audit; headers must remain ≤ 15 lines) |
 | A4-L | Updated immediate next actions (the current authoritative list) | `16`, `19`, `00` | INTEGRATED |
 
 **Gate rule:** any row not `INTEGRATED` fails the Phase 0 gate (Addon 2 §A.3, Addon 3 §A.3, Addon 4 §A.3).
 
-### 4.6 Addon 5 (Sections A–M) — 8 rows
+### 4.6 Addon 5 (Sections A–N) — 14 rows
 
 | Ref | Requirement | Owning doc(s) | Status |
 |---|---|---|---|
-| A5-A | How this addon works + Divergence notice (§A.4) | `00`, `19` | INTEGRATED (`00` §6.3, `19` §5.5) |
-| A5-B | Document updates: new document `30_DOCUMENTATION_SET_REVIEW_GUIDE.md` | `30` | INTEGRATED (`30` complete with all sections) |
-| A5-C | Evidence matrix & retention policy (Level 1–3 standards) | `30`, `14`, `evidence/` | INTEGRATED (`30` §4, `evidence/` directory live) |
-| A5-D | Red-flag list & 5-tier response ladder | `30`, `19` | INTEGRATED (`30` §5) |
-| A5-E | Phase 0 review guide & spot-check sampling procedure | `30`, `audit/` | INTEGRATED (`30` §6, `audit/SAMPLING.md`) |
-| A5-F | Stuck options & escalation protocol (OQ template) | `30`, `18` | INTEGRATED (`30` §7, `18` §4.3) |
-| A5-G | Oracle procedure & spec-derived reconciliations | `30`, `05`, `14` | INTEGRATED (`30` §8, `05` §12 golden fixtures) |
-| A5-M | Phase-0 Addon 5 checklist, provisional `GATE-05B` (8 checks; Addon 5 contract pending, see `F-015`) | `00`, `14` | INTEGRATED (`14` §15.6 `GATE-05B`, all green; `GATE-06` stays the packaging spike per `16`/registry) |
+| A5-A | Spec-of-record integration, convergence and freeze notice | `00`, `19`, `18` | INTEGRATED (`00` §4.6/§6.3/§10; `19` §5.5; `18` `DEC-038`) |
+| A5-B | New owner-facing handbook | `30` | INTEGRATED (`30` §§1–12) |
+| A5-C | Evidence and claims protocol; committed `evidence/YYYY-MM-DD-<task>/` convention | `30`, `19`, `SESSION_LOG` | INTEGRATED (`30` §7; `19` §3.4/§8.2; session-log header) |
+| A5-D | Thirteen red flags and response ladder | `30`, `19` | INTEGRATED (`30` §8; `19` §3.5/§8.2) |
+| A5-E | Development-time data-egress rules and S1 incident handling | `13`, `19`, `SESSION_LOG` | INTEGRATED (`13` §3.1; `19` §3.5) |
+| A5-F | Golden Month blessed-reference workflow and regeneration control | `14`, `17` | INTEGRATED (`14` §5.6; `17` §9.1) |
+| A5-G | Independent hand-check oracle and committed formula-visible worksheet template | `14`, `28`, `30`, `tests/oracle/` | INTEGRATED (`14` §5.7; `28` §4.4; `30` §10) |
+| A5-H | Git exclusions, generated sample data, survivability, release What's New, and no-activation licensing decision | `01`, `17`, `24`, `.gitignore` | INTEGRATED (`01` §16; `17` §8/§11.3; `24` §10) |
+| A5-I | Stop-after-second-attempt / rollback / exactly-three-option stuck protocol | `19`, `30`, `18` | INTEGRATED (`19` §7.5; `30` §9; `18` `DEC-039`) |
+| A5-J | Sendable questionnaire form, response tracker and final-default sweep | `21`, `28` | INTEGRATED (`21` §5.3/§5.4; `28` §6) |
+| A5-K | Post-go-live intake, severity, release, request/backlog loop and owner response placeholders | `23`, `24`, `27`, `28` | INTEGRATED (`23` §11.1; `24` §10; `27` §4.4; `28` §8) |
+| A5-L | Cross-document update map | `00`, `13`, `14`, `17`, `19`, `21`, `23`, `24`, `27`, `28`, `30` | INTEGRATED (this matrix and each named owning section) |
+| A5-M | Addon 5’s 12 Phase-0 delta checks in addition to all earlier checks | `14`, `00` | INTEGRATED (`14` §15.6 `GATE-05B`, 12 checks; tracker §9) |
+| A5-N | Updated immediate actions: integrate → re-audit → tabletop → present → stop for approval → packaging spike only | `16`, `19`, `PHASE0_SUMMARY` | INTEGRATED (`16` §1.3/§3.2; `19` §6; `PHASE0_SUMMARY` §8) |
 
 ## 5. Source-of-Truth Matrix (Addon 4 §C)
 
@@ -267,7 +276,7 @@ cross-reference.** Never paste a formula, threshold, layout, or rule into a seco
 | Backlog | `27_BACKLOG` |
 | UAT, DoD, go-live | `28_ACCEPTANCE_UAT_AND_GO_LIVE` |
 | Client-facing requirements pack | `29_CLIENT_REQUIREMENTS_PACK` |
-| Review guide, pre-flight checklist, evidence matrix, red-flag ladder, oracle procedure | `30_DOCUMENTATION_SET_REVIEW_GUIDE` |
+| Owner control, evidence, red flags, sampling and independent oracle | `30_OWNER_OPERATING_HANDBOOK` |
 
 ## 6. Document standard
 
@@ -296,6 +305,11 @@ cross-reference.** Never paste a formula, threshold, layout, or rule into a seco
 ### 6.3 Canonical Divergence Notice (Addon 5 §A.4)
 
 When specification text and code/prototype artifacts diverge, the specification text is the sole authority of record. Any divergence found between code and spec must be resolved by bringing code into compliance with the specification, or, if the specification itself is demonstrably flawed, by formally amending the specification through a documented `CHANGELOG.md` entry prior to updating code. Silent divergence is a protocol violation.
+
+**Convergence / freeze notice.** Kickoff plus Addons 1–5 are the complete Phase 0 and v1 contract. After
+this integration, a newly discovered need goes first to `18_GLOSSARY_ASSUMPTIONS_OPEN_QUESTIONS.md`, then
+requires explicit owner approval and a numbered future addon before it changes the contract. The team must
+not silently expand scope or self-generate Addon 6.
 
 ## 7. Cross-artifact consistency (why the matrices matter)
 
@@ -335,37 +349,40 @@ as cross-references in `11`/`12`.
 | `PROMPT-nn` | Versioned prompt template | `10` | `PROMPT-01` |
 | `MAP-nnn` | Mapping profile | `04` | `MAP-003` |
 | `SCN-nnn` | Forecast/analysis scenario | `07` | `SCN-002` |
-| `GATE-nn` | Quality gate: `GATE-01`…`05` = the five kickoff/Addon 1–4 Phase-0 checklists (owner `14` §15); provisional `GATE-05B` = Addon 5 deltas pending contract (owner `14` §15.6); `GATE-06` = packaging spike and `GATE-07`…`12` = phases 1–6 (owner `16`); `GATE-13`…`15` = pilot/UAT/go-live (owner `28`) | `16`, `14`, `28` | `GATE-01`, `GATE-05B`, `GATE-07`, `GATE-14` |
+| `GATE-nn` | Quality gate: `GATE-01`…`05` = kickoff/Addons 1–4 Phase-0 checklists; `GATE-05B` = official Addon 5 §M (12 checks); `GATE-06` = packaging spike and `GATE-07`…`12` = phases 1–6; `GATE-13`…`15` = pilot/UAT/go-live | `16`, `14`, `28` | `GATE-01`, `GATE-05B`, `GATE-07`, `GATE-14` |
 
 Rules: IDs are allocated once and never reused; a retired ID is tombstoned in the owning doc; every
 `FR-nnn` appears in `20_REQUIREMENTS_TRACEABILITY.md` with a priority (P0/P1/P2) and at least one test.
 
 ## 9. Quality-gate tracker
 
-Six Phase-0 checklists, **66 checks total** (`GATE-01`…`05` + provisional `GATE-05B`; packaging spike `GATE-06` is tracked in `16`, not here), applied in addition to each other (later gates add, never remove).
-The authoritative checkbox lists live in doc `14` §15; this table tracks status only.
+Six Phase-0 checklists, **70 checks total** (`GATE-01`…`05` plus `GATE-05B`; packaging spike `GATE-06` is
+tracked in `16`, not here), apply in addition to one another. `GATE-05B` is the official Addon 5 Section M
+checklist (12 deltas), not a provisional substitute. The authoritative checklists live in `14` §15; this
+table is a current-status tracker, not evidence. The dated evidence is
+`evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md`; its scope is documentary only.
 
-| Gate | Source | Checks | Status |
-|---|---|---|---|
-| `GATE-01` Phase 0 core | Kickoff §5 checklist | 9 | **9 ✅** (all core docs, formulas, exception rules, UI wireframes, ADRs, tests, and repo skeleton verified) |
-| `GATE-02` Addon 1 deltas | Addon 1 §O | 12 | **12 ✅** (docs 21–25, questionnaire defaults, tabletop walkthrough, Excel hardening, NFRs) |
-| `GATE-03` Addon 2 deltas | Addon 2 §I | 12 | **12 ✅** (API contract, headless engine boundary, ADR-002 pinned toolchain, AI stance) |
-| `GATE-04` Addon 3 deltas | Addon 3 §J | 12 | **12 ✅** (docs 27–28, four prompt texts, chart inventory, `sample-data/malformed/` corpus) |
-| `GATE-05` Addon 4 deltas | Addon 4 §K | 13 | **13 ✅** (Coverage Matrix complete, doc headers strictly ≤ 15 lines, never-cut list, doc 29 pack) |
-| `GATE-05B` Addon 5 deltas (provisional) | Addon 5 §M (contract pending, `F-015`) | 8 | **8 ✅** (doc 30 review guide, `sample-data/` suite, repo skeleton, divergence notice, evidence conventions; number provisional — `GATE-06` stays the packaging spike) |
+| Gate | Source | Checks | Current status |
+|---|---|---:|---|
+| `GATE-01` Phase 0 core | Kickoff §5 | 9 | **PASS (9/9 documentary)** — re-audit report `GATE-01` |
+| `GATE-02` Addon 1 deltas | Addon 1 §O | 12 | **PASS (12/12 documentary)** — re-audit report `GATE-02` |
+| `GATE-03` Addon 2 deltas | Addon 2 §I | 12 | **PASS (12/12 documentary)** — re-audit report `GATE-03` |
+| `GATE-04` Addon 3 deltas | Addon 3 §J | 12 | **PASS (12/12 documentary)** — re-audit report `GATE-04` |
+| `GATE-05` Addon 4 deltas | Addon 4 §K | 13 | **PASS (13/13 documentary)** — re-audit report `GATE-05` |
+| `GATE-05B` Addon 5 deltas | Addon 5 §M | 12 | **PASS (12/12 documentary)** — re-audit report `GATE-05B` |
+| **Total** | All six sources | **70** | **PASS (70/70 documentary)** — presentation and recorded owner approval still pending |
 
 ## 10. Current phase status
 
 | Item | Value |
 |---|---|
-| Phase | **Phase 0 — Documentation** |
-| Authoritative next-action list | Addon 4 §L (supersedes Addon 3 §K → Addon 1 §P → Kickoff §15) |
-| Docs complete | `00`–`30` (31 docs) + `CHANGELOG`, `SESSION_LOG` |
-| Docs remaining | None for Phase-0 content — `00`–`30` + `PHASE0_SUMMARY` written; `sample-data/` suite generated (D365 + 2 non-D365 shapes, templates, 40 plantings, 16 malformed files); six Phase-0 checklists (`GATE-01`…`05` + provisional `GATE-05B`) green pending Wave 4 re-verification |
-| Product code | **None. Forbidden until recorded approval.** |
-| App version / docs version | 0.1.0 (planned) / 0.1.0 (working draft) |
-| Open questions count | Tracked in `18` §4 |
-| Blocking questions | None currently (all have labelled defaults in doc `21`) |
+| Phase | **Phase 0 — Documentation and owner review** |
+| Authoritative next-action list | Addon 5 §N (supersedes Addon 4 §L) |
+| Official Addon 5 | Present at `project prompt/ADDON_5_OWNER_CONTROL_EVIDENCE_DATA_EGRESS_EXTENSION.md`; SHA-256 `cfbb69411d586194d2ad8ef6034a74e19bcb0ae976b466485adda75a97372b11` |
+| Documentation state | Addon 5 integration, link check, 70-check documentary re-audit and two paper tabletops are complete; presentation is pending |
+| Product code | **None. Forbidden until recorded Phase 0 approval.** |
+| App version / docs version | 0.1.0 (planned) / 0.2.0 (draft remediation) |
+| Blocking state | No owner approval exists. The documentary re-audit is evidence for owner presentation, not an approval or a licence to package/code. |
 
 ## 11. How this document is updated
 
@@ -379,7 +396,7 @@ The authoritative checkbox lists live in doc `14` §15; this table tracks status
 
 | Gate | State | Date | Approver | Evidence |
 |---|---|---|---|---|
-| Phase 0 (core + Addons 1–4) | **Requested — awaiting recorded approval** (the state is `PHASE0_SUMMARY.md` at `HEAD`) | 2026-10-01 | Project owner | `docs/PHASE0_SUMMARY.md` + doc `29` |
+| Phase 0 (Kickoff + Addons 1–5) | **Ready to present — awaiting recorded owner approval** | — | Project owner | `PHASE0_SUMMARY.md` + `29` + `30` + `evidence/2026-10-02-phase0-re-audit/` |
 | Packaging spike | Not started (post-approval) | — | Project owner | `09`/`15` spike outcome |
 | Phase gates 1–6 | Not started | — | Project owner | Per-phase demo script (`16`, `28`) |
 | Real-data pilot | Not started | — | Client analyst | Tie-out worksheet (`28` §4) |

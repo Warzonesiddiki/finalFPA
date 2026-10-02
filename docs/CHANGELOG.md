@@ -15,11 +15,79 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
 |---|---|---|
 | App version | `0.1.0` (planned, unreleased) | Packaged as `Setup-FPandAMonthEndCopilot-<version>.exe` |
 | Schema version | `1` (planned) | Bumped only with a documented migration (`24`) |
-| Docs version | `0.1.0` (working draft) | This Phase 0 set |
+| Docs version | `0.2.0` (presentation candidate; not approved) | This Phase 0 set; product remains unimplemented |
 
 ---
 
 ## [Unreleased]
+
+### Official Addon 5 source intake & Phase-0 integration — 2026-10-02
+
+- **Authority anchored:** Stored the owner-supplied official contract at
+  `project prompt/ADDON_5_OWNER_CONTROL_EVIDENCE_DATA_EGRESS_EXTENSION.md` with SHA-256
+  `cfbb69411d586194d2ad8ef6034a74e19bcb0ae976b466485adda75a97372b11`. It supersedes the prior inferred
+  eight-check Addon-5 treatment; the stable local name is `GATE-05B` with 12 checks, making six Phase-0
+  gate sources and 70 checks total (`DEC-038`).
+- **Owner controls:** Renamed/rebuilt Doc 30 as `30_OWNER_OPERATING_HANDBOOK.md`; added the mandatory
+  six-column session report, evidence/claim protocol, five-minute review, Phase-0 review guide, sampling,
+  thirteen red flags, stuck/rollback choices and independent hand-check procedure. Old file-name references
+  are historical records only; the document map points to the new canonical path.
+- **Data and evidence safety:** Added development-session egress controls and S1 response rules; added
+  Golden Month and independent-oracle procedures; created the synthetic formula-visible oracle template,
+  its SHA-256 sidecar and README; and created evidence directory conventions. The workbook is a reviewed
+  synthetic fixture, not a blessed Golden Month or a product result.
+- **Repository hygiene:** Added root `.gitignore`, `sample-data/README.md`, generated-output exclusion,
+  regeneration guidance, Golden/Oracle fixture controls, survivability guidance and installer What’s New
+  routing. Generated synthetic sample outputs, templates and malformed corpus blobs are no longer tracked;
+  the generator remains the source of regeneration.
+- **Operations loop:** Added the client sendable-question form/tracker, go-live final-default sweep,
+  post-go-live support → release/request → backlog loop, `BL-037` for owner-approved future usage controls,
+  and an explicit no-activation/no-expiry/no-key v1 decision (`DEC-040`). `OQ-023` records that Addon 5 left
+  the sweep deadline `N` unspecified: 10 business days is only a proposed default pending owner decision.
+- **Truthfulness reset:** Historical 66/66 or provisional-green claims are not current evidence. The
+  current 70-check re-audit, link check and two document tabletops are recorded separately before any
+  Phase-0 presentation. No owner approval, packaging work or product code is implied by this entry.
+
+### Documentary re-audit & owner-presentation preparation — 2026-10-02
+
+- **Re-audit completed:** Ran
+  `PYTHONPATH=/tmp/phase0-openpyxl python audit/phase0_reaudit.py --report evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md`.
+  It exited `0`: Kickoff `9/9`, Addon 1 `12/12`, Addon 2 `12/12`, Addon 3 `12/12`, Addon 4 `13/13`, and
+  official Addon 5 `12/12`, for **70/70 PASS**. The committed report and `command.txt` preserve the
+  command, exit code, final transcript tail and report SHA-256. This is a documentary/specification
+  result only, not an implementation, packaging, real-Windows, pilot, UAT, go-live or owner-approval claim.
+- **Synthetic regeneration recorded:** Regenerated the 10,000-scale synthetic corpus outside the repository,
+  inspected it, then removed it. The dated transcript records three templates, 16 malformed fixtures and
+  41 expected-exception rows (40 finance plantings plus independent `INJ-01` / `EXC-SEC-14`).
+  `sample-data/` remains source-and-generator only; real-client data did not enter this session.
+- **Oracle independently validated:** Repaired the synthetic hand-check template’s OOXML style encoding,
+  updated `tests/oracle/golden_month_hand_check_template.xlsx.sha256`, and validated the repaired workbook
+  using isolated `openpyxl 3.1.5` with warnings treated as errors plus ZIP integrity. The record confirms
+  four required sheets and ten formula-visible cells. It is a template for future gates, not a blessed
+  Golden Month or evidence that an engine exists.
+- **Documentation tabletops completed:** Recorded an 18-step analyst month-end-through-issuance/re-issue
+  walkthrough and a 12-question cold-start-client walkthrough using only the written documentation. A final
+  egress-focused re-test corrected the cold-start data-sharing copy before presentation. These are expressly
+  not executable fresh-machine, product, UAT or client-pilot tests.
+- **Current-status reconciliation:** Added dated current-status layers in `README.md`, `PHASE0_SUMMARY.md`,
+  `audit/FINDINGS.md`, `audit/REPORT.md`, `audit/WAVES.md`, `audit/REQ_CHECKLIST.md` and this changelog.
+  `F-015` is now `SOURCE-SUPPLIED-RE-AUDITED`; older provisional/missing-source rows remain historical.
+  Current verdict: **READY FOR OWNER PRESENTATION — NOT APPROVED**.
+- **Session closure record:** Added `SESSION_LOG.md` Session 004 as the mandatory six-column owner report.
+  It names the only immediate decision: record either the exact Phase 0 approval or a scoped rejection;
+  do not infer approval from the re-audit or a review. `OQ-023` remains a separate pre-go-live owner
+  decision for the final-default-sweep deadline `N` and calendar basis.
+
+- **Final presentation-review egress correction:** The original client-facing copy could be read as asking
+  for sanitized real exports, a budget workbook or a recent pack before build. That conflicts with Addon 5
+  §E. Before presentation, rewrote the client request, questionnaire, pilot, risk, traceability and test
+  wording: development now requests only metadata or style-only/blank material; actual client data is
+  available only in the isolated local pilot/UAT environment after a release candidate exists. A follow-on
+  whole-cell sweep corrected two residual `29` decision recommendations (prior-year extract and vendor/master
+  records). The seven targeted paper re-tests are recorded in
+  `evidence/2026-10-02-phase0-re-audit/tabletop_walkthroughs.md`. No client file,
+  row, amount, identifier, screenshot or other data entered this workspace, agent, repository, cloud/web
+  service or evidence pack; this was a copy defect, not a data-exposure incident.
 
 ### Wave 4 Remediation — Owner-Declared Window (2026-10-01)
 

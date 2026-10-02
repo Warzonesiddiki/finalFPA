@@ -1,5 +1,5 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** `FR-IMP-001`…`FR-IMP-031`, `FR-XL-004` (naming), `FR-SET-002` (mapping management), `FR-SET-009` (storage/sync detection); import behaviour, file quirks, profiles, validation, quarantine rules
 > **TL;DR (≤ 15 lines):** This document owns how files get in: the seven-step import wizard, the shipped
 > templates and their version stamps, mapping profiles (structure, fingerprint auto-match, immutable
@@ -489,7 +489,7 @@ Worked examples:
 
 | Item | Status |
 |---|---|
-| Real column lists for D365 edition, payroll and procurement (`Q-002`, `Q-003`) | Open — defaults shipped; profiles will be tuned on the first real file set |
+| Real column lists for D365 edition, payroll and procurement (`Q-002`, `Q-003`) | Open — metadata-only shapes are requested during development; defaults ship, then profiles are tuned only on the first isolated-local pilot file set |
 | Enforced file-size and row limits | Numbers owned by `14` (`NFR-002`); this doc consumes them |
 | Control-total default: fail vs accept-with-record | **Decided: fail by default, with a recorded acceptance path** (`DEC-022`) |
 | Cross-batch duplicate default action | **Decided: report and ask; never auto-skip or auto-import** (`DEC-023`) |

@@ -6,6 +6,34 @@
 
 ---
 
+## CURRENT STATUS ADDENDUM — OFFICIAL ADDON 5 INTAKE & DOCUMENTARY RE-AUDIT (2026-10-02)
+
+- **Official source:** The owner supplied `project prompt/ADDON_5_OWNER_CONTROL_EVIDENCE_DATA_EGRESS_EXTENSION.md`.
+  SHA-256: `cfbb69411d586194d2ad8ef6034a74e19bcb0ae976b466485adda75a97372b11`. This resolves the former
+  source-availability escalation `F-015`; its historical absence remains documented below.
+- **Integration result:** The 14 official Addon-5 sections A–N are mapped as `INTEGRATED`; the official
+  Section-M delta list is 12 rows under stable local label `GATE-05B`, producing six Phase-0 sources and
+  70 total checks (9+12+12+12+13+12).
+- **Current re-audit:** `audit/phase0_reaudit.py` returned exit code 0 and **70/70 PASS**. Evidence lives in
+  `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` and `command.txt`; that directory also
+  records the repository-local Markdown link check, synthetic-only generator regeneration, OOXML oracle
+  workbook validation and two documentation tabletops.
+- **Final egress-copy correction:** Owner-presentation review found that former client-facing wording could
+  be read as asking for real/sanitized files before build. It was corrected and paper-retested in
+  `evidence/2026-10-02-phase0-re-audit/tabletop_walkthroughs.md`: development requests metadata or
+  style-only/blank material only; real client data is isolated-local pilot/UAT work after a release candidate.
+  No client data entered this workspace, agent, repository, cloud/web service or evidence pack.
+- **Verdict:** **READY FOR OWNER PRESENTATION — NOT APPROVED.** This is a documentary-verification verdict,
+  not a claim that an installer, product build, clean-Windows run, pilot, UAT or go-live occurred. Product
+  code and packaging remain prohibited until the exact Phase 0 approval is recorded in both process logs.
+- **Current owner decision:** `OQ-023` records that Addon 5 leaves the final-default-sweep `N` unspecified;
+  10 business days is proposed only and must be owner-decided before go-live.
+
+Historical Wave 0–6 text below is retained as then-current audit history; old `66/66`, provisional-gate,
+missing-source and old-Doc-30 statements are superseded by this addendum, not retroactively erased.
+
+---
+
 ## WAVE 6 EXECUTIVE SUMMARY — FULL REMEDIATION WINDOW (2026-10-02)
 
 - **Execution Date:** 2026-10-02

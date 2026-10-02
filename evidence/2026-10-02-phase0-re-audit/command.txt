@@ -1,0 +1,53 @@
+# Re-audit command transcript
+
+Date: 2026-10-02
+Purpose: final documentation-only all-six-source re-audit after the complete owner-presentation data-egress copy sweep; does not execute product code.
+Working directory: repository root (`/home/user/finalFPA`)
+Dependency isolation: `openpyxl==3.1.5` made available only through `PYTHONPATH=/tmp/phase0-openpyxl`; it is not vendored or committed.
+
+```text
+$ python -m py_compile audit/phase0_reaudit.py
+exit code: 0
+
+$ PYTHONPATH=/tmp/phase0-openpyxl python audit/phase0_reaudit.py --report evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md
+exit code: 0
+
+$ rg "^### GATE" evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md
+### GATE-01 — Kickoff §5: 9/9 PASS
+### GATE-02 — Addon 1 §O: 12/12 PASS
+### GATE-03 — Addon 2 §I: 12/12 PASS
+### GATE-04 — Addon 3 §J: 12/12 PASS
+### GATE-05 — Addon 4 §K: 13/13 PASS
+### GATE-05B — Addon 5 §M: 12/12 PASS
+
+$ rg "Results:" evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md
+- Results: **70/70 PASS**
+
+$ sha256sum evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md
+abde3ea0d2d5de397388ecc5dda24cfd4c69e3f657f240a554186731d62933b1  evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md
+```
+
+Final 21 lines of the re-audit transcript:
+
+```text
+| `GATE-05B-07` | Independent formula-visible oracle workbook and local real-pilot attachment rule exist. | **PASS** | 14 §5.7 + 28 §4.4 + oracle workbook | sheets=['Budget rows', 'Forecast rows', 'Hand Check', 'Raw actuals']; formulas=10; zip_test=OK; openpyxl=3.1.5 |
+| `GATE-05B-08` | Hygiene/exclusions, survivability, What's New and no-activation decision are resolved. | **PASS** | .gitignore + 17 + 24 + 01 | repo/release/licensing controls found |
+| `GATE-05B-09` | Stuck protocol includes stop point, rollback and exactly three owner options. | **PASS** | 19 §7.5 + 30 §9 | stop/rollback/three-option markers found |
+| `GATE-05B-10` | Questionnaire is sendable, tracked and time-limited by an explicit owner decision. | **PASS** | 21 §5.3–5.4 + 28 §6 + 18 OQ-023 | send/track/deadline-decision markers found |
+| `GATE-05B-11` | Post-go-live incident-to-release/request-to-backlog operations loop exists. | **PASS** | 23 + 24 + 27 + 28 | support/release/backlog-loop markers found |
+| `GATE-05B-12` | Convergence/freeze notice and Addon 5 §N next actions are recorded. | **PASS** | 00 + 19 + 16 | freeze and next-action markers found |
+
+## Auxiliary safeguards (not part of the 70)
+
+| Check | Result | Detail |
+|---|---|---|
+| Internal Markdown links | **PASS** | checked 55 Markdown files; all repository-local inline links resolve |
+| No product code before approval | **PASS** | no product source files found under app/, ui/, packaging/ or scripts/ |
+| Official Addon 5 SHA-256 | **PASS** | cfbb69411d586194d2ad8ef6034a74e19bcb0ae976b466485adda75a97372b11 |
+| Client-facing development-time egress copy | **PASS** | client pack and sendable questionnaire require metadata/style-only discovery and isolated-local pilot use |
+
+## Conclusion
+
+A green documentary re-audit establishes only that the Phase 0 specification set is ready to be presented.
+It never substitutes for the exact recorded owner approval required in `CHANGELOG.md` and `SESSION_LOG.md`.
+```

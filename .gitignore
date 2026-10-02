@@ -1,0 +1,67 @@
+# Python / Node / local tools
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage/
+htmlcov/
+node_modules/
+ui/node_modules/
+ui/dist/
+app/static/
+
+# Build and release outputs: releases are distributed outside Git with SHA-256 records.
+build/
+dist/
+out/
+packaging/out/
+*.exe
+*.msi
+*.msix
+*.appx
+*.appxbundle
+*.dmg
+*.pkg
+
+# Local project data and client material — never commit.
+*.duckdb
+*.sqlite
+*.sqlite3
+*.db
+client-data/
+real-data/
+local-data/
+*.bak
+*.backup
+*.pfx
+*.p12
+*.pem
+*.key
+
+# Secrets and local configuration.
+.env
+.env.*
+!.env.example
+secrets.*
+*.secret
+
+# Generated synthetic sample-data outputs. Commit the generator, README and .gitkeep markers only.
+/sample-data/*.csv
+/sample-data/*.xlsx
+/sample-data/__pycache__/
+/sample-data/test_scale/
+/sample-data/generated/
+/sample-data/malformed/*
+!/sample-data/malformed/.gitkeep
+/sample-data/templates/*
+!/sample-data/templates/.gitkeep
+
+# OS/editor noise.
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

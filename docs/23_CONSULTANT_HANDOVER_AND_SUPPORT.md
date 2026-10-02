@@ -1,5 +1,5 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** the **consultant-facing runbook** — rebuild the environment, ship a release, edit
 > configuration/prompts/rules with the client, update dependencies, run the diagnostics workflow, and
 > escalate support (Addon 1 §C.1/§I/§K, Addon 2 §H.2, Addon 4 §I.2; `Q-018`)
@@ -195,8 +195,9 @@ printed in the UI (`13` §9.2).
 | Slow behaviour | Baselines vs now; project size; storage on network drive | Local disk, project growth, antivirus scanning | Re-measure against `14` §3; storage health (`SCR-032`) |
 | Data corruption suspected | Integrity check via `doctor` | Hardware/sync/antivirus | Stop writes, copy the project, restore the last good backup, record the incident |
 
-**Severity and response:** severity classes are `14` §14.1's; the response targets below are the support
-**defaults in force until `OQ-016` is agreed** (`28` owns the client-facing confirmation):
+**Severity and response:** severity classes are `14` §14.1's. The timings below are internal planning
+defaults, **not a client commitment**, until the project owner supplies the response expectations in §11.1
+and they are confirmed in `28`:
 
 | Severity | Meaning | Ack | Workaround/fix |
 |---|---|---|---|
@@ -205,10 +206,35 @@ printed in the UI (`13` §9.2).
 | S3 | Minor defect or wording | 3 business days | Next scheduled release |
 | S4 | Cosmetic or request | 5 business days | Backlog (`27`) |
 
-Escalation **levels** (L1–L3) and their targets are owned by `15` §9.3; the table above is the client-facing
-response target by severity. Both are defaults until `OQ-016` is agreed.
+Escalation **levels** (L1–L3) and their targets are owned by `15` §9.3. The table above is internal planning
+only; the client-facing response target is the owner-approved table in §11.1, which remains unset until
+`OQ-016` is resolved.
 
-## 11. Support model, escalation and the support log
+## 11. Post-go-live operations loop, support model and support log
+
+### 11.1 The mandatory post-go-live loop (Addon 5 §K)
+
+| Step | Required action | Record / owner |
+|---:|---|---|
+| 1. Intake | Client reports an issue through the agreed contact; support requests the metadata-safe diagnostics zip and a short symptom description, not a project folder or credentials. | Support log; consultant |
+| 2. Classify | Classify `S1`–`S4` using `28` §3 and log it in the `28` defect list. A wrong number, data-loss risk or data-egress concern is S1 until assessed. | `28` defect log; consultant + owner |
+| 3. Respond | State acknowledgement, next update and workaround/fix expectation using the owner-approved targets below. | Written client response; project owner |
+| 4. Fix | Follow normal spec-first flow: requirement/impact → `CHANGELOG` → test → code → release checklist. | `19`, `24`; engineering |
+| 5. Communicate | Each release includes the plain-language **What’s New** note generated from `CHANGELOG`; it names user-visible changes, fixes and action needed, not FR IDs. | `24` §10; release owner |
+| 6. Request | A feature/enhancement request becomes a `27` backlog entry with a trigger. It never goes direct to code from a client conversation. | `27` §4.4; project owner |
+| 7. Learn | Review recurring themes monthly. Three related contacts trigger a backlog/spec review; after two month-ends, review hypercare outcomes with the client. | Support log + `28` §8 |
+
+**Owner response expectations — must be filled before go-live.** These are deliberately unset commercial
+placeholders, not promises. `28` §6 blocks go-live until the owner has entered and confirmed them with the
+client; the planning defaults in §10 do not replace this table.
+
+| Severity | Owner-approved acknowledgement | Owner-approved next update / workaround or fix expectation | Confirmed date / owner |
+|---|---|---|---|
+| S1 | Unset — owner to define | Unset — owner to define | — |
+| S2 | Unset — owner to define | Unset — owner to define | — |
+| S3 | Unset — owner to define | Unset — owner to define | — |
+| S4 | Unset — owner to define | Unset — owner to define | — |
+
 
 | Aspect | Rule |
 |---|---|
@@ -237,7 +263,7 @@ response target by severity. Both are defaults until `OQ-016` is agreed.
 
 | Owner | Obligation |
 |---|---|
-| `24` | Owns tags, release checklist mechanics, distribution and the upgrade fixture; this document's §3 order must match it |
+| `24` | Owns tags, release checklist mechanics, distribution, the upgrade fixture and the client-facing What's New template; this document's §3 order must match it |
 | `15` | Keeps §3/§5/§8/§9 current; a change there lands here in the same pass |
 | `13` | Owns the diagnostics manifest and redaction rules; a change there updates §8.2 |
 | `10` | Owns the prompt registry; the §5 procedure is binding on prompt edits |
@@ -253,8 +279,8 @@ response target by severity. Both are defaults until `OQ-016` is agreed.
    then this checklist, in the same pass — never the other way round.
 2. **Every incident adds a row** to §10's playbook or a `27` entry; a playbook row without a real incident
    behind it is removed at the next review.
-3. **SLA figures in §10 are defaults** until `OQ-016` is answered; the answer replaces them here and in
-   `28`.
+3. **Owner response expectations in §11.1 are unset until the owner defines them.** `28` blocks go-live
+   until they are confirmed; any internal planning defaults in §10 are not a client-facing promise.
 4. Reviews at every phase gate (`16` §5.1) and after every S1 incident.
 
 ## 15. Frozen constants and conventions in this document

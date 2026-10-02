@@ -1,10 +1,10 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** the **single backlog register** — every parked item with a one-line scope, the trigger
 > that promotes it, a rough size, its source and a target phase; reviewed at every phase gate with the
 > decision register (`18`) and the risk register (`25`) (Addon 3 §B.1/§H, Addon 1 §N)
 > **TL;DR (≤ 15 lines):**
-> - **Controlled scope reserve:** 34 explicitly parked backlog items (BL-001 to BL-034) with acceptance criteria and triggers.
+> - **Controlled scope reserve:** 35 explicitly parked backlog items with clear scope, triggers and target phases.
 > - **Zero accidental bloat:** Prevents opportunistic feature creep; new ideas logged to backlog rather than added mid-phase.
 > - **Promotion gates:** Items promoted to active roadmap only with explicit project owner approval and impact analysis.
 > - **Contract alignment:** Encompasses all deferrals from Kickoff and Addons 1–4 (multi-currency, cloud sync, direct ERP APIs).
@@ -44,7 +44,7 @@
    becomes an FR (`02`), a decision (`18`) or a phase-plan change (`16`), and the register entry is updated
    with the pointer (never deleted).
 
-## 2. The register (34 items)
+## 2. The register (35 items)
 
 | ID | Item | One-line scope | Trigger that promotes it | Size | Source | Target phase |
 |---|---|---|---|---|---|---|
@@ -82,14 +82,15 @@
 | `BL-034` | AI endpoint allow-list | Restrict AI calls to specific hosts | Multi-provider support lands (the endpoint is already a single configured value) | S | `13` §15 | On trigger (small win) |
 | `BL-035` | In-app authentication, RBAC, multi-user | Server-dependent accounts and roles | The product gains a shared/server mode (explicitly out today, `DEC-010`; duplicates `BL-004`/`BL-005` intent) | L | `13` §15 | Post-v1 (with `BL-004`) |
 | `BL-036` | In-app PDF export of dashboards and packs | Render the dashboard views and a pack summary as a PDF without Office | A client workflow needs PDFs without Excel (or print/PDF readiness proves insufficient in practice, superseding `DEC-028`) | M | Addon 1 §N | Post-v1 |
+| `BL-037` | Usage control / activation / expiry | Add licence keys, expiry or other usage control to a delivered build | The owner explicitly approves a PRD decision for usage control; never inferred from a commercial conversation | L | Addon 5 §H.4, `DEC-040` | Post-v1 — owner-approved scope only |
 
 ### 2.1 Counts at first issue
 
 | View | Counts |
 |---|---|
-| By size | S 4 · M 18 · L 12 |
-| By target | Not planned 2 · On trigger 6 · Phase 6 candidate 11 · Post-v1 15 |
-| Registered | 34 (`BL-001`…`BL-026`, `BL-029`…`BL-036`); `BL-027`/`BL-028` unallocated |
+| By size | S 4 · M 18 · L 13 |
+| By target | Not planned 2 · On trigger 6 · Phase 6 candidate 11 · Post-v1 16 |
+| Registered | 35 (`BL-001`…`BL-026`, `BL-029`…`BL-037`); `BL-027`/`BL-028` unallocated |
 
 ## 3. Views
 
@@ -110,6 +111,7 @@
 | `11` §14 (`XL-CHART-DEFER`) | `BL-026` |
 | `13` §15 (security/privacy parks with triggers) | `BL-029`…`BL-035` |
 | Addon 1 §N (the list `01` §6.2 mirrors) — the one item with no `01` twin | `BL-036` |
+| Addon 5 §H.4 — only if the owner explicitly requests a usage-control mechanism | `BL-037` |
 | Client questions that can promote an item | `Q-021` → `BL-016`; `OQ-011` → `BL-019`; `OQ-014` → the pilot gate, not a backlog item |
 
 ### 3.3 Trigger families
@@ -151,6 +153,19 @@
 | A risk register | `25` owns consequences and owners |
 | A defect list | `28` owns defect severity and workflow |
 
+### 4.4 Post-go-live requests and enhancements (Addon 5 §K)
+
+A client request never goes from a call, email or support chat directly into code. The intake loop is:
+
+1. Support captures the request in the post-go-live intake (`23` §11.1) and decides whether it is a defect
+   (`28` §3) or an enhancement.
+2. An enhancement gets a `BL-nnn` row in the same review: client wording, trigger, rough size, source and
+   target phase. It is acknowledged to the client as a request, not promised as delivery.
+3. Promotion follows §4.2: explicit owner decision → FR/spec/impact note → tests → code → release through
+   `24`, with the client-facing What’s New note.
+4. A request that repeats three times is reviewed as a theme; it still does not bypass the register.
+
+
 ## 5. Obligations this document places elsewhere
 
 | Owner | Obligation |
@@ -161,7 +176,7 @@
 | `18` | A park created by a decision links the `DEC-` row; a promotion records a new decision |
 | `19` | The change protocol requires a `BL-` row for any deferral made in review |
 | `25` | A park with a downside carries a `RISK-` row and vice versa |
-| `28` | Post-go-live feedback that becomes a park lands here through the intake rule (`19` §5.4) |
+| `28` | Post-go-live feedback that becomes a park lands here through the intake rule (`19` §5.4); defects stay in the defect log rather than being disguised as backlog work |
 | `24` | A promoted item that ships is named in the release notes |
 
 ## 6. Change control and frozen constants
@@ -169,7 +184,7 @@
 | Constant | Value |
 |---|---|
 | ID format | `BL-nnn`, allocated here, never reused (`00_INDEX` §8) |
-| Registered at first issue | 34 rows (`BL-001`…`BL-026`, `BL-029`…`BL-036`) |
+| Registered at first issue | 35 rows (`BL-001`…`BL-026`, `BL-029`…`BL-037`) |
 | Unallocated | `BL-027`, `BL-028` (reserved) |
 | Sizes | `S` ≤ one session · `M` a phase slice · `L` its own phase |
 | Target phases | `Phase 6 candidate` · `Post-v1` · `On trigger` · `Not planned` |

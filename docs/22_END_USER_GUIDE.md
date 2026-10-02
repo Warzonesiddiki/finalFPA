@@ -1,5 +1,5 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** the **user-facing manual** — task-structured, plain language, keyed to `SCR-nnn`, and
 > the **single source of help text** for the in-app Help panel (`FR-ONB-004`/`FR-ONB-007`); training outline
 > and screenshot contract (Addon 1 §C.1/§K, `Q-017`)
@@ -61,6 +61,7 @@
 | **Help panel** | You are on a screen and want to know what it does | The **?** at the bottom of the left menu (`SCR-042`); it opens the topic for the screen you are on |
 | **This guide** | You want to do a task from the beginning | §4 — find your task, follow the steps |
 | **Support** | Something failed, or the numbers look wrong | §7.4 — send the diagnostics zip to your support contact |
+| **What’s New** | You installed an update and want the short list of changes | Open `whats-new.md` delivered beside the installer; it is plain-language release guidance from `24` §10.1 |
 
 ## 2. Installing and first run
 

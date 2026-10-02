@@ -1,10 +1,10 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** the whole test system: levels, the canonical **`NFR-001`…`NFR-016`** targets and
 > their measurement protocol, the `TST-*` catalogue, golden-file policy, planted-exception acceptance,
 > the edge-case and tolerance matrices, the cross-artifact consistency test, performance baselines, CI and
 > `scripts/check`, defect management, and the **authoritative checkbox lists for all six Phase-0 checklists**
-> (`GATE-01`…`05` + `GATE-05B` provisional Addon 5, 66 checks)
+> (`GATE-01`…`05` + official Addon 5 `GATE-05B`, 70 checks)
 > **TL;DR (≤ 15 lines):**
 > - **Comprehensive QA:** 292 test slots across 16 families verifying deterministic money math, imports, rules, UI, and performance.
 > - **NFR enforcement:** 16 quantitative bars (import ≤60s/250k rows, UI ≤2s, cold start ≤10s, memory ≤1.5GB) verified via automation.
@@ -47,7 +47,7 @@
 6. **Coverage is a gate, not a report.** Engine ≥ 90 % statements, backend ≥ 75 % (`NFR-014`); lowering
    either is a spec change requiring an entry here and in `CHANGELOG`.
 7. **Test data never mixes with client data.** The sample project is synthetic, watermarked and flagged;
-   fixture files are sanitised; no client artefact ever enters `tests/` or `sample-data/` (`SEC-007`).
+   fixture files are synthetic; no client artefact ever enters `tests/` or `sample-data/`. Real-file shape discovery uses metadata only, and any real pilot runs only locally (`SEC-007`, `13` §3.1).
 8. **Failures are first-class.** A test that fails only on a specific machine, or that is skipped, is
    reported at the gate with its reason — never silently skipped (`pytest -ra`, skip inventory in the gate
    evidence).
@@ -293,6 +293,55 @@ any control assigned to it:
    **"flagged again"** badge with the old and new evidence, its history is intact, and no auto-reopen
    occurs. A new occurrence with a different subject key is a new exception with its own history.
 
+### 5.6 Golden Month blessed-reference workflow (Addon 5 §F)
+
+**Status now:** the Golden Month is planned but cannot be blessed until the first complete product build
+exists. No missing artifact is treated as a pass, and no product code is started to create one before the
+recorded Phase 0 approval.
+
+| Stage | Required control |
+|---|---|
+| Select | The first complete build selects one synthetic Golden Month, initially `FY26-P09`, that covers actuals, budget, forecast and exceptions. The fixed seed, generator version and source hashes are recorded in the blessing evidence. |
+| Generate | Generate the full artifact set: engine JSON outputs, UI/API responses, exported Excel, generated PPT, exception register, forecast table and validation report. Store it beneath `tests/golden/` with a text manifest containing SHA-256 values and the generator command. |
+| Bless | The owner reviews the first complete set once and records `Golden Month BLESSED — <name> — <date>` in `CHANGELOG.md` and `SESSION_LOG.md`, including the manifest hash. A test fixture is not blessed merely because it was generated. |
+| Compare | Every later build produces a machine diff against the blessed manifest. A difference is either an approved intended spec change or an unintended regression; an unexplained difference blocks the build. |
+| Regenerate | Only `scripts/regen-golden` may regenerate the set. It is a **planned post-approval test utility**, not Phase 0 product code. Its implemented interface must require the approver name, date, approved impact-note reference and a clean prior diff; it writes these to the manifest and session evidence. |
+
+The planned directory structure is:
+
+```text
+tests/golden/
+  README.md
+  manifests/<golden-id>.json
+  engine/                 # canonical JSON, text-diffable
+  api/                    # canonical JSON, text-diffable
+  exports/                # reviewed small Excel/PPT fixtures where required
+  reports/                # exception / forecast / validation JSON or CSV
+```
+
+Generated **sample-data outputs** remain ignored and are regenerated from the script. Small, reviewed
+Golden Month fixtures are the narrow exception needed for deterministic regression comparison; they may be
+versioned only under `tests/golden/`, only with their manifest, and never contain client data.
+
+### 5.7 Independent oracle spot-checks (Addon 5 §G)
+
+The engine's test suite proves that the engine matches its own expectations. The independent oracle proves
+that the product matches a calculation authored from `05_CALCULATION_SPEC.md`, not copied from code.
+
+1. At every phase gate, choose one synthetic cost centre × one account × one period from the Golden Month.
+2. Copy the raw sample-export rows and the budget rows into a new formula-visible workbook based on
+   `tests/oracle/golden_month_hand_check_template.xlsx`.
+3. Set the three selection fields and inspect the workbook's formulas for actual, budget, variance,
+   variance percentage and forecast comparison. Formulas must cite the raw rows and the written formulas in
+   `05`; they must not use an engine/API result as input.
+4. Compare the workbook and app values to the minor unit. Any mismatch blocks the gate until classified as
+   a specification, data, mapping or implementation issue.
+5. Commit the completed **synthetic-only** worksheet under `tests/oracle/` and link it from the gate
+   evidence. The prebuilt template is committed now and is formula-visible by design.
+6. At the Real-Data Pilot, repeat the procedure locally against the client's manual figure for one account.
+   The client data and completed real-data worksheet remain in the isolated local environment; the repo
+   stores only a metadata-only evidence record and SHA-256, never real rows or amounts.
+
 ## 6. Tolerance, edge cases and the negative corpus
 
 ### 6.1 Tolerance policy tests (Addon 4 §G.1)
@@ -329,9 +378,10 @@ Every row is a test; "message ID" is the catalog slug/`ERR-` code the user sees.
 
 ### 6.3 The negative file corpus (`sample-data/malformed/`)
 
-`TST-IMP-33` walks every file below and asserts three things: the **expected message ID appears**, **no
-stack trace or raw exception** reaches the UI/log, and the app remains usable afterwards. The corpus is
-committed with the generator (no client data, ever — `SEC-007`).
+`TST-IMP-33` walks every generated file below and asserts three things: the **expected message ID appears**,
+**no stack trace or raw exception** reaches the UI/log, and the app remains usable afterwards. The generator
+and corpus specification are committed; its generated CSV/XLSX outputs are ignored and recreated locally
+(no client data, ever — `SEC-007`).
 
 | File | Planted defect | Expected message ID |
 |---|---|---|
@@ -589,7 +639,7 @@ and an entry in the OpenAPI document. An endpoint without a consumer is deleted,
 
 | ID | Script |
 |---|---|
-| `TST-UAT-01` | The analyst reproduces one month's **manual BvA** in the app on the sanitised real month and diffs the two |
+| `TST-UAT-01` | The analyst reproduces one month's **manual BvA** in the app on the sanitised real month **only in the isolated local pilot/UAT environment** and diffs the two |
 | `TST-UAT-02` | Tie-out worksheet: BvA totals, key account balances, and the exception list versus their current pack; differences classified per `28` (spec bug / mapping error / client data / rounding) |
 | `TST-UAT-03` | The accounting-owner representative reviews exception wording and verdicts; any "this would mislead us" finding is an S2 or better |
 | `TST-UAT-04` | Training walkthrough: a first-time user completes the month-end flow using only `22` |
@@ -666,121 +716,139 @@ run is always the full form**. The transcript is attached to every gate (`Addon 
 Every feature's `SESSION_LOG` entry includes a 3–6 step recipe on sample data (steps + expected result)
 so a reviewer can verify it in minutes. A feature without its recipe does not close.
 
-## 15. The six Phase-0 checklists — authoritative checklists (66 checks: 9+12+12+12+13+8)
+## 15. The six Phase-0 checklists — authoritative checklists (70 checks: 9+12+12+12+13+12)
 
-These restate the six gate sources **exactly in substance** (`GATE-01`…`05` plus provisional `GATE-05B` for Addon 5 deltas; packaging spike `GATE-06` is owned by `16` and is not a Phase-0 checklist), each with an ID, the artefact that proves
-it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CHANGELOG` records approvals
-(`Addon 4 §E.2`). Status legend: `✅` met by a written doc · `⬜` open at the time of writing.
+These restate the six gate sources exactly in substance: `GATE-01`…`05` plus `GATE-05B`, the official
+Addon 5 §M checklist of 12 deltas. `GATE-06` is the post-approval packaging spike and is not a Phase-0
+checklist. A prior inferred eight-check Addon 5 list is superseded by the official source at
+`project prompt/ADDON_5_OWNER_CONTROL_EVIDENCE_DATA_EGRESS_EXTENSION.md`.
+
+**Re-audit rule:** all statuses in this section must be re-evidenced after this integration. Until an
+artefact is cited in the current re-audit, `✅` in historical session text is not a current pass claim.
+`00_INDEX` §9 is the tracker of record; `CHANGELOG` records approvals (`Addon 4 §E.2).
+
+**2026-10-02 documentary re-audit:** `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md`
+records **70/70 PASS** (9+12+12+12+13+12), with the command transcript, link check, safe generator
+regeneration, oracle validation and two paper tabletops in the same evidence directory. This confirms
+documentary Phase-0 readiness only; it does not claim an installer, product build, Windows run, pilot,
+UAT, go-live or owner approval.
 
 ### 15.1 `GATE-01` — Kickoff §5 checklist (9 checks)
 
 | ID | Check | Provable by | Status |
 |---|---|---|---|
-| `GATE-01-01` | Every FR is numbered, testable, with acceptance criteria; zero blocking TBDs | `02` + `20` | ✅ |
-| `GATE-01-02` | `05` has worked examples with exact numbers: MTD/YTD variance, variance %, favourability, PY comparison, rounding, every forecast method | `05` §12 (F1–F14) | ✅ |
-| `GATE-01-03` | `06` has ≥ 15 fully specified rules, each with a planted test case | `06` (24 rules, 40 plantings) | ✅ |
-| `GATE-01-04` | `08` covers every screen incl. empty/loading/error/first-run, written for a non-technical user | `08` (43 screens, §17 matrix) | ✅ |
-| `GATE-01-05` | `12` defines 4–6 slides exactly, slide by slide, editable/native, brand handling | `12` (6 slides, 29 placeholders) | ✅ |
-| `GATE-01-06` | Step-by-step installer script results in working installer | `15` | ✅ (documented in `15`; verified by packaging script specification) |
-| `GATE-01-07` | NFR numbers stated | `14` §3 (`NFR-001`…`016`) | ✅ |
-| `GATE-01-08` | `18` lists every unconfirmed item | `18` (with `21` `Q-` items) | ✅ (doc side; `Q-` items with `21`) |
-| `GATE-01-09` | `20` links every FR to at least one future test | `20` (156 rows; every FR ≥ 1 test) + `14` §4 | ✅ |
+| `GATE-01-01` | Every FR is numbered, testable, with acceptance criteria; zero blocking TBDs | `02` + `20` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-01-01`|
+| `GATE-01-02` | `05` has worked examples with exact numbers: MTD/YTD variance, variance %, favourability, PY comparison, rounding, every forecast method | `05` §12 (F1–F14) | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-01-02`|
+| `GATE-01-03` | `06` has ≥ 15 fully specified rules, each with a planted test case | `06` (24 rules, 40 plantings) | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-01-03`|
+| `GATE-01-04` | `08` covers every screen incl. empty/loading/error/first-run, written for a non-technical user | `08` (43 screens, §17 matrix) | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-01-04`|
+| `GATE-01-05` | `12` defines 4–6 slides exactly, slide by slide, editable/native, brand handling | `12` (6 slides, 29 placeholders) | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-01-05`|
+| `GATE-01-06` | Step-by-step installer script is specified; a working-installer run is retained as post-approval `GATE-06` evidence | `15` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-01-06` |
+| `GATE-01-07` | NFR numbers stated | `14` §3 (`NFR-001`…`016`) | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-01-07`|
+| `GATE-01-08` | `18` lists every unconfirmed item | `18` (with `21` `Q-` items) | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-01-08`|
+| `GATE-01-09` | `20` links every FR to at least one future test | `20` (156 rows; every FR ≥ 1 test) + `14` §4 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-01-09`|
 
 ### 15.2 `GATE-02` — Addon 1 §O deltas (12 checks)
 
 | ID | Check | Provable by | Status |
 |---|---|---|---|
-| `GATE-02-01` | Docs 21–25 exist and are complete; every questionnaire item has a decision or a labelled default | `21`–`25` | ✅ (docs `21`–`25` exist with the standard headers; all 21/21 `Q-` items carry a labelled default; `25` registers the consequences) |
-| `GATE-02-02` | All Addon 1 §C.2 additions are present in the owning docs; `CHANGELOG` shows the integration | `CHANGELOG` + docs | ✅ (through `13`) |
-| `GATE-02-03` | Tabletop walkthrough executed and recorded — every month-end step maps to a screen/rule/export | `SESSION_LOG` entry (Phase 0 close) | ✅ (`SESSION_LOG` "Tabletop walkthrough": 24 steps, each mapped to its screen, rule, output and owning section, through pack issuance and re-issue) |
-| `GATE-02-04` | Excel hardening list: each quirk has a documented handle-or-reject behaviour with error copy | `04` (32 checks, 59 messages) | ✅ |
-| `GATE-02-05` | OneDrive/storage decision made, with its test case listed in `14` | `09` `ADR-004` + `TST-WIN-06` | ✅ |
-| `GATE-02-06` | SmartScreen/signing decision is an ADR with a non-technical-user mitigation path | `09` `ADR-003` | ✅ |
-| `GATE-02-07` | Upgrade/migration test case exists and names the fixture (a real prior-version project) | `TST-E2E-05`, `24` | ✅ (`24` §6.3 names the fixture path, creation/refresh rules and the never-edit rule; the first fixture is created from the first released build) |
-| `GATE-02-08` | Injection test case (planted malicious description) exists in `14` | `TST-SEC-14` | ✅ |
-| `GATE-02-09` | License allow-list, secret-scan and SBOM steps documented; `THIRD_PARTY_LICENSES.txt` planned in the installer manifest | `13` §12, `15`, `24` | ✅ (doc side) |
-| `GATE-02-10` | End-user guide outline (task-structured) approved-ready; training outline exists | `22`, `23` | ✅ (`22`: 21 tasks, 43-screen map, 60-min training outline, screenshot contract; `23`: diagnostics workflow, incident playbook, escalation ladder) |
-| `GATE-02-11` | Backlog list (Addon 1 §N) recorded in PRD/roadmap so nothing is dropped | `27`, `01` §5 | ✅ (every Addon 1 §N item maps to a `27` row: connectors `BL-008`, Power BI `BL-009`, email/Teams distribution `BL-019`, advanced forecast methods `BL-018`, headcount/FTE `BL-016`, budget version-compare `BL-020`, commentary carry-forward `BL-021`, multi-client licensing `BL-023`, RBAC `BL-004`/`BL-035`, localisation `BL-022`, auto-update `BL-007`, dashboard PDF export `BL-036` — the one §N item with no `01` §6.2 twin, added in the approval pass) |
-| `GATE-02-12` | NFR numbers from Addon 1 §L present and agreed in-doc | `14` §3 | ✅ |
+| `GATE-02-01` | Docs 21–25 exist and are complete; every questionnaire item has a decision or a labelled default | `21`–`25` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-02-01`|
+| `GATE-02-02` | All Addon 1 §C.2 additions are present in the owning docs; `CHANGELOG` shows the integration | `CHANGELOG` + docs | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-02-02`|
+| `GATE-02-03` | Tabletop walkthrough executed and recorded — every month-end step maps to a screen/rule/export | `SESSION_LOG` entry (Phase 0 close) | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-02-03`|
+| `GATE-02-04` | Excel hardening list: each quirk has a documented handle-or-reject behaviour with error copy | `04` (32 checks, 59 messages) | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-02-04`|
+| `GATE-02-05` | OneDrive/storage decision made, with its test case listed in `14` | `09` `ADR-004` + `TST-WIN-06` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-02-05`|
+| `GATE-02-06` | SmartScreen/signing decision is an ADR with a non-technical-user mitigation path | `09` `ADR-003` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-02-06`|
+| `GATE-02-07` | Upgrade/migration test case exists and names the fixture (a real prior-version project) | `TST-E2E-05`, `24` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-02-07`|
+| `GATE-02-08` | Injection test case (planted malicious description) exists in `14` | `TST-SEC-14` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-02-08`|
+| `GATE-02-09` | License allow-list, secret-scan and SBOM steps documented; `THIRD_PARTY_LICENSES.txt` planned in the installer manifest | `13` §12, `15`, `24` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-02-09`|
+| `GATE-02-10` | End-user guide outline (task-structured) approved-ready; training outline exists | `22`, `23` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-02-10`|
+| `GATE-02-11` | Backlog list (Addon 1 §N) recorded in PRD/roadmap so nothing is dropped | `27`, `01` §5 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-02-11`|
+| `GATE-02-12` | NFR numbers from Addon 1 §L present and agreed in-doc | `14` §3 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-02-12`|
 
 ### 15.3 `GATE-03` — Addon 2 §I deltas (12 checks)
 
 | ID | Check | Provable by | Status |
 |---|---|---|---|
-| `GATE-03-01` | Addon Coverage Matrix exists; every kickoff + Addon 1 + Addon 2 row is integrated | `00_INDEX` §4 | ✅ (kickoff + Addon 1 rows; all Addon 2 rows integrated — `A2-E` through the `08`/`12` token contract) |
-| `GATE-03-02` | `26` complete; OpenAPI-as-source-of-truth and type generation documented; error envelope + pagination | `26` | ✅ (`26` §2 envelope/pagination/filters, §5 catalogue, §6 generation workflow, §7 contract tests, §10 reverse index) |
-| `GATE-03-03` | Engine-boundary rule and CLI command list documented in `09` with exit codes | `09` §4/§5 | ✅ |
-| `GATE-03-04` | `ADR-002` written; every library traceable to `ADR-001`/`002` | `09` | ✅ |
-| `GATE-03-05` | Data-volume rule and config layering documented with test cases in `14` | `09` §11/§12 + `TST-API-09`, `TST-UI-15`, `TST-UI-20` | ✅ |
-| `GATE-03-06` | Exception identity/re-run semantics fully specified with a worked scenario | `06` §D.1 + §5.5 here | ✅ |
-| `GATE-03-07` | Forecast-accuracy and TTM formulas have worked examples in `05` | `05` §9 | ✅ |
-| `GATE-03-08` | Screen inventory exists in `08`; the traceability chain includes screen IDs and API endpoints | `08`, `20` (chain complete), `26` (endpoint catalogue) | ✅ (chain in `20`; the 95-endpoint catalogue and its reverse index are final in `26` §3/§10) |
-| `GATE-03-09` | PPT character budgets defined per placeholder | `12` §3.4 | ✅ |
-| `GATE-03-10` | Coverage bars, `scripts/check` contents and the E2E list recorded in `14` | this document §9, §13 | ✅ |
-| `GATE-03-11` | PRD scope decisions and disclaimer text resolved | `01` §15, `DEC-*` | ✅ |
-| `GATE-03-12` | AI usage log + draft provenance + number-mismatch stance specified | `10` §10/§11 | ✅ |
+| `GATE-03-01` | Addon Coverage Matrix exists; every kickoff + Addon 1 + Addon 2 row is integrated | `00_INDEX` §4 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-03-01`|
+| `GATE-03-02` | `26` complete; OpenAPI-as-source-of-truth and type generation documented; error envelope + pagination | `26` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-03-02`|
+| `GATE-03-03` | Engine-boundary rule and CLI command list documented in `09` with exit codes | `09` §4/§5 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-03-03`|
+| `GATE-03-04` | `ADR-002` written; every library traceable to `ADR-001`/`002` | `09` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-03-04`|
+| `GATE-03-05` | Data-volume rule and config layering documented with test cases in `14` | `09` §11/§12 + `TST-API-09`, `TST-UI-15`, `TST-UI-20` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-03-05`|
+| `GATE-03-06` | Exception identity/re-run semantics fully specified with a worked scenario | `06` §D.1 + §5.5 here | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-03-06`|
+| `GATE-03-07` | Forecast-accuracy and TTM formulas have worked examples in `05` | `05` §9 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-03-07`|
+| `GATE-03-08` | Screen inventory exists in `08`; the traceability chain includes screen IDs and API endpoints | `08`, `20` (chain complete), `26` (endpoint catalogue) | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-03-08`|
+| `GATE-03-09` | PPT character budgets defined per placeholder | `12` §3.4 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-03-09`|
+| `GATE-03-10` | Coverage bars, `scripts/check` contents and the E2E list recorded in `14` | this document §9, §13 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-03-10`|
+| `GATE-03-11` | PRD scope decisions and disclaimer text resolved | `01` §15, `DEC-*` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-03-11`|
+| `GATE-03-12` | AI usage log + draft provenance + number-mismatch stance specified | `10` §10/§11 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-03-12`|
 
 ### 15.4 `GATE-04` — Addon 3 §J deltas (12 checks)
 
 | ID | Check | Provable by | Status |
 |---|---|---|---|
-| `GATE-04-01` | Docs 27 and 28 exist and are complete; backlog seeded from Addon 1 §N + §E.3 | `27`, `28` | ✅ (`27` seeds all 34 items from `01` §6.2 / `11` §14 / `13` §15; `28` carries the DoD, the three gates and the sign-off) |
-| `GATE-04-02` | Coverage Matrix extended with Addon 3 rows; all integrated | `00_INDEX` §4 | ✅ (all Addon 3 rows fully integrated; sample-data suite generated) |
-| `GATE-04-03` | Four full initial prompt texts exist in `10` with worked examples | `10` §4/§5 | ✅ |
-| `GATE-04-04` | Mapping Review Queue, commentary lock-on-issue and the issuance register fully specified | `02`, `03`, `08` | ✅ |
-| `GATE-04-05` | Chart inventory and centralized conditional-format rules present in `08` | `08` §13/§14 | ✅ |
-| `GATE-04-06` | Output conventions present in `11` and `12`; cross-artifact test specified in `14` | `11` §3, `12` §3.9, this doc §7 | ✅ |
-| `GATE-04-07` | Negative file corpus exists in `sample-data/malformed/` with expected message IDs | §6.3 (corpus built with sample data) | ✅ (all 16 malformed files generated in `sample-data/malformed/` with expected message IDs) |
-| `GATE-04-08` | Data-quality score formula has a worked example in `05` | `05` §8 | ✅ |
-| `GATE-04-09` | Success metrics, IP/licensing stance and the forced in/out list resolved in the PRD | `01` §16, §5 | ✅ |
-| `GATE-04-10` | Error-code catalog families defined in `26`; message-catalog rule in `08` | `26`, `08` §16 | ✅ (11 families + codes in `26` §5; shape and wording in `08` §16) |
-| `GATE-04-11` | Project DoD, UAT mechanics, defect severities, go-live checklist and sign-off template in `28` | `28` | ✅ (`28` §2 DoD · §3 `S1`–`S4` + `DEF-` log · §4 pilot · §5 UAT · §6 the 22-item go-live checklist · §7 sign-off) |
-| `GATE-04-12` | "Decided" section active in `18`; `ADR-000` index lists `ADR-001`/`002` (+ any new) | `18`, `09` | ✅ |
+| `GATE-04-01` | Docs 27 and 28 exist and are complete; backlog seeded from Addon 1 §N + §E.3 | `27`, `28` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-04-01`|
+| `GATE-04-02` | Coverage Matrix extended with Addon 3 rows; all integrated | `00_INDEX` §4 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-04-02`|
+| `GATE-04-03` | Four full initial prompt texts exist in `10` with worked examples | `10` §4/§5 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-04-03`|
+| `GATE-04-04` | Mapping Review Queue, commentary lock-on-issue and the issuance register fully specified | `02`, `03`, `08` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-04-04`|
+| `GATE-04-05` | Chart inventory and centralized conditional-format rules present in `08` | `08` §13/§14 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-04-05`|
+| `GATE-04-06` | Output conventions present in `11` and `12`; cross-artifact test specified in `14` | `11` §3, `12` §3.9, this doc §7 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-04-06`|
+| `GATE-04-07` | Negative-file corpus is reproducibly generated under `sample-data/malformed/` with expected message IDs (outputs are ignored after local verification) | §6.3 + regeneration evidence | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-04-07` |
+| `GATE-04-08` | Data-quality score formula has a worked example in `05` | `05` §8 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-04-08`|
+| `GATE-04-09` | Success metrics, IP/licensing stance and the forced in/out list resolved in the PRD | `01` §16, §5 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-04-09`|
+| `GATE-04-10` | Error-code catalog families defined in `26`; message-catalog rule in `08` | `26`, `08` §16 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-04-10`|
+| `GATE-04-11` | Project DoD, UAT mechanics, defect severities, go-live checklist and sign-off template in `28` | `28` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-04-11`|
+| `GATE-04-12` | "Decided" section active in `18`; `ADR-000` index lists `ADR-001`/`002` (+ any new) | `18`, `09` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-04-12`|
 
 ### 15.5 `GATE-05` — Addon 4 §K deltas (13 checks)
 
 | ID | Check | Provable by | Status |
 |---|---|---|---|
-| `GATE-05-01` | Coverage Matrix has Addon 4 rows; all integrated | `00_INDEX` §4 | ✅ (through `13`) |
-| `GATE-05-02` | Standard doc header on every doc; TL;DR ≤ 15 lines | every doc; doc-14 header check script | ✅ |
-| `GATE-05-03` | Source-of-Truth Matrix in `00_INDEX`; no duplicated formula/threshold; conflict rule documented | `00_INDEX` §5 + the conflict rule | ✅ |
-| `GATE-05-04` | Quote-before-code and FR-citation rules written into `19` | `19` | ✅ |
-| `GATE-05-05` | Every FR has P0/P1/P2; never-cut list and cut process in `02`/`16` | `02` priorities, `16` | ✅ (priorities; process with `16`) |
-| `GATE-05-06` | Per-phase estimates in `16` | `16` §7 (per-phase + per-epic ideal days) | ✅ |
-| `GATE-05-07` | `29_CLIENT_REQUIREMENTS_PACK.md` complete and jargon-free; sign-off block present | `29` | ✅ (`29` §1–§15: plain language with no requirement codes, 17 decisions each with a recommendation, the ask/timing table, timeline, UAT/training, the verbatim disclaimer and the §14 sign-off block) |
-| `GATE-05-08` | Approval-recording convention and post-approval impact rule in `19` | `19`, `CHANGELOG` | ✅ |
-| `GATE-05-09` | Real-data pilot gate defined in `28` with tie-out worksheet + classification log | `28` | ✅ (`28` §4: `GATE-13` preconditions, the four-class difference taxonomy, the tie-out worksheet template and the exit criteria) |
-| `GATE-05-10` | Tolerance policy in `05`; full edge-case matrix in `02`/`14` with message IDs | `05` §6, this doc §6 | ✅ |
-| `GATE-05-11` | Sample-data watermark + project-type flag + non-delivery rule specified | `03`/`09` + §16 here | ✅ |
-| `GATE-05-12` | Spike policy, fresh-clone gate, code-health rules, storage math in `09`/`14`/`17` | `09` §14–§15, §13 here, `17` | ✅ |
-| `GATE-05-13` | Key-rotation procedure in `13` | `13` §5.3 | ✅ |
+| `GATE-05-01` | Coverage Matrix has Addon 4 rows; all integrated | `00_INDEX` §4 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05-01`|
+| `GATE-05-02` | Standard doc header on every doc; TL;DR ≤ 15 lines | every doc; doc-14 header check script | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05-02`|
+| `GATE-05-03` | Source-of-Truth Matrix in `00_INDEX`; no duplicated formula/threshold; conflict rule documented | `00_INDEX` §5 + the conflict rule | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05-03`|
+| `GATE-05-04` | Quote-before-code and FR-citation rules written into `19` | `19` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05-04`|
+| `GATE-05-05` | Every FR has P0/P1/P2; never-cut list and cut process in `02`/`16` | `02` priorities, `16` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05-05`|
+| `GATE-05-06` | Per-phase estimates in `16` | `16` §7 (per-phase + per-epic ideal days) | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05-06`|
+| `GATE-05-07` | `29_CLIENT_REQUIREMENTS_PACK.md` complete and jargon-free; sign-off block present | `29` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05-07`|
+| `GATE-05-08` | Approval-recording convention and post-approval impact rule in `19` | `19`, `CHANGELOG` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05-08`|
+| `GATE-05-09` | Real-data pilot gate defined in `28` with tie-out worksheet + classification log | `28` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05-09`|
+| `GATE-05-10` | Tolerance policy in `05`; full edge-case matrix in `02`/`14` with message IDs | `05` §6, this doc §6 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05-10`|
+| `GATE-05-11` | Sample-data watermark + project-type flag + non-delivery rule specified | `03`/`09` + §16 here | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05-11`|
+| `GATE-05-12` | Spike policy, fresh-clone gate, code-health rules, storage math in `09`/`14`/`17` | `09` §14–§15, §13 here, `17` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05-12`|
+| `GATE-05-13` | Key-rotation procedure in `13` | `13` §5.3 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05-13`|
 
-### 15.6 `GATE-05B` — Addon 5 §M deltas, provisional number (8 checks)
+### 15.6 `GATE-05B` — Addon 5 §M deltas (12 checks)
 
-> Provisional ID: the Addon 5 contract text is pending (`F-015` escalated). `GATE-06` is already allocated to the packaging spike (`16` §2.1, `DEC-031`, `00` §8 registry), so this checklist takes provisional `GATE-05B` until the owner confirms final numbering against the Addon 5 source. Content unchanged from the former `GATE-06` label.
+`GATE-05B` is the local stable label for the official Addon 5 Section M checklist. It is not provisional;
+`GATE-06` remains the post-approval packaging spike. Each status below cites the 2026-10-02 evidenced
+all-gates re-audit; a documentation reference alone is never enough for a gate pass.
 
-| ID | Check | Provable by | Status |
+| ID | Check | Required evidence | Current status |
 |---|---|---|---|
-| `GATE-05B-01` | All 31 docs (`00`–`30`) exist, headered, with TL;DR ≤ 15 lines | All docs `00`–`30`; header check | ✅ |
-| `GATE-05B-02` | `30_DOCUMENTATION_SET_REVIEW_GUIDE.md` complete with review guide, pre-flight checklist, session-report standard, evidence matrix, and red-flag ladder | `30` | ✅ |
-| `GATE-05B-03` | `sample-data/` suite built and verified: D365 + 2 non-D365 shapes, `.xlsx` templates, 40 plantings in `expected_exceptions.csv`, and 16 malformed negative test files in `sample-data/malformed/` | `sample-data/` | ✅ |
-| `GATE-05B-04` | Repo skeleton directories (`app/`, `ui/`, `sample-data/`, `tests/`, `packaging/`, `scripts/`, `evidence/`) exist on disk with `.gitkeep` | Root filesystem | ✅ |
-| `GATE-05B-05` | Root `README.md` complete with product overview, reading orders, phase status, and repo layout | `README.md` | ✅ |
-| `GATE-05B-06` | Canonical Divergence Notice (Addon 5 §A.4) recorded in `00_INDEX.md` and `19_VIBE_CODING_PLAYBOOK.md` | `00` §6.3, `19` §5.5 | ✅ |
-| `GATE-05B-07` | All Coverage Matrix rows in `00_INDEX.md` marked `INTEGRATED` with physical evidence pointers (no unverified rows) | `00_INDEX` §4 | ✅ |
-| `GATE-05B-08` | Evidence directory conventions live in `evidence/` with Level 1–3 artifact retention rules | `evidence/`, `30` §4 | ✅ |
+| `GATE-05B-01` | Coverage Matrix has all Addon 5 rows and every row is integrated | `00_INDEX` §4.6 + `CHANGELOG` entry | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05B-01`|
+| `GATE-05B-02` | `30_OWNER_OPERATING_HANDBOOK.md` has cadence, session report, five-minute review, Phase 0 reading guide, sampling, red flags, stuck choices and oracle procedure | `30` §§2–10 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05B-02`|
+| `GATE-05B-03` | Evidence matrix is in `30`, `19` cross-references it, and the `evidence/YYYY-MM-DD-<task>/` convention is defined | `30` §7; `19` §3.4/§8.2; evidence directory | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05B-03`|
+| `GATE-05B-04` | Thirteen red flags and response ladder are present | `30` §8; `19` §3.5 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05B-04`|
+| `GATE-05B-05` | Development-time egress policy and S1 incident procedure are in the security contract | `13` §3.1 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05B-05`|
+| `GATE-05B-06` | Golden Month workflow, blessing mechanics and planned `scripts/regen-golden` are defined | `14` §5.6 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05B-06`|
+| `GATE-05B-07` | Independent oracle procedure and formula-visible worksheet template exist; real-data pilot attachment rule is defined | `14` §5.7; `28` §4.4; `tests/oracle/golden_month_hand_check_template.xlsx` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05B-07`|
+| `GATE-05B-08` | Repo exclusions, generated sample-data rule, second-remote/weekly archive policy, What's New template and no-activation licensing decision are resolved | `.gitignore`; `17` §8/§11.3; `24` §10; `01` §16 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05B-08`|
+| `GATE-05B-09` | Stuck protocol has the stop point, rollback and exactly three owner options | `19` §7.5; `30` §9; `18` `DEC-039` | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05B-09`|
+| `GATE-05B-10` | Questionnaire is sendable, has a response tracker, and overdue defaults get a final sweep | `21` §5.3/§5.4; `28` §6 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05B-10`|
+| `GATE-05B-11` | Post-go-live issue → severity → release / request → backlog loop exists, with owner response placeholders | `23` §11.1; `24` §10; `27` §4.4; `28` §8 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05B-11`|
+| `GATE-05B-12` | Convergence/freeze notice is recorded in `00` and `19`, and next actions use Addon 5 §N | `00` §6.3/§10; `19` §5.5/§6; `16` §1.3 | ✅ PASS — `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` `GATE-05B-12`|
 
 ## 16. Test-data governance and sample-data integrity
 
 | Rule | Detail |
 |---|---|
 | Synthetic only | `sample-data/` is generated from a fixed seed; no client file ever enters it (`SEC-007`) |
+| Generated, not blob-committed | The generator, documentation and empty directory markers are versioned; generated CSV/XLSX/corpus outputs are ignored and recreated locally. A completed golden/oracle fixture is a separately reviewed, small exception under `tests/golden/` or `tests/oracle/`, never client data. |
 | Watermark and flag | The sample project carries `project_type = sample`, a visible "SAMPLE DATA" banner, and a watermark on every generated artefact (`Addon 4 §H`) |
 | Import refusal | Client imports into a sample project are refused (`FR-IMP-031`); sample data is never mixed into a client project |
 | Never delivered | Sample files are excluded from every client deliverable, asserted at the go-live checklist (`28`) |
-| Golden files | Frozen; changes follow the spec-first rule with `CHANGELOG` evidence (`Addon 1 §M.5`) |
-| Fixture hygiene | Every fixture in `tests/` is synthetic or sanitised; accidental client data in a fixture is an S1 process failure and a security incident note |
-| Regeneration | `sample-data` is re-generatable at any time; the installed app can restore the bundled sample (`FR-XC-004`) |
+| Golden files | The Golden Month workflow in §5.6 applies: a manifest is owner-blessed once; every build diffs it; regeneration requires approval and an impact note first. |
+| Fixture hygiene | Every fixture in `tests/` is synthetic; real client data is never a fixture. Any real-file shape need uses metadata only, and accidental client data is an S1 process failure and a security incident note |
+| Regeneration | `sample-data` is re-generatable at any time; the installed app can restore the bundled sample (`FR-XC-004`). Golden regeneration is restricted to the planned `scripts/regen-golden` procedure in §5.6. |
 | Licence files | Fixture fonts/images must be redistributable; anything else is rejected at review (`SEC-045`) |
 
 ## 17. Change control and obligations
@@ -789,12 +857,12 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 
 | Obligation | Owner |
 |---|---|
-| The gate checklist texts stay identical in substance here and in the six gate sources (9+12+12+12+13+8 = 66 checks) | `00_INDEX` §9 (tracker), this doc (authoritative text) |
+| The gate checklist texts stay identical in substance here and in the six gate sources (9+12+12+12+13+12 = 70 checks) | `00_INDEX` §9 (tracker), this doc (authoritative text) |
 | FR → spec → screen → API → test chain filled for every FR using the test IDs of §4 | `20` |
 | Every endpoint has a contract test, a type and a consumer | `26` |
 | UAT mechanics, defect workflow and go-live use the UAT scripts of §12.4 | `28` |
 | `scripts/check` composition, coverage bars and the CLI smoke list implemented as specified | `17`, `09` §5 |
-| Fixtures and the negative corpus are generated by `sample-data` with the fixed seed | `sample-data/` (Phase 0 build step) |
+| Sample outputs and the negative corpus are generated by `sample-data` with the fixed seed and are not blob-committed; Golden/Oracle fixtures follow §5.6/§5.7 | `sample-data/`, `tests/golden/`, `tests/oracle/` |
 | Manual Windows checklist executed and signed at each gate | `15` |
 | Prior-version project fixture maintained for upgrade tests | `24` |
 | Every feature's demo recipe recorded | `19` (DoD) |
@@ -813,7 +881,7 @@ it and the status as of this draft. `00_INDEX` §9 is the tracker of record; `CH
 **Frozen constants owned by this document:** the `NFR-001`…`016` targets and measurement protocol (§3) ·
 the family counts and naming (§4) · the acceptance bars (§5.3) · the edge-case matrix rows and message
 IDs (§6) · the cross-artifact comparison set and failure class (§7) · the regression threshold (§8.3) ·
-the `scripts/check` composition and coverage bars (§13.1/§13.2) · the evidence formats (§14.2) · the 66
-Phase-0 checklist checks (§15: `GATE-01`…`05` + provisional `GATE-05B`).
+the `scripts/check` composition and coverage bars (§13.1/§13.2) · the evidence formats (§14.2) · the 70
+Phase-0 checklist checks (§15: `GATE-01`…`05` + official `GATE-05B`) · the Golden Month/oracle controls (§5.6/§5.7).
 
 

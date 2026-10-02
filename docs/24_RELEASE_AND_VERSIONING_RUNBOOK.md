@@ -1,5 +1,5 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** the **release process** — semver rules, tags, the release checklist, the release record,
 > upgrade/migration testing with the prior-version fixture, distribution + checksum publication, and signing
 > status (Addon 1 §C.1/§J; `15` §10 delegates the process here)
@@ -78,7 +78,7 @@ Run at a green gate (`16` §5.1) or for a P0 patch (§9). Every row leaves evide
 | 6 | **Clean-Windows 11 protocol:** the `15` §5.2 24-step run on a machine that never saw the app | Engineer | Signed run sheet + screenshots (SmartScreen, first run, sample project, one pack) | Any step fails |
 | 7 | **Smoke on the build host:** install → launch → sample project → generate one pack → uninstall (`15` §3.2 step 9) | Engineer | Smoke transcript | Any step fails |
 | 8 | **Upgrade test:** `TST-E2E-05` against the prior-version fixture; hash-compare the numbers before/after | Engineer | Test output + migration log | Numbers changed, or a manual step appeared |
-| 9 | **Release notes:** generate `packaging/out/<version>/release-notes.md` from `CHANGELOG.md` + the template (§10) | Engineer | Notes file | Known issues section empty when issues exist |
+| 9 | **Release notes + What’s New:** generate `packaging/out/<version>/release-notes.md` and `whats-new.md` from `CHANGELOG.md` + the templates (§10); a human checks both are plain language with no FR IDs | Engineer | Both note files | Known issues omitted, or internal jargon/FR IDs reach the client note |
 | 10 | **Review:** a second pair of eyes checks steps 1–9 against the record (for a one-person team: the checklist itself is the reviewer, and the review note says so) | Reviewer | Review note | Any gap unexplained |
 | 11 | **Approval:** record `Release <version> APPROVED — <who> — <date>` in `CHANGELOG` **and** `SESSION_LOG` (`19` §6) | Project owner | Both files | No explicit approval |
 | 12 | **Tag:** annotated `v<version>` on the release commit (§3) | Engineer | Tag | Tag exists already |
@@ -99,7 +99,8 @@ Run at a green gate (`16` §5.1) or for a P0 patch (§9). Every row leaves evide
 | `FPandAMonthEndCopilot-<version>-portable.zip` | The portable package (`15` §4.3) |
 | `SHA256SUMS-<version>.txt` | Hashes of both artefacts |
 | `sbom/py-<version>.txt` | `pip freeze` snapshot of the built environment (`SEC-047`) |
-| `release-notes.md` | The client-facing summary (§10) |
+| `release-notes.md` | The full client-facing release note (§10) |
+| `whats-new.md` | Short plain-language installer companion generated from `CHANGELOG` (§10.1); no FR IDs |
 | `build-report.txt` | Size vs `NFR-006`, durations, payload breakdown (`15` §3.2 step 10) |
 | `payload-audit.txt` | The automated payload-audit output (`15` §3.2 step 5) |
 | `smoke-transcript.txt` | Build-host smoke run |
@@ -215,6 +216,32 @@ offered to the client at handover, `23` §12); internal demo builds may be prune
 - Publisher: <signed subject, or "unsigned build — verify the SHA-256 before running">
 ```
 
+### 10.1 Required “What’s New” installer companion (Addon 5 §H.3)
+
+Every installer is delivered with a short `whats-new.md` generated from the approved `CHANGELOG` entries,
+then human-reviewed. It is for the client, so it uses plain language: no FR IDs, gate IDs, internal file
+paths, test names or engineering blame language. `22_END_USER_GUIDE.md` links users to this note from its
+help/release-update guidance.
+
+```markdown
+# What’s New in FP&A Month-End Copilot <version>
+
+## New or improved
+- <short client-visible change and why it helps>
+
+## Fixed
+- <symptom the user saw, and what to do now>
+
+## What you need to do
+- <install/restart/re-run/import action, or “Nothing — install the update when convenient.”>
+
+## Help
+- <support contact and user-guide pointer>
+```
+
+The release cannot pass step 9 if this note claims a behavior not present in `CHANGELOG`, hides a material
+known issue, or uses a release as a vehicle for an unapproved scope change.
+
 ## 11. Release evidence (what proves a release happened)
 
 | Evidence | Owner step | Where |
@@ -226,7 +253,7 @@ offered to the client at handover, `23` §12); internal demo builds may be prune
 | Clean-Windows run sheet + screenshots | §4 step 6 | Release record |
 | Smoke transcript | §4 step 7 | Release record |
 | Upgrade test output + migration log | §4 step 8 | Release record |
-| Release notes | §4 step 9 | Release record + client |
+| Release notes + What’s New | §4 step 9 | Release record + client; `whats-new.md` accompanies the installer |
 | Review note + approval lines | §4 steps 10–11 | `CHANGELOG` + `SESSION_LOG` |
 | Delivery confirmation | §4 step 14 | Release record |
 
@@ -249,7 +276,7 @@ offered to the client at handover, `23` §12); internal demo builds may be prune
 | `14` | Owns `TST-E2E-05` and the fixture path; the fixture is refreshed after each client-visible release |
 | `13` | Owns the SBOM/license/secret statements (`SEC-028`–`031`, `SEC-047`) referenced in §5/§8 |
 | `17` | Owns the commit/tag conventions; §3 cites them |
-| `23` | Owns support/incident handling after a release; §9's patch enters `23` §10's playbook |
+| `23` | Owns support/incident handling after a release; §9's patch enters `23` §10's playbook and the What’s New note gives the client the support pointer |
 | `28` | Owns UAT, the go-live rehearsal (`TST-UAT-06`) and the client sign-off |
 | `27` | Records anything deferred out of a release |
 

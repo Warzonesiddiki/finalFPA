@@ -18,8 +18,8 @@
 ## 2. Current Project Phase
 
 - **Current Phase:** **Phase 0 — Documentation & Specification of Record**
-- **Status:** **Remediated & Verified** (Docs `00`–`30` complete, all six quality gates verified, sample data suite generated).
-- **Next Phase:** **Packaging Spike (`GATE-06`)** → **Phase 1: Ingestion & Core Foundation (`GATE-07`)**.
+- **Status:** **Phase 0 documentation is ready for owner presentation.** The 70-check documentary re-audit is recorded in `evidence/2026-10-02-phase0-re-audit/`; no Phase 0 approval has been recorded.
+- **Next permitted work:** Present `docs/PHASE0_SUMMARY.md`, doc `29`, doc `30`, and the evidence pack for an explicit approval or rejection. Only recorded approval may release the packaging spike (`GATE-06`).
 
 ---
 
@@ -31,7 +31,7 @@ All project documentation lives in the [`docs/`](docs/) directory. Start with th
 2. **For Product & Scope:** Open [`docs/01_PRD.md`](docs/01_PRD.md) and [`docs/02_FUNCTIONAL_SPEC.md`](docs/02_FUNCTIONAL_SPEC.md).
 3. **For Finance & Calculations:** Open [`docs/05_CALCULATION_SPEC.md`](docs/05_CALCULATION_SPEC.md) and [`docs/06_EXCEPTION_RULES_CATALOG.md`](docs/06_EXCEPTION_RULES_CATALOG.md).
 4. **For Architecture & Stack:** Open [`docs/09_TECHNICAL_ARCHITECTURE.md`](docs/09_TECHNICAL_ARCHITECTURE.md) and [`docs/26_API_CONTRACT.md`](docs/26_API_CONTRACT.md).
-5. **For Quality & Verification:** Open [`docs/14_TESTING_QA_PLAN.md`](docs/14_TESTING_QA_PLAN.md) and [`docs/30_DOCUMENTATION_SET_REVIEW_GUIDE.md`](docs/30_DOCUMENTATION_SET_REVIEW_GUIDE.md).
+5. **For Quality & Verification:** Open [`docs/14_TESTING_QA_PLAN.md`](docs/14_TESTING_QA_PLAN.md) and [`docs/30_OWNER_OPERATING_HANDBOOK.md`](docs/30_OWNER_OPERATING_HANDBOOK.md).
 6. **For Client Review:** Open [`docs/29_CLIENT_REQUIREMENTS_PACK.md`](docs/29_CLIENT_REQUIREMENTS_PACK.md).
 
 ---
@@ -43,7 +43,7 @@ All project documentation lives in the [`docs/`](docs/) directory. Start with th
 ├── docs/               # Phase 0 Documentation of Record (Docs 00–30, CHANGELOG, SESSION_LOG)
 ├── audit/              # Independent audit artifacts, findings register, and verification logs
 ├── evidence/           # Verification logs, quality gate evidence packs, and test outputs
-├── sample-data/        # Realistic fictional dataset, generator, templates, and malformed corpus
+├── sample-data/        # Generator + instructions only; local synthetic outputs are ignored and regenerated
 ├── app/                # Backend Python headless engine (Phase 1+)
 ├── ui/                 # Frontend React + TypeScript application (Phase 1+)
 ├── tests/              # Test suites, contract tests, and golden fixtures (Phase 1+)

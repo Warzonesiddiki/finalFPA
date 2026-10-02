@@ -1,5 +1,5 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** repo layout and file naming (Kickoff §5), language/format/lint/type rules, the
 > engine-boundary and layering enforcement (`09` §4), money/time/determinism rules, error handling and
 > logging standards (`13` §6, `NFR-012`), dependency, licence and supply-chain rules (Addon 1 §I), secrets
@@ -319,6 +319,31 @@ downloaded at runtime.
 | Screenshots/logs in issues | Redacted with the same rules as the diagnostics bundle before they are attached anywhere |
 | Network | No outbound call exists outside the marked AI client (`13` §3); adding one is an architecture change, not a feature detail |
 
+### 8.1 Repository exclusions and survivability (Addon 5 §H)
+
+The repository is a specification and source repository, not an artifact bucket. `.gitignore` is a safety
+net; review must reject a prohibited file even if a pattern did not catch it.
+
+| Category | Rule |
+|---|---|
+| Never in Git | Real client data, client backups/databases, secrets/keys, installers, build/package output, coverage output, caches, and large binary artifacts. A release is distributed outside Git with its SHA-256 (`24`). |
+| Generated sample data | Commit the generator, seed/configuration, documentation and empty directory markers. Do **not** commit generated CSV/XLSX/corpus outputs as blobs; regenerate them locally. |
+| Narrow reviewed fixture exception | A small formula-visible oracle workbook and small Golden Month comparison fixtures may live only beneath `tests/oracle/` or `tests/golden/`, with a manifest/readme, reviewer acknowledgement and no client data. This exception never permits installers, generic build output or large binaries. |
+| New binary request | First ask whether a deterministic generator or text representation can replace it. If not, record size, licence, purpose, SHA-256 and review decision; use approved release/artifact storage rather than ordinary Git when it is large. |
+| Secret/client-data detection | Run the secret/binary scan before each merge. A detection is a stop-work issue governed by `13` §3.1 and `30` §8, not something to suppress with an ignore rule. |
+
+**Repository survivability policy.** The project keeps an independent copy with full history by using either
+a second remote or a weekly `git bundle` archive in an approved, access-controlled location separate from
+the primary development machine. The default is the weekly archive until the owner selects a second remote:
+
+1. After each active development week, create `git bundle create fpa-YYYY-MM-DD.bundle --all` outside this
+   repository and store it in the approved secondary location.
+2. Verify the bundle in a clean temporary clone with `git bundle verify`; record only the path class, command,
+   commit SHA and verification result in `evidence/YYYY-MM-DD-repo-survivability/`.
+3. Do not commit the bundle itself. It is a large binary archive, not source.
+4. Before the first post-approval product phase gate, the owner reviews the first successful archive or
+   second-remote evidence. A missing independent copy blocks that gate until remediated.
+
 ## 9. Testing standards (how code is written to be testable)
 
 ### 9.1 Structure and naming
@@ -393,10 +418,12 @@ downloaded at runtime.
 
 ### 11.3 Repository hygiene
 
-- `.gitignore` covers build output, caches, virtualenvs, `node_modules`, coverage, `.env`, key files and
-  client-data paths (`13` §12).
-- `.gitattributes` normalises line endings; binary files are declared.
-- No large binaries in history; the app's templates and icons are small and reviewed (`SEC-045`).
+- `.gitignore` covers build output, caches, virtualenvs, `node_modules`, coverage, `.env`, key files,
+  client-data paths and generated sample-data outputs (`13` §12, §8.1).
+- `.gitattributes` normalises line endings; a binary needs the narrow fixture exception in §8.1 or is rejected.
+- No large binaries in history; installers and builds are never committed. Templates/icons and the two
+  reviewed test-fixture locations are small, hashed and licence-reviewed (`SEC-045`).
+- The weekly independent-history archive / second-remote policy of §8.1 is checked before product-phase gates.
 - Tags and release artefacts are never re-uploaded with the same version — a re-release is a new patch
   version (`24`).
 
@@ -517,7 +544,7 @@ beyond the checklist in `§13.1`.
 | The fresh-clone bootstrap test and the spike policy are gate items | `16` §5.1, `09` §15 |
 | Licence allow-list, `THIRD_PARTY_LICENSES.txt` and the SBOM are release artefacts | `15` §1.2/§3.2, `24` |
 | The prior-version project fixture lives under `tests/fixtures/` and is maintained | `24` |
-| `.gitignore`/`.gitattributes` contents match `§8`/`§11.3` | repository config |
+| `.gitignore`/`.gitattributes` contents match `§8`/`§8.1`/`§11.3`, including generated sample-output exclusions and reviewed test-fixture exceptions | repository config |
 
 ### 16.2 Changes to this document
 

@@ -1,14 +1,14 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** the **acceptance path**: the project-level Definition of Done, the defect severity and
 > workflow (`S1`–`S4`), the **real-data pilot (`GATE-13`)**, **UAT (`GATE-14`)**, the **go-live checklist
 > (`GATE-15`)**, the client sign-off template and the per-phase demo-script standard (Addon 3 §B.1/§G,
 > Addon 4 §F; the test-level detail stays in `14`, the release mechanics in `24`)
 > **TL;DR (≤ 15 lines):**
 > - **Acceptance framework:** Project Definition of Done, S1–S4 defect taxonomy, and formal sign-off templates.
-> - **Real-data pilot gate:** GATE-13 pilot running sanitized real month data with line-by-line tie-out worksheet.
+> - **Real-data pilot gate:** GATE-13 runs sanitized real month data only in an isolated local environment, with a line-by-line tie-out worksheet.
 > - **UAT test protocol:** Six structured user acceptance scripts (TST-UAT-01 to 06) executed directly by client finance team.
-> - **Go-live checklist:** 22-point verification covering installation, training, backups, and sample data removal.
+> - **Go-live checklist:** 23-point verification covering installation, training, backups, sample-data removal, and the final client-question sweep.
 > - **Classification log:** Differences categorized rigorously (spec bug, mapping issue, data variance) rather than explained away.
 
 # 28 — Acceptance, UAT and Go-Live
@@ -37,7 +37,7 @@
 
 | # | Criterion | Evidence |
 |---|---|---|
-| 1 | All six Phase-0 checklists green: kickoff, Addon 1 §O, Addon 2 §I, Addon 3 §J, Addon 4 §K, plus provisional Addon 5 `GATE-05B` | `14` §15 with every check ✅ |
+| 1 | All six Phase-0 checklists pass with current evidence: kickoff, Addon 1 §O, Addon 2 §I, Addon 3 §J, Addon 4 §K, plus official Addon 5 `GATE-05B` | `14` §15 + the dated 70-check re-audit evidence |
 | 2 | Coverage bars met: `app/engine` ≥ 90 %, `app` ≥ 75 % | `coverage.xml` (`14` §13.2) |
 | 3 | E2E golden path green on a **clean Windows 11 install** of the built artefact | Playwright report + clean-machine run sheet (`15` §5.2) |
 | 4 | Docs `00`–`30` (31 docs) complete, with the Addon Coverage Matrix live and every row integrated | `00_INDEX` §3/§4 |
@@ -83,6 +83,12 @@ states), and its traceability row filled in `20`.
 
 ## 4. The real-data pilot (`GATE-13`, Addon 4 §F)
 
+**Data-location boundary:** for **pre-go-live validation**, the real-data pilot and UAT are the only planned
+uses of real client data. They occur only after a release candidate exists, inside the isolated local
+client/consultant environment. The real month is never emailed, uploaded to an agent, placed in a cloud
+development service, committed to this repository, or attached to support evidence. Before the pilot,
+development receives metadata only (`13` §3.1).
+
 ### 4.1 Preconditions
 
 | # | Precondition | Owner |
@@ -117,7 +123,22 @@ Every difference between the app's output and the client's manual pack is classi
 | **(c) Client-data or methodology difference** | Timing, allocation, sign convention, roundings or a genuine error in the manual pack | Client finance owner (decision) | Classification log with the evidence (drill-through rows) |
 | **(d) Expected difference** | A documented v1 behaviour (e.g. `n/a` for ÷0, display rounding) | — | Classification log citing the spec section |
 
-### 4.4 Tie-out worksheet (template — the completed copy is appended to this document)
+### 4.4 Independent oracle attachment and tie-out worksheet (Addon 5 §G)
+
+**At every phase gate:** attach one completed **synthetic-only** formula-visible workbook based on
+`tests/oracle/golden_month_hand_check_template.xlsx`. It covers one cost centre × one account × one period
+and compares raw sample export, budget, calculated actual/budget/variance/variance %/forecast values and
+app output to the minor unit. The workbook is authored from `05`, not copied from engine code, and is kept
+under `tests/oracle/` with the gate evidence.
+
+**At this Real-Data Pilot:** repeat the same hand-check locally in the isolated client/consultant environment
+against the client's manual figure for one account. The completed real-data workbook, raw rows, manual
+values and screenshots never enter the repository, cloud agent or support channel. The pilot evidence pack
+records only this metadata: oracle identifier, local evidence location class, workbook SHA-256, period,
+account/cost-centre identifiers approved by the client, reviewer, minor-unit match result, and any
+classification (`a`–`d`). A mismatch blocks pilot exit until resolved or formally classified.
+
+The accompanying local tie-out worksheet has the following fields:
 
 | Field | Example |
 |---|---|
@@ -127,9 +148,11 @@ Every difference between the app's output and the client's manual pack is classi
 | Files imported | three rows: file, source type, batch id, rows, score |
 | BvA totals | app vs manual, per window (MTD/YTD), variance explained |
 | Key account balances | account list with deltas and class (a–d) |
+| Independent oracle | one account × cost centre × period; worksheet hash, reviewer and minor-unit match / mismatch |
 | Exception list comparison | app raises vs manually known issues; precision notes |
 | Difference log | one row per difference: `class`, amount, cause, owner, action, status |
 | Sign-off | analyst + project owner, date (see §7) |
+
 
 ### 4.5 Exit criteria (`GATE-13`)
 
@@ -137,7 +160,7 @@ Every difference between the app's output and the client's manual pack is classi
 2. Mapping profiles **frozen** for the client (further changes are versioned, `FR-IMP-026`).
 3. No open `S1`; `S2` has an agreed fix date before UAT.
 4. New gaps routed as an impact note (`19` §5.1) — never patched into code directly.
-5. The signed tie-out worksheet, classification log and validation reports attached to this document.
+5. The signed local tie-out worksheet, local independent-oracle metadata record, classification log and validation reports are listed in the acceptance evidence record. Real-data attachments remain in the isolated local environment; only safe references/hashes enter the repository.
 
 ## 5. UAT (`GATE-14`, Addon 3 §G.2)
 
@@ -147,7 +170,7 @@ Every difference between the app's output and the client's manual pack is classi
 |---|---|---|
 | 1 | All Phase 0 features demoed to the acceptance panel per the demo script in §5.2 | Demo script outcomes recorded in `SESSION_LOG` and attached to the gate packet (`16` §5.1 item 11) |
 | 2 | No open `S1`/`S2` defects from prior phases | Defect log (§3.2) shows zero open `S1`/`S2` |
-| 3 | Test environment provisioned per §5.1 | Installed release candidate on client-representative Windows 11 machine; sample project plus sanitized real month loaded |
+| 3 | Test environment provisioned per §5.1 | Installed release candidate on client-representative Windows 11 machine; sample project plus sanitized real month loaded **only in that isolated local environment** |
 | 4 | Sample data corpus (250k rows) loaded and validated | Validation reports and data-quality scores recorded for each imported file |
 
 ### 5.1 Environment, participants and timing
@@ -155,7 +178,7 @@ Every difference between the app's output and the client's manual pack is classi
 | Aspect | Rule |
 |---|---|
 | Build | The installed release candidate on a client-representative Windows 11 machine (`15` §5.2 protocol already run) |
-| Data | The sample project **plus** the sanitized real month from the pilot (a real project) |
+| Data | The sample project **plus** the sanitized real month from the pilot (a real project), retained only in the isolated local environment |
 | Participants | One FP&A analyst (primary) **and** at least one accounting-owner representative (`A26`) |
 | Duration | ≤ 5 business days, in one window |
 | Fallback | A named fallback week in the same month (`16` §12 row 10); the scripts are runnable by one person |
@@ -207,6 +230,7 @@ Every difference between the app's output and the client's manual pack is classi
 | 20 | First-month plan agreed: who imports, when, and who runs the pack | Both | Written plan |
 | 21 | Hypercare window agreed (§8) and the escalation path (`15` §9.3) shared | Project owner | Written note |
 | 22 | Go-live sign-off (§7) recorded in `CHANGELOG` + `SESSION_LOG` (`19` §5.2) | Project owner | Signed record |
+| 23 | Final client-question sweep was sent by the **owner-approved N-business-day deadline** (current proposed default: 10 business days before go-live); each item is confirmed or explicitly ships with its documented default | Project owner | `21` §5.4 tracker + `18` `OQ-023`/`DEC-` records |
 
 ## 7. Acceptance evidence and sign-off
 
@@ -246,6 +270,7 @@ reference (record name + SHA-256) is recorded in the release record's evidence l
 | First accuracy report | After the first closed period under the tool: forecast-vs-actual accuracy reviewed with the analyst (`07` §8) and any method change agreed |
 | First month-end review | 30-minute review: what took time, which exceptions repeated, which settings to tune (`06` §10) |
 | Feedback intake | Every request is logged as a `27` entry or a decision (`19` §5.4) **before** any code; `S4` items ride the same path |
+| Operations loop | Intake → diagnostics zip → `S1`–`S4` classification → support log/defect record → spec-first fix/release or `27` request is mandatory (`23` §11.1) |
 | Support capacity | The support log (`23` §11) is reviewed monthly; recurring themes become spec changes, never workarounds |
 | Re-entry | A later phase or a new scope starts again at `16` §5.1 with a fresh gate packet |
 
@@ -279,10 +304,12 @@ reference (record name + SHA-256) is recorded in the release record's evidence l
 |---|---|---|
 | Severities | `S1`–`S4` as defined by `14` §14.1; `S1` blocks release | §3.1 |
 | Defect ids | `DEF-nnn`, allocated in the UAT/pilot defect log, never reused | §3.2, `00_INDEX` §8 |
-| Response targets | `23` §10 defaults until `OQ-016` confirms them | §3.1 |
-| Pilot gate | `GATE-13`: one sanitized real month, no sample data | §4, Addon 4 §F |
+| Response targets | Owner-approved values in `23` §11.1 are required before go-live; planning defaults are not a client commitment | §3.1, §6 item 10 |
+| Pilot gate | `GATE-13`: one sanitized real month in an isolated local environment, no sample data | §4, Addon 4 §F / Addon 5 §E |
+| Oracle | Synthetic worksheet at every phase gate; one local real-data/manual-figure check at the pilot | §4.4, `14` §5.7 |
+| Final default sweep | Owner-approved N-business-day deadline (current proposed default: 10); tracker and `DEC` records required | §6 item 23, `21` §5.4, `18` `OQ-023` |
 | UAT gate | `GATE-14`: installed build, ≤ 5 business days, six scripts | §5 |
-| Go-live gate | `GATE-15`: the 22-item checklist | §6 |
+| Go-live gate | `GATE-15`: the 23-item checklist | §6 |
 | Difference classes | `(a)` spec bug · `(b)` mapping error · `(c)` client-data/methodology · `(d)` expected | §4.3 |
 | Sign-off stages | Pilot, UAT, go-live — each with the §7.1 statement | §7 |
 | Rollback stance | Restore-only, never a reverse migration | §6 item 11, `24` §6.4 |

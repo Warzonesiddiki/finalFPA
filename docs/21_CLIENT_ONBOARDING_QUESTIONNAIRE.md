@@ -1,5 +1,5 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** the **client-facing questionnaire** — every question the client must answer
 > (`Q-001`…`Q-021`, five groups), why it matters, the **labelled default already implemented** if it goes
 > unanswered, where that default lives, when the answer is needed, how an answer is recorded and propagated
@@ -11,6 +11,7 @@
 > - **Non-technical format:** Clear business English avoiding developer jargon; ready for client distribution and review.
 > - **Traceability:** Client responses link directly to project configuration keys and exception catalog parameters.
 > - **Status tracking:** Formal sign-off and response log preventing configuration ambiguity during project initialization.
+> - **Data boundary:** Sendable asks request only metadata or style-only material; a real pilot month stays in the isolated local pilot environment.
 
 # 21 — Client Onboarding Questionnaire
 
@@ -39,6 +40,9 @@
    unconfirmed*; it is never repeated to the client as a fact (`01` §12).
 4. **Answers are recorded, dated and propagated** (§5): `DEC-nnn` in `18`, the `OQ-` row closed or
    rewritten, the owning docs updated in the same change, `CHANGELOG` + `SESSION_LOG` updated.
+5. **No real-file transmission:** sendable questions request metadata or style-only/blank material only.
+   Real client files (including sanitised files) are neither emailed nor uploaded to an agent, web form,
+   repository or development service; `Q-001` schedules their isolated local pilot use instead.
 
 ### 1.3 Who asks, who answers
 
@@ -46,7 +50,7 @@
 |---|---|
 | Consultant (product owner side) | Runs the session, asks in §2.3 order, records answers in §5.2, updates the docs |
 | Client finance owner (CFO or finance manager) | Answers the finance-model and outputs questions (groups B and D) |
-| Client analyst | Answers data/file questions, provides the pilot month, runs the tie-out |
+| Client analyst | Answers data/file questions, makes the pilot month available only in the isolated local pilot environment, runs the tie-out |
 | Client IT contact | Confirms install-day facts (§3.6) and the delivery channel (`Q-016`) |
 
 ## 2. How the interview runs
@@ -70,7 +74,7 @@ Nothing in §4. Asking a ruled question re-opens scope; the §4 list is shown to
 | Order | Item | Unblocks |
 |---|---|---|
 | 1 | `Q-015` signing certificate | Longest lead time (procurement); SmartScreen plan for install day |
-| 2 | `Q-001` one sanitized real month | The pilot/tie-out (`GATE-13`) and real-world shape validation |
+| 2 | `Q-001` one isolated-local sanitized real month | The pilot/tie-out (`GATE-13`) and real-world shape validation |
 | 3 | `Q-002`, `Q-003` system shapes | The mapping profiles and parsing rules actually used in month 1 |
 | 4 | `Q-004`, `Q-006` calendar and currency | Period maths and every displayed number |
 | 5 | `Q-009`, `Q-010`, `Q-011` thresholds/master data | Which exception rules can be enabled on day one |
@@ -86,7 +90,7 @@ Nothing in §4. Asking a ruled question re-opens scope; the §4 list is shown to
 
 | Q | Question to the client | Why it matters | Default in force (labelled, implemented) | Owning docs / FRs | Needed by |
 |---|---|---|---|---|---|
-| `Q-001` | Can you provide **one sanitized real month** — the D365 GL export plus both other system exports — as early as possible? | The pilot and tie-out prove the app against real numbers and real shapes; it is the only item with a hard external dependency | None yet: the synthetic `sample-data/` corpus (watermarked, never delivered) is used for development and demos | `28` (pilot), `14` §16, `18` `A29`/`OQ-014` | Start of Phase 6 / `GATE-13` |
+| `Q-001` | Can you reserve **one sanitized real month** — the D365 GL export plus both other system exports — for use **only in the isolated local pilot** after a release candidate exists? Do not email, upload or share the files with this project team, agent or repository. | The pilot and tie-out prove the app against real numbers and real shapes; it is the only item with a hard external dependency | None yet: the synthetic `sample-data/` corpus (watermarked, never delivered) is used for development and demos; real rows remain local until `GATE-13` | `28` (pilot), `14` §16, `18` `A29`/`OQ-014` | Start of Phase 6 / `GATE-13` |
 | `Q-014` | What are the **largest file sizes and row counts** you actually see — per file and per month? | Validates `NFR-002`/`NFR-009` (250k rows / ~100 MB) and the import limits, estimates and UX | 250k rows / ~100 MB upper bound with an explicit over-limit confirmation | `04` §3, `14` §3, `FR-IMP-003/030`, `FR-XC-010`, `18` `A13`/`OQ-013` | Phase 1 gate (re-confirmed at the pilot) |
 | `Q-021` | Should v1 report **headcount-based metrics** (cost/revenue per head)? If yes, what headcount data exists, and where? | Decides whether a parked KPI set re-opens; headcount is the only metric family with no data today | Not provided: headcount metrics stay parked (`BL-016`) and the KPI library ships without them | `05` §5.2, `FR-BVA-010`, `27` (`BL-016`), `18` `A20` | Before go-live (no code impact while parked) |
 
@@ -108,14 +112,14 @@ Nothing in §4. Asking a ruled question re-opens scope; the §4 list is shown to
 
 | Q | Question to the client | Why it matters | Default in force (labelled, implemented) | Owning docs / FRs | Needed by |
 |---|---|---|---|---|---|
-| `Q-002` | Which **D365 edition and export** produces the GL file (Finance & Operations, Business Central, other), and can we see one file's column layout? | Column set, dimension-string format, control totals and the profile that parses them | Generic "D365-style GL export" template with documented dimension parsing; a per-edition profile is added when confirmed | `04` §2/§7/§10, `FR-IMP-002/004/005/011`, `18` `A1`, `OQ-001` | Phase 1 gate |
-| `Q-003` | What are the **two other systems**, and what are their exact column lists (including which sheets/rows hold the data)? | Proves mapping flexibility; the two non-D365 shapes are needed for month-1 imports and the sample corpus | Two distinct sample shapes ship (payroll summary; procurement/bank ledger) and both are documented end to end | `04` §2, `14` §16, `FR-IMP-002/005/010/011`, `18` `A2`, `OQ-002` | Phase 1 gate |
+| `Q-002` | Which **D365 edition and export** produces the GL file (Finance & Operations, Business Central, other), and what is its metadata-only column layout (names, types, sheets, row counts and format facts)? | Column set, dimension-string format, control totals and the profile that parses them | Generic "D365-style GL export" template with documented dimension parsing; a per-edition profile is added when confirmed | `04` §2/§7/§10, `FR-IMP-002/004/005/011`, `18` `A1`, `OQ-001` | Phase 1 gate |
+| `Q-003` | What are the **two other systems**, and what are their metadata-only column lists (including sheet names, data-row locations, types and row counts)? | Proves mapping flexibility; the two non-D365 shapes are needed for month-1 imports and the sample corpus | Two distinct sample shapes ship (payroll summary; procurement/bank ledger) and both are documented end to end | `04` §2, `14` §16, `FR-IMP-002/005/010/011`, `18` `A2`, `OQ-002` | Phase 1 gate |
 
 ### 3.4 Group D — Outputs, audience and branding
 
 | Q | Question to the client | Why it matters | Default in force (labelled, implemented) | Owning docs / FRs | Needed by |
 |---|---|---|---|---|---|
-| `Q-012` | Can you share **one recent BvA Excel** and the **management PPT** you send today (any format, even PDF/print)? | House style, slide structure and layout replication; also whether `.xlsm`/protected files are in scope | The app's own house style (`11`/`12`) until samples arrive; protected/`.xlsm` inputs are handled or explicitly rejected per `04` §8 | `11` §3/§9, `12` §6, `04` §8, `FR-XL-001/002`, `FR-PPT-001`, `18` `A11`, `OQ-010`/`OQ-021` | Phase 5 gate |
+| `Q-012` | Can you share **one blank or safely redacted BvA Excel layout** and **management-PPT layout** (any format, even PDF/print), with no financial rows, names or amounts? | House style, slide structure and layout replication; also whether `.xlsm`/protected files are in scope | The app's own house style (`11`/`12`) until safe style-only examples arrive; protected/`.xlsm` inputs are handled or explicitly rejected per `04` §8 | `11` §3/§9, `12` §6, `04` §8, `FR-XL-001/002`, `FR-PPT-001`, `18` `A11`, `OQ-010`/`OQ-021` | Phase 5 gate |
 | `Q-013` | **Who reads the pack** (CFO, finance director, management team), and who should receive each issued version? | Drives slide-2 KPI selection, commentary tone and the issuance-register recipient list | CFO/finance director; recipients are typed per issue; the product itself never sends anything | `01` §9, `12` §4.2, `08` §11.2, `FR-XC-003`, `18` `A12`/`OQ-011` | Phase 5 gate |
 | `Q-019` | What are the **product name, logo and two brand colours** (plus any rules about their use)? | Deck, Excel header and app branding; the WCAG-AA contrast guard applies to any colour supplied | Working name, neutral placeholder palette, no logo | `01` §17, `08` §19, `12` §3.3, `FR-SET-008`, `FR-PPT-006`, `18` `A18` | Phase 5 gate |
 
@@ -203,6 +207,57 @@ Each is a recorded decision with an owning doc. Showing this list is how the ses
 Status vocabulary: **`Open · default in force`** (the only state today) · **`Answered`** (a `DEC-` row exists and
 the owning docs are updated) · **`Withdrawn`** (the client confirms the default is correct — still a `DEC-` row).
 
+### 5.3 Sendable-form format (Addon 5 §J)
+
+Each row in §3 is deliberately formatted to be copied into email or Teams **as-is**. Send only the relevant
+rows, using this exact three-line form; do not turn a documented default into a client fact.
+
+```text
+Question: <copy the “Question to the client” cell verbatim>
+Why it matters: <copy the “Why it matters” cell verbatim>
+Our default if unanswered: <copy the “Default in force” cell verbatim>
+```
+
+The consultant records the sent date in §5.4. The client may answer in writing or in a meeting; the source
+person and original wording are captured before the six-step propagation flow in §5.1 updates the owning
+document and moves the item in `18` to the Decided log.
+
+### 5.4 Response tracker and final-default sweep (Addon 5 §J)
+
+This is the send/response control, separate from the decision-oriented answer log in §5.2. A row is updated
+the same day an ask is sent or an answer arrives.
+
+| Question | Sent date | Answer | Source person | Default still active? |
+|---|---|---|---|---|
+| `Q-001` | — | — | — | Yes |
+| `Q-002` | — | — | — | Yes |
+| `Q-003` | — | — | — | Yes |
+| `Q-004` | — | — | — | Yes |
+| `Q-005` | — | — | — | Yes |
+| `Q-006` | — | — | — | Yes |
+| `Q-007` | — | — | — | Yes |
+| `Q-008` | — | — | — | Yes |
+| `Q-009` | — | — | — | Yes |
+| `Q-010` | — | — | — | Yes |
+| `Q-011` | — | — | — | Yes |
+| `Q-012` | — | — | — | Yes |
+| `Q-013` | — | — | — | Yes |
+| `Q-014` | — | — | — | Yes |
+| `Q-015` | — | — | — | Yes |
+| `Q-016` | — | — | — | Yes |
+| `Q-017` | — | — | — | Yes |
+| `Q-018` | — | — | — | Yes |
+| `Q-019` | — | — | — | Yes |
+| `Q-020` | — | — | — | Yes |
+| `Q-021` | — | — | — | Yes |
+
+**Time limit:** Addon 5 leaves `N` unspecified. `OQ-023` in `18` therefore requires the project owner to
+record both `N` and whether it means business or calendar days before go-live. The **proposed, not yet
+approved** default is `10 business days before go-live`. On the owner-approved deadline the project owner
+sends the final **“confirm or we ship with the documented default”** sweep. The sweep result is recorded in
+`28` §6, and every accepted default still receives a `DEC-` row in `18`; silence is not silently
+reclassified as an answer.
+
 ## 6. Why nothing is blocked
 
 ### 6.1 The proof
@@ -243,8 +298,9 @@ provable from the documents alone.
 | 19 | Branding | `Q-019` → `18` `A18` (`OQ-015`) |
 | 20 | Data retention | `Q-020` → `18` `A19` |
 
-Two further items sit outside §D's list but are asked anyway: **`Q-001`** (the sanitized pilot month →
-`18` `A29`/`OQ-014`) and **`Q-021`** (headcount metrics → `18` `A20`/`BL-016`).
+Two further items sit outside §D's list but are asked anyway: **`Q-001`** (the sanitized pilot month,
+available only in the isolated local pilot → `18` `A29`/`OQ-014`) and **`Q-021`** (headcount metrics →
+`18` `A20`/`BL-016`).
 
 ## 7. Obligations this document places elsewhere
 
@@ -257,7 +313,7 @@ Two further items sit outside §D's list but are asked anyway: **`Q-001`** (the 
 | `23` | Own the support-flow detail behind `Q-018`, and the support-side key rotation/revocation steps (`FR-AI-003`; mechanics in `10` §14, `13` §5.3) |
 | `22` | Own the training material behind `Q-017` (`TST-UAT-04` uses only `22`) |
 | `16` | At each phase gate, check that the items marked "needed by" that phase are answered or explicitly default-accepted |
-| `28` | Schedule the pilot/UAT around `Q-001` and `A26` (analyst availability), not the other way round |
+| `28` | Schedule the pilot/UAT around `Q-001` and `A26` (analyst availability), not the other way round; record the owner-approved `OQ-023` final-default sweep in §6 |
 
 ## 8. Change control for this document
 
@@ -278,6 +334,7 @@ Two further items sit outside §D's list but are asked anyway: **`Q-001`** (the 
 | Ask format | ≤ 3 options + recommendation + default | `18` §4.3 |
 | Status vocabulary | `Open · default in force` · `Answered` · `Withdrawn` | §5.2 |
 | Answer flow | Six steps, docs before code | §5.1, `19` §5.1 |
+| Sendable form + response tracker | Question / why / default form + 21-row send/answer tracker; owner-approved final sweep (proposed default: 10 business days) | §5.3/§5.4, `18` `OQ-023` |
 | §D checklist coverage | 20 of 20 mapped (plus `Q-001`, `Q-021`) | §6.2 |
 | Delivery confirmations | `A21`–`A28`, no `Q-` ids | §3.6, `18` §3.2 |
 | Never-ask list | 8 rulings | §4 |

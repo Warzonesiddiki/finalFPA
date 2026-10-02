@@ -15,6 +15,7 @@ _Single source of truth for audit findings. Maintained independently by the audi
 `OPEN` → `REMEDIATED-BY-AUDITOR` (re-verified) | `FIXED-BY-AUTHOR-VERIFIED` (re-checked before closing) | `ESCALATED-TO-OWNER` | `REJECTED-BY-OWNER` (rationale recorded).
 - **Rule:** A finding can only be closed with concrete re-verification evidence (Wave 2+ re-read or script re-computation cited). Findings are never closed by weakening or deleting checklist items.
 - Wave 5 note: findings may also be marked `OPEN (reopened via F-0xx)` when a prior remediation is shown incomplete by a later wave.
+- `SOURCE-SUPPLIED-RE-AUDITED`: a missing authoritative source has been supplied, hash-anchored and re-audited against its integration targets. This resolves the source-availability finding only; it is **not** Phase 0 owner approval.
 
 ---
 
@@ -36,7 +37,7 @@ _Single source of truth for audit findings. Maintained independently by the audi
 | `F-012` | **MINOR** | Repo root | Stray scratch files left in repo root (`scratch_cutline.txt`, etc.) | `REMEDIATED-BY-AUDITOR` | All scratch files moved into `scratch/`; repo root verified clean. |
 | `F-013` | **BLOCKER** | `docs/14_...`, `docs/16_...`, `docs/00_INDEX.md`, `docs/18`, `docs/28` | Cross-doc contradiction on gate counts (58/five vs 66/six) | `REMEDIATED-BY-AUDITOR` | Wave-4 sweep ? six checklists/66 checks; Wave 6 F-030 remediated this; residue sweep clean. | Wave-4 sweep → six checklists/66 checks; **residues survive** — see `F-030` (`00:9`, `16:119`, `16:153`, `14:792`, `20:29`, `CHANGELOG` 676-678/692-693). |
 | `F-014` | **BLOCKER** | `audit/REPORT.md`, `audit/FINDINGS.md`, `docs/SESSION_LOG.md` | False sample-data volume and evidence claims in audit artifacts | `REMEDIATED-BY-AUDITOR` | Volumes/names corrected to measured (d365 10037 / bank 499 / payroll 399 / budget 1980); real logs created in `evidence/`. |
-| `F-015` | **BLOCKER** | `project prompt/`, `audit/FINDINGS.md` `F-001` | Addon 5 contract absent; `F-001` closure invalid | `ESCALATED-TO-OWNER` | Owner action only (options A/B recorded in `F-015`); default (A) — Phase 0 stays blocked. |
+| `F-015` | **BLOCKER** | `project prompt/`, Addon 5 source | Official Addon 5 source was absent; inferred closure was invalid | `SOURCE-SUPPLIED-RE-AUDITED` | Owner supplied official source; SHA-256 anchored; 14 A5 rows and official 12-row gate re-audited 70/70. Owner approval remains separate. |
 | `F-016` | **MAJOR** | `docs/00_INDEX.md` §4 | Coverage Matrix row-count miscount (headers vs actual rows) | `OPEN (reopened via F-027)` | Wave-4 fix set 85 over 72 — still wrong: §4.2 has 17 rows; actual total **86**. |
 | `F-017` | **MAJOR** | `evidence/`, `docs/00_INDEX.md` `A5-C`, `docs/14` §15.6 | `evidence/` empty vs Level 2/3 convention | `REMEDIATED-BY-AUDITOR` | Three Wave-4 logs created (`recompute`, `sample_data_inventory`, `gate_counts`) — two later found partly false (`F-033`). |
 | `F-018` | **MAJOR** | `docs/00_INDEX.md` §10 | Stale phase status (docs remaining, sample-data pending) | `REMEDIATED-BY-AUDITOR` | §10 → 31 docs `00`–`30`, sample-data generated, six checklists green pending re-verification. |
@@ -58,6 +59,31 @@ _Single source of truth for audit findings. Maintained independently by the audi
 | `F-034` | **MAJOR** | `sample-data/*.csv`; `sample-data/generate_sample_data.py:22`; `evidence/runs/sample_data_inventory_wave4.log:10` | Watermark missing from `expected_exceptions.csv`; `ProjectType` flag only in `d365_gl_actuals.csv`; inventory log false | `OPEN` | — (Wave 5 finding; add watermark + project-type flag to every corpus CSV or record per-file exemptions; fix the log). |
 | `F-035` | **MINOR** | `audit/WAVES.md:25` | Absolute local path leak (`C:\Users\...`) in audit artifact | `OPEN` | — (lead auditor to remediate in place: replace with repo-relative `.`). |
 | `F-036` | **MINOR** | `docs/04:343`, `docs/03:41`, `PHASE0_SUMMARY:64`, `docs/20:71`, `docs/07:195`, `docs/00:367`, `:20`, `:63`, `docs/09:4-8`, `docs/01:421,437`, `docs/18:320,325`, `PHASE0_SUMMARY:96`, `SESSION_LOG:94` | 13 batched hygiene/pointer defects (wrong owner sections, dead §Open pointer, 29 vs 31 files, SCR-014 vs SCR-040, missing date column, 10k rounding, GATE-07/SPK-07 history) | `OPEN` | — (Wave 5 finding; surgical pointer/wording fixes per item (a)–(m); annotate `SESSION_LOG` history, do not rewrite). |
+| `F-037` | **MAJOR** | `29` §§1/7–10; `21` §1.2/`Q-001`; related pilot/traceability copy | Client-facing pre-build requests could be read as soliciting sanitized real files, conflicting with Addon 5 §E | `FIXED-BY-AUTHOR-VERIFIED` | Copy repaired across affected docs; targeted paper re-test recorded in `evidence/2026-10-02-phase0-re-audit/tabletop_walkthroughs.md`; no data exposure occurred. |
+
+### 2.1 Current reconciliation — official Addon 5 intake and Phase 0 re-audit (2026-10-02)
+
+This dated addendum is the current status layer. The rows above and the detailed waves below preserve the
+historical audit trail; quoted old line numbers, old gate totals and old file names are **not** current claims.
+
+- **`F-015` resolution:** the owner supplied the official source at
+  `project prompt/ADDON_5_OWNER_CONTROL_EVIDENCE_DATA_EGRESS_EXTENSION.md`; SHA-256 is
+  `cfbb69411d586194d2ad8ef6034a74e19bcb0ae976b466485adda75a97372b11`. Its 14 A–N rows are integrated.
+  The status is now `SOURCE-SUPPLIED-RE-AUDITED`, not escalated.
+- **Former inferred Addon-5 treatment:** the former eight-check/provisional claims and the old
+  `30_DOCUMENTATION_SET_REVIEW_GUIDE.md` name are historical only. Canonical current locations are
+  `docs/30_OWNER_OPERATING_HANDBOOK.md`, `docs/14_TESTING_QA_PLAN.md` §15.6 and `docs/00_INDEX.md` §4.6/§9.
+- **Current documentary verification:** `audit/phase0_reaudit.py` completed successfully against all six
+  gate sources: **70/70 PASS**. See
+  `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md` and `command.txt`; the same directory
+  records the local-only synthetic regeneration, OOXML oracle validation, link check and two paper tabletops.
+- **Final egress-copy review (`F-037`):** Before presentation, a review found former `29`/`21` wording
+  that could be read as requesting sanitized real files before build. It was corrected to metadata/style-only
+  development requests and isolated-local pilot/UAT data handling, then paper-retested in the dated evidence
+  pack. No client data entered the repository, agent, cloud/web service, support channel or evidence.
+- **Phase state:** this resolves the source/evidence presentation blocker. It does not close the project by
+  itself: no product code, packaging, installer, Windows run, pilot, UAT, go-live or owner approval is claimed.
+  The next action is presentation of `PHASE0_SUMMARY.md`, `29` and `30` to the owner.
 
 ---
 
@@ -234,7 +260,18 @@ _Single source of truth for audit findings. Maintained independently by the audi
 - **Issue:** Wave 1/2 inferred 8 Addon 5 rows (`REQ-A5-01..08`, `00` §4.6, `14` §15.6 provisional gate, `30`, divergence notice) from audit-prompt §8 references, not from a contract source. Audit charter §2 (contract immutable; obtain from owner if missing) and §7 (contract ambiguity/conflict or new requirement beyond six docs = escalate, never invent) forbid this. `ESC-01` was closed by interpretation, not owner decision.
 - **Contract Basis:** Audit charter Sections 2.1, 7, 9 (READY requires all six gates PASS by own verification — impossible without gate-6 source).
 - **Required Fix:** Owner action only. Options: (A, recommended) supply official Addon 5 text; auditor hashes into `WAVES.md`, rebuilds `REQ-A5-*` from source, re-verifies `30`/provisional-`GATE-05B`/divergence/evidence-matrix against it and confirms final gate number; (B) formally rescind Doc 30 + provisional gate for Phase 0 (record in `00` §4.6/§9, `14` §15.6, `CHANGELOG`, `18` Decided). Default if unanswered: (A) — Phase 0 stays blocked.
-- **Status:** `ESCALATED-TO-OWNER` (replaces prior `REMEDIATED-BY-AUDITOR` on `F-001`; `F-001` lifecycle corrected to escalated)
+- **Status (historical at Wave 3):** `ESCALATED-TO-OWNER` (replaces prior `REMEDIATED-BY-AUDITOR` on `F-001`; `F-001` lifecycle corrected to escalated)
+
+#### 2026-10-02 resolution — official source supplied and re-audited
+
+- **Owner action received:** Option A. The official source is now
+  `project prompt/ADDON_5_OWNER_CONTROL_EVIDENCE_DATA_EGRESS_EXTENSION.md`, SHA-256
+  `cfbb69411d586194d2ad8ef6034a74e19bcb0ae976b466485adda75a97372b11`.
+- **Re-verification:** the source was mapped to 14 `A5-A`…`A5-N` Coverage Matrix rows, the official
+  Section M gate now has 12 `GATE-05B` rows, and `audit/phase0_reaudit.py` recorded 70/70 documentation
+  checks PASS. Evidence: `evidence/2026-10-02-phase0-re-audit/phase0_reaudit_report.md`.
+- **Current status:** `SOURCE-SUPPLIED-RE-AUDITED`. `F-015` no longer blocks presentation. This does not
+  constitute the required Phase 0 owner approval and does not permit product code or packaging.
 
 ### `F-016` — Coverage Matrix Row-Count Miscount — MAJOR
 - **Severity:** `MAJOR` (broken traceability chain)
@@ -578,3 +615,25 @@ _Single source of truth for audit findings. Maintained independently by the audi
   rounding; (m) append a dated correction note to `SESSION_LOG.md`. No checklist item weakened or deleted;
   record the batch in `CHANGELOG.md`.
 - **Status:** `REMEDIATED` (Wave 6: all 13 hygiene/pointer fixes applied — (a) `04:343`→`05`§13, (b) `03:41`→`05`§13, (c) PHASE0_SUMMARY:64→`05`§1+§13, (d) `20:71`→`16`§9.2, (e) `07:195`→canonical pointer added, (f) `00:367`→`18`§4, (g) `00:20`→31 files, (h) `00:63`→3 aux files, (i) `09:4-8`→ADR-010 included, (j) `01:421/437`→SCR-040, (k) `18:325`→Date column added (2026-10-01), (l) PHASE0:96→already fixed via F-029, (m) `SESSION_LOG:94`→GATE-06/SPK-01…SPK-08 annotated; recorded in CHANGELOG)
+
+
+---
+
+### `F-037` — Client-Facing Development-Time Data-Egress Copy Conflict — MAJOR
+- **Severity:** `MAJOR` (the earlier client-facing wording could lead a non-technical client to transmit
+  real client data into a development path, contrary to the binding Addon 5 §E policy).
+- **Location:** Former `29` §7/§8 early-build input wording and the matching questionnaire/pilot references
+  in `21`; affected terms were reconciled across `01`, `04`, `13`, `14`, `16`, `18`, `20`, `25`, `28` and `00`.
+- **Issue:** “Sanitized” does not make a real export safe to paste into an agent, web form, repository,
+  cloud service or development session. The documents had to distinguish metadata-only discovery from the
+  later isolated-local pilot/UAT.
+- **Contract basis:** Official Addon 5 §E.1–E.3; `13` §3.1; red flag 7 / `30` §8.
+- **Remediation:** `29` now tells a client not to email/upload real files and requests only metadata or
+  style-only/blank material before build. `21` makes the same rule safe when a row is copied into email or
+  Teams. The real month is scheduled for an isolated local pilot/UAT after a release candidate; repository
+  evidence remains metadata/hash references only.
+- **Re-verification:** The correction and seven targeted paper re-tests across two passes are recorded in
+  `evidence/2026-10-02-phase0-re-audit/tabletop_walkthroughs.md`. No real file, row, amount, vendor name,
+  identifier, screenshot or other client data was received or exposed; this is a fixed copy defect, not an
+  incident.
+- **Status:** `FIXED-BY-AUTHOR-VERIFIED`.

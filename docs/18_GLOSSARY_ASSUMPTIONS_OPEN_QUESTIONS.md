@@ -1,15 +1,15 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** the glossary of FP&A and product vocabulary; the **canonical assumption register**
 > with defaults and owners (Kickoff §5, `01` §12); the **`OQ-` open-question register** with every
-> unconfirmed client fact (Kickoff §5 gate item); the **`DEC-` Decided log** with dates, rationale and
-> affected docs (Addon 3 §B.2/B.3); the blocking-question protocol (Addon 2 §H.3); and registry hygiene
-> (`01` §14's `OQ-018`…`020` flag)
+> unconfirmed client fact or owner operating decision (Kickoff §5 gate item); the **`DEC-` Decided log**
+> with dates, rationale and affected docs (Addon 3 §B.2/B.3); the blocking-question protocol (Addon 2 §H.3);
+> and registry hygiene (`01` §14's `OQ-018`…`020` flag)
 > **TL;DR (≤ 15 lines):**
 > - **Single register of record:** Authoritative glossary of FP&A terminology, technical concepts, and business rules.
 > - **Assumptions log:** 29 labeled assumptions (A1–A29) documenting operational, architectural, and data expectations.
-> - **Open questions tracker:** 19 open questions (OQ-001 to OQ-019), each with context, options, recommendations, and safe defaults.
-> - **Decided log:** 37 binding architectural and product decisions (DEC-001 to DEC-037) with rationales and alternatives.
+> - **Open questions tracker:** 20 live questions, including the owner decision for the final-default-sweep deadline (`OQ-023`), each with context, recommendations, and safe defaults.
+> - **Decided log:** 40 binding architectural, product and governance decisions (DEC-001 to DEC-040) with rationales and alternatives.
 > - **Gate prerequisite:** Phase gates require zero unaddressed blocking questions; all changes update this register first.
 
 # 18 — Glossary, Assumptions & Open Questions
@@ -217,7 +217,7 @@ is explained.
 | `A26` | Client analyst availability | Available for the pilot and UAT as planned | UAT scripts are runnable by one person; dates move, the bar does not | Low | `16` §13 |
 | `A27` | Office availability | Excel and PowerPoint are available on the client machine to open the artefacts | The structural artefact tests still prove validity; the manual open-test cannot run | Medium | `14` §9.4, `15` §5.2 |
 | `A28` | No new compliance regime | No security/privacy/compliance requirement outside `13` emerges | `13` and `25` are revised before the affected phase closes | High | `16` §13 |
-| `A29` | Sanitized real data for the pilot | The client provides one sanitized real month (D365 + both other systems) | The pilot gate (`GATE-13`) cannot run; UAT cannot be entered | High | `28`, Addon 4 §F |
+| `A29` | Sanitized real data for the isolated local pilot | The client reserves one sanitized real month (D365 + both other systems) for `GATE-13` only; it is never sent to a development, cloud or repository channel | The pilot gate (`GATE-13`) cannot run; UAT cannot be entered | High | `28`, Addon 4 §F / Addon 5 §E |
 
 ### 3.3 Rules for using an assumption
 
@@ -254,7 +254,7 @@ Status values: **Open** (default in force) · **Answered** (client confirmed; de
 | `OQ-011` | Who receives the pack, and in what form? | KPI strip, tone, distribution note | CFO / finance director | Client | No | `A12` | `Q-013` | Open |
 | `OQ-012` | Is there budget/lead time for a code-signing certificate? | SmartScreen posture and the install experience | Not purchased; the mitigation ladder applies (`ADR-003`) | Project owner | No | `A14` | `Q-015` | Open |
 | `OQ-013` | What file sizes are seen in practice? | `NFR-002`/`NFR-009` targets and performance work | 250k rows / ~100 MB upper bound | Client | No | `A13` | `Q-014` | Open |
-| `OQ-014` | When can we get one sanitized real month (D365 + both systems)? | The real-data pilot gate (`GATE-13`) and UAT readiness | None yet; the pilot cannot run without it — a **schedule** dependency, not a design blocker | Client | Schedule | — | `Q-001` | Open |
+| `OQ-014` | When can one sanitized real month (D365 + both systems) be made available in the isolated local pilot? | The real-data pilot gate (`GATE-13`) and UAT readiness | None yet; the pilot cannot run without it — a **schedule** dependency, not a design blocker. It must not be sent through a development/cloud/repository channel. | Client | Schedule | — | `Q-001` | Open |
 | `OQ-015` | Can we get the client's logo and two brand colours? | Branding defaults and the contrast guard | Working name, neutral palette, no logo | Client | No | `A18` | `Q-019` | Open |
 | `OQ-016` | What support/warranty terms apply after go-live? | `23`/`28` support section and the sign-off | Consultant-first support; diagnostics-zip workflow | Project owner | No | `A17` | `Q-018` | Open |
 | `OQ-017` | Which delivery channel is approved for the installer? | Distribution and hash publication | Secure link + published SHA-256 | Project owner | No | `A15` | `Q-016` | Open |
@@ -263,9 +263,18 @@ Status values: **Open** (default in force) · **Answered** (client confirmed; de
 | `OQ-020` | *(retired tombstone — see §4.4)* | — | — | — | — | — | — | **Retired** |
 | `OQ-021` | What format is the client's current report (`.xlsx` / `.xlsm` / protected / paper)? | Whether house-style matching can be automated or must be manual | Assume a modern `.xlsx` or a PDF/paper sample; matching degrades to manual guidance | Client | No | `A11` | `Q-012` | Open |
 | `OQ-022` | Preferred default units in the pack (whole units vs lakhs)? | Display defaults in Excel/deck | Whole units with an optional lakhs display | Client | No | `A4` | `Q-006` | Open |
+| `OQ-023` | What is the final-default-sweep deadline: how many days before go-live (`N`), and are they business days? | Addon 5 §J requires a time-limited “confirm or ship with default” sweep but does not set `N`; an invented date would become an unapproved client promise | **Proposed operational default, pending owner confirmation:** 10 business days before go-live | Project owner | Before go-live | — | — | Open |
 
-**Register size:** 19 live questions (17 design/data + 2 formatting), all non-blocking for Phase 0, plus
+**Register size:** 20 live questions (17 design/data + 2 formatting + 1 owner operating-deadline decision), all non-blocking for Phase 0, plus
 one schedule dependency (`OQ-014`) and three reserved/retired numbers.
+
+### 4.1.1 `OQ-023`: final-default-sweep deadline requires owner confirmation
+
+Addon 5 §J deliberately names the deadline as **`N` days before go-live** rather than prescribing a
+number or whether days are calendar or business days. Therefore `10 business days` is a **proposed
+operational default**, not a decided requirement. The project owner must record the selected `N` (and day
+basis) as a `DEC-` before the go-live checklist is signed. It does not block Phase 0; it becomes a go-live
+blocker if still open when the final sweep must be scheduled.
 
 ### 4.2 When a question becomes blocking
 
@@ -314,6 +323,18 @@ without a default (if no safe default exists, that is a blocking question and it
 
 **Rule going forward:** an ID referenced anywhere must exist in this register. The docs link-check
 (`14` §13.1) plus the registry rules of `00_INDEX` §8 keep it true.
+
+### 4.5 Contract-change route after the Addon 5 freeze
+
+Kickoff plus Addons 1–5 are frozen for Phase 0 and v1. A new need, contradiction or improvement is first
+recorded here as an `OQ` with the impacted requirement, options, risk and recommended default. It changes
+the contract only when all of the following occur in order:
+
+1. the project owner explicitly approves the change;
+2. the owner supplies or approves a numbered future addon; and
+3. the owning documents, `CHANGELOG`, tests and traceability are updated before code.
+
+No engineer, agent or session may self-generate Addon 6 or silently convert an open question into scope.
 
 ## 5. The Decided log (`DEC-`)
 
@@ -372,7 +393,15 @@ Every ruling with its date, rationale and the documents it binds. This table is 
 | `DEC-036` | 2026-10-01 | **`ERR-ENG-*` is allocated as the environment/install/upgrade error family** (copy owned by `15` §12, catalogued by `26`) | The delivery path has failure modes of its own; they deserve plain-language codes like every other family | `15` §12, `00_INDEX` §8 |
 | `DEC-037` | 2026-10-01 | **Code standards are machine-enforced wherever expressible** (format/lint/types/boundary/coverage), with the review checklist covering the rest | "We remembered" is not a control; automation is the deliverable | `17` §13/§14 |
 
-*New decisions are appended as Phase 0 continues; the table above grows, it never gets rewritten.*
+### 5.4 Decisions `DEC-038`…`DEC-040` (official Addon 5 integration)
+
+| ID | Date | Decision | Rationale | Binds |
+|---|---|---|---|---|
+| `DEC-038` | 2026-10-02 | The official Addon 5 source is the authority for this integration; `GATE-05B` is the stable local label for its 12 Section M checks, making six Phase-0 checklists and 70 checks total. This supersedes the provisional eight-check interpretation in `DEC-031`. | The official text resolved the source-availability finding; `GATE-06` remains reserved for the packaging spike. | `00` §4.6/§9, `14` §15.6, `16` §2/§3, `19` §6 |
+| `DEC-039` | 2026-10-02 | A task stops after two failed attempts or 2× estimate, rolls back to last green, and presents exactly three owner options: simpler within spec, timeboxed spike, or eligible descope. | Prevents repeated blind work and protects a green mainline. | `19` §7.5, `30` §9, `27` §4 |
+| `DEC-040` | 2026-10-02 | v1 has no activation, expiry, licence key or usage-control mechanism; it remains a perpetual delivered build. Any future control is an owner-approved PRD decision and `BL-037` first. | A mid-build control would contradict the local/offline promise and expand scope without an approved requirement. | `01` §16, `27` `BL-037`, `24` |
+
+*New decisions are appended as Phase 0 continues; the tables above grow, they are not silently rewritten.*
 
 ## 6. Maintenance and hygiene of the registers
 
@@ -397,10 +426,11 @@ Every ruling with its date, rationale and the documents it binds. This table is 
 | Risk links for the high-impact questions (`OQ-014`, `OQ-012`, `OQ-016`) | Registered in `25` when it is written |
 | Decision dates for `DEC-031`…`DEC-037` | All `2026-10-01` (session 001) — recorded here as the allocation date; later decisions carry their own |
 | The `OQ-014` pilot date | Schedule dependency; tracked in `28` and reported at gates |
+| The `OQ-023` final-default-sweep deadline | Owner decision required before go-live; proposed default is 10 business days, not a confirmed commitment |
 
 **Assumptions about the register itself.** (a) The client answers most questions before the Phase-1 gate;
 (b) any unanswered question continues on its labelled default without blocking, unless it becomes blocking
-by §4.2; (c) the project owner answers the commercial questions (`OQ-012`, `OQ-016`, `OQ-017`).
+by §4.2; (c) the project owner answers the commercial and operating questions (`OQ-012`, `OQ-016`, `OQ-017`, `OQ-023`).
 
 ## 8. Change control and cross-document obligations
 
@@ -432,4 +462,4 @@ by §4.2; (c) the project owner answers the commercial questions (`OQ-012`, `OQ-
 **Frozen constants owned by this document:** the question states and lifecycle (§1.2) · the register rules
 (§1.3) · the glossary term definitions (§2.1–§2.3) · the `A1`…`A29` assumption register with defaults
 (§3) · the `OQ-` register and the blocking rules (§4) · the ask format (§4.3) · the `OQ-018`…`020`
-resolution (§4.4) · the `DEC-001`…`DEC-037` log (§5) · the maintenance cadence and hygiene rules (§6).
+resolution (§4.4) · the `DEC-001`…`DEC-040` log (§5) · the maintenance cadence and hygiene rules (§6).

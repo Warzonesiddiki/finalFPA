@@ -1,5 +1,5 @@
-> **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Status:** Draft v0.2
+> **Last updated:** 2026-10-02
 > **Owning FRs/areas:** the **client-facing** statement of what is being built and what is being asked of
 > the client (Addon 4 §E.1). Plain language, no requirement codes and no document numbers by design — the
 > coded version lives in `20`; delivered as part of the handover pack (`23` §12).
@@ -19,10 +19,23 @@
 | What is it? | A plain-English statement of what will be built for you, what it will not do, what we need from you and what you will be asked to sign — at three points, not once |
 | Who should read it? | The finance owner who will use it or sponsor it; the person who prepares the month-end pack; whoever signs off on the finance side |
 | How long is it? | About 20 minutes end to end; §7 and §8 are the two pages we need back |
-| What do we need from you? | Your answers in §7 (many are a single tick), the items in §8, and the §14 sign-off block |
+| What do we need from you? | Your answers in §7 (many are a single tick), safe metadata/style material in §8, a later local-pilot appointment, and the §14 sign-off block |
 | What happens next? | Your answers are folded into the build plan; anything that changes scope gets an impact note back to you before any work starts |
 | Where do the requirement codes live? | In the project's traceability and specification documents, deliberately not here — so this pack can be read without a decoder |
 | Will this text change? | Only with a recorded reason; the version you sign is dated, and material changes re-open the sign-off |
+
+### A data-sharing boundary before any request
+
+**Please do not email, upload, paste into a web form, chat, agent, issue tracker, or send to the project
+repository any real client file — even if it has been sanitised.** Before and during the build, we ask only for
+metadata (column names, data types, row counts, sheet names, date ranges and format facts) and for
+style-only/blank examples. We do not need transaction rows, vendor names, document numbers, free text or
+amounts to build the first version.
+
+The later real-data pilot is different: after an installed release candidate exists, your analyst makes the
+chosen month available **only inside the isolated local client/consultant pilot environment**. It is not sent
+to a cloud service, this development session, a support channel or this repository. The pilot section below
+is a scheduling request, not permission to transmit a real file now.
 
 ## 2. Your month-end today, and what changes
 
@@ -111,18 +124,18 @@ recommendation, write "agree" — that is enough.
 
 | # | Decision | Why it matters | Our recommendation | Your answer / date |
 |---|---|---|---|---|
-| 1 | Which closed month is the trial "real month", and when can we have it sanitized? | It unlocks the closest-to-truth test and is the single biggest schedule dependency | The most recent closed month; files within two weeks of sign-off | |
-| 2 | Which system each export comes from, and the exact columns it contains | The whole import path is built on these three files; a surprise mid-build is expensive | Send one sample file per system exactly as exported; we profile the columns and confirm the mapping with you in a one-hour walkthrough | |
+| 1 | Which closed month should be reserved for the isolated local pilot, and who can make it available only there? | It unlocks the closest-to-truth test and is the single biggest schedule dependency | The most recent closed month; schedule the analyst and isolated local pilot after a release candidate exists — **do not send the files to us now** | |
+| 2 | Which system each export comes from, and the exact columns it contains | The whole import path is built on these three files; a surprise mid-build is expensive | Send a **metadata-only** shape inventory (column names, data types, sheet names, row counts and format facts); we confirm the mapping in a one-hour walkthrough | |
 | 3 | Fiscal calendar: year start, period count, period names | Every period label, window and comparison follows this | Calendar months with your existing period labels (for example 2026-P09) | |
-| 4 | Prior-year data available, and in what form? | Enables prior-year comparisons and run-rate views | Provide the prior-year general-ledger extract if it exists; otherwise we ship without | |
+| 4 | Prior-year data available, and in what form? | Enables prior-year comparisons and run-rate views | Confirm system, schema, period coverage and approximate volume by **metadata only** now; the actual extract stays local and is imported only in the installed local app after a release candidate exists. Otherwise we ship without prior-year views. | |
 | 5 | One reporting currency or several? And which units should the pack show? | Storage, mixed-currency handling and every displayed figure | One reporting currency per project; show whole rupees by default, switchable to lakhs | |
 | 6 | How many budget versions exist, and how are revisions approved? | Import replaces, version labels and comparison views | One approved budget plus dated revisions, each kept as its own version | |
 | 7 | Forecast cadence and the scenarios you actually use | Sets the default refresh cycle and the scenario set | Monthly refresh with base, best and worst cases | |
 | 8 | Approval thresholds, and where the list comes from today | Sets the starting point for every amount-based exception rule | Start at ₹5,00,000 or 2 % of the budget line, whichever is greater, then tune after the trial month | |
-| 9 | The recurring-cost list and the vendor master with categories | Drives the missing-cost and vendor-based rules, and owner assignment | Provide both; the tool maintains them from then on | |
+| 9 | The recurring-cost list and the vendor master with categories | Drives the missing-cost and vendor-based rules, and owner assignment | Confirm fields, categories and maintenance owner by **metadata only** now; actual vendor/payment records stay local and are imported only in the installed local app after a release candidate exists. | |
 | 10 | Who owns an exception by default? | Determines whether the triage list is worked or ignored | Auto-assign by vendor/cost category where possible; the analyst assigns the rest | |
 | 11 | AI assistant: on or off for the first months? | A data-handling and support decision, not a technical one | Keep it off for v1; turn it on later with a written data-handling note | |
-| 12 | Which Excel and PowerPoint examples define the house style? | Fonts, colours, slide order and the KPI set on the summary slide | Share one recent pack; we match what Excel and PowerPoint can reproduce reliably | |
+| 12 | Which blank or safely redacted Excel and PowerPoint examples define the house style? | Fonts, colours, slide order and the KPI set on the summary slide | Share a style-only/blanked layout with no transaction rows, names or amounts; we match what Excel and PowerPoint can reproduce reliably | |
 | 13 | Product name, logo and two brand colours | App header, workbook cover and deck title slide | The finance function's own name and brand; provide the logo file and the colours | |
 | 14 | Delivery channel for the installer, and whether to buy a signing certificate | Affects how the installer is distributed and whether an install-day security warning appears | Internal file share with a published fingerprint number; buy a certificate only if your policy blocks an unsigned installer | |
 | 15 | Training format | Determines what is prepared and who attends | All three: a live 60-minute session, a recorded walkthrough and the written guide | |
@@ -133,15 +146,16 @@ recommendation, write "agree" — that is enough.
 
 | Item | Format | When | Why |
 |---|---|---|---|
-| Sanitized exports from all three systems, one month | The files as you would export them today, with anything sensitive replaced | As early as possible, before any build | The trial month proves the mapping and the numbers |
-| Two further months of the same exports (optional but valuable) | Same format | With or after the trial month | Proves the tool handles month-to-month variation |
-| A one-hour mapping walkthrough with the person who knows the files | A diary slot, screen share | Early | Column meanings, tricky sheets, business rules that live in someone's head |
-| The approved budget workbook | Excel | Early | Budget versus actual is the core view |
-| Prior-year general-ledger extract (if it exists) | Same export style | Early | Prior-year comparisons |
-| Recurring-cost list and vendor master with categories | Excel or CSV | Before the exceptions work starts | Missing-cost and vendor rules |
-| One recent Excel pack and one recent management deck | The files themselves, even PDF | Early | House style and slide layout |
-| Brand assets: logo, two colours, any usage rules | Image files and colour values | Before the pack work starts | Branding inside the app and in the outputs |
-| Your current threshold/approval list | Excel, or a conversation | Before the exceptions work starts | Rules start from your reality |
+| Metadata-only file-shape inventory for all three systems | Column names, data types, sheet names, row counts, date ranges and format facts — **not files or rows** | As early as possible, before any build | The mapping starts from the real structure without exposing client data |
+| Month-to-month variation notes (optional but valuable) | Metadata-only description of changed headers, sheets, formats or controls | With the shape inventory | Proves the configuration anticipates known variation without receiving exports |
+| A one-hour mapping walkthrough with the person who knows the files | A diary slot, screen share using metadata only | Early | Column meanings, tricky sheets, business rules that live in someone's head |
+| Budget structure | Blank template or metadata-only column/schema description — no approved workbook values | Early | Budget versus actual is the core view |
+| Prior-year availability (if it exists) | System, file shape, level of detail and approximate volume — no extract | Early | Prior-year comparisons |
+| Recurring-cost and vendor-master structure | Field/schema description and classification rules — no vendor or payment records | Before the exceptions work starts | Missing-cost and vendor rules |
+| One style-only Excel layout and management-deck layout | Blank/redacted layout with no financial rows, names or amounts | Early | House style and slide layout |
+| Brand assets: logo, two colours, any usage rules | Image files and colour values; no financial data | Before the pack work starts | Branding inside the app and in the outputs |
+| Your current threshold/approval policy | A conversation or metadata-only policy description | Before the exceptions work starts | Rules start from your reality |
+| One client-controlled pilot month | Made available only on the isolated local pilot machine after a release candidate exists; never emailed, uploaded, placed in this repository or shared with an agent | At the scheduled `GATE-13` pilot | The local pilot proves the mapping and numbers against the manual pack |
 | Access and timing: a 2-hour install window, a named analyst for one day per month-end, an IT contact for install day, one week for acceptance testing, one tie-out session | Diary commitments and a named person per role | Booked two weeks ahead of each stage | Nobody's time is wasted waiting |
 | Decision turnaround: 48 hours on §7 items | Email or a short call | Throughout | Decisions are the only thing that stops the build |
 | The accounting-owner representative for the acceptance test | A named person | Before acceptance testing | They check that the exception wording would not mislead the business |
@@ -150,7 +164,7 @@ recommendation, write "agree" — that is enough.
 
 | Stage | What happens | What you see | What we need from you |
 |---|---|---|---|
-| Now — requirements sign-off | This pack and the questionnaire are agreed | The signed §14 block and your §7 answers | Your answers and the trial-month files |
+| Now — requirements sign-off | This pack and the questionnaire are agreed | The signed §14 block and your §7 answers | Your answers, metadata-only shape inventory and a later local-pilot appointment — **not trial-month files** |
 | Delivery-path test | We prove an installer can be built, installed and launched on a clean Windows machine before writing features | Nothing to review; a note confirming the path works | — |
 | Build, in six stages | Import and checks → variance and drill-through → exceptions → forecast → Excel/PowerPoint packs → AI and polish | A short demonstration at the end of each stage, on sample data | Two hours per stage for the demonstration, and answers when asked |
 | Trial month | Your real month run end to end; you reconcile the numbers against your current manual pack | The tie-out worksheet and a difference list, each item explained | The analyst's time for one tie-out session |
@@ -168,7 +182,7 @@ plan once your §7 answers are in, and we will flag any schedule risk as soon as
 
 | Proof | What it means in practice |
 |---|---|
-| The trial month | Your own closed month, run end to end, reconciled to your current manual pack line by line |
+| The trial month | Your own closed month, run end to end **only in the isolated local pilot environment**, reconciled to your current manual pack line by line |
 | Every difference explained | Nothing is written off as "rounding"; each difference is classified and signed off by the analyst |
 | The mapping frozen | Once the trial month ties out, the file mapping for your systems is locked and versioned |
 | Acceptance test (five days) | You follow the written guide on the installed build; if the guide is not enough, that is a defect in the guide, and we fix it |
