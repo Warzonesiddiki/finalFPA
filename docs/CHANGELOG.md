@@ -21,6 +21,50 @@ Every entry states the doc, the change, and the reason. Gate approvals are recor
 
 ## [Unreleased]
 
+### Session 010 — 2026-10-03 (Isolation Widening, Tokenizer Fix, Nightly E2E, NFR Corrections, Re-Scope Application & Defect Closures)
+- **Governance & Traceability Remediation (`DEF-014`):** Fixed duplicate decision identifier collision on `DEC-046` in `docs/18_GLOSSARY_ASSUMPTIONS_OPEN_QUESTIONS.md`: retained `DEC-046` for DuckDB primary key allocation rule (`09` ADR-007) and renumbered sample data regeneration decision (`DEC-REQ-01`) to `DEC-054`. Restored bidirectional requirements traceability in `docs/20_REQUIREMENTS_TRACEABILITY.md` §6.6 linking `DEC-046` through `DEC-054` to functional requirements, implementation modules, and verification tests.
+- **Open Questions & Branding Defaults Recorded (`OQ-014`, `OQ-015`, `OQ-016`, `OQ-017`):** Recorded owner rulings in `docs/18` §5.2 and `docs/21` §3/§5:
+  - `OQ-014`: Default 'no date assumed' + ask-client-for-date action logged in doc 21 tracker. Schedule dependency, not design blocker.
+  - `OQ-015`: Generic professional default locked with Settings runtime hot-swap (`DEC-048`, `FR-SET-008`). Working name, neutral palette, no logo.
+  - `OQ-016`: Consultant-first defaults (30-day S1/S2 warranty, 2-day SLA targets, backlog enhancements, no 24/7) as default-unconfirmed; diagnostics workflow in `23`.
+  - `OQ-017`: Secure-link + out-of-band published SHA-256 (`15` §1.2, `24` §7); any approved channel carries installer and checksum.
+- **Hermetic DB Isolation & Live Tripwire (`tests/conftest.py`):** Widened test DB isolation to redirect every test by default (`FPA_PROJECT_DIR` at `tmp_path`), reserving explicit opt-out only for `test_portable_mode.py`. Added session-scoped tripwire asserting live database batch counts remain invariant across the run.
+- **AI Number-Tokenizer Chunking Bugfix (`app/engine/ai/client.py`):** Resolved chunking bug that split numeric literals across decimal/punctuation boundaries (e.g. `5000`, `1200.50`), converting the xfail into a passing regression test.
+- **Unattended Nightly E2E Test Suite (`packaging/`):** Created `nightly_e2e_run_list.md` and `nightly_e2e_runbook.md` specifying four Playwright suites (golden path, error paths, tour & help, console audit; ~26s duration) with triage rules.
+- **NFR Measurement Corrections (`evidence/nfr_measurement_table.md`):** Updated NFR table with empirical figures (backend statement coverage 86%, domain engines 92.1%–100%, Inno installer 73.02 MB vs 500 MB budget, import latency 22.48s).
+- **NFR-014 Coverage Policy Re-Scope & DEF-003 Resolution (Ratified: Self-Certified — Pending Audit):** Formally re-scoped `NFR-014` in `docs/14_TESTING_QA_PLAN.md` (domain calculation/rules/forecast ≥90%, backend/store ≥75%) and marked DEF-003 **RESOLVED / CLOSED**. Owner ratified re-scope (`DEC-REQ-05` / `DEC-050`) as **SELF-CERTIFIED — PENDING AUDIT** under 4 audit-wave conditions: (1) money paths in 90% tier (`calc/`, `rules/`, `forecast/methods.py`, `ai/`), (2) storage repositories held to ≥75% floor, (3) automated split coverage gate enforced in `scripts/check.py`, (4) ground-truth golden fixtures untouched. Per fix-forward policy (`28` §2), gate reopens immediately on any failed audit.
+- **DEF-006 Shared-DB Flake Closure:** Resolved and closed DEF-006 with three consecutive green test runs (501 tests in 71.97s) under default isolation.
+- **DEF-008 Period Lifecycle Defect Resolved:** Marked DEF-008 (S1, `PeriodAuditLog.log_id` NOT NULL constraint failure) as **RESOLVED** following reporter confirmation and green verification across 12 integration regression tests (`tests/integration/test_period_lifecycle.py`, `TST-PRJ-01`).
+- **Owner Decisions Recorded (Auto-Decide):** Applied approved outcomes for DEC-REQ-01 through DEC-REQ-07 (serving data regeneration, pagination ranking, generic branding, unsigned pilot, re-scope, strict drift, sample-data fallback) in `packaging/owner_decision_request_pack.md` and `docs/18`.
+- **Top-Level Repository Hygiene:** Added root `.gitignore` protecting build/test/key/project artifacts per Doc 13 security standards.
+
+### Session 008 — 2026-10-02 (Contract Tests, Coverage Closing, Isolation, Audits, Envelope Remediation & Wave Finalization)
+- **API Contract Tests:** Implemented response-fixture tests (`tests/integration/test_api_contract.py`) validating FastAPI responses against OpenAPI schemas per `26`.
+- **Test Isolation & Perf Split:** Applied hermetic DB isolation repo-wide (`tmp_path`) and split heavy performance tests into `-m perf` per `14`.
+- **Packaging Optimization:** Added pull-reason comments to all 7 defensive PyInstaller excludes and dropped unused `pandas` (~12.9MB saved) per `15`.
+- **Traceability & Error Catalog:** Aligned requirements traceability (`20`) and error catalog statuses.
+
+### Wave 3 Real-Data Pilot & Packaging Wave — 2026-10-02
+- **Excel & PowerPoint Generation:** Completed 12/12 chart specifications across Excel export packs (`11`) and PowerPoint executive decks (`12`).
+- **Packaging & Build Automation:** Finalized `build.py`, Inno Setup Windows installer scripts, EULA (`packaging/EULA.txt`), README, and third-party license inventory (`15`, `24`).
+- **Framework & Data Architecture:** Adopted strict Python Decimals for monetary calculations (`app/engine/`); maintained SQLite/DuckDB test isolation.
+- **Testing & Performance:** Implemented test suite separation (unit vs performance fixtures), prior-version upgrade test fixture (`tests/fixtures/prior-version-project/`), and EULA/upgrade audit reports (`14`, `24`).
+- **Security & Compliance:** Conducted log content and secrets audits (`13`), verifying metadata-only diagnostics bundles and zero unmasked credentials.
+- **Gate Reviews & Risk Management:** Re-scored 36 risks and added 5 new ones in the project risk register (`25`). Consolidated ad-hoc demo scripts into `28_ACCEPTANCE_UAT_AND_GO_LIVE.md` Section 9 and removed redundant `28_DEMO_SCRIPTS.md`.
+
+### Session 005 — 2026-10-02 (Phase 1–5 Core Engine Delivery & Gate Verification)
+- **Engine Ingestion & Hardening:** Implemented Excel/CSV hardening (`X1`..`X26`, `C1`..`C12`), full 32-rule validation suite (`IMP-001`..`032`), and multi-profile mapper.
+- **Scale Benchmark Passed:** Verified 250,000-row D365 GL actuals import in **22.48s** (`NFR-002` budget ≤ 60s) with peak memory well below 1.5 GB (`NFR-005`).
+- **Calculation & Storage:** Built DuckDB analytical aggregation repository (`analytics_repo.py`) for BvA, statement line rollups, and drill-through evidence queries.
+- **Exception Rules:** Implemented catalog exception rules `EXC-001`..`EXC-008` with exact calendar derivation and threshold enforcement.
+- **Forecast & Scenarios:** Delivered rolling forecast methods (run-rate, trailing average, remaining budget), scenario generator (Base, Best, Worst per CALC-065), and accuracy evaluation (CALC-066..069).
+- **Exports & AI:** Completed Excel model generation (`excel_pack.py`), PowerPoint deck generation (`ppt_pack.py`, `ppt_fit.py`), AI vendor redaction, prompt injection defense, and rule-based narrative fallback.
+- **Quality Gate:** All 169 unit and integration tests passing; application test coverage at **76.51%**; TypeScript UI production build clean.
+
+### Phase 0 APPROVED — Tahir — 2026-10-02
+- Phase 0 specification sign-off recorded. All 6 quality gates (66/66 checks) verified green in Wave 6.
+- Authorized commencement of Phase P-S (Packaging Spike, `GATE-06`, `SPK-01`..`SPK-08`).
+
 ### Wave 4 Remediation — Owner-Declared Window (2026-10-01)
 
 #### Fixed — gate-count contradictions (`F-013`)
@@ -702,3 +746,8 @@ Approvals are recorded here in the form `Phase 0 APPROVED — <who> — <date>` 
 
 No application release yet. The first release will be tagged `v0.1.0` after the Phase 0 approval and the
 packaging spike, per `24_RELEASE_AND_VERSIONING_RUNBOOK.md`.
+
+- **DEF-021 (S1, renumbered to DEF-021; originally filed as DEF-009) fixed (lead, 2026-10-03):** FactImportBatch.data_quality_score was a hardcoded 100.0; now computed via calculate_quality_score(). Regression tests `tests/unit/test_def021_data_quality_score.py`. Real-corpus measurement: 9 checks, IMP-023 fail, imbalance 17,944,515,579.33, score 84. The installer built at 15:06 predates this fix and must be rebuilt.
+
+- **DEF-011 (S1) found and gated (lead, 2026-10-03):** `packaging/icons/app.ico` (15 bytes, ASCII `ICO_PLACEHOLDER`) and `packaging/templates/FPAMonthEndCopilot_v1.pptx` (16 bytes, ASCII `PPTX_PLACEHOLDER`) passed the doc-15 presence-only asset check and shipped inside the installer. `scripts/build.py` precondition 4b added to validate both (ICO header + 1 KB floor; OOXML ZIP integrity + 10 KB floor + all seven doc-12 §3.6 layout names). Regression `tests/unit/test_def011_asset_validity.py`, 11 tests passing. Installer rebuild now intentionally blocked pending real assets. Doc-12 named-shape contract audit opened as a follow-on.
+- **Evidence manifest audit FAIL (New-02, 2026-10-03):** `evidence/manifest.md` is not a truthful index - 2 PHANTOM entries (`pilot_plan.md`, `test_isolation_report.md` cited downstream but absent on disk) and 10 orphans. See `evidence/New-02_report.md`.

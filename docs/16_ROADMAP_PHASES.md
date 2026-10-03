@@ -52,12 +52,12 @@
 
 | Field | Value |
 |---|---|
-| Item | **Present Phase 0 for recorded approval** (`PHASE0_SUMMARY.md` + `29`) and wait. Everything requested before approval is done: the Source-of-Truth Matrix and headers, the Coverage Matrix refresh (85 expanded rows, all `INTEGRATED`), the six-checklist self-audit (`GATE-01`…`05` + provisional `GATE-05B`, 66/66 ✅) with the link-check, the tabletop walkthrough through pack issuance and the cold-start client pass, and the `sample-data/` suite (D365 + 2 non-D365 shapes, templates, 40 plantings, 16 malformed files). Open and non-blocking: owner decisions on Addon 5 final numbering (`F-015`), sample-data scale stance (10k physical + `--scale 250000` vs full-scale run), and `GATE-01-06` live-installer proof (proven by the post-approval packaging spike) |
-| Why now | Addon 4 §L steps 11–12: the six Phase-0 checklists have been self-audited (66/66 ✅, provisional `GATE-05B` pending Addon 5 source) and the summary exists; approval releases the packaging spike (`GATE-06`) |
-| Definition of done for this item | Every document exists with the standard header, zero blocking `TBD`s, the Coverage Matrix rows integrated, `CHANGELOG` + `SESSION_LOG` entries, and the link-check clean (`14` §13.1) |
-| Next item after this one | On approval: step 13 — the **packaging spike** (`GATE-06`, two half-days, real Windows 11 through the SmartScreen path, proving `GATE-01-06` on live iron); then Phase 1 begins. In parallel: the two commercial answers (`OQ-016`, `OQ-017`) and the Addon 5 contract decision (`F-015`: supply text or rescind, confirming provisional `GATE-05B` numbering) |
-| Next after that | Phase 1 (import & validation, 24 ideal days) on the client's real file shapes, with the mapping walkthrough from `29` §8; then Phases 2–6 to the pilot (`GATE-13`), UAT (`GATE-14`) and go-live (`GATE-15`), each with its own gate packet and demo script |
-| Blocking | None. The client-facing questions all have labelled defaults except `OQ-014` (the pilot month), which is a schedule dependency and not needed for approval |
+| Item | **Phase 1 — Import & Validation (`GATE-07`)** — Implement ingestion pipeline for D365 and two custom system shapes: file pre-scan, profile mapping, 32 validation checks, staging quarantine, atomic commit, and import batch history (`FR-IMP-001` through `FR-IMP-031`). |
+| Why now | Packaging spike (`GATE-06`, `SPK-01`..`SPK-08`) verified green: PyInstaller onedir binary (310.2 MB ≤ 500 MB budget), React UI, and standalone portable package generated with SHA-256 manifest. |
+| Definition of done for this item | Engine import parser, mapping engine, all 32 validation checks implemented and tested against `sample-data/malformed/` negative corpus and good GL files; atomic DuckDB commits; UI import wizard and check report screens active; all P0 FRs passing. |
+| Next item after this one | Phase 2: BvA Variance & Drilldown (`GATE-08`, 19 FRs: lowest shared grain variance, waterfall bridge, and transaction drilldown). |
+| Next after that | Phase 3: Exception Engine & Register (`GATE-09`, 24 rules). |
+| Blocking | None. |
 
 > This table is the session-start pointer. `00_INDEX` §10 and the `SESSION_LOG` "Next step" must agree with
 > it; if they disagree, this table wins and the difference is corrected in the same commit.

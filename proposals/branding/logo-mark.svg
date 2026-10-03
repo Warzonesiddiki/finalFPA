@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="markTitle markDesc">
+  <title id="markTitle">FP&amp;A Month-End Copilot</title>
+  <desc id="markDesc">A rounded square frame containing four horizontal bars of differing lengths — a balance sheet read as a column of figures.</desc>
+
+  <!--
+    Master mark. 512x512 viewBox, drawn to survive rasterisation at 16px.
+    Strokes are 44 units thick at 512 (= 8.6% of the canvas). At 16px that is
+    ~1.4 device pixels per bar, which is the minimum that stays legible without
+    anti-aliasing the bar into mush. Do not thin these.
+
+    Colour: single flat fill, no gradient, no stroke. Recolour by replacing
+    the single fill value below. See palette.md for the two permitted brand
+    colours and their contrast ratios.
+  -->
+
+  <!-- Frame: rounded square. Radius 96/512 keeps it optically square without reading as a circle. -->
+  <rect x="56" y="56" width="400" height="400" rx="96" ry="96"
+        fill="none" stroke="#0369A1" stroke-width="44" />
+
+  <!-- Four bars = a column of figures. Lengths step deliberately so the shape
+       reads as data, not as a flag or a menu icon. -->
+  <g fill="#0369A1">
+    <!-- longest: a total, at the top of a statement -->
+    <rect x="124" y="150" width="264" height="44" rx="22" ry="22" />
+    <!-- slightly shorter: a subtotal -->
+    <rect x="124" y="222" width="216" height="44" rx="22" ry="22" />
+    <!-- shorter: a line item -->
+    <rect x="124" y="294" width="264" height="44" rx="22" ry="22" />
+    <!-- shortest, and offset right: a closing figure, set apart -->
+    <rect x="196" y="366" width="192" height="44" rx="22" ry="22" />
+  </g>
+</svg>

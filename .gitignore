@@ -1,0 +1,40 @@
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# PyInstaller / Build artifacts
+build/
+dist/
+packaging/out/
+
+# Environment variables & Secrets
+.env
+.env.local
+.env.*.local
+keys/
+*.key
+*.pem
+
+# Local project data & databases
+Projects/
+data/
+*.duckdb
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE / Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Test / Coverage caches
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/

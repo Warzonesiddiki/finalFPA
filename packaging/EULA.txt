@@ -1,0 +1,30 @@
+================================================================================
+FP&A MONTH-END COPILOT — END-USER LICENSE AGREEMENT & ADVISORY DISCLAIMER
+================================================================================
+
+Quoted verbatim from docs/01_PRD.md §15.1 (Canonical Advisory Disclaimer):
+
+"Advisory tool — not professional advice.
+FP&A Month-End Copilot is an analysis aid. It highlights potential exceptions, variances, and trends for review. It does not provide audit, accounting, tax, or legal advice, and it does not guarantee that every error, misstatement, or irregularity will be detected. All figures, flags, and AI-generated drafts must be reviewed by a qualified accountant before any business decision, filing, or external reporting. The tool never posts, approves, or alters accounting records, and it never replaces professional judgement."
+
+--------------------------------------------------------------------------------
+1. Acceptance of Terms
+--------------------------------------------------------------------------------
+By installing, copying, or otherwise using the FP&A Month-End Copilot application,
+you agree to be bound by the terms of this End-User License Agreement and Advisory
+Disclaimer. If you do not agree to these terms, do not install or use the software.
+
+--------------------------------------------------------------------------------
+2. Local Data & Privacy
+--------------------------------------------------------------------------------
+Client data stays on the local machine. Raw files are archived immutably per
+import. No client financial data or raw ledger records are uploaded to external
+servers. Outbound API calls occur only when AI commentary features are explicitly
+invoked with a configured API key.
+
+--------------------------------------------------------------------------------
+3. Limitation of Liability & Commercial Terms
+--------------------------------------------------------------------------------
+[PLACEHOLDER: Client-specific commercial indemnification, warranty disclaimers,
+and governing law clauses subject to final review and approval by client legal
+counsel.]

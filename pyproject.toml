@@ -1,0 +1,67 @@
+[project]
+name = "fpa-monthend-copilot"
+version = "0.1.0"
+description = "FP&A Month-End Copilot - Deterministic financial analysis and reporting assistant"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "duckdb>=1.1.0",
+    "polars>=1.9.0",
+    "openpyxl>=3.1.5",
+    "python-pptx>=1.0.0",
+    "httpx>=0.27.0",
+    "pywebview>=5.1.0",
+    "pydantic>=2.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-cov>=5.0.0",
+    "pyinstaller>=6.10.0",
+    "ruff>=0.6.0",
+    "mypy>=1.11.0",
+]
+
+[build-system]
+requires = ["setuptools>=70.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+# Perf/scale tests are EXCLUDED from the default run. They are slow by design
+# (250k-row rule runs and import benchmarks, minutes each) and would dominate the
+# inner dev loop; doc 14 section 13.1 runs them as a separate gate step.
+#
+# This means a bare `pytest` is the FAST suite. The performance gate is explicit:
+#     pytest -m perf
+# and `scripts/check` runs both in sequence.
+addopts = "-ra -q --strict-markers -m 'not perf'"
+markers = [
+    "perf: Performance and scale benchmark tests",
+    "unit: Fast isolated unit tests",
+    "integration: Integration and multi-component tests",
+    "tst: Mechanically binds test cases back to doc-20 traceability table IDs (doc 14 line 135)",
+    "tst_id: Mechanically binds test cases back to doc-14 test catalogue identifiers (DEF-012)",
+]
+
+[tool.coverage.run]
+source = ["app"]
+branch = true
+omit = ["tests/*", "app/cli/*"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 75
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]

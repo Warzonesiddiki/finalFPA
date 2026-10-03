@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 640" width="512" height="640" role="img" aria-labelledby="stackedTitle stackedDesc">
+  <title id="stackedTitle">FP&amp;A Month-End Copilot</title>
+  <desc id="stackedDesc">The brand mark centred above the product name, arranged for square and near-square placements such as a slide cover or a splash screen.</desc>
+
+  <!--
+    Stacked lockup. Use this wherever the placement is taller than it is wide
+    (13.3in x 7.5in slide covers with padding, installer splash, print letterhead).
+
+    Keep the mark-to-type gap at 56 units and the mark centred on the type block's
+    optical centre, not on the canvas centre - the descenders in "p" in "Copilot"
+    pull the optical centre up by roughly 8 units. The mark below is nudged 8
+    units up for that reason.
+
+    Live <text> is used deliberately; see README.md before outlining anything.
+  -->
+
+  <defs>
+    <style>
+      .primary { font-family: 'Segoe UI', 'Segoe UI Semibold', Arial, Helvetica, sans-serif; font-weight: 600; fill: #0369A1; }
+      .neutral { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-weight: 400; fill: #0F172A; }
+    </style>
+  </defs>
+
+  <!-- ===== Mark, optically centred ===== -->
+  <g transform="translate(0, -8)">
+    <rect x="56" y="24" width="400" height="400" rx="96" ry="96"
+          fill="none" stroke="#0369A1" stroke-width="44" />
+
+    <g fill="#0369A1">
+      <rect x="124" y="118" width="264" height="44" rx="22" ry="22" />
+      <rect x="124" y="190" width="216" height="44" rx="22" ry="22" />
+      <rect x="124" y="262" width="264" height="44" rx="22" ry="22" />
+      <rect x="196" y="334" width="192" height="44" rx="22" ry="22" />
+    </g>
+  </g>
+
+  <!-- ===== Wordmark, centred, two lines ===== -->
+  <text class="primary" x="256" y="528" font-size="112" letter-spacing="-1" text-anchor="middle">FP&amp;A</text>
+  <text class="neutral" x="256" y="590" font-size="46" letter-spacing="0.4" text-anchor="middle">Month-End Copilot</text>
+
+  <g id="guides" opacity="0.28" font-family="Segoe UI, Arial, sans-serif" font-size="20" fill="#64748B">
+    <line x1="20" y1="472" x2="492" y2="472" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8 8" />
+    <text x="20" y="628">guides only — remove before use</text>
+  </g>
+</svg>

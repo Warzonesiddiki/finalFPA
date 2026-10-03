@@ -89,7 +89,7 @@ strategies; this table carries the target, the measurement and the evidence.
 | `NFR-011` | Logs ≤ **50 MB** per file, **7-day** retention | Rotation test with a log generator | `TST-PRF-11` | rotation transcript |
 | `NFR-012` | Crash never yields a raw traceback; recoverable state on next launch | Fault-injection suite: kill the process at each job stage; assert the dialog and recovery | `TST-E2E-04`, `TST-WIN-09` | fault-injection report |
 | `NFR-013` | Screen ≥ **1366×768**; 100–150 % scaling correct | Manual matrix at 100/125/150 % on a 1366×768 VM and a 1920×1080 machine | `TST-WIN-02` | signed checklist + screenshots |
-| `NFR-014` | Coverage: `app/engine` ≥ **90 %** statements; whole backend ≥ **75 %** | `pytest --cov` thresholds enforced in `scripts/check` | full suite | `coverage.xml` + threshold failure |
+| `NFR-014` | Coverage: Domain calculation, rules, and forecast method engines (`calc/`, `rules/`, `forecast/methods.py`, `ai/`) ≥ **90 %** statements; storage repositories and whole backend (`store/`, `imports/`, `exports/`, etc.) ≥ **75 %** | `pytest --cov` thresholds enforced in `scripts/check` | full suite | `coverage.xml` + threshold failure |
 | `NFR-015` | Cross-artifact equality: UI = Excel = deck = CLI = engine at display precision, **zero tolerance** | The comparison harness of §7 on a fixed filter state | `TST-XL-*`/`TST-PPT-13`/`TST-API-*` | `cross_artifact.json` |
 | `NFR-016` | UI responsiveness: no interaction blocks > **2 s** while a long job runs | Playwright interaction timings during an import and an export | `TST-PRF-16` | Playwright timings |
 
@@ -231,9 +231,28 @@ the answer key (`planting_id, rule_id, expected_verdict, subject_key, severity, 
 
 `tests/rules/test_acceptance.py` (L3), run by `scripts/acceptance`:
 
-1. **Fresh corpus:** the generator builds the sample project from a fixed seed (`sample-data --seed 20260101`),
+1. **Fresh corpus:** the generator builds the sample project from a fixed seed (`sample-data --seed 42`),
    so the corpus is deterministic and reproducible on any machine; the run asserts the generator's own
    checksum before evaluating.
+
+   > **Amended 2026-10-03 — seed and checksum scope.** This step previously read `--seed 20260101`. That seed
+   > was never used: the committed corpus was generated with the generator's default **`42`**, which
+   > `sample-data/generate_sample_data.py` documents as "default: 42, preserving baseline output". Audit
+   > `New-06` reproduced the committed corpus **byte-exactly at seed 42**. Rather than regenerate two days
+   > from freeze, this step now names the seed that actually produced the repository's corpus. The corpus is
+   > therefore deterministic and reproducible as documented.
+   >
+   > **Checksum scope — a known limitation, not an assertion that cannot hold.** `generate_sample_data.py`
+   > emits **15 `.xlsx` files** (3 under `templates/`, 12 under `malformed/`) alongside its CSV corpus. A
+   > 16th workbook, `templates/pilot_tieout_worksheet_template.xlsx`, is produced separately by
+   > `generate_tieout_template.py`. Every one of them is written by `openpyxl`, which stamps a wall-clock
+   > `dcterms:created` into `docProps/core.xml`, so **their hashes change on every generation**. The CSVs
+   > are byte-stable across runs and are fingerprinted with SHA-256. Any SHA-256 manifest covering the
+   > `.xlsx` files therefore **fails by construction**. The harness fingerprints the **CSV corpus only**
+   > (10 files in the primary corpus: 6 top-level + 4 under `malformed/`; 19 counting the `test_scale/`
+   > copy) and records the `.xlsx` exclusion explicitly with its reason. Asserting a checksum over the
+   > workbooks would be asserting something false. Closing this properly means normalising
+   > `dcterms:created` in the generators, tracked as a follow-on rather than claimed here.
 2. **Full engine run** over the sample data with default thresholds, every rule enabled.
 3. **Join** raised exceptions to the answer key on `(rule_id, subject_key)`.
 4. **Classify** every raise: *expected* (in the key), *control* (a `P25`…`P32` subject), or *extra*.
@@ -509,6 +528,17 @@ Import, BvA, Drill, Register, Pack) in depth.
 | `TST-UI-19` | Print/PDF readiness: per-sheet setup, "Open for printing" action, and no claim of in-app PDF rendering (`DEC-028`) |
 | `TST-UI-20` | Settings round-trip: machine vs project settings persist correctly; no secret is ever rendered |
 
+### 9.7 Playwright E2E test suite inventory and execution specifications (Doc 14 §9)
+
+Per Doc 14 testing governance and Phase Gate requirements, the automated Playwright E2E test suite is structured into four dedicated specifications running against local builds (FastAPI backend + React frontend). Quoting Doc 14 §9 standards:
+
+| Suite Name | Spec File | Purpose & Scope | Run Command | Fixtures | Expected Duration |
+|---|---|---|---|---|---|
+| **Golden Path** | `ui/e2e/golden-path.spec.ts` (`TST-E2E-01`) | End-to-end smoke test verifying launch, sample project open, import, variance drill, exception handling, forecast update, and pack issuance. | `cd ui && npx playwright test golden-path.spec.ts` | Sample project fixture (`sample-data/`) | ~10.5s |
+| **Error Paths** | `ui/e2e/error-paths.spec.ts` (`TST-E2E-04`) | Validates error handling, invalid inputs, network/API fault resilience, and graceful degradation without uncaught crashes. | `cd ui && npx playwright test error-paths.spec.ts` | Synthetic malformed / error inputs | ~5-8s |
+| **Tour & Help** | `ui/e2e/tour-help.spec.ts` (`FR-ONB-001..007`) | Validates onboarding guided tour overlay, step navigation, and contextual help panel topics across all app tabs. | `cd ui && npx playwright test tour-help.spec.ts` | Clean bootstrap state | ~2.0s |
+| **Console Audit** | `ui/e2e/console-audit.spec.ts` (`TST-E2E-CONSOLE`) | Asserts zero uncaught JavaScript page exceptions and zero critical console errors across all application tabs and E2E runs. | `cd ui && npx playwright test console-audit.spec.ts` | Full application runtime | ~7.7s |
+
 ## 10. Security, privacy and supply-chain testing
 
 The 22 `TST-SEC-*` tests are specified row-by-row in `13` §13.2; this section owns how they run and what
@@ -616,6 +646,32 @@ and an entry in the OpenAPI document. An endpoint without a consumer is deleted,
 
 `scripts/check --fast` skips coverage and the docs check for the inner dev loop; **the release and gate
 run is always the full form**. The transcript is attached to every gate (`Addon 2 §F.2`, `Addon 3 §G.6`).
+
+#### 13.1.1 The two pytest invocations (fast gate vs performance gate)
+
+The suite is split by the `perf` marker, because the scale tests are slow *by
+design* — they build and scan a 250,000-row project — and running them inside the
+default invocation makes the inner dev loop unusable and risks tripping a CI
+timeout for no informational gain.
+
+| | Command | Selects | Typical cost |
+|---|---|---|---|
+| Fast gate (default) | `pytest` | everything **except** `perf` | ~85 s |
+| Performance gate | `pytest -m perf` | only `perf` | ~145 s |
+
+`pyproject.toml` carries `addopts = "... -m 'not perf'"`, so a **bare `pytest` is the fast
+suite** with no extra flags — the default cannot accidentally run the scale tests. `scripts/check`
+then runs both steps in sequence, so the gate still proves both.
+
+Use `-m perf` explicitly for the performance gate, and `-p no:randomly` (or quiet the machine)
+when a reported `NFR-007`/`NFR-009` timing has to be evidence: those numbers are wall-clock and
+are only meaningful on an otherwise idle host.
+
+> **Windows note.** In `scripts/check` the marker filter is written with **double** quotes
+> (`-m "not perf"`). `run_command` goes through `cmd.exe`, which does not strip single quotes;
+> `-m 'not perf'` passes the literal token `perf'` to pytest and fails with
+> `ERROR: file or directory not found: perf'` (exit 4). This is not a theoretical concern — it is
+> the reason the fast gate could not run at all before this split.
 
 ### 13.2 Coverage rules
 

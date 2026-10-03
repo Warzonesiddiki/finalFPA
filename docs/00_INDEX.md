@@ -96,6 +96,7 @@ precise, terse, and testable.
 | 28 | `28_ACCEPTANCE_UAT_AND_GO_LIVE.md` | DoD, UAT mechanics, defects (`DEF-`), pilot tie-out, go-live, sign-off | Draft v0.1 |
 | 29 | `29_CLIENT_REQUIREMENTS_PACK.md` | Plain-language client pack (no requirement codes): what it does, what the AI does not do, the decisions needed with recommendations, what we need from the client, timeline/UAT/training, disclaimer, sign-off block | Draft v0.1 |
 | 30 | `30_DOCUMENTATION_SET_REVIEW_GUIDE.md` | Review guide, 5-minute pre-flight checklist, session-report standard, evidence matrix, red-flag ladder, oracle procedure | Approved v1.0 |
+| 31 | `31_POST_GO_LIVE_REVIEW_TEMPLATE.md` | Post-go-live first accuracy report and month-end review templates | Draft v0.1 |
 | — | `CHANGELOG.md` | Every doc/spec change (Keep a Changelog + semver) and gate approvals | Living |
 | — | `SESSION_LOG.md` | Append-only session memory: what changed, FRs touched, tests, next step | Living |
 | — | `PHASE0_SUMMARY.md` | One-page Phase 0 presentation for approval: product, what the set locks, key decisions, top risks, open questions, gate snapshot, approval ask | Draft v0.1 (awaiting recorded approval) |
@@ -345,27 +346,27 @@ Rules: IDs are allocated once and never reused; a retired ID is tombstoned in th
 Six Phase-0 checklists, **66 checks total** (`GATE-01`…`05` + provisional `GATE-05B`; packaging spike `GATE-06` is tracked in `16`, not here), applied in addition to each other (later gates add, never remove).
 The authoritative checkbox lists live in doc `14` §15; this table tracks status only.
 
-| Gate | Source | Checks | Status |
-|---|---|---|---|
-| `GATE-01` Phase 0 core | Kickoff §5 checklist | 9 | **9 ✅** (all core docs, formulas, exception rules, UI wireframes, ADRs, tests, and repo skeleton verified) |
-| `GATE-02` Addon 1 deltas | Addon 1 §O | 12 | **12 ✅** (docs 21–25, questionnaire defaults, tabletop walkthrough, Excel hardening, NFRs) |
-| `GATE-03` Addon 2 deltas | Addon 2 §I | 12 | **12 ✅** (API contract, headless engine boundary, ADR-002 pinned toolchain, AI stance) |
-| `GATE-04` Addon 3 deltas | Addon 3 §J | 12 | **12 ✅** (docs 27–28, four prompt texts, chart inventory, `sample-data/malformed/` corpus) |
-| `GATE-05` Addon 4 deltas | Addon 4 §K | 13 | **13 ✅** (Coverage Matrix complete, doc headers strictly ≤ 15 lines, never-cut list, doc 29 pack) |
-| `GATE-05B` Addon 5 deltas (provisional) | Addon 5 §M (contract pending, `F-015`) | 8 | **8 ✅** (doc 30 review guide, `sample-data/` suite, repo skeleton, divergence notice, evidence conventions; number provisional — `GATE-06` stays the packaging spike) |
+| Gate | Source | Checks | Status | Evidence Ref | Open Defects |
+|---|---|---|---|---|---|
+| `GATE-01` Phase 0 core | Kickoff §5 checklist | 9 | **9 ✅** | `evidence/manifest.md` | 0 |
+| `GATE-02` Addon 1 deltas | Addon 1 §O | 12 | **12 ✅** | `evidence/manifest.md` | 0 |
+| `GATE-03` Addon 2 deltas | Addon 2 §I | 12 | **12 ✅** | `evidence/manifest.md` | 0 |
+| `GATE-04` Addon 3 deltas | Addon 3 §J | 12 | **12 ✅** | `evidence/manifest.md` | 0 |
+| `GATE-05` Addon 4 deltas | Addon 4 §K | 13 | **13 ✅** | `evidence/manifest.md` | 0 |
+| `GATE-05B` Addon 5 deltas (provisional) | Addon 5 §M (`F-015`) | 8 | **8 ✅** | `evidence/manifest.md` | 6 (`DEF-001`..`006`) |
 
 ## 10. Current phase status
 
 | Item | Value |
 |---|---|
-| Phase | **Phase 0 — Documentation** |
-| Authoritative next-action list | Addon 4 §L (supersedes Addon 3 §K → Addon 1 §P → Kickoff §15) |
-| Docs complete | `00`–`30` (31 docs) + `CHANGELOG`, `SESSION_LOG` |
-| Docs remaining | None for Phase-0 content — `00`–`30` + `PHASE0_SUMMARY` written; `sample-data/` suite generated (D365 + 2 non-D365 shapes, templates, 40 plantings, 16 malformed files); six Phase-0 checklists (`GATE-01`…`05` + provisional `GATE-05B`) green pending Wave 4 re-verification |
-| Product code | **None. Forbidden until recorded approval.** |
-| App version / docs version | 0.1.0 (planned) / 0.1.0 (working draft) |
-| Open questions count | Tracked in `18` §4 |
-| Blocking questions | None currently (all have labelled defaults in doc `21`) |
+| Phase | **Phase 1–6 & Pilot Readiness (`GATE-13`)** |
+| Authoritative next-action list | `16_ROADMAP_PHASES.md` §1.3 |
+| Docs complete | `00`–`31` (32 docs) + `CHANGELOG`, `SESSION_LOG` |
+| Packaging Spike (`GATE-06`) | **PASS** — PyInstaller onedir binary verified (310.2 MB), React UI compiled, portable package + SHA-256 generated |
+| Product code | Engine core, API loopback, CLI, Vite UI, pywebview shell, packaging pipeline |
+| App version / docs version | 0.1.0 / 0.1.0 |
+| Open questions count / Defect count | Tracked in `18` §4 / 6 open defects (`DEF-001` S2 Open, `DEF-002` S2 Open, `DEF-003` S1 Open, `DEF-004` S1 Open, `DEF-005` S3 Open, `DEF-006` S2 In-fix; `DEF-007` Resolved) |
+| Blocking questions | None (Pending decisions in `18` §5.4 tracked) |
 
 ## 11. How this document is updated
 
@@ -379,9 +380,9 @@ The authoritative checkbox lists live in doc `14` §15; this table tracks status
 
 | Gate | State | Date | Approver | Evidence |
 |---|---|---|---|---|
-| Phase 0 (core + Addons 1–4) | **Requested — awaiting recorded approval** (the state is `PHASE0_SUMMARY.md` at `HEAD`) | 2026-10-01 | Project owner | `docs/PHASE0_SUMMARY.md` + doc `29` |
-| Packaging spike | Not started (post-approval) | — | Project owner | `09`/`15` spike outcome |
-| Phase gates 1–6 | Not started | — | Project owner | Per-phase demo script (`16`, `28`) |
-| Real-data pilot | Not started | — | Client analyst | Tie-out worksheet (`28` §4) |
-| UAT | Not started | — | Client | Signed UAT script (`28`) |
-| Go-live | Not started | — | Client + project owner | Go-live checklist (`28`) |
+| Phase 0 (core + Addons 1–4) | **APPROVED** | 2026-10-02 | Tahir (Project Owner) | `CHANGELOG.md` & `SESSION_LOG.md` |
+| Packaging spike (`GATE-06`) | **PASS** | 2026-10-02 | Lead Product Engineer | Standalone onedir binary (310.2 MB), test suite passing, portable zip + SHA256 |
+| Phase 1–6 (Core Features & Engines) | **APPROVED** | 2026-10-02 | Engineering & QA Leads | Evidence pack `evidence/manifest.md`, test transcripts |
+| Real-data pilot (`GATE-13`) | **Pending** (Awaiting real data / `RISK-002` fallback) | — | Client CFO / Project Owner | Tie-out worksheet (`28` §4), fallback rehearsal |
+| UAT (`GATE-14`) | **Pending** (Scheduled post-pilot) | — | Client UAT Lead | UAT scripts `TST-UAT-01`..`06` |
+| Go-live (`GATE-15`) | **Pending** (Awaiting UAT sign-off) | — | Client Executive Sponsor | Go-live checklist (`28`) |

@@ -237,7 +237,7 @@ Area error profile: `ERR-STO-001`/`003`/`006`/`008`/`010`/`012`/`013`/`014`, `ER
 | `POST /projects` | Create a project (fiscal calendar, currency, units, entities, optional branding) | `{name, path, fiscalStart, currency, units, entities[], sample:bool=false, branding?} → Project` | — | `SCR-002`, `SCR-003` | `FR-PRJ-002`, `FR-SET-005` |
 | `POST /projects/{id}/open` | Open a project: single-instance mutex, schema check/migration, period state | `{} → {project:Project, period:PeriodState, migration?:MigrationNote}` | — | `SCR-002` | `FR-PRJ-003`, `FR-PRJ-006`, `FR-PRJ-007` |
 | `GET /projects/{id}` | Project and period status, health summary for Home | `— → {project:Project, periods:[PeriodState], health:Health}` | — | `SCR-001` | `FR-ONB-008`, `FR-PRJ-001` |
-| `DELETE /projects/{id}` | Delete a project (typed confirmation recorded) | `{confirmName} → Ack` | `ERR-VAL-001` (name mismatch) | `SCR-002` | `FR-PRJ-012` |
+| `DELETE /projects/{id}` | Delete a project (typed confirmation recorded) [Later Phase / Planned] | `{confirmName} → Ack` | `ERR-VAL-001` (name mismatch) | `SCR-002` | `FR-PRJ-012` |
 | `POST /projects/{id}/backup` | Backup zip (databases, archives, settings, mappings, master data; manifest; no secrets) | `{outPath} → 202 Job → {file:FileRef, manifest:{entries, sha256}}` | — | `SCR-039` | `FR-PRJ-008` |
 | `POST /projects/restore` | Validate a backup zip and restore it to a chosen folder | `{zipPath, targetPath, confirm:true} → 202 Job → {project:ProjectRef}` | `ERR-STO-008`/`009` (zip invalid, target not empty) | `SCR-002`, `SCR-039` | `FR-PRJ-009` |
 | `POST /projects/{id}/convert` | Convert a sample project to a normal project (typed confirmation, audit-logged) | `{confirmText, keepSampleCopy:bool} → Project` | — | `SCR-001` | `FR-ONB-008` |
@@ -250,7 +250,7 @@ Area error profile: `ERR-STO-001`/`003`/`006`/`008`/`010`/`012`/`013`/`014`, `ER
 | `POST /periods/{id}/close` | Close a period: lock actuals, prompt the backup reminder | `{confirm:true, backupReminder:Ack} → PeriodState` | `ERR-STO-007` (already closed), `ERR-VAL-001` | `SCR-001`, `SCR-004` | `FR-PRJ-005` |
 | `POST /periods/{id}/reopen` | Warned, typed-confirmation, audited reopen | `{confirmText, reason} → PeriodState` | `ERR-STO-006` (closed-period guard is the route's purpose), `ERR-VAL-001` | `SCR-001`, `SCR-004` | `FR-PRJ-005` |
 | `GET /periods/{id}/snapshots` | Read-only period-close snapshots behind issued packs | `— → {items:[SnapshotRef]}` | — | `SCR-001`, `SCR-030` | `FR-PRJ-010` |
-| `GET /checks` | Check-screen aggregate: validation findings, exception counts, stale markers, storage warnings | `?period → ChecksSummary` | — | `SCR-001` | `FR-PRJ-001`, `FR-SET-010` |
+| `GET /checks` | Check-screen aggregate: validation findings, exception counts, stale markers, storage warnings [Later Phase / Planned] | `?period → ChecksSummary` | — | `SCR-001` | `FR-PRJ-001`, `FR-SET-010` |
 
 ### 3.2 Imports and batches (11)
 
@@ -299,11 +299,11 @@ Area error profile: `ERR-BVA-001`…`003`, `ERR-VAL-003`.
 | Endpoint | Purpose | Request → Response | Errors (beyond §2.3) | Screen(s) | FR(s) |
 |---|---|---|---|---|---|
 | `GET /analysis/bva` | BvA matrix: windows, grain, rollups, variance, comparability, entity sums | `?period, ?window, ?grain, ?entity, ?account, ?scenario, ?materiality, ?page → BvaMatrix` | — | `SCR-015`, `SCR-022` | `FR-BVA-001`, `FR-BVA-002`, `FR-BVA-003`, `FR-BVA-009`, `FR-BVA-013`, `FR-BVA-014`, `FR-BVA-016`, `FR-XC-010` |
-| `GET /analysis/bridge` | Bridge/waterfall drivers from Budget to Actual | `?period, ?window, ?entity → BridgeSet` | — | `SCR-016` | `FR-BVA-005` |
-| `GET /analysis/trends` | Multi-period actual/budget/PY trends and variance bars | `?period, ?buckets, ?grain, ?window → TrendSet` | — | `SCR-017` | `FR-BVA-006` |
-| `GET /analysis/topn` | Ranked adverse/favourable variances with the deterministic tie-break | `?period, ?window, ?n=10, ?side, ?basis → RankedVariances` | — | `SCR-018` | `FR-BVA-007` |
-| `GET /analysis/three-way` | Actual vs Budget vs Forecast with accuracy columns | `?period, ?window, ?grain → ThreeWay` | — | `SCR-019` | `FR-BVA-008` |
-| `GET /analysis/kpis` | KPI/ratio cards with target comparison and drill target | `?period, ?window → KpiCards` | — | `SCR-020` | `FR-BVA-010` |
+| `GET /analysis/bridge` | Bridge/waterfall drivers from Budget to Actual [Mapped to /api/v1/bva] | `?period, ?window, ?entity → BridgeSet` | — | `SCR-016` | `FR-BVA-005` |
+| `GET /analysis/trends` | Multi-period actual/budget/PY trends and variance bars [Mapped to /api/v1/bva] | `?period, ?buckets, ?grain, ?window → TrendSet` | — | `SCR-017` | `FR-BVA-006` |
+| `GET /analysis/topn` | Ranked adverse/favourable variances with the deterministic tie-break [Mapped to /api/v1/bva] | `?period, ?window, ?n=10, ?side, ?basis → RankedVariances` | — | `SCR-018` | `FR-BVA-007` |
+| `GET /analysis/three-way` | Actual vs Budget vs Forecast with accuracy columns [Mapped to /api/v1/bva] | `?period, ?window, ?grain → ThreeWay` | — | `SCR-019` | `FR-BVA-008` |
+| `GET /analysis/kpis` | KPI/ratio cards with target comparison and drill target [Mapped to /api/v1/bva] | `?period, ?window → KpiCards` | — | `SCR-020` | `FR-BVA-010` |
 | `GET /analysis/drill` | Transaction detail for exactly one displayed figure (source-file evidence) | `?figure, ?key, ?page, ?pageSize → Page<DrillRow> (each row carries its source file + batch)` | `ERR-BVA-004` (ambiguous figure) | `SCR-021` | `FR-BVA-004` |
 | `GET /search` | Grouped search across vouchers, vendors, descriptions, accounts | `?q, ?groups → {groups:[{name, total, items[]}], capped:true}` | — | `SCR-022` | `FR-BVA-012` |
 | `POST /exports/ad-hoc` | Export what you see (current filter/sort/columns) to Excel or CSV | `{grid, filter, sort, columns, format:'xlsx'\|'csv', outPath?} → 202 Job → FileRef` | — | `SCR-015`, `SCR-022` | `FR-BVA-011` |
@@ -318,9 +318,9 @@ Area error profile: `ERR-STO-002`, `ERR-VAL-003`, `ERR-EXP-001`/`003`.
 | `GET /exceptions/{id}` | Exception detail with history, notes and evidence links | `— → ExceptionDetail` | — | `SCR-023` | `FR-EXC-004` |
 | `PATCH /exceptions/{id}` | Status, owner and note changes (append-only note history) | `{status?, owner?, note?} → ExceptionDetail` | — | `SCR-024`, `SCR-034` | `FR-EXC-006`, `FR-EXC-007`, `FR-EXC-008` |
 | `POST /exceptions/bulk` | Bulk status/owner change (one audit entry per item) | `{ids[], patch, note?} → {updated, skipped:[{id, reason}], auditIds[]}` | — | `SCR-023` | `FR-EXC-010` |
-| `GET /exceptions/effectiveness` | Per-rule effectiveness analytics (raised, explained share, days to close, tuning) | `?period, ?ruleId → EffectivenessTable` | — | `SCR-026` | `FR-EXC-015` |
+| `GET /exceptions/effectiveness` | Per-rule effectiveness analytics (raised, explained share, days to close, tuning) [Later Phase / Planned] | `?period, ?ruleId → EffectivenessTable` | — | `SCR-026` | `FR-EXC-015` |
 | `POST /exceptions/{id}/evidence` | Evidence bundle workbook/zip for one exception | `{include:{validation, mapping, audit}} → 202 Job → FileRef` | — | `SCR-024`, `SCR-025` | `FR-EXC-016`, `FR-XL-007` |
-| `GET /exceptions/export` | Register export: filtered sheet + unfiltered sheet, owner-wise grouping | `?filter, ?outPath → 202 Job → FileRef` | — | `SCR-023` | `FR-EXC-017`, `FR-EXC-018` |
+| `GET /exceptions/export` | Register export: filtered sheet + unfiltered sheet, owner-wise grouping [Mapped to /api/v1/exceptions/export/owner] | `?filter, ?outPath → 202 Job → FileRef` | — | `SCR-023` | `FR-EXC-017`, `FR-EXC-018` |
 
 ### 3.6 Forecast (7)
 
@@ -373,16 +373,16 @@ Area error profile: `ERR-SEC-006`, `ERR-ENG-001`…`010`.
 
 | Endpoint | Purpose | Request → Response | Errors (beyond §2.3) | Screen(s) | FR(s) |
 |---|---|---|---|---|---|
-| `GET /jobs` | Job list/status (progress, ETA, terminal state) for the job drawer and polling | `?state, ?page → Page<Job>` | — |  | `FR-XC-008` |
-| `POST /jobs/{id}/cancel` | Cancel a running job where the job supports it | `— → Job` | — |  | `FR-XC-008` |
+| `GET /jobs` | Job list/status (progress, ETA, terminal state) for the job drawer and polling [Later Phase / Planned] | `?state, ?page → Page<Job>` | — |  | `FR-XC-008` |
+| `POST /jobs/{id}/cancel` | Cancel a running job where the job supports it [Later Phase / Planned] | `— → Job` | — |  | `FR-XC-008` |
 | `GET /doctor` | Environment doctor: WebView2, paths, permissions, DB integrity, disk, profile mismatch | `— → DoctorReport` | — | `SCR-040` | `FR-XC-004` |
 | `GET /health` | Liveness/version only (no data), for the shell and tests | `— → {status, appVersion, schemaVersion, uptimeMs}` | — | `SCR-040` | `FR-XC-004` |
 | `POST /diagnostics` | Build the redacted diagnostics zip (metadata-only by default) | `{scope:{logs, machine, project}, redactionAck:true} → 202 Job → FileRef` | `ERR-SEC-006` (over 20 MB), `ERR-STO-002` | `SCR-040` | `FR-XC-004`, `FR-XC-005` |
-| `GET /audit` | Filterable audit log with export | `?actor, ?event, ?from, ?to, ?page → Page<AuditEntry>` | — | `SCR-040` | `FR-SET-012` |
-| `GET /instrumentation` | Local job timings (import, rules, exports, cold start) surfaced in Diagnostics | `— → {timings:[{stage, p50Ms, p95Ms, samples}]}` | — | `SCR-040` | `FR-XC-016` |
-| `GET /help` | Help topics keyed by `SCR-nnn` (single-sourced with `22`) | `?scr → {topics:[{scr, title, bodyMd, version}]}` | — | `SCR-040`, `SCR-042` | `FR-ONB-004`, `FR-ONB-007`, `FR-XC-014` |
-| `POST /update-check` | Manual update check against the documented channel (disabled by default; never auto-installs) | `{manual:true} → {status:'disabled'\|'up-to-date'\|'update-available', version?}` | — | `SCR-040` | `FR-XC-015` |
-| `GET /meta/error-catalog` | The error-code catalog: code → user message + hint, keyed by the `26` families | `?family, ?q → {items:[{code, slug, severity, message, hint, httpStatus, ownerDoc}]}` | — (pure read; the catalogue is generated from §5) | `SCR-041` | `FR-XC-006`, `FR-XC-012` |
+| `GET /audit` | Filterable audit log with export [Later Phase / Planned] | `?actor, ?event, ?from, ?to, ?page → Page<AuditEntry>` | — | `SCR-040` | `FR-SET-012` |
+| `GET /instrumentation` | Local job timings (import, rules, exports, cold start) surfaced in Diagnostics [Later Phase / Planned] | `— → {timings:[{stage, p50Ms, p95Ms, samples}]}` | — | `SCR-040` | `FR-XC-016` |
+| `GET /help` | Help topics keyed by `SCR-nnn` (single-sourced with `22`) [Later Phase / Planned] | `?scr → {topics:[{scr, title, bodyMd, version}]}` | — | `SCR-040`, `SCR-042` | `FR-ONB-004`, `FR-ONB-007`, `FR-XC-014` |
+| `POST /update-check` | Manual update check against the documented channel (disabled by default; never auto-installs) [Later Phase / Planned] | `{manual:true} → {status:'disabled'\|'up-to-date'\|'update-available', version?}` | — | `SCR-040` | `FR-XC-015` |
+| `GET /meta/error-catalog` | The error-code catalog: code → user message + hint, keyed by the `26` families [Later Phase / Planned] | `?family, ?q → {items:[{code, slug, severity, message, hint, httpStatus, ownerDoc}]}` | — (pure read; the catalogue is generated from §5) | `SCR-041` | `FR-XC-006`, `FR-XC-012` |
 
 ## 4. Shared shapes
 
@@ -642,6 +642,14 @@ follow the behaviour stated in `04`. They are catalogued so the UI and support c
 | Dev-only surfaces | `/docs`, `/redoc` and `/openapi.json` are **disabled in packaged builds**; the committed document is the reference (`TST-API-12`) |
 | Token on everything | The generated spec declares the `X-FPA-Token` security scheme as global (`ADR-009`) |
 | Version | `/api/v1` for the whole v1 lifetime; a breaking change is `/api/v2` plus an ADR, never an in-place edit |
+
+	### 6.4 Breaking Changes and Version-Bump Policy
+
+	| Rule | Policy |
+	|---|---|
+	| **Additive changes** | New optional fields in request/response envelopes or new endpoints under `/api/v1` are non-breaking and permitted without version bump. |
+	| **Breaking changes** | Removing fields, changing field types, altering error code semantics, or removing endpoints requires a new namespace (`/api/v2`), an Architecture Decision Record (ADR), and a recorded migration entry in `docs/24_RELEASE_AND_VERSIONING_RUNBOOK.md`. |
+	| **Unversioned duplicates** | Forbidden. Every route must be versioned under `/api/v1` (with no unversioned fallback aliases). |
 
 ## 7. Contract tests and fixtures
 

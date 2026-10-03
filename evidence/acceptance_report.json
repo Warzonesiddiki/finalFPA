@@ -1,0 +1,1081 @@
+{
+  "verdict": "BLOCKED",
+  "passed": false,
+  "measurable": false,
+  "blocked_reasons": [
+    "BLOCKED - doc 28 \u00a75.0 entry criterion 4 ('Sample data corpus (250k rows) loaded and validated') is not met for the general ledger d365_gl_actuals.csv: source_type=actuals_d365, total_debit=24626607267.80, total_credit=6682091688.47, net_imbalance=17944515579.33, is_balanced=False, failing check(s)=IMP-023 of 9 run, data_quality_score=84, and 0 of 250037 parsed rows landed in FactActual. Doc 04 \u00a712 / IMP-023 rejects the file and import_repo.py:111 gates exactly this source_type, so NO facts exist for the rules to fire on. Every planted case lives in this file, so the doc 14 \u00a75.3 bars are NOT MEASURED. This is a corpus precondition failure, not a rule-logic result."
+  ],
+  "as_of": "2026-11-12",
+  "period": "FY26-P09",
+  "elapsed_seconds": 0.1,
+  "corpus_checksum": {
+    "d365_gl_actuals.csv": "2c791e5f270bc4d974f64f0078e84f5d9a33a47e8004986363b36a30342789c3",
+    "bank_ledger_actuals.csv": "77f5f7010987bfe70d4a301d2a6be1d5283eaddaaa4e74d64fb998bb37e38b92",
+    "payroll_procurement_actuals.csv": "d76012d6bb40fee7bf6e145be547aeeb115edb413a770c222c8b227c913fb939"
+  },
+  "checksum_scope": {
+    "fingerprinted_count": 19,
+    "fingerprinted": [
+      "bank_ledger_actuals.csv",
+      "budget_fy26.csv",
+      "d365_gl_actuals.csv",
+      "expected_exceptions.csv",
+      "malformed/bank_ledger_unbalanced.csv",
+      "malformed/parentheses_negatives.csv",
+      "malformed/semicolon_delimiter.csv",
+      "malformed/truncated_gl.csv",
+      "payroll_procurement_actuals.csv",
+      "test_comment.csv",
+      "test_scale/bank_ledger_actuals.csv",
+      "test_scale/budget_fy26.csv",
+      "test_scale/d365_gl_actuals.csv",
+      "test_scale/expected_exceptions.csv",
+      "test_scale/malformed/bank_ledger_unbalanced.csv",
+      "test_scale/malformed/parentheses_negatives.csv",
+      "test_scale/malformed/semicolon_delimiter.csv",
+      "test_scale/malformed/truncated_gl.csv",
+      "test_scale/payroll_procurement_actuals.csv"
+    ],
+    "excluded_count": 32,
+    "excluded_suffixes": [
+      ".xlsx"
+    ],
+    "exclusion_reason": {
+      ".xlsx": "openpyxl embeds a wall-clock dcterms:created in docProps/core.xml, so the hash changes on every generation"
+    },
+    "excluded": [
+      "malformed/cp1252_ansi_dates.xlsx",
+      "malformed/duplicate_headers.xlsx",
+      "malformed/embedded_total_rows.xlsx",
+      "malformed/future_period_rows.xlsx",
+      "malformed/hidden_rows_missing_header.xlsx",
+      "malformed/merged_two_row_header.xlsx",
+      "malformed/missing_voucher_column.xlsx",
+      "malformed/mixed_currency_rows.xlsx",
+      "malformed/no_data_rows.xlsx",
+      "malformed/protected_sheet.xlsx",
+      "malformed/unicode_vendor_names.xlsx",
+      "malformed/zip_bomb_guard.xlsx",
+      "templates/budget_template.xlsx",
+      "templates/gl_actuals_template.xlsx",
+      "templates/master_data_template.xlsx",
+      "templates/pilot_tieout_worksheet_template.xlsx",
+      "test_scale/malformed/cp1252_ansi_dates.xlsx",
+      "test_scale/malformed/duplicate_headers.xlsx",
+      "test_scale/malformed/embedded_total_rows.xlsx",
+      "test_scale/malformed/future_period_rows.xlsx",
+      "test_scale/malformed/hidden_rows_missing_header.xlsx",
+      "test_scale/malformed/merged_two_row_header.xlsx",
+      "test_scale/malformed/missing_voucher_column.xlsx",
+      "test_scale/malformed/mixed_currency_rows.xlsx",
+      "test_scale/malformed/no_data_rows.xlsx",
+      "test_scale/malformed/protected_sheet.xlsx",
+      "test_scale/malformed/unicode_vendor_names.xlsx",
+      "test_scale/malformed/zip_bomb_guard.xlsx",
+      "test_scale/templates/budget_template.xlsx",
+      "test_scale/templates/gl_actuals_template.xlsx",
+      "test_scale/templates/master_data_template.xlsx",
+      "test_scale/templates/pilot_tieout_worksheet_template.xlsx"
+    ],
+    "note": "paths are relative to the sample dir; test_scale/ holds a second copy of the template and malformed fixtures and is counted once per distinct path"
+  },
+  "corpus": [
+    {
+      "file": "d365_gl_actuals.csv",
+      "source_type": "actuals_d365",
+      "is_general_ledger": true,
+      "recorded_status": "rejected",
+      "status": "rejected",
+      "balanced": false,
+      "balance_gate": "enforced (doc 04 \u00a712/IMP-023)",
+      "rows": 250037,
+      "loaded_count": 250037,
+      "quarantined_count": 0,
+      "rejected_count": 0,
+      "total_debit": "24626607267.80",
+      "total_credit": "6682091688.47",
+      "net_imbalance": "17944515579.33",
+      "checks_run": 9,
+      "checks": [
+        {
+          "code": "IMP-001",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-017",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-018",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-019",
+          "status": "pass",
+          "severity": "medium"
+        },
+        {
+          "code": "IMP-020",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-021",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-022",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-023",
+          "status": "fail",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-024",
+          "status": "pass",
+          "severity": "high"
+        }
+      ],
+      "failed_checks": [
+        "IMP-023"
+      ],
+      "data_quality_score": 84,
+      "data_quality_raw_score": "83.60655737704918032786885246",
+      "data_quality_failed": [
+        "IMP-023"
+      ],
+      "data_quality_weight_set": "1.0",
+      "checksum": "2c791e5f270bc4d974f64f0078e84f5d9a33a47e8004986363b36a30342789c3"
+    },
+    {
+      "file": "bank_ledger_actuals.csv",
+      "source_type": "actuals_procurement",
+      "is_general_ledger": false,
+      "recorded_status": "rejected",
+      "status": "rejected",
+      "balanced": false,
+      "balance_gate": "WARNING-ONLY in code (doc 04 \u00a712 says reject)",
+      "rows": 499,
+      "loaded_count": 499,
+      "quarantined_count": 0,
+      "rejected_count": 0,
+      "total_debit": "7997971.00",
+      "total_credit": "4855017.00",
+      "net_imbalance": "3142954.00",
+      "checks_run": 9,
+      "checks": [
+        {
+          "code": "IMP-001",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-017",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-018",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-019",
+          "status": "pass",
+          "severity": "medium"
+        },
+        {
+          "code": "IMP-020",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-021",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-022",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-023",
+          "status": "fail",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-024",
+          "status": "pass",
+          "severity": "high"
+        }
+      ],
+      "failed_checks": [
+        "IMP-023"
+      ],
+      "data_quality_score": 84,
+      "data_quality_raw_score": "83.60655737704918032786885246",
+      "data_quality_failed": [
+        "IMP-023"
+      ],
+      "data_quality_weight_set": "1.0",
+      "checksum": "77f5f7010987bfe70d4a301d2a6be1d5283eaddaaa4e74d64fb998bb37e38b92"
+    },
+    {
+      "file": "payroll_procurement_actuals.csv",
+      "source_type": "actuals_procurement",
+      "is_general_ledger": false,
+      "recorded_status": "rejected",
+      "status": "rejected",
+      "balanced": false,
+      "balance_gate": "WARNING-ONLY in code (doc 04 \u00a712 says reject)",
+      "rows": 399,
+      "loaded_count": 399,
+      "quarantined_count": 0,
+      "rejected_count": 0,
+      "total_debit": "17146821.00",
+      "total_credit": "0.00",
+      "net_imbalance": "17146821.00",
+      "checks_run": 9,
+      "checks": [
+        {
+          "code": "IMP-001",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-017",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-018",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-019",
+          "status": "pass",
+          "severity": "medium"
+        },
+        {
+          "code": "IMP-020",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-021",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-022",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-023",
+          "status": "fail",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-024",
+          "status": "pass",
+          "severity": "high"
+        }
+      ],
+      "failed_checks": [
+        "IMP-023"
+      ],
+      "data_quality_score": 84,
+      "data_quality_raw_score": "83.60655737704918032786885246",
+      "data_quality_failed": [
+        "IMP-023"
+      ],
+      "data_quality_weight_set": "1.0",
+      "checksum": "d76012d6bb40fee7bf6e145be547aeeb115edb413a770c222c8b227c913fb939"
+    }
+  ],
+  "divergences": [
+    "Answer key row outside P1..P32 and not counted as a planting: INJ-01 EXC-SEC-14 Raised (this is the prompt-injection fixture, not one of the 40).",
+    "Sub-ledger bank_ledger_actuals.csv is unbalanced (net=3142954.00, failing check(s)=IMP-023) yet 499 of 499 parsed rows landed in FactActual. Doc 04 \u00a712 and IMP-023 state the reject unconditionally; import_repo.py:111 gates only source_type='actuals_d365' and its comment cites '04 \u00a72.2 & \u00a710', which are the source-type table and the confirm step and state no sub-ledger exemption. The batch row is also RECORDED as status='rejected' from is_balanced alone, so the audit metadata disagrees with the analytic store. Not scored as a blocker here; owner ruling required (DEF-010).",
+    "Sub-ledger payroll_procurement_actuals.csv is unbalanced (net=17146821.00, failing check(s)=IMP-023) yet 399 of 399 parsed rows landed in FactActual. Doc 04 \u00a712 and IMP-023 state the reject unconditionally; import_repo.py:111 gates only source_type='actuals_d365' and its comment cites '04 \u00a72.2 & \u00a710', which are the source-type table and the confirm step and state no sub-ledger exemption. The batch row is also RECORDED as status='rejected' from is_balanced alone, so the audit metadata disagrees with the analytic store. Not scored as a blocker here; owner ruling required (DEF-010)."
+  ],
+  "hard_failures": [],
+  "bars": [
+    {
+      "name": "Planted-exception recall",
+      "requirement": ">= 29 of 32 (>= 90 % of the 32 raises)",
+      "measured": "NOT MEASURED",
+      "passed": false,
+      "measurable": false,
+      "detail": "29 planted case(s) not detected"
+    },
+    {
+      "name": "Control precision",
+      "requirement": "0 of 8 controls may raise",
+      "measured": "NOT MEASURED",
+      "passed": false,
+      "measurable": false,
+      "detail": "P32 EXC-015; P30 EXC-018"
+    },
+    {
+      "name": "High-severity recall",
+      "requirement": "18 of 18 High plantings found",
+      "measured": "NOT MEASURED",
+      "passed": false,
+      "measurable": false,
+      "detail": "a missed High is a control failure, not a statistic"
+    },
+    {
+      "name": "Extra findings",
+      "requirement": "a rule with > 3 unexplained findings is tuned or documented before the gate",
+      "measured": "NOT MEASURED",
+      "passed": false,
+      "measurable": false,
+      "detail": "no false-positive log reference is committed in this repository; extras are therefore UNEXPLAINED, not justified"
+    },
+    {
+      "name": "Stability",
+      "requirement": "two consecutive runs produce identical raise sets",
+      "measured": "NOT MEASURED",
+      "passed": false,
+      "measurable": false,
+      "detail": "identical"
+    },
+    {
+      "name": "Rule catalog coverage",
+      "requirement": "all 24 catalog rules are wired into the batch composer",
+      "measured": "NOT MEASURED",
+      "passed": false,
+      "measurable": false,
+      "detail": ""
+    },
+    {
+      "name": "Zero-coverage rules",
+      "requirement": "every rule with a planted case raises at least one finding",
+      "measured": "NOT MEASURED",
+      "passed": false,
+      "measurable": false,
+      "detail": "zero coverage: ['EXC-001', 'EXC-002', 'EXC-003', 'EXC-004', 'EXC-005', 'EXC-006', 'EXC-007', 'EXC-008', 'EXC-009', 'EXC-010', 'EXC-011', 'EXC-012', 'EXC-013', 'EXC-014', 'EXC-016', 'EXC-017', 'EXC-019', 'EXC-020', 'EXC-021', 'EXC-022', 'EXC-023', 'EXC-024']"
+    }
+  ],
+  "per_rule": [
+    {
+      "rule_id": "EXC-001",
+      "evaluator": "evaluate_exc_001",
+      "plantings": [
+        "P1"
+      ],
+      "detected": [],
+      "missed": [
+        "P1"
+      ],
+      "controls": [],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-002",
+      "evaluator": "evaluate_exc_002",
+      "plantings": [
+        "P2",
+        "P2",
+        "P2"
+      ],
+      "detected": [],
+      "missed": [
+        "P2",
+        "P2",
+        "P2"
+      ],
+      "controls": [],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-003",
+      "evaluator": "evaluate_exc_003",
+      "plantings": [
+        "P3"
+      ],
+      "detected": [],
+      "missed": [
+        "P3"
+      ],
+      "controls": [],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-004",
+      "evaluator": "evaluate_exc_004",
+      "plantings": [
+        "P4",
+        "P4"
+      ],
+      "detected": [],
+      "missed": [
+        "P4",
+        "P4"
+      ],
+      "controls": [],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-005",
+      "evaluator": "evaluate_exc_005",
+      "plantings": [
+        "P5"
+      ],
+      "detected": [],
+      "missed": [
+        "P5"
+      ],
+      "controls": [],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-006",
+      "evaluator": "evaluate_exc_006",
+      "plantings": [
+        "P6"
+      ],
+      "detected": [],
+      "missed": [
+        "P6"
+      ],
+      "controls": [],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-007",
+      "evaluator": "evaluate_exc_007",
+      "plantings": [
+        "P7",
+        "P7"
+      ],
+      "detected": [],
+      "missed": [
+        "P7",
+        "P7"
+      ],
+      "controls": [
+        "P25"
+      ],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-008",
+      "evaluator": "evaluate_exc_008",
+      "plantings": [
+        "P8"
+      ],
+      "detected": [],
+      "missed": [
+        "P8"
+      ],
+      "controls": [
+        "P26"
+      ],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-009",
+      "evaluator": "evaluate_exc_004",
+      "plantings": [
+        "P9"
+      ],
+      "detected": [],
+      "missed": [
+        "P9"
+      ],
+      "controls": [],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-010",
+      "evaluator": "evaluate_exc_010",
+      "plantings": [
+        "P10",
+        "P10"
+      ],
+      "detected": [],
+      "missed": [
+        "P10",
+        "P10"
+      ],
+      "controls": [],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-011",
+      "evaluator": "evaluate_exc_011",
+      "plantings": [
+        "P11"
+      ],
+      "detected": [],
+      "missed": [
+        "P11"
+      ],
+      "controls": [],
+      "controls_fired": [],
+      "findings_raised": 103,
+      "extras": 71,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-012",
+      "evaluator": "evaluate_exc_005",
+      "plantings": [
+        "P12"
+      ],
+      "detected": [],
+      "missed": [
+        "P12"
+      ],
+      "controls": [
+        "P27"
+      ],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-013",
+      "evaluator": "evaluate_exc_013",
+      "plantings": [
+        "P13",
+        "P13"
+      ],
+      "detected": [],
+      "missed": [
+        "P13",
+        "P13"
+      ],
+      "controls": [
+        "P28"
+      ],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-014",
+      "evaluator": "evaluate_exc_014",
+      "plantings": [
+        "P14"
+      ],
+      "detected": [],
+      "missed": [
+        "P14"
+      ],
+      "controls": [],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-015",
+      "evaluator": "evaluate_exc_006",
+      "plantings": [
+        "P15",
+        "P15"
+      ],
+      "detected": [
+        "P15",
+        "P15"
+      ],
+      "missed": [],
+      "controls": [
+        "P32"
+      ],
+      "controls_fired": [
+        "P32"
+      ],
+      "findings_raised": 3,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 100.0,
+      "zero_coverage": false
+    },
+    {
+      "rule_id": "EXC-016",
+      "evaluator": "evaluate_exc_016",
+      "plantings": [
+        "P16"
+      ],
+      "detected": [],
+      "missed": [
+        "P16"
+      ],
+      "controls": [],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-017",
+      "evaluator": "evaluate_exc_007",
+      "plantings": [
+        "P17"
+      ],
+      "detected": [],
+      "missed": [
+        "P17"
+      ],
+      "controls": [],
+      "controls_fired": [],
+      "findings_raised": 1,
+      "extras": 1,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-018",
+      "evaluator": "evaluate_exc_008",
+      "plantings": [
+        "P18"
+      ],
+      "detected": [
+        "P18"
+      ],
+      "missed": [],
+      "controls": [
+        "P29",
+        "P30"
+      ],
+      "controls_fired": [
+        "P30"
+      ],
+      "findings_raised": 50,
+      "extras": 48,
+      "wired": true,
+      "recall_pct": 100.0,
+      "zero_coverage": false
+    },
+    {
+      "rule_id": "EXC-019",
+      "evaluator": "evaluate_exc_019",
+      "plantings": [
+        "P19"
+      ],
+      "detected": [],
+      "missed": [
+        "P19"
+      ],
+      "controls": [],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-020",
+      "evaluator": "evaluate_exc_020",
+      "plantings": [
+        "P20"
+      ],
+      "detected": [],
+      "missed": [
+        "P20"
+      ],
+      "controls": [],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-021",
+      "evaluator": "evaluate_exc_021",
+      "plantings": [
+        "P21",
+        "P21"
+      ],
+      "detected": [],
+      "missed": [
+        "P21",
+        "P21"
+      ],
+      "controls": [
+        "P31"
+      ],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-022",
+      "evaluator": "evaluate_exc_022",
+      "plantings": [
+        "P22"
+      ],
+      "detected": [],
+      "missed": [
+        "P22"
+      ],
+      "controls": [],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-023",
+      "evaluator": "evaluate_exc_023",
+      "plantings": [
+        "P23"
+      ],
+      "detected": [],
+      "missed": [
+        "P23"
+      ],
+      "controls": [],
+      "controls_fired": [],
+      "findings_raised": 1,
+      "extras": 1,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    },
+    {
+      "rule_id": "EXC-024",
+      "evaluator": "evaluate_exc_024",
+      "plantings": [
+        "P24"
+      ],
+      "detected": [],
+      "missed": [
+        "P24"
+      ],
+      "controls": [],
+      "controls_fired": [],
+      "findings_raised": 0,
+      "extras": 0,
+      "wired": true,
+      "recall_pct": 0.0,
+      "zero_coverage": true
+    }
+  ],
+  "findings_total": 158,
+  "extras_total": 121,
+  "extras_by_rule": {
+    "EXC-018": 48,
+    "EXC-011": 71,
+    "EXC-017": 1,
+    "EXC-023": 1
+  },
+  "miss_list": [
+    {
+      "planting_id": "P1",
+      "rule_id": "EXC-001",
+      "severity": "High",
+      "subject_key": "batch_041|bank_ledger",
+      "notes": "Unbalanced bank-ledger file loaded under a \u20b9500 tolerance (variance \u20b9350.00)"
+    },
+    {
+      "planting_id": "P2",
+      "rule_id": "EXC-002",
+      "severity": "High",
+      "subject_key": "IN01|VCH-2026-0915-001|1",
+      "notes": "Re-export overlaps batch 37 on voucher line 1"
+    },
+    {
+      "planting_id": "P2",
+      "rule_id": "EXC-002",
+      "severity": "High",
+      "subject_key": "IN01|VCH-2026-0915-001|2",
+      "notes": "Re-export overlaps batch 37 on voucher line 2"
+    },
+    {
+      "planting_id": "P2",
+      "rule_id": "EXC-002",
+      "severity": "High",
+      "subject_key": "IN01|VCH-2026-0915-002|1",
+      "notes": "Re-export overlaps batch 37 on voucher line 3"
+    },
+    {
+      "planting_id": "P3",
+      "rule_id": "EXC-003",
+      "severity": "High",
+      "subject_key": "batch_039|gl_control_total",
+      "notes": "Control-total variance: supplied \u20b918400000.00 vs loaded \u20b918399650.00"
+    },
+    {
+      "planting_id": "P4",
+      "rule_id": "EXC-004",
+      "severity": "Medium",
+      "subject_key": "account|5999-TEMP",
+      "notes": "6 rows post to unmapped placeholder account 5999-TEMP"
+    },
+    {
+      "planting_id": "P4",
+      "rule_id": "EXC-004",
+      "severity": "Medium",
+      "subject_key": "cost_center|CC-999",
+      "notes": "Cost centre CC-999 appears in 2 rows with no master record"
+    },
+    {
+      "planting_id": "P5",
+      "rule_id": "EXC-005",
+      "severity": "Low",
+      "subject_key": "cost_center|CC-950",
+      "notes": "CC-950 (marked inactive from FY26-P06) receives 4 postings in P09"
+    },
+    {
+      "planting_id": "P6",
+      "rule_id": "EXC-006",
+      "severity": "Medium",
+      "subject_key": "entity|IN02",
+      "notes": "Entity IN02 has \u20b9450000.00 YTD actuals and no FY26 budget lines"
+    },
+    {
+      "planting_id": "P7",
+      "rule_id": "EXC-007",
+      "severity": "High",
+      "subject_key": "V-00931|INV-88213",
+      "notes": "Duplicate invoice INV-88213 posted on 14-Sep and 18-Sep"
+    },
+    {
+      "planting_id": "P7",
+      "rule_id": "EXC-007",
+      "severity": "High",
+      "subject_key": "V-00412|INV-91004",
+      "notes": "Duplicate invoice INV-91004 posted on 20-Sep and 24-Sep"
+    },
+    {
+      "planting_id": "P8",
+      "rule_id": "EXC-008",
+      "severity": "Medium",
+      "subject_key": "IN01|5300|2026-09-22|12500.00",
+      "notes": "Same \u20b912500.00 debit in vouchers VCH-007 and VCH-009"
+    },
+    {
+      "planting_id": "P9",
+      "rule_id": "EXC-009",
+      "severity": "High",
+      "subject_key": "batch_040|row_00882",
+      "notes": "9 October-dated rows declare source period FY26-P09"
+    },
+    {
+      "planting_id": "P10",
+      "rule_id": "EXC-010",
+      "severity": "High",
+      "subject_key": "V-00412|INV-89101",
+      "notes": "Document dated 29-Sep posted 05-Oct (potential cut-off issue)"
+    },
+    {
+      "planting_id": "P10",
+      "rule_id": "EXC-010",
+      "severity": "High",
+      "subject_key": "V-00276|INV-89045",
+      "notes": "Document dated 28-Sep posted 03-Oct (potential cut-off issue)"
+    },
+    {
+      "planting_id": "P11",
+      "rule_id": "EXC-011",
+      "severity": "Medium",
+      "subject_key": "IN01|VCH-2026-0930-021",
+      "notes": "Posting on 30-Nov-2026 is 18 days ahead of run date"
+    },
+    {
+      "planting_id": "P12",
+      "rule_id": "EXC-012",
+      "severity": "Medium",
+      "subject_key": "IN01|5400|CC-110",
+      "notes": "Unusual negative expense credits \u20b9680000.00 offset only \u20b9120000.00 (17.6%)"
+    },
+    {
+      "planting_id": "P13",
+      "rule_id": "EXC-013",
+      "severity": "Medium",
+      "subject_key": "IN01|5600|CC-140",
+      "notes": "Spend spike 4.1x trailing 3-month baseline (deviation \u20b9141000.00)"
+    },
+    {
+      "planting_id": "P13",
+      "rule_id": "EXC-013",
+      "severity": "Medium",
+      "subject_key": "IN01|6300|CC-120",
+      "notes": "Spend spike 3.2x trailing 3-month baseline"
+    },
+    {
+      "planting_id": "P14",
+      "rule_id": "EXC-014",
+      "severity": "Medium",
+      "subject_key": "V-00276|5800",
+      "notes": "Salary vendor V-00276 posts to never-used Marketing account 5800"
+    },
+    {
+      "planting_id": "P16",
+      "rule_id": "EXC-016",
+      "severity": "Medium",
+      "subject_key": "IN01|6100|CC-120",
+      "notes": "Expected month-end accrual pattern on account 6100 absent in P09"
+    },
+    {
+      "planting_id": "P17",
+      "rule_id": "EXC-017",
+      "severity": "High",
+      "subject_key": "IN01|5450|CC-160",
+      "notes": "New cost centre CC-160 has \u20b9840000.00 spend with zero FY26 budget line"
+    },
+    {
+      "planting_id": "P19",
+      "rule_id": "EXC-019",
+      "severity": "Medium",
+      "subject_key": "IN01|5500|CC-130",
+      "notes": "Cumulative spend at 88% annual budget by P09 with YTD +14.3% overrun"
+    },
+    {
+      "planting_id": "P20",
+      "rule_id": "EXC-020",
+      "severity": "Medium",
+      "subject_key": "IN01|5450|P07-P09",
+      "notes": "Budget coverage gap: budget exists P01-P06 but missing P07-P09"
+    },
+    {
+      "planting_id": "P21",
+      "rule_id": "EXC-021",
+      "severity": "High",
+      "subject_key": "IN01|VCH-2026-0920-004",
+      "notes": "Single voucher \u20b9650000.00 crosses single approval threshold (\u20b9500000.00)"
+    },
+    {
+      "planting_id": "P21",
+      "rule_id": "EXC-021",
+      "severity": "High",
+      "subject_key": "IN01|VCH-2026-0925-003",
+      "notes": "Single voucher \u20b92750000.00 crosses dual approval threshold (\u20b92500000.00)"
+    },
+    {
+      "planting_id": "P22",
+      "rule_id": "EXC-022",
+      "severity": "Low",
+      "subject_key": "IN01|VCH-2026-0929-014",
+      "notes": "Round manual journal \u20b91500000.00 at 3.6x entity mean round journal"
+    },
+    {
+      "planting_id": "P23",
+      "rule_id": "EXC-023",
+      "severity": "High",
+      "subject_key": "IN01|VCH-2026-0912-004",
+      "notes": "Voucher imbalance: debits \u20b945000.00 vs credits \u20b940000.00 (difference \u20b95000.00)"
+    },
+    {
+      "planting_id": "P24",
+      "rule_id": "EXC-024",
+      "severity": "High",
+      "subject_key": "IN01|1999|suspense",
+      "notes": "Suspense account residual \u20b91240000.00 with \u20b9980000.00 unsettled movement"
+    }
+  ],
+  "controls_fired": [
+    {
+      "rule_id": "EXC-015",
+      "subject_key": "V-00118|Security_Services",
+      "planting_id": "P32",
+      "notes": "Precision control: recurring charge posted within 10% tolerance (8% below expected)"
+    },
+    {
+      "rule_id": "EXC-018",
+      "subject_key": "IN01|5200|CC-110",
+      "planting_id": "P30",
+      "notes": "Precision control: F13c \u20b9900000 variance but +2.25% is below 5.0% threshold (AND-test fails)"
+    }
+  ],
+  "severity_counts": {
+    "expected": {
+      "High": 18,
+      "Low": 2,
+      "Medium": 12
+    },
+    "detected": {
+      "High": 3
+    },
+    "missed": {
+      "High": 15,
+      "Low": 2,
+      "Medium": 12
+    }
+  }
+}

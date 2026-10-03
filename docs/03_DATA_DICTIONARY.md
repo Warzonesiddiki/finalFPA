@@ -137,9 +137,12 @@ time.
 | `FactExceptionEvent` | One event in an exception's history | `UNIQUE(exception_id, event_seq)` |
 | `FactPackIssue` | One issued pack version for one period | `UNIQUE(period_id, pack_version)` |
 | `FactPeriodSnapshot` | One immutable snapshot (close or issue) | `UNIQUE(period_id, snapshot_type, pack_version)` |
+| `PeriodAuditLog` | One audit event for period close or snapshot action | `UNIQUE(audit_id)` (`period_repo.py:56`) |
 | `MappingProfile` | One saved mapping profile | `UNIQUE(name, source_type)` |
 | `MappingProfileVersion` | One version of a profile | `UNIQUE(profile_id, version_no)` |
 | `MappingSuggestion` | One AI/rule suggestion for one source column in one batch | `UNIQUE(batch_id, source_column)` |
+| `MappingSuggestionAudit` | One audit event for a mapping suggestion state change | `UNIQUE(audit_id)` (`schema_sqlite.sql:236`) |
+| `MappingSuggestionApplication` | One recorded application of an accepted suggestion to a profile version | `UNIQUE(suggestion_id)` (`schema_sqlite.sql:256`) |
 | `MasterVendorCategory` | One vendor category | `UNIQUE(category_code)` |
 | `MasterRecurringCost` | One expected recurring charge | `UNIQUE(name, vendor_id, account_id, cost_center_id, start_period_id)` |
 | `MasterApprovalThreshold` | One threshold rule scope | `UNIQUE(scope, company_id, account_id, cost_center_id, effective_from)` |
@@ -179,6 +182,29 @@ historical attribute versions except where explicitly stated. Dimension history 
 | `created_at` | `TIMESTAMP` | No | |
 
 ### 3.2 `DimAccount`
+
+**Impact note (DEF-026, 2026-10-03).** The seeded chart of accounts carried three
+balance-sheet counterpart accounts that the double-entry sample corpus posts to:
+`1010` Operating Bank Account, `1200` Accounts Receivable Trade, `2000` Trade
+Accounts Payable. Because they were absent from `DimAccount`, `EXC-002`
+(unmapped account) fired on every offsetting leg (~125,000 rows) and made the
+engine read as catastrophically broken when the real fault was that the corpus
+posted to accounts the chart did not define. The three accounts are now seeded at
+`app/engine/store/db.py` §DimAccount seed, with names and `account_type` quoted
+from the corpus generator (`sample-data/generate_sample_data.py:52-54`).
+
+No new account was invented: `1010`/`1200`/`2000` are additions to the *seeded*
+chart only, consistent with EXC-002 (no unmapped postings) and EXC-007.
+`favourability_direction` is `neutral` for all three, per the canonical direction
+rule in §3.2 below (asset/liability are neutral). `EXC-024` is unaffected: it
+reads `suspense_accounts` (`{"1999","9999","SUSPENSE"}`), never `account_type`,
+so these accounts are not treated as suspense.
+
+The placeholder `5999-TEMP` is deliberately **not** seeded. It is planting P4 in
+`sample-data/expected_exceptions.csv` — it must remain unmapped so the
+unmapped-account exception fires. See `tests/integration/test_def026_account_consistency.py`,
+which encodes this as an *expected-unmapped* entry with its plant reference
+rather than a silent exclusion, so that removing plant P4 fails the check.
 
 | Column | Type | Null | Description / example |
 |---|---|---|---|

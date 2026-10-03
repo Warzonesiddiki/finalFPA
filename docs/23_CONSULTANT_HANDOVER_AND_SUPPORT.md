@@ -255,6 +255,20 @@ response target by severity. Both are defaults until `OQ-016` is agreed.
    behind it is removed at the next review.
 3. **SLA figures in §10 are defaults** until `OQ-016` is answered; the answer replaces them here and in
    `28`.
+
+	## 15. Seeded Support Log (DEF-001..007)
+
+	Per §11 (Support log format: date, severity, symptom, code, cause, action, follow-up, test added, escalation level):
+
+	| ID | Date | Severity | Symptom | Code | Cause | Action | Follow-up | Test | Escalation |
+	|---|---|---|---|---|---|---|---|---|---|
+	| DEF-001 | 2026-10-01 | S1 | Bank ledger actuals imbalanced batch rejected | ERR-IMP-002 | Imbalanced ledger file | Fixed test setup to assert rejected path; import balance rule enforced | Documented in release notes | Yes | L2 |
+	| DEF-002 | 2026-10-01 | S2 | Future-dated findings inflating exception counts | ERR-EXC-011 | Default as_of was system date instead of period end | Implemented period-end default as_of in rule runner | Verified on sample run | Yes | L2 |
+	| DEF-003 | 2026-10-01 | S1 | Coverage bar deficit on weakest engine modules | ERR-SYS-001 | Insufficient unit test coverage on forecast_repo, ai/client, reports_repo | Added comprehensive unit tests closing coverage bars to target | Coverage report updated | Yes | L2 |
+	| DEF-004 | 2026-10-02 | S3 | Old API key lingering in memory/environment after rotation | ERR-SEC-005 | Environment override not explicitly cleared | Implemented explicit purge and overwrite flow in settings API | Byte-scan verification | Yes | L1 |
+	| DEF-005 | 2026-10-02 | S1 | Cross-artifact number drift between UI, Excel pack, and PPT deck | ERR-XL-001 | Unsynchronized formatting or parser discrepancy | Implemented cross-artifact consistency harness enforcing exact decimal parity | Harness added to CI | Yes | L3 |
+	| DEF-006 | 2026-10-02 | S2 | AI number variance mismatch in commentary guardrails | ERR-AI-002 | AI suggested arithmetic discrepancy with engine calc | Implemented guardrail reconciliation and number mismatch stripping | Evaluation suite updated | Yes | L2 |
+	| DEF-007 | 2026-10-02 | S3 | Missing table omissions in Data Dictionary grain register | ERR-DOC-001 | New SQLite audit tables not registered in doc 03 | Added MappingSuggestionAudit, MappingSuggestionApplication, PeriodAuditLog to doc 03 §2.1 | Documentation review complete | N/A | L1 |
 4. Reviews at every phase gate (`16` §5.1) and after every S1 incident.
 
 ## 15. Frozen constants and conventions in this document

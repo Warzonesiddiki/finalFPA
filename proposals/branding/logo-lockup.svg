@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 320" width="1400" height="320" role="img" aria-labelledby="lockupTitle lockupDesc">
+  <title id="lockupTitle">FP&amp;A Month-End Copilot</title>
+  <desc id="lockupDesc">The brand mark — a rounded square frame containing four horizontal bars of differing lengths — beside the product name.</desc>
+
+  <!--
+    Horizontal lockup. Mark + wordmark on one baseline.
+
+    Layout rules, so this stays consistent if it is ever redrawn:
+      - Mark occupies the left 320x320 square exactly (no padding baked in).
+      - 80 units of clear space between the mark and the text block.
+      - "FP&A" is set in the primary colour at the cap height.
+      - "Month-End Copilot" is set in the neutral ink at a smaller size, on the
+        same baseline. The size difference, not a colour change, is what makes
+        the product name readable as the subordinate line.
+      - Text is LIVE <text>, not outlined, so it stays selectable and
+        screen-readable. If this must be converted to paths for the installer,
+        keep an accessible live-text copy alongside it.
+
+    Font: the stack below prefers humanist sans faces already present on
+    Windows 11 (Segoe UI, then Arial, then any generic sans). If the installer
+    must render identically everywhere, the lead's option is to outline the
+    text in the release build only - see README.md.
+  -->
+
+  <defs>
+    <style>
+      .primary { font-family: 'Segoe UI', 'Segoe UI Semibold', Arial, Helvetica, sans-serif; font-weight: 600; fill: #0369A1; }
+      .neutral { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-weight: 400; fill: #0F172A; }
+    </style>
+  </defs>
+
+  <!-- ===== Mark: identical geometry to logo-mark.svg, translated into place ===== -->
+  <g transform="translate(0, 4)">
+    <rect x="56" y="56" width="400" height="400" rx="96" ry="96"
+          fill="none" stroke="#0369A1" stroke-width="44" />
+
+    <g fill="#0369A1">
+      <rect x="124" y="150" width="264" height="44" rx="22" ry="22" />
+      <rect x="124" y="222" width="216" height="44" rx="22" ry="22" />
+      <rect x="124" y="294" width="264" height="44" rx="22" ry="22" />
+      <rect x="196" y="366" width="192" height="44" rx="22" ry="22" />
+    </g>
+  </g>
+
+  <!-- ===== Wordmark ===== -->
+  <!-- Baselines chosen so "FP&A" cap-height and the descriptor share a baseline
+       at y=200, which is the vertical centre of the 512-tall mark. -->
+  <text class="primary" x="480" y="200" font-size="132" letter-spacing="-1">FP&amp;A</text>
+
+  <text class="neutral" x="482" y="266" font-size="58" letter-spacing="0.4">Month-End Copilot</text>
+
+  <!-- Clear-space rule, shown only when this file is opened for editing.
+       Remove or hide this group before using the asset. -->
+  <g id="guides" opacity="0.28" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#64748B">
+    <line x1="456" y1="40" x2="456" y2="480" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8 8" />
+    <text x="470" y="506">80u clear space — guides only, remove before use</text>
+  </g>
+</svg>

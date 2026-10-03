@@ -1,0 +1,6 @@
+account_code,account_name,department,amount,period
+4100,Product Sales,Commercial,1250000.00,2026-P08
+5100,Raw Materials,Operations,-450000.00,2026-P08
+5200,Direct Labor,Operations,-270000.00,2026-P08
+6100,Office Supplies,G&A,-35000.00,2026-P08
+6200,Travel & Entertainment,Sales,-42000.00,2026-P08

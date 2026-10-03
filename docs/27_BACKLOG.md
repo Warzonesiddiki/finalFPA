@@ -82,14 +82,17 @@
 | `BL-034` | AI endpoint allow-list | Restrict AI calls to specific hosts | Multi-provider support lands (the endpoint is already a single configured value) | S | `13` §15 | On trigger (small win) |
 | `BL-035` | In-app authentication, RBAC, multi-user | Server-dependent accounts and roles | The product gains a shared/server mode (explicitly out today, `DEC-010`; duplicates `BL-004`/`BL-005` intent) | L | `13` §15 | Post-v1 (with `BL-004`) |
 | `BL-036` | In-app PDF export of dashboards and packs | Render the dashboard views and a pack summary as a PDF without Office | A client workflow needs PDFs without Excel (or print/PDF readiness proves insufficient in practice, superseding `DEC-028`) | M | Addon 1 §N | Post-v1 |
+| `BL-037` | Gradual refactor of existing UI payload DTOs | Migrate legacy inline component DTOs to import directly from `ui/src/api/types.ts` | Refactor sprint or strict contract-enforcement gate | S | `26`, `17` | Phase 6 candidate / On trigger |
+| `BL-038` | Live-DB root-cause isolation hardening | Dedicated session tripwire & process sandboxing preventing background dev scripts from writing to default user DB | Post-pilot root cause investigation into batch-340 writer anomaly (`DEC-052`) | S | `14`, `17` | Phase 6 candidate / Post-pilot |
+| `BL-039` | Rejected-batch audit history manual pruning | Admin-initiated purge of rejected import batch metadata and validation checks older than N days with explicit audit logging | Admin/compliance demand for history cleanup or project storage optimization | S | `04` §11/§15, Task `#01a100d6` | Phase 6 candidate / On trigger |
 
 ### 2.1 Counts at first issue
 
 | View | Counts |
 |---|---|
-| By size | S 4 · M 18 · L 12 |
-| By target | Not planned 2 · On trigger 6 · Phase 6 candidate 11 · Post-v1 15 |
-| Registered | 34 (`BL-001`…`BL-026`, `BL-029`…`BL-036`); `BL-027`/`BL-028` unallocated |
+| By size | S 7 · M 18 · L 12 |
+| By target | Not planned 2 · On trigger 6 · Phase 6 candidate 14 · Post-v1 15 |
+| Registered | 37 (`BL-001`…`BL-026`, `BL-029`…`BL-039`); `BL-027`/`BL-028` unallocated |
 
 ## 3. Views
 
@@ -101,6 +104,7 @@
 | `BL-021` | Commentary carry-forward | Copy last period's text as a draft seed with a version note | Phase 6 |
 | `BL-033` | Windows Hello / TPM unlock | DPAPI already wraps the key; an unlock prompt is the variable | On trigger (client IT mandate) |
 | `BL-034` | AI endpoint allow-list | The endpoint is already a single configured value | On trigger (multi-provider) |
+| `BL-039` | Rejected-batch audit prune | Simple parameterized SQL delete on rejected status + date cutoff with audit event write | Phase 6 candidate / Settings maintenance slice |
 
 ### 3.2 By source of the park
 

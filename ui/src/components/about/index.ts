@@ -1,0 +1,1 @@
+export { AboutDiagnosticsScreen } from './AboutDiagnosticsScreen'

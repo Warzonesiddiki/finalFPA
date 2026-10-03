@@ -1,6 +1,6 @@
 # FP&A Month-End Copilot
 
-**FP&A Month-End Copilot** is a self-contained, offline-first Windows 11 desktop application designed for corporate finance teams. It ingests messy general ledger and operational exports (Microsoft Dynamics 365 plus auxiliary accounting systems), validates and balances them, detects accounting anomalies through an authoritative catalogue of 24 exception rules, powers budget-vs-actual (BvA) drill-down, generates rolling forecasts, and produces board-ready Excel workbooks and PowerPoint management decks.
+**FP&A Month-End Copilot** is a self-contained, offline-first Windows 11 desktop application designed for corporate finance teams. It ingests messy general ledger and operational exports (Microsoft Dynamics 365 plus auxiliary accounting systems), validates and balances them, detects accounting anomalies through an authoritative catalogue of 24 exception rules (`EXC-001` through `EXC-024`), powers budget-vs-actual (BvA) drill-down, generates rolling forecasts, and produces board-ready Excel workbooks and PowerPoint management decks.
 
 ---
 
@@ -17,22 +17,20 @@
 
 ## 2. Current Project Phase
 
-- **Current Phase:** **Phase 0 — Documentation & Specification of Record**
-- **Status:** **Remediated & Verified** (Docs `00`–`30` complete, all six quality gates verified, sample data suite generated).
-- **Next Phase:** **Packaging Spike (`GATE-06`)** → **Phase 1: Ingestion & Core Foundation (`GATE-07`)**.
+- **Current Phase:** **Post-Packaging & Feature Waves Complete (v1.0.0-rc2)**
+- **Status:** **Feature Complete & Verified** (All 24 exception rules implemented, UI screen families built across BvA, Exceptions, Forecast, Reports, Settings, Import History & Mapping Queue, AI Suite, Chart Inventory 12/12, build pipeline & evidence pack verified).
 
 ---
 
 ## 3. How to Open and Navigate the Documentation
 
-All project documentation lives in the [`docs/`](docs/) directory. Start with the index document:
+All project documentation lives in the [`docs/`](docs/) directory. Start with the master index:
 
 1. **Start Here:** Open [`docs/00_INDEX.md`](docs/00_INDEX.md) for the master document map, reading order by role, Addon Coverage Matrix, and Source-of-Truth Matrix.
 2. **For Product & Scope:** Open [`docs/01_PRD.md`](docs/01_PRD.md) and [`docs/02_FUNCTIONAL_SPEC.md`](docs/02_FUNCTIONAL_SPEC.md).
 3. **For Finance & Calculations:** Open [`docs/05_CALCULATION_SPEC.md`](docs/05_CALCULATION_SPEC.md) and [`docs/06_EXCEPTION_RULES_CATALOG.md`](docs/06_EXCEPTION_RULES_CATALOG.md).
 4. **For Architecture & Stack:** Open [`docs/09_TECHNICAL_ARCHITECTURE.md`](docs/09_TECHNICAL_ARCHITECTURE.md) and [`docs/26_API_CONTRACT.md`](docs/26_API_CONTRACT.md).
-5. **For Quality & Verification:** Open [`docs/14_TESTING_QA_PLAN.md`](docs/14_TESTING_QA_PLAN.md) and [`docs/30_DOCUMENTATION_SET_REVIEW_GUIDE.md`](docs/30_DOCUMENTATION_SET_REVIEW_GUIDE.md).
-6. **For Client Review:** Open [`docs/29_CLIENT_REQUIREMENTS_PACK.md`](docs/29_CLIENT_REQUIREMENTS_PACK.md).
+5. **For Quality & Verification:** Open [`docs/14_TESTING_QA_PLAN.md`](docs/14_TESTING_QA_PLAN.md), [`docs/15_BUILD_RUNBOOK.md`](docs/15_BUILD_RUNBOOK.md), and [`docs/28_ACCEPTANCE_UAT_AND_GO_LIVE.md`](docs/28_ACCEPTANCE_UAT_AND_GO_LIVE.md).
 
 ---
 
@@ -42,18 +40,42 @@ All project documentation lives in the [`docs/`](docs/) directory. Start with th
 .
 ├── docs/               # Phase 0 Documentation of Record (Docs 00–30, CHANGELOG, SESSION_LOG)
 ├── audit/              # Independent audit artifacts, findings register, and verification logs
-├── evidence/           # Verification logs, quality gate evidence packs, and test outputs
+├── evidence/           # Phase gate evidence packs, manifests, NFR tables, and defect logs
 ├── sample-data/        # Realistic fictional dataset, generator, templates, and malformed corpus
-├── app/                # Backend Python headless engine (Phase 1+)
-├── ui/                 # Frontend React + TypeScript application (Phase 1+)
-├── tests/              # Test suites, contract tests, and golden fixtures (Phase 1+)
-├── packaging/          # PyInstaller spec and Inno Setup installer scripts (Phase 1+)
-├── scripts/            # Development, test, build, and audit automation scripts
-└── scratch/            # Temporary scratch files and audit working logs
+├── app/                # Backend Python FastAPI engine, rule evaluators, store, and AI client
+├── ui/                 # Frontend React + TypeScript + Vite application
+│   └── e2e/            # Playwright E2E smoke tests
+├── tests/              # Test suites, performance benchmarks, cross-artifact harness, and fixtures
+│   ├── artefacts/      # Cross-artifact consistency test harness
+│   └── perf/           # Performance benchmarks (250k-row rule-run tests)
+├── packaging/          # PyInstaller spec, Inno Setup installer scripts, and icons
+├── scripts/            # Development, test (`scripts/check`), build (`scripts/build`), and audit automation
+└── scratch/            # Temporary scratch files and working logs
 ```
 
 ---
 
-## 5. Advisory Disclaimer
+## 5. Quick Development & Verification Commands
+
+- **Fast Test Suite (excluding slow perf tests):**
+  ```powershell
+  pytest -m "not perf"
+  ```
+- **Performance & Rule-Run Benchmark Suite:**
+  ```powershell
+  pytest -m perf
+  ```
+- **Full Quality Check (format + lint + type + tests):**
+  ```powershell
+  python scripts/check.py
+  ```
+- **PyInstaller Standalone Build & Payload Audit:**
+  ```powershell
+  python scripts/build.py
+  ```
+
+---
+
+## 6. Advisory Disclaimer
 
 > **ADVISORY NOTICE:** FP&A Month-End Copilot is a financial analysis and variance review aid. It does not provide certified accounting opinions, tax advice, or statutory audit assurances. All calculations, reconciliations, exceptions, and AI drafts must be reviewed and approved by a qualified finance professional before presentation to management, external auditors, or regulatory authorities.

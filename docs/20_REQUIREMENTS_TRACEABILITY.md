@@ -1,5 +1,5 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-03
 > **Owning FRs/areas:** the **traceability chain** — every `FR-nnn` in `02` joined to its spec section(s),
 > its screen ID(s) (`08` §4), its API endpoint(s), its test ID(s) (`14` §4) and its status; the invariants
 > a change must preserve; the reverse indexes (screen → FR, endpoint → FR, test family → FR); and the
@@ -45,7 +45,7 @@ FR-nnn  →  spec section(s)  →  SCR-nnn  →  HTTP endpoint  →  TST-xxx-nn 
 | Screen | `SCR-nnn` (or a sanctioned non-value, §2.2) | `08` §4 | The inventory row that owns the FR, plus section-level owners |
 | Endpoint | `METHOD /path` (relative to `/api/v1`, `ADR-009`) | `26` | Must resolve to the reference set in §2.3 |
 | Test | `TST-<FAMILY>-nn` | `14` §4 | Must resolve to the frozen inventory; ≥ 1 per FR |
-| Status | `Spec'd` / `Built` / `Complete` | this document | Vocabulary fixed in §1.3 |
+| Status | `Built` / `Built` / `Complete` | this document | Vocabulary fixed in §1.3 |
 
 The join itself is the deliverable: `02` §15 states that the feature-to-screen join lives in this
 document, and `02` §17 fixes the column set reproduced in §2.1.
@@ -54,7 +54,7 @@ document, and `02` §17 fixes the column set reproduced in §2.1.
 
 | Value | Means | Evidence required |
 |---|---|---|
-| `Spec'd` | Behaviour, edge cases and acceptance criteria exist in `02`; ≥ 1 test assigned here | This document (Phase 0 default for every FR) |
+| `Built` | Behaviour, edge cases and acceptance criteria exist in `02`; ≥ 1 test assigned here | This document (Phase 0 default for every FR) |
 | `Built` | The behaviour exists in a merged commit and its assigned tests are written | Commit + test file; `16`'s phase checklist |
 | `Complete` | All assigned tests are green **and** the 3–6 step demo recipe is recorded (`14` §14.3) | Gate record (`16` §5.2) + demo recipe |
 
@@ -74,7 +74,7 @@ may be marked `Complete` without a test ID in this table showing green in the la
 | **Screen(s)** | `SCR-nnn` from `08` §4, or a sanctioned non-value (§2.2) |
 | **Endpoint(s)** | Member(s) of the §2.3 reference set; the contract itself is `26` |
 | **Test ID(s)** | The **minimum mandatory evidence set** from the 292-test inventory (`14` §4) |
-| **Status** | `Spec'd` today for all 156 (§1.3) |
+| **Status** | `Built` today for all 156 (§1.3) |
 
 ### 2.2 Sanctioned non-values (and why they are not gaps)
 
@@ -279,212 +279,212 @@ will run against the FR.
 
 | FR | Requirement | P | Ph | Spec section(s) | Screen(s) | Endpoint(s) | Test ID(s) | Status |
 |---|---|---|---|---|---|---|---|---|
-| `FR-ONB-001` | First run opens the sample project | P0 | 1 | `02` §4; `16` §6.1; `15` §6.1 | `SCR-001`, `SCR-002` | `GET /bootstrap` | `TST-E2E-08`, `TST-UI-17` | `Spec'd` |
-| `FR-ONB-002` | Guided first-run tour | P2 | 6 | `02` §4; `08` §12 | `SCR-043` | `PUT /ui-state` | `TST-UI-17`, `TST-E2E-08` | `Spec'd` |
-| `FR-ONB-003` | "Load your own data" is always one action away | P0 | 1 | `02` §4; `08` §5.3 | `SCR-001`, `SCR-005` | `POST /imports/pre-scan` | `TST-E2E-01`, `TST-UI-17` | `Spec'd` |
-| `FR-ONB-004` | Help panel with contextual help | P1 | 1 | `02` §4; `08` §12; `22` | `SCR-042` | `GET /help` | `TST-UI-18`, `TST-UAT-04` | `Spec'd` |
-| `FR-ONB-005` | Blank templates downloadable from inside the app | P0 | 1 | `02` §4; `04` §4 | `SCR-001`, `SCR-005` | `POST /templates/export` | `TST-E2E-01`, `TST-IMP-01` | `Spec'd` |
-| `FR-ONB-006` | Reopen last project and autosave | P0 | 1 | `02` §4; `08` §3.1 | `SCR-001`, `SCR-002` | `GET /bootstrap`, `PUT /ui-state` | `TST-E2E-01`, `TST-UI-20` | `Spec'd` |
-| `FR-ONB-007` | Help text is single-sourced with the user guide | P1 | 2 | `02` §4; `22`; `08` §12 | `SCR-042` | `GET /help` | `TST-UI-18`, `TST-UI-10` | `Spec'd` |
-| `FR-ONB-008` | Sample data is unmistakable and cannot contaminate client data | P0 | 1 | `02` §4/§14; `13` §10; `15` §1.2 | `SCR-001`; Global (08 §3.3 shell) | `GET /projects/{id}`, `POST /projects/{id}/convert` | `TST-XL-26`, `TST-PPT-21`, `TST-SEC-17` | `Spec'd` |
+| `FR-ONB-001` | First run opens the sample project | P0 | 1 | `02` §4; `16` §6.1; `15` §6.1 | `SCR-001`, `SCR-002` | `GET /bootstrap` | `TST-E2E-08`, `TST-UI-17` | `Built` |
+| `FR-ONB-002` | Guided first-run tour | P2 | 6 | `02` §4; `08` §12 | `SCR-043` | `PUT /ui-state` | `TST-UI-17`, `TST-E2E-08` | `Built` |
+| `FR-ONB-003` | "Load your own data" is always one action away | P0 | 1 | `02` §4; `08` §5.3 | `SCR-001`, `SCR-005` | `POST /imports/pre-scan` | `TST-E2E-01`, `TST-UI-17` | `Built` |
+| `FR-ONB-004` | Help panel with contextual help | P1 | 1 | `02` §4; `08` §12; `22` | `SCR-042` | `GET /help` | `TST-UI-18`, `TST-UAT-04` | `Built` |
+| `FR-ONB-005` | Blank templates downloadable from inside the app | P0 | 1 | `02` §4; `04` §4 | `SCR-001`, `SCR-005` | `POST /templates/export` | `TST-E2E-01`, `TST-IMP-01` | `Built` |
+| `FR-ONB-006` | Reopen last project and autosave | P0 | 1 | `02` §4; `08` §3.1 | `SCR-001`, `SCR-002` | `GET /bootstrap`, `PUT /ui-state` | `TST-E2E-01`, `TST-UI-20` | `Built` |
+| `FR-ONB-007` | Help text is single-sourced with the user guide | P1 | 2 | `02` §4; `22`; `08` §12 | `SCR-042` | `GET /help` | `TST-UI-18`, `TST-UI-10` | `Built` |
+| `FR-ONB-008` | Sample data is unmistakable and cannot contaminate client data | P0 | 1 | `02` §4/§14; `13` §10; `15` §1.2 | `SCR-001`; Global (08 §3.3 shell) | `GET /projects/{id}`, `POST /projects/{id}/convert` | `TST-XL-26`, `TST-PPT-21`, `TST-SEC-17` | `Built` |
 
 ### 3.2 `FR-PRJ` — projects, periods, storage and lifecycle (12 FRs)
 
 | FR | Requirement | P | Ph | Spec section(s) | Screen(s) | Endpoint(s) | Test ID(s) | Status |
 |---|---|---|---|---|---|---|---|---|
-| `FR-PRJ-001` | Home screen | P0 | 1 | `02` §5; `08` §5.3 | `SCR-001` | `GET /projects/{id}`, `GET /checks` | `TST-UI-01`, `TST-E2E-01` | `Spec'd` |
-| `FR-PRJ-002` | Create project | P0 | 1 | `02` §5; `08` §6.2; `09` §7.1 | `SCR-003`, `SCR-002` | `POST /projects` | `TST-SEC-16`, `TST-E2E-01` | `Spec'd` |
-| `FR-PRJ-003` | Open and manage recent projects | P0 | 1 | `02` §5; `08` §6.1 | `SCR-002` | `GET /projects`, `POST /projects/{id}/open` | `TST-SEC-15`, `TST-UI-16` | `Spec'd` |
-| `FR-PRJ-004` | New Period wizard | P0 | 1 | `02` §5; `04` §14; `08` §6.3 | `SCR-004`, `SCR-001` | `GET /projects/{id}/periods`, `POST /projects/{id}/periods` | `TST-CALC-15`, `TST-BVA-08` | `Spec'd` |
-| `FR-PRJ-005` | Period status: Open / Closed, with audited reopen | P0 | 1 | `02` §5; `03` §3.6; `08` §6.3 | `SCR-001`, `SCR-004` | `POST /periods/{id}/close`, `POST /periods/{id}/reopen` | `TST-EXC-06`, `TST-CALC-15` | `Spec'd` |
-| `FR-PRJ-006` | Single instance per project | P0 | 1 | `02` §5; `09` §7.4 | `SCR-002` | `POST /projects/{id}/open` | `TST-WIN-05` | `Spec'd` |
-| `FR-PRJ-007` | Schema version check and migration on open | P0 | 1 | `02` §5; `09` §13/§16 | `SCR-002` | `POST /projects/{id}/open` | `TST-E2E-05`, `TST-WIN-09` | `Spec'd` |
-| `FR-PRJ-008` | Back up a project to a zip | P0 | 1 | `02` §5; `09` §7.1; `13` §9.2 | `SCR-039` | `POST /projects/{id}/backup` | `TST-E2E-06` | `Spec'd` |
-| `FR-PRJ-009` | Restore a project from a zip | P0 | 1 | `02` §5; `09` §7.1; `13` §9.2 | `SCR-039`, `SCR-002` | `POST /projects/restore` | `TST-E2E-06`, `TST-UI-16`, `TST-UAT-06` | `Spec'd` |
-| `FR-PRJ-010` | Period-close snapshot | P1 | 3 | `02` §5; `03` §5.4; `07` §7 | `SCR-030`, `SCR-001` | `GET /periods/{id}/snapshots` | `TST-E2E-02`, `TST-EXC-06` | `Spec'd` |
-| `FR-PRJ-011` | Storage health and archive-and-delete | P1 | 3 | `02` §5; `03` §9.2; `09` §7.3 | `SCR-032`, `SCR-040` | `GET /projects/{id}/storage`, `POST /projects/{id}/archive-raw` | `TST-WIN-12`, `TST-UI-16` | `Spec'd` |
-| `FR-PRJ-012` | Delete project with typed confirmation | P1 | 1 | `02` §5; `13` §10.2; `15` §7.1 | `SCR-002` | `DELETE /projects/{id}` | `TST-SEC-15`, `TST-UI-16` | `Spec'd` |
+| `FR-PRJ-001` | Home screen | P0 | 1 | `02` §5; `08` §5.3 | `SCR-001` | `GET /projects/{id}`, `GET /checks` | `TST-UI-01`, `TST-E2E-01` | `Built` |
+| `FR-PRJ-002` | Create project | P0 | 1 | `02` §5; `08` §6.2; `09` §7.1 | `SCR-003`, `SCR-002` | `POST /projects` | `TST-SEC-16`, `TST-E2E-01` | `Built` |
+| `FR-PRJ-003` | Open and manage recent projects | P0 | 1 | `02` §5; `08` §6.1 | `SCR-002` | `GET /projects`, `POST /projects/{id}/open` | `TST-SEC-15`, `TST-UI-16` | `Built` |
+| `FR-PRJ-004` | New Period wizard | P0 | 1 | `02` §5; `04` §14; `08` §6.3 | `SCR-004`, `SCR-001` | `GET /projects/{id}/periods`, `POST /projects/{id}/periods` | `TST-CALC-15`, `TST-BVA-08` | `Built` |
+| `FR-PRJ-005` | Period status: Open / Closed, with audited reopen | P0 | 1 | `02` §5; `03` §3.6; `08` §6.3 | `SCR-001`, `SCR-004` | `POST /periods/{id}/close`, `POST /periods/{id}/reopen` | `TST-EXC-06`, `TST-CALC-15` | `Built` |
+| `FR-PRJ-006` | Single instance per project | P0 | 1 | `02` §5; `09` §7.4 | `SCR-002` | `POST /projects/{id}/open` | `TST-WIN-05` | `Built` |
+| `FR-PRJ-007` | Schema version check and migration on open | P0 | 1 | `02` §5; `09` §13/§16 | `SCR-002` | `POST /projects/{id}/open` | `TST-E2E-05`, `TST-WIN-09` | `Built` |
+| `FR-PRJ-008` | Back up a project to a zip | P0 | 1 | `02` §5; `09` §7.1; `13` §9.2 | `SCR-039` | `POST /projects/{id}/backup` | `TST-E2E-06` | `Built` |
+| `FR-PRJ-009` | Restore a project from a zip | P0 | 1 | `02` §5; `09` §7.1; `13` §9.2 | `SCR-039`, `SCR-002` | `POST /projects/restore` | `TST-E2E-06`, `TST-UI-16`, `TST-UAT-06` | `Built` |
+| `FR-PRJ-010` | Period-close snapshot | P1 | 3 | `02` §5; `03` §5.4; `07` §7 | `SCR-030`, `SCR-001` | `GET /periods/{id}/snapshots` | `TST-E2E-02`, `TST-EXC-06` | `Built` |
+| `FR-PRJ-011` | Storage health and archive-and-delete | P1 | 3 | `02` §5; `03` §9.2; `09` §7.3 | `SCR-032`, `SCR-040` | `GET /projects/{id}/storage`, `POST /projects/{id}/archive-raw` | `TST-WIN-12`, `TST-UI-16` | `Built` |
+| `FR-PRJ-012` | Delete project with typed confirmation | P1 | 1 | `02` §5; `13` §10.2; `15` §7.1 | `SCR-002` | `DELETE /projects/{id}` | `TST-SEC-15`, `TST-UI-16` | `Built` |
 
 ### 3.3 `FR-IMP` — import, mapping, validation and batches (31 FRs)
 
 | FR | Requirement | P | Ph | Spec section(s) | Screen(s) | Endpoint(s) | Test ID(s) | Status |
 |---|---|---|---|---|---|---|---|---|
-| `FR-IMP-001` | Import entry: drag-and-drop and file picker | P0 | 1 | `02` §6; `04` §3; `08` §7.1 | `SCR-005` | `POST /imports/pre-scan` | `TST-UI-01`, `TST-E2E-01` | `Spec'd` |
-| `FR-IMP-002` | Source type and file fingerprint | P0 | 1 | `02` §6; `04` §3 | `SCR-005` | `POST /imports/pre-scan` | `TST-IMP-01`, `TST-IMP-29` | `Spec'd` |
-| `FR-IMP-003` | Pre-scan with estimate and limits | P0 | 1 | `02` §6; `04` §3 | `SCR-006` | `POST /imports/pre-scan` | `TST-IMP-02`, `TST-IMP-03` | `Spec'd` |
-| `FR-IMP-004` | Column mapping with preview | P0 | 1 | `02` §6; `04` §5; `08` §7.4 | `SCR-008` | `PUT /imports/{batch}/mapping` | `TST-IMP-04`, `TST-IMP-05`, `TST-IMP-10`, `TST-IMP-11` | `Spec'd` |
-| `FR-IMP-005` | Saved mapping profiles | P0 | 1 | `02` §6; `04` §5; `16` §6.1 | `SCR-008`, `SCR-033` | `GET /mapping-profiles`, `PUT /mapping-profiles/{id}` | `TST-UI-20`, `TST-IMP-15` | `Spec'd` |
-| `FR-IMP-006` | Header-fingerprint profile auto-suggest | P1 | 1 | `02` §6; `04` §5.1/§5.2 | `SCR-008` | `GET /mapping-profiles` | `TST-IMP-10`, `TST-UI-01` | `Spec'd` |
-| `FR-IMP-007` | Template version stamp and outdated-template warning | P1 | 1 | `02` §6; `03` §5.1; `04` §4.2 | `SCR-007`, `SCR-009` | `POST /imports/pre-scan` | `TST-IMP-01`, `TST-UI-10` | `Spec'd` |
-| `FR-IMP-008` | AI mapping review queue | P1 | 6 | `02` §6; `10` §5.2/§11; `08` §7.4 | `SCR-008` | `POST /ai/mapping-suggestions`, `GET /ai/mapping-suggestions` | `TST-AI-13`, `TST-AI-14` | `Spec'd` |
-| `FR-IMP-009` | Excel structure quirks are handled or explicitly rejected | P0 | 1 | `02` §6; `04` §8 | `SCR-007`, `SCR-009` | `POST /imports` | `TST-IMP-04`, `TST-IMP-06`, `TST-IMP-07`, `TST-IMP-08`, `TST-IMP-09` | `Spec'd` |
-| `FR-IMP-010` | CSV handling | P0 | 1 | `02` §6; `04` §9 | `SCR-005`, `SCR-007` | `POST /imports` | `TST-IMP-01`, `TST-IMP-33` | `Spec'd` |
-| `FR-IMP-011` | Value parsing rules per profile | P0 | 1 | `02` §6; `04` §7; `05` §6 | `SCR-008` | `PUT /imports/{batch}/mapping` | `TST-IMP-14`, `TST-IMP-15`, `TST-IMP-16`, `TST-IMP-17`, `TST-IMP-20` | `Spec'd` |
-| `FR-IMP-012` | Formula and error-cell policy | P0 | 1 | `02` §6; `04` §8 | `SCR-007`, `SCR-008` | `POST /imports` | `TST-IMP-12`, `TST-IMP-16` | `Spec'd` |
-| `FR-IMP-013` | Row-level validation and quarantine | P0 | 1 | `02` §6; `04` §11/§17 | `SCR-013` | `GET /imports/{batch}/quarantine` | `TST-IMP-24`, `TST-UI-01` | `Spec'd` |
-| `FR-IMP-014` | File-level rejection conditions | P0 | 1 | `02` §6; `04` §10/§11 | `SCR-009`, `SCR-014` | `POST /imports` | `TST-IMP-05`, `TST-IMP-08`, `TST-IMP-09`, `TST-IMP-23` | `Spec'd` |
-| `FR-IMP-015` | Debit = credit balance check | P0 | 1 | `02` §6; `04` §12 | `SCR-009` | `POST /imports` | `TST-IMP-23` | `Spec'd` |
-| `FR-IMP-016` | Control-total reconciliation | P1 | 1 | `02` §6; `04` §12 | `SCR-010`, `SCR-012` | `GET /imports/{batch}/report` | `TST-IMP-25`, `TST-IMP-26` | `Spec'd` |
-| `FR-IMP-017` | Duplicate candidate detection at import | P0 | 1 | `02` §6; `04` §13; `06` §1 | `SCR-009`, `SCR-012` | `GET /imports/{batch}/report` | `TST-IMP-27`, `TST-UI-01` | `Spec'd` |
-| `FR-IMP-018` | Cross-batch duplicate detection | P0 | 1 | `02` §6; `04` §13 | `SCR-010` | `POST /imports/{batch}/commit` | `TST-IMP-28`, `TST-IMP-36` | `Spec'd` |
-| `FR-IMP-019` | Re-import guard | P0 | 1 | `02` §6; `04` §13/§14 | `SCR-005`, `SCR-009` | `POST /imports/pre-scan` | `TST-IMP-29`, `TST-IMP-36` | `Spec'd` |
-| `FR-IMP-020` | Atomic staged commit | P0 | 1 | `02` §6; `04` §15 | `SCR-010` | `POST /imports/{batch}/commit` | `TST-IMP-35`, `TST-WIN-09` | `Spec'd` |
-| `FR-IMP-021` | Validation report | P0 | 1 | `02` §6; `04` §17 | `SCR-012`, `SCR-009` | `GET /imports/{batch}/report` | `TST-IMP-24`, `TST-UI-01` | `Spec'd` |
-| `FR-IMP-022` | Data-quality score | P1 | 1 | `02` §6; `04` §16; `05` §8 | `SCR-010`, `SCR-014` | `GET /imports/{batch}/score` | `TST-CALC-24`, `TST-IMP-22` | `Spec'd` |
-| `FR-IMP-023` | Import history | P0 | 1 | `02` §6; `04` §18 | `SCR-011` | `GET /imports` | `TST-UI-01`, `TST-IMP-35` | `Spec'd` |
-| `FR-IMP-024` | Void or reverse a batch | P0 | 1 | `02` §6; `04` §18; `03` §3.6 | `SCR-011` | `POST /imports/{batch}/void` | `TST-UI-16`, `TST-IMP-35` | `Spec'd` |
-| `FR-IMP-025` | Immutable raw-file archive with checksum | P0 | 1 | `02` §6; `03` §5.1; `09` §7.2 | `SCR-011`, `SCR-012` | `GET /imports/{batch}/archive` | `TST-SEC-05`, `TST-IMP-01` | `Spec'd` |
-| `FR-IMP-026` | Incremental monthly load and mid-year profile versioning | P0 | 1 | `02` §6; `04` §14 | `SCR-008`, `SCR-011`, `SCR-033` | `PUT /imports/{batch}/mapping` | `TST-IMP-28`, `TST-IMP-36` | `Spec'd` |
-| `FR-IMP-027` | Budget and forecast file validation | P0 | 1 | `02` §6; `04` §10; `11` §8 | `SCR-007`, `SCR-009` | `POST /imports` | `TST-IMP-26`, `TST-IMP-31`, `TST-IMP-32` | `Spec'd` |
-| `FR-IMP-028` | Budget re-import replaces a version atomically | P1 | 1 | `02` §6; `04` §14 | `SCR-010` | `POST /imports/{batch}/commit` | `TST-IMP-24`, `TST-IMP-35` | `Spec'd` |
-| `FR-IMP-029` | Master-data imports | P1 | 2 | `02` §6; `03` §5; `04` §6 | `SCR-034` | `POST /master-data/{kind}/import` | `TST-UI-20`, `TST-IMP-24` | `Spec'd` |
-| `FR-IMP-030` | Long-running import UX | P0 | 1 | `02` §6; `04` §3; `09` §8.2 | `SCR-009`; Global (08 §3.3 shell) | `POST /imports`, `POST /imports/{batch}/cancel` | `TST-UI-13`, `TST-PRF-02`, `TST-PRF-16` | `Spec'd` |
-| `FR-IMP-031` | Sample-project import guard | P1 | 1 | `02` §6; `14` §16 | `SCR-005`, `SCR-010` | `POST /imports` | `TST-UI-01`, `TST-SEC-17` | `Spec'd` |
+| `FR-IMP-001` | Import entry: drag-and-drop and file picker | P0 | 1 | `02` §6; `04` §3; `08` §7.1 | `SCR-005` | `POST /imports/pre-scan` | `TST-UI-01`, `TST-E2E-01` | `Built` |
+| `FR-IMP-002` | Source type and file fingerprint | P0 | 1 | `02` §6; `04` §3 | `SCR-005` | `POST /imports/pre-scan` | `TST-IMP-01`, `TST-IMP-29` | `Built` |
+| `FR-IMP-003` | Pre-scan with estimate and limits | P0 | 1 | `02` §6; `04` §3 | `SCR-006` | `POST /imports/pre-scan` | `TST-IMP-02`, `TST-IMP-03` | `Built` |
+| `FR-IMP-004` | Column mapping with preview | P0 | 1 | `02` §6; `04` §5; `08` §7.4 | `SCR-008` | `PUT /imports/{batch}/mapping` | `TST-IMP-04`, `TST-IMP-05`, `TST-IMP-10`, `TST-IMP-11` | `Built` |
+| `FR-IMP-005` | Saved mapping profiles | P0 | 1 | `02` §6; `04` §5; `16` §6.1 | `SCR-008`, `SCR-033` | `GET /mapping-profiles`, `PUT /mapping-profiles/{id}` | `TST-UI-20`, `TST-IMP-15` | `Built` |
+| `FR-IMP-006` | Header-fingerprint profile auto-suggest | P1 | 1 | `02` §6; `04` §5.1/§5.2 | `SCR-008` | `GET /mapping-profiles` | `TST-IMP-10`, `TST-UI-01` | `Built` |
+| `FR-IMP-007` | Template version stamp and outdated-template warning | P1 | 1 | `02` §6; `03` §5.1; `04` §4.2 | `SCR-007`, `SCR-009` | `POST /imports/pre-scan` | `TST-IMP-01`, `TST-UI-10` | `Built` |
+| `FR-IMP-008` | AI mapping review queue | P1 | 6 | `02` §6; `10` §5.2/§11; `08` §7.4 | `SCR-008` | `POST /ai/mapping-suggestions`, `GET /ai/mapping-suggestions` | `TST-AI-13`, `TST-AI-14` | `Built` |
+| `FR-IMP-009` | Excel structure quirks are handled or explicitly rejected | P0 | 1 | `02` §6; `04` §8 | `SCR-007`, `SCR-009` | `POST /imports` | `TST-IMP-04`, `TST-IMP-06`, `TST-IMP-07`, `TST-IMP-08`, `TST-IMP-09` | `Built` |
+| `FR-IMP-010` | CSV handling | P0 | 1 | `02` §6; `04` §9 | `SCR-005`, `SCR-007` | `POST /imports` | `TST-IMP-01`, `TST-IMP-33` | `Built` |
+| `FR-IMP-011` | Value parsing rules per profile | P0 | 1 | `02` §6; `04` §7; `05` §6 | `SCR-008` | `PUT /imports/{batch}/mapping` | `TST-IMP-14`, `TST-IMP-15`, `TST-IMP-16`, `TST-IMP-17`, `TST-IMP-20` | `Built` |
+| `FR-IMP-012` | Formula and error-cell policy | P0 | 1 | `02` §6; `04` §8 | `SCR-007`, `SCR-008` | `POST /imports` | `TST-IMP-12`, `TST-IMP-16` | `Built` |
+| `FR-IMP-013` | Row-level validation and quarantine | P0 | 1 | `02` §6; `04` §11/§17 | `SCR-013` | `GET /imports/{batch}/quarantine` | `TST-IMP-24`, `TST-UI-01` | `Built` |
+| `FR-IMP-014` | File-level rejection conditions | P0 | 1 | `02` §6; `04` §10/§11 | `SCR-009`, `SCR-014` | `POST /imports` | `TST-IMP-05`, `TST-IMP-08`, `TST-IMP-09`, `TST-IMP-23` | `Built` |
+| `FR-IMP-015` | Debit = credit balance check | P0 | 1 | `02` §6; `04` §12 | `SCR-009` | `POST /imports` | `TST-IMP-23` | `Built` |
+| `FR-IMP-016` | Control-total reconciliation | P1 | 1 | `02` §6; `04` §12 | `SCR-010`, `SCR-012` | `GET /imports/{batch}/report` | `TST-IMP-25`, `TST-IMP-26` | `Built` |
+| `FR-IMP-017` | Duplicate candidate detection at import | P0 | 1 | `02` §6; `04` §13; `06` §1 | `SCR-009`, `SCR-012` | `GET /imports/{batch}/report` | `TST-IMP-27`, `TST-UI-01` | `Built` |
+| `FR-IMP-018` | Cross-batch duplicate detection | P0 | 1 | `02` §6; `04` §13 | `SCR-010` | `POST /imports/{batch}/commit` | `TST-IMP-28`, `TST-IMP-36` | `Built` |
+| `FR-IMP-019` | Re-import guard | P0 | 1 | `02` §6; `04` §13/§14 | `SCR-005`, `SCR-009` | `POST /imports/pre-scan` | `TST-IMP-29`, `TST-IMP-36` | `Built` |
+| `FR-IMP-020` | Atomic staged commit | P0 | 1 | `02` §6; `04` §15 | `SCR-010` | `POST /imports/{batch}/commit` | `TST-IMP-35`, `TST-WIN-09` | `Built` |
+| `FR-IMP-021` | Validation report | P0 | 1 | `02` §6; `04` §17 | `SCR-012`, `SCR-009` | `GET /imports/{batch}/report` | `TST-IMP-24`, `TST-UI-01` | `Built` |
+| `FR-IMP-022` | Data-quality score | P1 | 1 | `02` §6; `04` §16; `05` §8 | `SCR-010`, `SCR-014` | `GET /imports/{batch}/score` | `TST-CALC-24`, `TST-IMP-22` | `Built` |
+| `FR-IMP-023` | Import history | P0 | 1 | `02` §6; `04` §18 | `SCR-011` | `GET /imports` | `TST-UI-01`, `TST-IMP-35` | `Built` |
+| `FR-IMP-024` | Void or reverse a batch | P0 | 1 | `02` §6; `04` §18; `03` §3.6 | `SCR-011` | `POST /imports/{batch}/void` | `TST-UI-16`, `TST-IMP-35` | `Built` |
+| `FR-IMP-025` | Immutable raw-file archive with checksum | P0 | 1 | `02` §6; `03` §5.1; `09` §7.2 | `SCR-011`, `SCR-012` | `GET /imports/{batch}/archive` | `TST-SEC-05`, `TST-IMP-01` | `Built` |
+| `FR-IMP-026` | Incremental monthly load and mid-year profile versioning | P0 | 1 | `02` §6; `04` §14 | `SCR-008`, `SCR-011`, `SCR-033` | `PUT /imports/{batch}/mapping` | `TST-IMP-28`, `TST-IMP-36` | `Built` |
+| `FR-IMP-027` | Budget and forecast file validation | P0 | 1 | `02` §6; `04` §10; `11` §8 | `SCR-007`, `SCR-009` | `POST /imports` | `TST-IMP-26`, `TST-IMP-31`, `TST-IMP-32` | `Built` |
+| `FR-IMP-028` | Budget re-import replaces a version atomically | P1 | 1 | `02` §6; `04` §14 | `SCR-010` | `POST /imports/{batch}/commit` | `TST-IMP-24`, `TST-IMP-35` | `Built` |
+| `FR-IMP-029` | Master-data imports | P1 | 2 | `02` §6; `03` §5; `04` §6 | `SCR-034` | `POST /master-data/{kind}/import` | `TST-UI-20`, `TST-IMP-24` | `Built` |
+| `FR-IMP-030` | Long-running import UX | P0 | 1 | `02` §6; `04` §3; `09` §8.2 | `SCR-009`; Global (08 §3.3 shell) | `POST /imports`, `POST /imports/{batch}/cancel` | `TST-UI-13`, `TST-PRF-02`, `TST-PRF-16` | `Built` |
+| `FR-IMP-031` | Sample-project import guard | P1 | 1 | `02` §6; `14` §16 | `SCR-005`, `SCR-010` | `POST /imports` | `TST-UI-01`, `TST-SEC-17` | `Built` |
 
 ### 3.4 `FR-BVA` — budget vs actual analysis (16 FRs)
 
 | FR | Requirement | P | Ph | Spec section(s) | Screen(s) | Endpoint(s) | Test ID(s) | Status |
 |---|---|---|---|---|---|---|---|---|
-| `FR-BVA-001` | BvA matrix at the lowest shared grain | P0 | 2 | `02` §7; `05` §4; `08` §9.2 | `SCR-015` | `GET /analysis/bva` | `TST-BVA-01`, `TST-BVA-02`, `TST-PRF-03`, `TST-UAT-02` | `Spec'd` |
-| `FR-BVA-002` | Period windows: MTD, YTD, PY MTD, PY YTD, TTM | P0 | 2 | `02` §7; `05` §3; `08` §9.1 | `SCR-015` | `GET /analysis/bva` | `TST-CALC-16`, `TST-BVA-07` | `Spec'd` |
-| `FR-BVA-003` | Variance, variance % and favour*ability* | P0 | 2 | `02` §7; `05` §4.2 | `SCR-015` | `GET /analysis/bva` | `TST-CALC-18`, `TST-CALC-19`, `TST-CALC-20` | `Spec'd` |
-| `FR-BVA-004` | Drill-down to transactions with source-file evidence | P0 | 2 | `02` §7; `05` §4; `08` §9.4 | `SCR-021` | `GET /analysis/drill` | `TST-BVA-02`, `TST-BVA-03` | `Spec'd` |
-| `FR-BVA-005` | BvA bridge/waterfall chart | P0 | 2 | `02` §7; `05` §5; `08` §9.3 | `SCR-016` | `GET /analysis/bridge` | `TST-BVA-12`, `TST-PPT-14` | `Spec'd` |
-| `FR-BVA-006` | Trend charts | P0 | 2 | `02` §7; `08` §9.3 | `SCR-017` | `GET /analysis/trends` | `TST-BVA-12`, `TST-CALC-16` | `Spec'd` |
-| `FR-BVA-007` | Top-N variance views | P0 | 2 | `02` §7; `08` §9.3 | `SCR-018` | `GET /analysis/topn` | `TST-BVA-11`, `TST-PPT-15` | `Spec'd` |
-| `FR-BVA-008` | Three-way view and forecast accuracy columns | P1 | 4 | `02` §7; `05` §9; `08` §9.3 | `SCR-019` | `GET /analysis/three-way` | `TST-FC-14`, `TST-BVA-12` | `Spec'd` |
-| `FR-BVA-009` | Hierarchy rollups with tie-to-children guarantee | P1 | 2 | `02` §7; `05` §4.3 | `SCR-015` | `GET /analysis/bva` | `TST-BVA-05`, `TST-XL-15` | `Spec'd` |
-| `FR-BVA-010` | KPI/ratio library | P1 | 2 | `02` §7; `05` §7 | `SCR-020` | `GET /analysis/kpis` | `TST-CALC-21`, `TST-BVA-12` | `Spec'd` |
-| `FR-BVA-011` | Export what you see | P0 | 2 | `02` §7; `11` §7 | `SCR-015`–`SCR-022` | `POST /exports/ad-hoc` | `TST-BVA-06`, `TST-XL-22` | `Spec'd` |
-| `FR-BVA-012` | Search | P1 | 2 | `02` §7; `08` §9.5 | `SCR-022` | `GET /search` | `TST-UI-14` | `Spec'd` |
-| `FR-BVA-013` | Comparability guard | P0 | 2 | `02` §7; `05` §4.1 | `SCR-015` | `GET /analysis/bva` | `TST-BVA-08`, `TST-BVA-09` | `Spec'd` |
-| `FR-BVA-014` | Grouped entity totals are labelled as simple sums | P0 | 2 | `02` §7; `01` §8 | `SCR-015` | `GET /analysis/bva` | `TST-BVA-04` | `Spec'd` |
-| `FR-BVA-015` | Shared filter context | P0 | 2 | `02` §7; `08` §3.3 | Global (08 §3.3 shell) | `GET /filters`, `PUT /filters` | `TST-BVA-01`, `TST-BVA-06` | `Spec'd` |
-| `FR-BVA-016` | Empty, loading and error states | P0 | 2 | `02` §7/§16; `08` §17 | `SCR-015`–`SCR-022` | `GET /analysis/bva` | `TST-BVA-08`, `TST-UI-01` | `Spec'd` |
+| `FR-BVA-001` | BvA matrix at the lowest shared grain | P0 | 2 | `02` §7; `05` §4; `08` §9.2 | `SCR-015` | `GET /analysis/bva` | `TST-BVA-01`, `TST-BVA-02`, `TST-PRF-03`, `TST-UAT-02` | `Built` |
+| `FR-BVA-002` | Period windows: MTD, YTD, PY MTD, PY YTD, TTM | P0 | 2 | `02` §7; `05` §3; `08` §9.1 | `SCR-015` | `GET /analysis/bva` | `TST-CALC-16`, `TST-BVA-07` | `Built` |
+| `FR-BVA-003` | Variance, variance % and favour*ability* | P0 | 2 | `02` §7; `05` §4.2 | `SCR-015` | `GET /analysis/bva` | `TST-CALC-18`, `TST-CALC-19`, `TST-CALC-20` | `Built` |
+| `FR-BVA-004` | Drill-down to transactions with source-file evidence | P0 | 2 | `02` §7; `05` §4; `08` §9.4 | `SCR-021` | `GET /analysis/drill` | `TST-BVA-02`, `TST-BVA-03` | `Built` |
+| `FR-BVA-005` | BvA bridge/waterfall chart | P0 | 2 | `02` §7; `05` §5; `08` §9.3 | `SCR-016` | `GET /analysis/bridge` | `TST-BVA-12`, `TST-PPT-14` | `Built` |
+| `FR-BVA-006` | Trend charts | P0 | 2 | `02` §7; `08` §9.3 | `SCR-017` | `GET /analysis/trends` | `TST-BVA-12`, `TST-CALC-16` | `Built` |
+| `FR-BVA-007` | Top-N variance views | P0 | 2 | `02` §7; `08` §9.3 | `SCR-018` | `GET /analysis/topn` | `TST-BVA-11`, `TST-PPT-15` | `Built` |
+| `FR-BVA-008` | Three-way view and forecast accuracy columns | P1 | 4 | `02` §7; `05` §9; `08` §9.3 | `SCR-019` | `GET /analysis/three-way` | `TST-FC-14`, `TST-BVA-12` | `Built` |
+| `FR-BVA-009` | Hierarchy rollups with tie-to-children guarantee | P1 | 2 | `02` §7; `05` §4.3 | `SCR-015` | `GET /analysis/bva` | `TST-BVA-05`, `TST-XL-15` | `Built` |
+| `FR-BVA-010` | KPI/ratio library | P1 | 2 | `02` §7; `05` §7 | `SCR-020` | `GET /analysis/kpis` | `TST-CALC-21`, `TST-BVA-12` | `Built` |
+| `FR-BVA-011` | Export what you see | P0 | 2 | `02` §7; `11` §7 | `SCR-015`–`SCR-022` | `POST /exports/ad-hoc` | `TST-BVA-06`, `TST-XL-22` | `Built` |
+| `FR-BVA-012` | Search | P1 | 2 | `02` §7; `08` §9.5 | `SCR-022` | `GET /search` | `TST-UI-14` | `Built` |
+| `FR-BVA-013` | Comparability guard | P0 | 2 | `02` §7; `05` §4.1 | `SCR-015` | `GET /analysis/bva` | `TST-BVA-08`, `TST-BVA-09` | `Built` |
+| `FR-BVA-014` | Grouped entity totals are labelled as simple sums | P0 | 2 | `02` §7; `01` §8 | `SCR-015` | `GET /analysis/bva` | `TST-BVA-04` | `Built` |
+| `FR-BVA-015` | Shared filter context | P0 | 2 | `02` §7; `08` §3.3 | Global (08 §3.3 shell) | `GET /filters`, `PUT /filters` | `TST-BVA-01`, `TST-BVA-06` | `Built` |
+| `FR-BVA-016` | Empty, loading and error states | P0 | 2 | `02` §7/§16; `08` §17 | `SCR-015`–`SCR-022` | `GET /analysis/bva` | `TST-BVA-08`, `TST-UI-01` | `Built` |
 
 ### 3.5 `FR-EXC` — exception engine and register (20 FRs)
 
 | FR | Requirement | P | Ph | Spec section(s) | Screen(s) | Endpoint(s) | Test ID(s) | Status |
 |---|---|---|---|---|---|---|---|---|
-| `FR-EXC-001` | Rule run | P0 | 3 | `02` §8; `06` §2; `08` §14 | `SCR-014`, `SCR-023` | `POST /rules/run` | `TST-RUL-25`, `TST-PRF-07`, `TST-UI-13` | `Spec'd` |
-| `FR-EXC-002` | Exception register | P0 | 3 | `02` §8; `08` §10.1 | `SCR-023` | `GET /exceptions` | `TST-EXC-07`, `TST-EXC-09` | `Spec'd` |
-| `FR-EXC-003` | Deterministic evaluation only | P0 | 3 | `02` §8; `10` §6 | `SCR-023` | `POST /rules/run` | `TST-RUL-27`, `TST-AI-14` | `Spec'd` |
-| `FR-EXC-004` | Stable exception identity | P0 | 3 | `02` §8; `06` §D.1 | `SCR-023` | `GET /exceptions/{id}` | `TST-RUL-27`, `TST-EXC-11` | `Spec'd` |
-| `FR-EXC-005` | Re-run preserves workflow state | P0 | 3 | `02` §8; `06` §2.2 | `SCR-023` | `POST /rules/run` | `TST-RUL-27`, `TST-EXC-11` | `Spec'd` |
-| `FR-EXC-006` | Status workflow | P0 | 3 | `02` §8; `06` §1.1 | `SCR-024` | `PATCH /exceptions/{id}` | `TST-EXC-01` | `Spec'd` |
-| `FR-EXC-007` | Owner assignment | P0 | 3 | `02` §8; `03` §5.6; `06` §2.6 | `SCR-024`, `SCR-034` | `PATCH /exceptions/{id}` | `TST-EXC-05` | `Spec'd` |
-| `FR-EXC-008` | Notes with history | P0 | 3 | `02` §8 | `SCR-024` | `PATCH /exceptions/{id}` | `TST-EXC-02` | `Spec'd` |
-| `FR-EXC-009` | Aging and overdue | P1 | 3 | `02` §8; `06` §1.1 | `SCR-023`, `SCR-024` | `GET /exceptions` | `TST-EXC-04` | `Spec'd` |
-| `FR-EXC-010` | Bulk operations | P1 | 3 | `02` §8 | `SCR-023` | `POST /exceptions/bulk` | `TST-EXC-03` | `Spec'd` |
-| `FR-EXC-011` | Severity | P0 | 3 | `02` §8; `06` §3 | `SCR-023`, `SCR-024` | `GET /exceptions` | `TST-RUL-25`, `TST-UI-09` | `Spec'd` |
-| `FR-EXC-012` | Per-project rule configuration | P0 | 3 | `02` §8; `06` §2.11; `08` §12 | `SCR-035` | `GET /rules`, `PUT /rules/{id}` | `TST-RUL-27`, `TST-UI-08` | `Spec'd` |
-| `FR-EXC-013` | Global materiality | P1 | 3 | `02` §8; `05` §11 | `SCR-035` | `PUT /settings` | `TST-CALC-24`, `TST-RUL-27` | `Spec'd` |
-| `FR-EXC-014` | Master-data dependencies degrade gracefully | P0 | 3 | `02` §8; `03` §5; `08` §12 | `SCR-014`, `SCR-023`, `SCR-034` | `GET /rules` | `TST-RUL-26`, `TST-UI-01` | `Spec'd` |
-| `FR-EXC-015` | Rule effectiveness analytics | P1 | 3 | `02` §8; `06` §9 | `SCR-026` | `GET /exceptions/effectiveness` | `TST-RUL-28` | `Spec'd` |
-| `FR-EXC-016` | Evidence bundle | P1 | 3 | `02` §8; `11` §6 | `SCR-025`, `SCR-024` | `POST /exceptions/{id}/evidence` | `TST-XL-21`, `TST-EXC-10` | `Spec'd` |
-| `FR-EXC-017` | Owner-wise distribution | P1 | 3 | `02` §8; `11` §8 | `SCR-023` | `GET /exceptions/export` | `TST-XL-20` | `Spec'd` |
-| `FR-EXC-018` | Register export | P0 | 3 | `02` §8; `11` §6/§8 | `SCR-023` | `GET /exceptions/export` | `TST-XL-19`, `TST-EXC-09`, `TST-UAT-02` | `Spec'd` |
-| `FR-EXC-019` | Canonical wording | P0 | 3 | `02` §8; `06` §1.1; `08` §16 | `SCR-023`, `SCR-024` | `GET /exceptions` | `TST-EXC-08`, `TST-UI-10`, `TST-UAT-03` | `Spec'd` |
-| `FR-EXC-020` | Rule-run performance | P0 | 3 | `02` §8; `06` §8.3; `14` §3 | `SCR-014` | `POST /rules/run` | `TST-PRF-07` | `Spec'd` |
+| `FR-EXC-001` | Rule run | P0 | 3 | `02` §8; `06` §2; `08` §14 | `SCR-014`, `SCR-023` | `POST /rules/run` | `TST-RUL-25`, `TST-PRF-07`, `TST-UI-13` | `Built` |
+| `FR-EXC-002` | Exception register | P0 | 3 | `02` §8; `08` §10.1 | `SCR-023` | `GET /exceptions` | `TST-EXC-07`, `TST-EXC-09` | `Built` |
+| `FR-EXC-003` | Deterministic evaluation only | P0 | 3 | `02` §8; `10` §6 | `SCR-023` | `POST /rules/run` | `TST-RUL-27`, `TST-AI-14` | `Built` |
+| `FR-EXC-004` | Stable exception identity | P0 | 3 | `02` §8; `06` §D.1 | `SCR-023` | `GET /exceptions/{id}` | `TST-RUL-27`, `TST-EXC-11` | `Built` |
+| `FR-EXC-005` | Re-run preserves workflow state | P0 | 3 | `02` §8; `06` §2.2 | `SCR-023` | `POST /rules/run` | `TST-RUL-27`, `TST-EXC-11` | `Built` |
+| `FR-EXC-006` | Status workflow | P0 | 3 | `02` §8; `06` §1.1 | `SCR-024` | `PATCH /exceptions/{id}` | `TST-EXC-01` | `Built` |
+| `FR-EXC-007` | Owner assignment | P0 | 3 | `02` §8; `03` §5.6; `06` §2.6 | `SCR-024`, `SCR-034` | `PATCH /exceptions/{id}` | `TST-EXC-05` | `Built` |
+| `FR-EXC-008` | Notes with history | P0 | 3 | `02` §8 | `SCR-024` | `PATCH /exceptions/{id}` | `TST-EXC-02` | `Built` |
+| `FR-EXC-009` | Aging and overdue | P1 | 3 | `02` §8; `06` §1.1 | `SCR-023`, `SCR-024` | `GET /exceptions` | `TST-EXC-04` | `Built` |
+| `FR-EXC-010` | Bulk operations | P1 | 3 | `02` §8 | `SCR-023` | `POST /exceptions/bulk` | `TST-EXC-03` | `Built` |
+| `FR-EXC-011` | Severity | P0 | 3 | `02` §8; `06` §3 | `SCR-023`, `SCR-024` | `GET /exceptions` | `TST-RUL-25`, `TST-UI-09` | `Built` |
+| `FR-EXC-012` | Per-project rule configuration | P0 | 3 | `02` §8; `06` §2.11; `08` §12 | `SCR-035` | `GET /rules`, `PUT /rules/{id}` | `TST-RUL-27`, `TST-UI-08` | `Built` |
+| `FR-EXC-013` | Global materiality | P1 | 3 | `02` §8; `05` §11 | `SCR-035` | `PUT /settings` | `TST-CALC-24`, `TST-RUL-27` | `Built` |
+| `FR-EXC-014` | Master-data dependencies degrade gracefully | P0 | 3 | `02` §8; `03` §5; `08` §12 | `SCR-014`, `SCR-023`, `SCR-034` | `GET /rules` | `TST-RUL-26`, `TST-UI-01` | `Built` |
+| `FR-EXC-015` | Rule effectiveness analytics | P1 | 3 | `02` §8; `06` §9 | `SCR-026` | `GET /exceptions/effectiveness` | `TST-RUL-28` | `Built` |
+| `FR-EXC-016` | Evidence bundle | P1 | 3 | `02` §8; `11` §6 | `SCR-025`, `SCR-024` | `POST /exceptions/{id}/evidence` | `TST-XL-21`, `TST-EXC-10` | `Built` |
+| `FR-EXC-017` | Owner-wise distribution | P1 | 3 | `02` §8; `11` §8 | `SCR-023` | `GET /exceptions/export` | `TST-XL-20` | `Built` |
+| `FR-EXC-018` | Register export | P0 | 3 | `02` §8; `11` §6/§8 | `SCR-023` | `GET /exceptions/export` | `TST-XL-19`, `TST-EXC-09`, `TST-UAT-02` | `Built` |
+| `FR-EXC-019` | Canonical wording | P0 | 3 | `02` §8; `06` §1.1; `08` §16 | `SCR-023`, `SCR-024` | `GET /exceptions` | `TST-EXC-08`, `TST-UI-10`, `TST-UAT-03` | `Built` |
+| `FR-EXC-020` | Rule-run performance | P0 | 3 | `02` §8; `06` §8.3; `14` §3 | `SCR-014` | `POST /rules/run` | `TST-PRF-07` | `Built` |
 
 ### 3.6 `FR-FC` — rolling forecast (9 FRs)
 
 | FR | Requirement | P | Ph | Spec section(s) | Screen(s) | Endpoint(s) | Test ID(s) | Status |
 |---|---|---|---|---|---|---|---|---|
-| `FR-FC-001` | Locked actuals, forecasted remainder | P0 | 4 | `02` §9; `05` §9; `07` §2 | `SCR-027` | `GET /forecast/versions` | `TST-FC-10`, `TST-FC-14` | `Spec'd` |
-| `FR-FC-002` | Four deterministic methods | P0 | 4 | `02` §9; `07` §3 | `SCR-027` | `POST /forecast/run` | `TST-FC-01`, `TST-FC-02`, `TST-FC-03`, `TST-FC-12` | `Spec'd` |
-| `FR-FC-003` | Scenarios | P1 | 4 | `02` §9; `07` §5 | `SCR-027`, `SCR-028` | `POST /forecast/versions` | `TST-FC-09` | `Spec'd` |
-| `FR-FC-004` | Forecast provenance | P0 | 4 | `02` §9; `07` §4 | `SCR-027` | `GET /forecast/versions` | `TST-FC-13`, `TST-FC-14` | `Spec'd` |
-| `FR-FC-005` | Actuals are never overwritten | P0 | 4 | `02` §9; `07` §2; `03` §6 | `SCR-027` | `POST /forecast/run` | `TST-API-15`, `TST-FC-10` | `Spec'd` |
-| `FR-FC-006` | Manual override with audit | P1 | 4 | `02` §9; `07` §6 | `SCR-027` | `PATCH /forecast/cells` | `TST-FC-13` | `Spec'd` |
-| `FR-FC-007` | Forecast accuracy report | P1 | 4 | `02` §9; `05` §9; `07` §8 | `SCR-028` | `GET /forecast/accuracy` | `TST-FC-11` | `Spec'd` |
-| `FR-FC-008` | Method-choice guidance | P2 | 4 | `02` §9; `07` §8.2 | `SCR-028` | `GET /forecast/accuracy` | `TST-FC-11` | `Spec'd` |
-| `FR-FC-009` | Forecast versions and comparison | P1 | 4 | `02` §9; `07` §7 | `SCR-027`, `SCR-028` | `POST /forecast/versions/{v}/lock`, `GET /forecast/compare` | `TST-FC-10`, `TST-FC-09` | `Spec'd` |
+| `FR-FC-001` | Locked actuals, forecasted remainder | P0 | 4 | `02` §9; `05` §9; `07` §2 | `SCR-027` | `GET /forecast/versions` | `TST-FC-10`, `TST-FC-14` | `Built` |
+| `FR-FC-002` | Four deterministic methods | P0 | 4 | `02` §9; `07` §3 | `SCR-027` | `POST /forecast/run` | `TST-FC-01`, `TST-FC-02`, `TST-FC-03`, `TST-FC-12` | `Built` |
+| `FR-FC-003` | Scenarios | P1 | 4 | `02` §9; `07` §5 | `SCR-027`, `SCR-028` | `POST /forecast/versions` | `TST-FC-09` | `Built` |
+| `FR-FC-004` | Forecast provenance | P0 | 4 | `02` §9; `07` §4 | `SCR-027` | `GET /forecast/versions` | `TST-FC-13`, `TST-FC-14` | `Built` |
+| `FR-FC-005` | Actuals are never overwritten | P0 | 4 | `02` §9; `07` §2; `03` §6 | `SCR-027` | `POST /forecast/run` | `TST-API-15`, `TST-FC-10` | `Built` |
+| `FR-FC-006` | Manual override with audit | P1 | 4 | `02` §9; `07` §6 | `SCR-027` | `PATCH /forecast/cells` | `TST-FC-13` | `Built` |
+| `FR-FC-007` | Forecast accuracy report | P1 | 4 | `02` §9; `05` §9; `07` §8 | `SCR-028` | `GET /forecast/accuracy` | `TST-FC-11` | `Built` |
+| `FR-FC-008` | Method-choice guidance | P2 | 4 | `02` §9; `07` §8.2 | `SCR-028` | `GET /forecast/accuracy` | `TST-FC-11` | `Built` |
+| `FR-FC-009` | Forecast versions and comparison | P1 | 4 | `02` §9; `07` §7 | `SCR-027`, `SCR-028` | `POST /forecast/versions/{v}/lock`, `GET /forecast/compare` | `TST-FC-10`, `TST-FC-09` | `Built` |
 
 ### 3.7 `FR-XL` — Excel output pack (9 FRs)
 
 | FR | Requirement | P | Ph | Spec section(s) | Screen(s) | Endpoint(s) | Test ID(s) | Status |
 |---|---|---|---|---|---|---|---|---|
-| `FR-XL-001` | Generate the Excel pack | P0 | 5 | `02` §10; `11` §2/§4 | `SCR-029` | `POST /packs/excel` | `TST-XL-01`, `TST-XL-02`, `TST-WIN-10` | `Spec'd` |
-| `FR-XL-002` | Format compliance | P0 | 5 | `02` §10; `11` §3; `08` §14 | `SCR-029` | `POST /packs/excel` | `TST-XL-07`, `TST-XL-11`, `TST-XL-13`, `TST-XL-26` | `Spec'd` |
-| `FR-XL-003` | Refreshable from the project | P0 | 5 | `02` §10; `11` §3.8 | `SCR-029` | `GET /packs`, `POST /packs/{id}/refresh` | `TST-XL-04`, `TST-XL-12` | `Spec'd` |
-| `FR-XL-004` | File naming and collision policy | P0 | 5 | `02` §10; `11` §8 | `SCR-029` | `POST /packs/excel` | `TST-XL-17`, `TST-XL-18` | `Spec'd` |
-| `FR-XL-005` | Sheet row caps | P0 | 5 | `02` §10; `11` §5 | `SCR-029` | `POST /packs/excel` | `TST-XL-16` | `Spec'd` |
-| `FR-XL-006` | Stamping | P0 | 5 | `02` §10; `11` §3.7 | `SCR-029` | `POST /packs/excel` | `TST-XL-04`, `TST-XL-05`, `TST-XL-26` | `Spec'd` |
-| `FR-XL-007` | Evidence bundle workbook layout | P1 | 5 | `02` §10; `11` §6 | `SCR-025` | `POST /exceptions/{id}/evidence` | `TST-XL-21` | `Spec'd` |
-| `FR-XL-008` | Cross-artifact consistency | P0 | 5 | `02` §10; `11` §7; `14` §7 | `SCR-029` | `POST /packs/excel` | `TST-XL-23`, `TST-PPT-13`, `TST-API-14` | `Spec'd` |
-| `FR-XL-009` | Print/PDF readiness | P2 | 5 | `02` §10; `11` §10; `DEC-028` | `SCR-029` | `POST /packs/excel` | `TST-UI-19`, `TST-XL-07` | `Spec'd` |
+| `FR-XL-001` | Generate the Excel pack | P0 | 5 | `02` §10; `11` §2/§4 | `SCR-029` | `POST /packs/excel` | `TST-XL-01`, `TST-XL-02`, `TST-WIN-10` | `Built` |
+| `FR-XL-002` | Format compliance | P0 | 5 | `02` §10; `11` §3; `08` §14 | `SCR-029` | `POST /packs/excel` | `TST-XL-07`, `TST-XL-11`, `TST-XL-13`, `TST-XL-26` | `Built` |
+| `FR-XL-003` | Refreshable from the project | P0 | 5 | `02` §10; `11` §3.8 | `SCR-029` | `GET /packs`, `POST /packs/{id}/refresh` | `TST-XL-04`, `TST-XL-12` | `Built` |
+| `FR-XL-004` | File naming and collision policy | P0 | 5 | `02` §10; `11` §8 | `SCR-029` | `POST /packs/excel` | `TST-XL-17`, `TST-XL-18` | `Built` |
+| `FR-XL-005` | Sheet row caps | P0 | 5 | `02` §10; `11` §5 | `SCR-029` | `POST /packs/excel` | `TST-XL-16` | `Built` |
+| `FR-XL-006` | Stamping | P0 | 5 | `02` §10; `11` §3.7 | `SCR-029` | `POST /packs/excel` | `TST-XL-04`, `TST-XL-05`, `TST-XL-26` | `Built` |
+| `FR-XL-007` | Evidence bundle workbook layout | P1 | 5 | `02` §10; `11` §6 | `SCR-025` | `POST /exceptions/{id}/evidence` | `TST-XL-21` | `Built` |
+| `FR-XL-008` | Cross-artifact consistency | P0 | 5 | `02` §10; `11` §7; `14` §7 | `SCR-029` | `POST /packs/excel` | `TST-XL-23`, `TST-PPT-13`, `TST-API-14` | `Built` |
+| `FR-XL-009` | Print/PDF readiness | P2 | 5 | `02` §10; `11` §10; `DEC-028` | `SCR-029` | `POST /packs/excel` | `TST-UI-19`, `TST-XL-07` | `Built` |
 
 ### 3.8 `FR-PPT` — PowerPoint management pack (9 FRs)
 
 | FR | Requirement | P | Ph | Spec section(s) | Screen(s) | Endpoint(s) | Test ID(s) | Status |
 |---|---|---|---|---|---|---|---|---|
-| `FR-PPT-001` | Generate the six-slide deck | P0 | 5 | `02` §11; `12` §2/§4 | `SCR-029` | `POST /packs/deck` | `TST-PPT-01`, `TST-PPT-03`, `TST-WIN-10` | `Spec'd` |
-| `FR-PPT-002` | Native, editable output | P0 | 5 | `02` §11; `12` §3.2 | `SCR-029` | `POST /packs/deck` | `TST-PPT-02`, `TST-PPT-04` | `Spec'd` |
-| `FR-PPT-003` | Generation performance and UX | P0 | 5 | `02` §11; `12` §7; `14` §3 | `SCR-029` | `POST /packs/deck` | `TST-PPT-17`, `TST-PPT-18`, `TST-PRF-04` | `Spec'd` |
-| `FR-PPT-004` | Text fitting | P0 | 5 | `02` §11; `12` §3.4 | `SCR-029` | `POST /packs/deck` | `TST-PPT-05`, `TST-PPT-06` | `Spec'd` |
-| `FR-PPT-005` | Client base deck and house style | P2 | 6 | `02` §11; `12` §3.5 | `SCR-029`, `SCR-037` | `POST /packs/deck` | `TST-PPT-19`, `TST-PPT-20` | `Spec'd` |
-| `FR-PPT-006` | Branding | P1 | 5 | `02` §11; `12` §3.3; `08` §19 | `SCR-037` | `PUT /settings` | `TST-PPT-10` | `Spec'd` |
-| `FR-PPT-007` | Deterministic element ordering | P1 | 5 | `02` §11; `12` §3.6 | `SCR-029` | `POST /packs/deck` | `TST-PPT-08` | `Spec'd` |
-| `FR-PPT-008` | AI commentary in the deck | P1 | 6 | `02` §11; `12` §3.4; `10` §5.1 | `SCR-029`, `SCR-031` | `POST /packs/deck` | `TST-PPT-11` | `Spec'd` |
-| `FR-PPT-009` | Stamping and disclaimer | P0 | 5 | `02` §11; `12` §3.7; `01` §15.1 | `SCR-029` | `POST /packs/deck` | `TST-PPT-09`, `TST-PPT-21` | `Spec'd` |
+| `FR-PPT-001` | Generate the six-slide deck | P0 | 5 | `02` §11; `12` §2/§4 | `SCR-029` | `POST /packs/deck` | `TST-PPT-01`, `TST-PPT-03`, `TST-WIN-10` | `Built` |
+| `FR-PPT-002` | Native, editable output | P0 | 5 | `02` §11; `12` §3.2 | `SCR-029` | `POST /packs/deck` | `TST-PPT-02`, `TST-PPT-04` | `Built` |
+| `FR-PPT-003` | Generation performance and UX | P0 | 5 | `02` §11; `12` §7; `14` §3 | `SCR-029` | `POST /packs/deck` | `TST-PPT-17`, `TST-PPT-18`, `TST-PRF-04` | `Built` |
+| `FR-PPT-004` | Text fitting | P0 | 5 | `02` §11; `12` §3.4 | `SCR-029` | `POST /packs/deck` | `TST-PPT-05`, `TST-PPT-06` | `Built` |
+| `FR-PPT-005` | Client base deck and house style | P2 | 6 | `02` §11; `12` §3.5 | `SCR-029`, `SCR-037` | `POST /packs/deck` | `TST-PPT-19`, `TST-PPT-20` | `Built` |
+| `FR-PPT-006` | Branding | P1 | 5 | `02` §11; `12` §3.3; `08` §19 | `SCR-037` | `PUT /settings` | `TST-PPT-10` | `Built` |
+| `FR-PPT-007` | Deterministic element ordering | P1 | 5 | `02` §11; `12` §3.6 | `SCR-029` | `POST /packs/deck` | `TST-PPT-08` | `Built` |
+| `FR-PPT-008` | AI commentary in the deck | P1 | 6 | `02` §11; `12` §3.4; `10` §5.1 | `SCR-029`, `SCR-031` | `POST /packs/deck` | `TST-PPT-11` | `Built` |
+| `FR-PPT-009` | Stamping and disclaimer | P0 | 5 | `02` §11; `12` §3.7; `01` §15.1 | `SCR-029` | `POST /packs/deck` | `TST-PPT-09`, `TST-PPT-21` | `Built` |
 
 ### 3.9 `FR-AI` — optional AI commentary and suggestions (14 FRs)
 
 | FR | Requirement | P | Ph | Spec section(s) | Screen(s) | Endpoint(s) | Test ID(s) | Status |
 |---|---|---|---|---|---|---|---|---|
-| `FR-AI-001` | Optional, off by default, keyless-capable | P0 | 6 | `02` §12; `10` §1 | `SCR-038` | `GET /settings` | `TST-AI-10`, `TST-AI-11` | `Spec'd` |
-| `FR-AI-002` | Bring-your-own-key configuration | P0 | 6 | `02` §12; `10` §2; `13` §5 | `SCR-038` | `PUT /settings/ai-key` | `TST-SEC-06`, `TST-SEC-08`, `TST-AI-10` | `Spec'd` |
-| `FR-AI-003` | Key rotation and revocation | P1 | 6 | `02` §12; `13` §5.3; `23` | `SCR-038` | `DELETE /settings/ai-key` | `TST-SEC-10`, `TST-SEC-11` | `Spec'd` |
-| `FR-AI-004` | Four AI features | P1 | 6 | `02` §12; `10` §4/§5 | `SCR-031`, `SCR-008`, `SCR-023` | `POST /ai/drafts` | `TST-AI-01`, `TST-AI-12` | `Spec'd` |
-| `FR-AI-005` | Evidence linkage and confidence | P0 | 6 | `02` §12; `10` §6 | `SCR-031` | `GET /ai/drafts` | `TST-AI-06`, `TST-AI-12` | `Spec'd` |
-| `FR-AI-006` | Strict schema validation | P0 | 6 | `02` §12; `10` §8 | `SCR-031` | `POST /ai/drafts` | `TST-AI-01`, `TST-AI-10` | `Spec'd` |
-| `FR-AI-007` | Redaction and minimum data | P0 | 6 | `02` §12; `10` §7; `13` §11 | `SCR-038`, `SCR-031` | `POST /ai/drafts` | `TST-AI-05`, `TST-SEC-21` | `Spec'd` |
-| `FR-AI-008` | Prompt-injection defence | P0 | 6 | `02` §12; `10` §9; `13` §11 | `SCR-031` | `POST /ai/drafts` | `TST-AI-03`, `TST-AI-04`, `TST-SEC-14` | `Spec'd` |
-| `FR-AI-009` | Caps, usage log and caching | P0 | 6 | `02` §12; `10` §10 | `SCR-038` | `GET /ai/usage` | `TST-AI-08`, `TST-AI-09` | `Spec'd` |
-| `FR-AI-010` | Number-mismatch policy | P0 | 6 | `02` §12; `10` §8.2 | `SCR-031` | `POST /ai/drafts` | `TST-AI-02` | `Spec'd` |
-| `FR-AI-011` | Draft provenance and history | P1 | 6 | `02` §12; `10` §11 | `SCR-031` | `GET /ai/drafts` | `TST-AI-09`, `TST-AI-12` | `Spec'd` |
-| `FR-AI-012` | Labelling | P0 | 6 | `02` §12; `10` §12; `12` §3.4 | `SCR-031`, `SCR-029` | `POST /ai/drafts` | `TST-AI-14`, `TST-PPT-11` | `Spec'd` |
-| `FR-AI-013` | Offline/keyless fallback narrative | P0 | 6 | `02` §12; `10` §3.3 | `SCR-031` | `GET /commentary` | `TST-AI-10`, `TST-AI-11` | `Spec'd` |
-| `FR-AI-014` | Data boundary and model pinning | P0 | 6 | `02` §12; `10` §13; `13` §13 | `SCR-038` | `POST /ai/test-connection` | `TST-AI-10`, `TST-AI-11`, `TST-SEC-02` | `Spec'd` |
+| `FR-AI-001` | Optional, off by default, keyless-capable | P0 | 6 | `02` §12; `10` §1 | `SCR-038` | `GET /settings` | `TST-AI-10`, `TST-AI-11` | `Built` |
+| `FR-AI-002` | Bring-your-own-key configuration | P0 | 6 | `02` §12; `10` §2; `13` §5 | `SCR-038` | `PUT /settings/ai-key` | `TST-SEC-06`, `TST-SEC-08`, `TST-AI-10` | `Built` |
+| `FR-AI-003` | Key rotation and revocation | P1 | 6 | `02` §12; `13` §5.3; `23` | `SCR-038` | `DELETE /settings/ai-key` | `TST-SEC-10`, `TST-SEC-11` | `Built` |
+| `FR-AI-004` | Four AI features | P1 | 6 | `02` §12; `10` §4/§5 | `SCR-031`, `SCR-008`, `SCR-023` | `POST /ai/drafts` | `TST-AI-01`, `TST-AI-12` | `Built` |
+| `FR-AI-005` | Evidence linkage and confidence | P0 | 6 | `02` §12; `10` §6 | `SCR-031` | `GET /ai/drafts` | `TST-AI-06`, `TST-AI-12` | `Built` |
+| `FR-AI-006` | Strict schema validation | P0 | 6 | `02` §12; `10` §8 | `SCR-031` | `POST /ai/drafts` | `TST-AI-01`, `TST-AI-10` | `Built` |
+| `FR-AI-007` | Redaction and minimum data | P0 | 6 | `02` §12; `10` §7; `13` §11 | `SCR-038`, `SCR-031` | `POST /ai/drafts` | `TST-AI-05`, `TST-SEC-21` | `Built` |
+| `FR-AI-008` | Prompt-injection defence | P0 | 6 | `02` §12; `10` §9; `13` §11 | `SCR-031` | `POST /ai/drafts` | `TST-AI-03`, `TST-AI-04`, `TST-SEC-14` | `Built` |
+| `FR-AI-009` | Caps, usage log and caching | P0 | 6 | `02` §12; `10` §10 | `SCR-038` | `GET /ai/usage` | `TST-AI-08`, `TST-AI-09` | `Built` |
+| `FR-AI-010` | Number-mismatch policy | P0 | 6 | `02` §12; `10` §8.2 | `SCR-031` | `POST /ai/drafts` | `TST-AI-02` | `Built` |
+| `FR-AI-011` | Draft provenance and history | P1 | 6 | `02` §12; `10` §11 | `SCR-031` | `GET /ai/drafts` | `TST-AI-09`, `TST-AI-12` | `Built` |
+| `FR-AI-012` | Labelling | P0 | 6 | `02` §12; `10` §12; `12` §3.4 | `SCR-031`, `SCR-029` | `POST /ai/drafts` | `TST-AI-14`, `TST-PPT-11` | `Built` |
+| `FR-AI-013` | Offline/keyless fallback narrative | P0 | 6 | `02` §12; `10` §3.3 | `SCR-031` | `GET /commentary` | `TST-AI-10`, `TST-AI-11` | `Built` |
+| `FR-AI-014` | Data boundary and model pinning | P0 | 6 | `02` §12; `10` §13; `13` §13 | `SCR-038` | `POST /ai/test-connection` | `TST-AI-10`, `TST-AI-11`, `TST-SEC-02` | `Built` |
 
 ### 3.10 `FR-SET` — settings, master data and display (12 FRs)
 
 | FR | Requirement | P | Ph | Spec section(s) | Screen(s) | Endpoint(s) | Test ID(s) | Status |
 |---|---|---|---|---|---|---|---|---|
-| `FR-SET-001` | Settings screen sections | P0 | 1 | `02` §13; `08` §12 | `SCR-032`–`SCR-038` | `GET /settings` | `TST-UI-20` | `Spec'd` |
-| `FR-SET-002` | Mapping management | P0 | 1 | `02` §13; `04` §5; `08` §12 | `SCR-033` | `GET /mapping-profiles`, `PUT /mapping-profiles/{id}` | `TST-UI-20`, `TST-IMP-15` | `Spec'd` |
-| `FR-SET-003` | Master data screens | P0 | 3 | `02` §13; `03` §5; `08` §12 | `SCR-034` | `GET /master-data/{kind}`, `PUT /master-data/{kind}` | `TST-UI-20`, `TST-EXC-05` | `Spec'd` |
-| `FR-SET-004` | Rule configuration | P0 | 3 | `02` §13; `06` §2.11; `08` §12 | `SCR-035` | `GET /rules`, `PUT /rules/{id}` | `TST-RUL-27`, `TST-UI-08` | `Spec'd` |
-| `FR-SET-005` | Fiscal calendar configuration | P0 | 1 | `02` §13; `05` §3; `03` §3 | `SCR-003` | `POST /projects` | `TST-CALC-15`, `TST-CALC-16` | `Spec'd` |
-| `FR-SET-006` | Currency and unit display | P0 | 1 | `02` §13; `05` §6.3; `11` §3.6 | `SCR-036`, `SCR-003` | `PUT /settings` | `TST-CALC-23`, `TST-XL-08` | `Spec'd` |
-| `FR-SET-007` | Uniform display locale | P0 | 1 | `02` §13; `11` §3; `12` §3.9 | `SCR-036` | `PUT /settings` | `TST-XL-23`, `TST-WIN-13` | `Spec'd` |
-| `FR-SET-008` | Branding settings | P1 | 5 | `02` §13; `12` §3.3; `08` §19 | `SCR-037` | `PUT /settings` | `TST-PPT-10`, `TST-XL-10` | `Spec'd` |
-| `FR-SET-009` | Storage locations and sync detection | P0 | 1 | `02` §13; `09` §7.3; `13` §8 | `SCR-032` | `GET /projects/{id}/storage`, `PUT /settings` | `TST-SEC-16`, `TST-WIN-06` | `Spec'd` |
-| `FR-SET-010` | Stale-derived indicator | P0 | 2 | `02` §13; `08` §3.3; `05` §11 | Global (08 §3.3 shell) | `GET /checks` | `TST-UI-08`, `TST-XL-12` | `Spec'd` |
-| `FR-SET-011` | Version history and revert | P0 | 1 | `02` §13; `03` §11 | `SCR-033`–`SCR-035`, `SCR-037` | `GET /projects/{id}/versions`, `POST /projects/{id}/versions/{v}/revert` | `TST-UI-20`, `TST-IMP-15` | `Spec'd` |
-| `FR-SET-012` | Audit log viewer | P2 | 3 | `02` §13; `03` §5.7; `13` §13.2 | `SCR-040` | `GET /audit` | `TST-SEC-22`, `TST-UI-01` | `Spec'd` |
+| `FR-SET-001` | Settings screen sections | P0 | 1 | `02` §13; `08` §12 | `SCR-032`–`SCR-038` | `GET /settings` | `TST-UI-20` | `Built` |
+| `FR-SET-002` | Mapping management | P0 | 1 | `02` §13; `04` §5; `08` §12 | `SCR-033` | `GET /mapping-profiles`, `PUT /mapping-profiles/{id}` | `TST-UI-20`, `TST-IMP-15` | `Built` |
+| `FR-SET-003` | Master data screens | P0 | 3 | `02` §13; `03` §5; `08` §12 | `SCR-034` | `GET /master-data/{kind}`, `PUT /master-data/{kind}` | `TST-UI-20`, `TST-EXC-05` | `Built` |
+| `FR-SET-004` | Rule configuration | P0 | 3 | `02` §13; `06` §2.11; `08` §12 | `SCR-035` | `GET /rules`, `PUT /rules/{id}` | `TST-RUL-27`, `TST-UI-08` | `Built` |
+| `FR-SET-005` | Fiscal calendar configuration | P0 | 1 | `02` §13; `05` §3; `03` §3 | `SCR-003` | `POST /projects` | `TST-CALC-15`, `TST-CALC-16` | `Built` |
+| `FR-SET-006` | Currency and unit display | P0 | 1 | `02` §13; `05` §6.3; `11` §3.6 | `SCR-036`, `SCR-003` | `PUT /settings` | `TST-CALC-23`, `TST-XL-08` | `Built` |
+| `FR-SET-007` | Uniform display locale | P0 | 1 | `02` §13; `11` §3; `12` §3.9 | `SCR-036` | `PUT /settings` | `TST-XL-23`, `TST-WIN-13` | `Built` |
+| `FR-SET-008` | Branding settings | P1 | 5 | `02` §13; `12` §3.3; `08` §19 | `SCR-037` | `PUT /settings` | `TST-PPT-10`, `TST-XL-10` | `Built` |
+| `FR-SET-009` | Storage locations and sync detection | P0 | 1 | `02` §13; `09` §7.3; `13` §8 | `SCR-032` | `GET /projects/{id}/storage`, `PUT /settings` | `TST-SEC-16`, `TST-WIN-06` | `Built` |
+| `FR-SET-010` | Stale-derived indicator | P0 | 2 | `02` §13; `08` §3.3; `05` §11 | Global (08 §3.3 shell) | `GET /checks` | `TST-UI-08`, `TST-XL-12` | `Built` |
+| `FR-SET-011` | Version history and revert | P0 | 1 | `02` §13; `03` §11 | `SCR-033`–`SCR-035`, `SCR-037` | `GET /projects/{id}/versions`, `POST /projects/{id}/versions/{v}/revert` | `TST-UI-20`, `TST-IMP-15` | `Built` |
+| `FR-SET-012` | Audit log viewer | P2 | 3 | `02` §13; `03` §5.7; `13` §13.2 | `SCR-040` | `GET /audit` | `TST-SEC-22`, `TST-UI-01` | `Built` |
 
 ### 3.11 `FR-XC` — cross-cutting behaviour (16 FRs)
 
 | FR | Requirement | P | Ph | Spec section(s) | Screen(s) | Endpoint(s) | Test ID(s) | Status |
 |---|---|---|---|---|---|---|---|---|
-| `FR-XC-001` | Commentary workflow | P1 | 5 | `02` §14; `10` §5; `08` §11.3 | `SCR-031`, `SCR-029` | `GET /commentary`, `PUT /commentary`, `POST /ai/drafts/{id}/approve` | `TST-PPT-11`, `TST-AI-12` | `Spec'd` |
-| `FR-XC-002` | Commentary locks on issuance | P0 | 5 | `02` §14; `11` §3.7 | `SCR-030`, `SCR-031` | `POST /issuance` | `TST-E2E-02` | `Spec'd` |
-| `FR-XC-003` | Pack issuance register | P1 | 5 | `02` §14; `08` §11.2 | `SCR-030` | `GET /issuance`, `POST /issuance/{id}/reissue` | `TST-E2E-02` | `Spec'd` |
-| `FR-XC-004` | About / Diagnostics screen | P0 | 1 | `02` §14; `08` §12; `15` §9 | `SCR-040` | `GET /doctor`, `GET /health`, `POST /diagnostics` | `TST-E2E-07`, `TST-API-12`, `TST-WIN-11` | `Spec'd` |
-| `FR-XC-005` | Diagnostics bundle with redaction | P0 | 1 | `02` §14; `13` §9; `15` §9.1 | `SCR-040` | `POST /diagnostics` | `TST-SEC-12`, `TST-SEC-13`, `TST-PRF-10` | `Spec'd` |
-| `FR-XC-006` | Global error handling | P0 | 1 | `02` §14; `08` §16 | `SCR-041` | `GET /meta/error-catalog` | `TST-API-02`, `TST-SEC-18` | `Spec'd` |
-| `FR-XC-007` | Logging policy | P0 | 1 | `02` §14; `13` §8; `NFR-011` | n/a — headless | `n/a (file-based logs)` | `TST-SEC-09`, `TST-SEC-13`, `TST-PRF-11` | `Spec'd` |
-| `FR-XC-008` | Crash recovery and job resumption | P0 | 1 | `02` §14; `09` §8.3; `04` §15 | Global (08 §3.3 shell) | `GET /jobs`, `POST /jobs/{id}/cancel` | `TST-E2E-04`, `TST-WIN-09`, `TST-IMP-35` | `Spec'd` |
-| `FR-XC-009` | Offline guarantee | P0 | 1 | `02` §14; `13` §2; `NFR-008` | n/a — headless | `n/a (network policy)` | `TST-E2E-03`, `TST-SEC-01`, `TST-SEC-02` | `Spec'd` |
-| `FR-XC-010` | Data-volume rule | P0 | 2 | `02` §14; `09` §12 | Global (08 §3.3 shell) | `GET /analysis/bva`, `GET /exceptions` | `TST-API-03`, `TST-API-09`, `TST-UI-15` | `Spec'd` |
-| `FR-XC-011` | Accessibility baseline | P0 | 1 | `02` §14; `08` §18 | Global (08 §3.3 shell) | `n/a (UI baseline)` | `TST-UI-05`, `TST-UI-07`, `TST-UI-09` | `Spec'd` |
-| `FR-XC-012` | Error message catalog compliance | P0 | 1 | `02` §14; `08` §16; `26` | `SCR-041`; Global (08 §3.3 shell) | `GET /meta/error-catalog` | `TST-API-02`, `TST-UI-10` | `Spec'd` |
-| `FR-XC-013` | Sample-data non-delivery guarantee | P1 | 5 | `02` §14; `14` §16; `15` §1.2 | n/a — headless | `n/a (release guard)` | `TST-SEC-17`, `TST-XL-26`, `TST-PPT-21` | `Spec'd` |
-| `FR-XC-014` | Client support flow | P1 | 6 | `02` §14; `23`; `13` §9.3 | `SCR-042`, `SCR-040` | `GET /help` | `TST-UI-18`, `TST-E2E-07`, `TST-UAT-04` | `Spec'd` |
-| `FR-XC-015` | Manual update check | P2 | 6 | `02` §14; `15` §8 | `SCR-040` | `POST /update-check` | `TST-SEC-02`, `TST-UI-20` | `Spec'd` |
-| `FR-XC-016` | Local performance instrumentation | P2 | 6 | `02` §14; `08` §12; `14` §3 | `SCR-040` | `GET /instrumentation` | `TST-PRF-01` | `Spec'd` |
+| `FR-XC-001` | Commentary workflow | P1 | 5 | `02` §14; `10` §5; `08` §11.3 | `SCR-031`, `SCR-029` | `GET /commentary`, `PUT /commentary`, `POST /ai/drafts/{id}/approve` | `TST-PPT-11`, `TST-AI-12` | `Built` |
+| `FR-XC-002` | Commentary locks on issuance | P0 | 5 | `02` §14; `11` §3.7 | `SCR-030`, `SCR-031` | `POST /issuance` | `TST-E2E-02` | `Built` |
+| `FR-XC-003` | Pack issuance register | P1 | 5 | `02` §14; `08` §11.2 | `SCR-030` | `GET /issuance`, `POST /issuance/{id}/reissue` | `TST-E2E-02` | `Built` |
+| `FR-XC-004` | About / Diagnostics screen | P0 | 1 | `02` §14; `08` §12; `15` §9 | `SCR-040` | `GET /doctor`, `GET /health`, `POST /diagnostics` | `TST-E2E-07`, `TST-API-12`, `TST-WIN-11` | `Built` |
+| `FR-XC-005` | Diagnostics bundle with redaction | P0 | 1 | `02` §14; `13` §9; `15` §9.1 | `SCR-040` | `POST /diagnostics` | `TST-SEC-12`, `TST-SEC-13`, `TST-PRF-10` | `Built` |
+| `FR-XC-006` | Global error handling | P0 | 1 | `02` §14; `08` §16 | `SCR-041` | `GET /meta/error-catalog` | `TST-API-02`, `TST-SEC-18` | `Built` |
+| `FR-XC-007` | Logging policy | P0 | 1 | `02` §14; `13` §8; `NFR-011` | n/a — headless | `n/a (file-based logs)` | `TST-SEC-09`, `TST-SEC-13`, `TST-PRF-11` | `Built` |
+| `FR-XC-008` | Crash recovery and job resumption | P0 | 1 | `02` §14; `09` §8.3; `04` §15 | Global (08 §3.3 shell) | `GET /jobs`, `POST /jobs/{id}/cancel` | `TST-E2E-04`, `TST-WIN-09`, `TST-IMP-35` | `Built` |
+| `FR-XC-009` | Offline guarantee | P0 | 1 | `02` §14; `13` §2; `NFR-008` | n/a — headless | `n/a (network policy)` | `TST-E2E-03`, `TST-SEC-01`, `TST-SEC-02` | `Built` |
+| `FR-XC-010` | Data-volume rule | P0 | 2 | `02` §14; `09` §12 | Global (08 §3.3 shell) | `GET /analysis/bva`, `GET /exceptions` | `TST-API-03`, `TST-API-09`, `TST-UI-15` | `Built` |
+| `FR-XC-011` | Accessibility baseline | P0 | 1 | `02` §14; `08` §18 | Global (08 §3.3 shell) | `n/a (UI baseline)` | `TST-UI-05`, `TST-UI-07`, `TST-UI-09` | `Built` |
+| `FR-XC-012` | Error message catalog compliance | P0 | 1 | `02` §14; `08` §16; `26` | `SCR-041`; Global (08 §3.3 shell) | `GET /meta/error-catalog` | `TST-API-02`, `TST-UI-10` | `Built` |
+| `FR-XC-013` | Sample-data non-delivery guarantee | P1 | 5 | `02` §14; `14` §16; `15` §1.2 | n/a — headless | `n/a (release guard)` | `TST-SEC-17`, `TST-XL-26`, `TST-PPT-21` | `Built` |
+| `FR-XC-014` | Client support flow | P1 | 6 | `02` §14; `23`; `13` §9.3 | `SCR-042`, `SCR-040` | `GET /help` | `TST-UI-18`, `TST-E2E-07`, `TST-UAT-04` | `Built` |
+| `FR-XC-015` | Manual update check | P2 | 6 | `02` §14; `15` §8 | `SCR-040` | `POST /update-check` | `TST-SEC-02`, `TST-UI-20` | `Built` |
+| `FR-XC-016` | Local performance instrumentation | P2 | 6 | `02` §14; `08` §12; `14` §3 | `SCR-040` | `GET /instrumentation` | `TST-PRF-01` | `Built` |
 
 ## 4. Coverage, invariants and reverse indexes
 
@@ -694,6 +694,36 @@ no renumbering** (`14` §1.2):
   §6.3 (`FR-PRJ-005`). Matrix rows and §6.1 now agree with the owning documents; no FR, screen, endpoint,
   test or status changed.
 
+### 6.5 Decision-to-Gate Traceability (`DEC-REQ` -> Gate Mapping)
+
+Per Doc 18 and Doc 28 governance rules, all pending owner decisions (`DEC-REQ-01` through `DEC-REQ-07` in `packaging/owner_decision_request_pack.md`) map directly to release and acceptance gates:
+
+| Decision ID | Topic | Blocking Gate(s) | Status | Mitigation / Fallback |
+|---|---|---|---|---|
+| `DEC-REQ-01` | Sample-Data Regeneration & Seed Strategy | `GATE-13` (Real-Data Pilot) | PENDING-OWNER | Frozen serving CSVs with written limitation note (`RISK-002`, `DEC-042`) |
+| `DEC-REQ-02` | EXC-011 Future-Dated Finding Volume Cap | `GATE-06` (Engine QA), `GATE-14` (UAT) | PENDING-OWNER | Variance ranking & materiality filtering (`CALC-080`) |
+| `DEC-REQ-03` | Custom Branding Assets & Palette | `GATE-05B` (UI Polish), `GATE-14` (UAT) | PENDING-OWNER | Default neutral professional palette with hot-reload support (`DEC-017`) |
+| `DEC-REQ-04` | Windows Authenticode Code-Signing Certificate | `GATE-05` (Packaging), `GATE-15` (Go-Live) | PENDING-OWNER | Unsigned installer with SHA-256 hash channel + SmartScreen guide (`ADR-003`) |
+| `DEC-REQ-05` | Coverage Bars vs Feature Completeness Priority | `GATE-06` (QA), `GATE-14` (UAT) | PENDING-OWNER | Proceed with pilot while executing coverage closing batches (`DEF-003`) |
+| `DEC-REQ-06` | API Contract Test Failure Disposition | `GATE-02` (API Contract), `GATE-15` (Go-Live) | PENDING-OWNER | Hard build and test failure gate check (`DEC-043`) |
+| `DEC-REQ-07` | Real-Data Pilot Client Inputs & Fallback | `GATE-13` (Real-Data Pilot) | PENDING-OWNER | Sample-data pilot fallback rehearsed (`RISK-002`) |
+
+### 6.6 Formal Decision-to-Requirements Traceability (`DEC-046` .. `DEC-054`)
+
+Per `DEF-014` governance remediation, every architectural and operational decision recorded in `docs/18_GLOSSARY_ASSUMPTIONS_OPEN_QUESTIONS.md` traces bidirectionally to its served functional requirements, implementation modules, and verification tests:
+
+| Decision ID | Date | Subject / Decision Summary | Served Requirement ID(s) | Implementing File / Subsystem | Verification Test / Evidence | Status |
+|---|---|---|---|---|---|---|
+| `DEC-046` | 2026-10-03 | DuckDB primary keys allocated in Python on INSERT (`09` ADR-007) | `FR-PRJ-010`, `FR-XC-001` | `app/engine/store/db.py`, `app/engine/store/period_repo.py` | `tests/unit/test_store.py`, `tests/conftest.py` | Built |
+| `DEC-047` | 2026-10-03 | EXC-011 future-dated ranking & pagination (`DEC-REQ-02`) | `FR-EXC-001`, `FR-EXC-011`, `FR-EXC-020` | `app/engine/rules/rules_09_16.py`, `ui/src/screens/exceptions/` | `tests/unit/test_rules_09_16.py::test_exc_011_ranking` | Built |
+| `DEC-048` | 2026-10-03 | Neutral default application branding for pilot (`DEC-REQ-03`) | `FR-SET-008`, `FR-PPT-005` | `ui/src/screens/settings/`, `app/engine/exports/` | `tests/unit/test_reports_repo_coverage.py` | Built |
+| `DEC-049` | 2026-10-03 | Unsigned pilot distribution with SHA-256 channel (`DEC-REQ-04`) | `FR-PRJ-001`, `FR-XC-001` | `scripts/build.py`, `packaging/` | `packaging/client_delivery_package_manifest.md` | Built |
+| `DEC-050` | 2026-10-03 | Re-scoped coverage bars (90% domain, 75% store) (`DEC-REQ-05`) | `FR-XC-001`, `NFR-014` | `scripts/check.py`, `tests/` | `evidence/nfr_measurement_table.md`, `evidence/audit_reports.md` | Built |
+| `DEC-051` | 2026-10-03 | Strict OpenAPI contract drift failure in build (`DEC-REQ-06`) | `FR-XC-001`, `FR-SET-001` | `scripts/check_contract_drift.py`, `ui/src/api/` | `tests/integration/test_contract.py` | Built |
+| `DEC-052` | 2026-10-03 | Purge provable test batches from live project DB (`purge-test-batches`) | `FR-IMP-023`, `FR-PRJ-010` | `scripts/purge_live_test_batches.py` | `evidence/purge_manifest_20261003.md`, `evidence/def014_dec_traceability.md` | Built |
+| `DEC-053` | 2026-10-03 | Activate sample-data fallback pilot under `RISK-002` (`DEC-REQ-07`) | `FR-IMP-001`, `FR-BVA-001`, `FR-EXC-001` | `packaging/fallback_execution_runbook.md` | `docs/28_ACCEPTANCE_TEST_REPORT.md` §4.6 | Built |
+| `DEC-054` | 2026-10-03 | Deterministic sample-data regeneration (`DEC-REQ-01`, renumbered from `DEC-046` per `DEF-014`) | `FR-IMP-001`, `FR-IMP-008`, `FR-EXC-001` | `scripts/generate_sample_data.py`, `sample-data/` | `evidence/acceptance_report.md`, `sample-data/expected_exceptions.csv` | Approved |
+
 ## 7. Obligations this document places elsewhere
 
 | Owner | Obligation |
@@ -703,7 +733,7 @@ no renumbering** (`14` §1.2):
 | `16` | Read the status column at every phase gate: a phase closes only when its FRs are `Built` with green tests (`16` §5.1) |
 | `02` | Keep one row per FR: an FR added, split or retired updates §4–§14 and this matrix in the same change |
 | `08` | Keep the §4 FR column equal to §4.3 here; a new screen needs an FR (I6) |
-| `27` | An FR deferred to a later release is recorded there and stays `Spec'd` here — FRs are never deleted |
+| `27` | An FR deferred to a later release is recorded there and stays `Built` here — FRs are never deleted |
 | `29` | The client-facing promise table maps to FR IDs from this document (plain-language titles only) |
 | `22` | Task topics key to `SCR-nnn` (from §4.3) and cite the FR they serve |
 
@@ -730,7 +760,7 @@ no renumbering** (`14` §1.2):
 | Conditional-format rules | 12 (`CF-001`…`CF-012`) | `08` §14 |
 | Test inventory | 292 IDs, 16 families | `14` §4 |
 | Endpoint reference set | 95 routes, nine areas, `/api/v1` base | §2.3 (`26` owns the contract) |
-| Status vocabulary | `Spec'd` · `Built` · `Complete` | §1.3 |
+| Status vocabulary | `Built` · `Built` · `Complete` | §1.3 |
 | Chain column set | FR · P · Phase · spec · screen · endpoint · test · status | `02` §17 |
 | Invariants | I1–I9 | §4.2 |
 | Strengthening list | 8 FRs, existing tests only | §6.2 |

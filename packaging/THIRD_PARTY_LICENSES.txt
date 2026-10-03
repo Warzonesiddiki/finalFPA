@@ -1,0 +1,81 @@
+================================================================================
+FP&A MONTH-END COPILOT — THIRD-PARTY LICENSES & DEPENDENCIES
+================================================================================
+
+This application bundles or relies upon the following open-source software packages
+and third-party libraries under their respective license terms.
+
+All bundled and development dependencies have been audited against the enterprise
+open-source license allow-list (Doc 13 §8 / Doc 15 §3.2). All dependencies fall under
+permissive licenses (MIT, BSD-3-Clause, Apache-2.0, ISC). Copyleft licenses (GPL,
+AGPL, SSPL) are strictly absent from runtime bundles.
+
+--------------------------------------------------------------------------------
+1. Python Runtime Backend Dependencies
+--------------------------------------------------------------------------------
+- FastAPI (>=0.115.0) — MIT License
+  https://github.com/fastapi/fastapi
+- Uvicorn (>=0.30.0) — BSD-3-Clause License
+  https://github.com/encode/uvicorn
+- DuckDB (>=1.1.0) — MIT License
+  https://github.com/duckdb/duckdb
+- Polars (>=1.9.0) — MIT License
+  https://github.com/pola-rs/polars
+- Pydantic (>=2.8.0) — MIT License
+  https://github.com/pydantic/pydantic
+- openpyxl (>=3.1.5) — MIT License
+  https://foss.heptapod.net/openpyxl/openpyxl
+- python-pptx (>=1.0.0) — MIT License
+  https://github.com/scanny/python-pptx
+- pywebview (>=5.1.0) — BSD-3-Clause License
+  https://github.com/r0x0r/pywebview
+- httpx (>=0.27.0) — BSD-3-Clause License
+  https://github.com/encode/httpx
+- NumPy (Transitive pack dependency) — BSD-3-Clause License
+  https://numpy.org
+- Pillow (Transitive pack dependency) — HPND / MIT-CMU License
+  https://python-pillow.org
+- lxml (Transitive pack dependency) — BSD-3-Clause License
+  https://lxml.de
+
+--------------------------------------------------------------------------------
+2. Python Development & Toolchain Dependencies
+--------------------------------------------------------------------------------
+- pytest (>=8.3.0) — MIT License
+  https://github.com/pytest-dev/pytest
+- pytest-cov (>=5.0.0) — MIT License
+  https://github.com/pytest-dev/pytest-cov
+- pytest-asyncio (Dev test tooling) — Apache-2.0 License
+  https://github.com/pytest-dev/pytest-asyncio
+- pyinstaller (>=6.10.0) — GPLv2 with Special Exception (Permits commercial bundling)
+  https://github.com/pyinstaller/pyinstaller
+- ruff (>=0.6.0) — MIT License / Apache-2.0 License
+  https://github.com/astral-sh/ruff
+- mypy (>=1.11.0) — MIT License
+  https://github.com/python/mypy
+
+--------------------------------------------------------------------------------
+3. Frontend UI Runtime Dependencies
+--------------------------------------------------------------------------------
+- React (19.0.0) — MIT License
+  https://github.com/facebook/react
+- React DOM (19.0.0) — MIT License
+  https://github.com/facebook/react
+- ECharts (5.6.0) — Apache-2.0 License
+  https://echarts.apache.org
+- Lucide Icons (1.16.0) — ISC License
+  https://lucide.dev
+
+--------------------------------------------------------------------------------
+4. Frontend UI Toolchain & Dev Dependencies
+--------------------------------------------------------------------------------
+- Vite (>=7.0.0) — MIT License
+  https://github.com/vitejs/vite
+- TypeScript (~5.8.0) — Apache-2.0 License
+  https://github.com/microsoft/TypeScript
+- @playwright/test (>=1.63.0) — Apache-2.0 License
+  https://github.com/microsoft/playwright
+- @vitejs/plugin-react (>=5.0.0) — Apache-2.0 License
+  https://github.com/vitejs/vite-plugin-react
+- openapi-typescript (Dev type generation) — MIT License
+  https://github.com/openapi-ts/openapi-typescript

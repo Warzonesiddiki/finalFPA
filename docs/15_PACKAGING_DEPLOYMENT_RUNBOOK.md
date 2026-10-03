@@ -356,13 +356,15 @@ walkthrough, and what we must never ask the user to do.
 
 ### 8.2 The mitigation ladder (in order)
 
-| Step | Action | When |
-|---|---|---|
-| 1 | **Code-signing certificate** (OV or EV): sign the installer and the executable with a timestamp; publish the publisher name | Preferred; documented cost/lead time for the client to decide (`ADR-003` step 5) |
-| 2 | **Microsoft malware-analysis false-positive submission** (WDSI) for the build if Defender flags it; keep the submission ID in the release notes | Whenever a false positive appears — before telling the client to proceed |
-| 3 | **Published SHA-256 + the written walkthrough (§8.3)** delivered with the artefacts through the agreed channel | Always, even when signed (hash verification is the client-side check) |
-| 4 | **Walk-through support**: the `22` guide and `23` handover carry the same screenshots; the first install is done together with the client if possible | First rollout |
-| 5 | Re-evaluate signing at the go-live gate: if the client funds a certificate, `ADR-003` is superseded by a signing ADR and this section is updated | Go-live |
+Until a formal code-signing certificate decision and budget allocation are recorded (`OQ-012`), the **unsigned build with SHA-256 checksum verification and the user walkthrough (§8.3)** remains the default path. If certificate procurement is approved, the deployment follows either the OV or EV branch:
+
+| Step / Branch | Action / Option | Cost & Lead Time | SmartScreen Reputation & User Impact | When |
+|---|---|---|---|---|
+| **Default (Unsigned)** | Published SHA-256 checksum + written walkthrough (§8.3) | $0 / Instant | Triggers "Windows protected your PC" (Unknown Publisher); requires §8.3 walkthrough ("More info" → "Run anyway"). | Current baseline for v0.1.0 pilot wave. |
+| **Branch A (Standard OV)** | Organization Validation certificate; sign installer & executable via SignTool / Azure Key Vault HSM | ~$150 – $400 / yr<br>3–7 business days | Initial downloads still trigger SmartScreen warnings until global download volume accumulates reputation over time. | Intermediate corporate deployments with IT oversight. |
+| **Branch B (Extended Validation - Recommended for Frictionless)** | EV Code Signing certificate; FIPS hardware token or Cloud HSM; sign installer & executable | ~$300 – $700 / yr<br>5–10 business days | **Immediate SmartScreen reputation bypass.** Zero warnings; direct, frictionless installation. | Recommended if client demands zero-prompt enterprise rollout. |
+| **Mitigation 2** | Microsoft malware-analysis false-positive submission (WDSI) if Defender flags build; record submission ID in release notes | $0 / 24–48 hours | Clears Defender heuristic false positives. | Whenever a false positive occurs. |
+| **Mitigation 3** | Walk-through support (`22` guide, `23` handover); live assisted first install | Internal time | High confidence during pilot phase. | First rollout / pilot wave. |
 
 ### 8.3 The user walkthrough (verbatim, non-technical)
 

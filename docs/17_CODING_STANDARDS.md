@@ -112,6 +112,29 @@ banned as sole names; if a name needs a comment to explain it, rename it instead
 
 ## 3. Formatting, lint and types (per language)
 
+### 3.0 Running the tests (`perf` marker split)
+
+The scale tests carry `@pytest.mark.perf` and are **excluded from the default run**:
+`pyproject.toml` sets `addopts = "-ra -q --strict-markers -m 'not perf'"`, so a bare `pytest` is the
+fast suite. This keeps the inner dev loop usable — the `perf` tests build and scan a 250,000-row
+project and cost minutes each.
+
+| Purpose | Command |
+|---|---|
+| Fast gate / inner loop | `pytest` |
+| One file or test | `pytest tests/unit/test_rules_09_16.py::test_name` |
+| Performance gate (NFR-007, NFR-009) | `pytest -m perf` |
+
+New slow tests (scale, benchmark, long-running integration) MUST be marked `perf`; anything else
+belongs in the default suite. When an NFR timing is being recorded as gate evidence, run it on an
+otherwise idle host, because those assertions are wall-clock.
+
+On Windows, write marker filters with **double** quotes in any shell-interpolated command
+(`-m "not perf"`). `cmd.exe` does not strip single quotes, so `-m 'not perf'` reaches pytest as the
+literal token `perf'` and it exits 4 with `file or directory not found`.
+
+Composition of the full gate is owned by `14` §13.1 / §13.1.1.
+
 ### 3.1 Python 3.12 (`app/`)
 
 | Aspect | Rule | Enforced by |
@@ -134,7 +157,7 @@ banned as sole names; if a name needs a comment to explain it, rename it instead
 |---|---|---|
 | TS config | `strict` on, `noUncheckedIndexedAccess`, `noImplicitOverride` | `tsc --noEmit` in `scripts/check` |
 | `any` | Banned; `unknown` + narrowing where the shape is genuinely unknown | Lint |
-| API types | **Generated from the OpenAPI schema** and imported — hand-written duplicates are forbidden (Addon 2 §B.2) | `scripts/check`, review |
+| API types | **Generated from the OpenAPI schema and imported** — API payload/response shapes MUST import from `ui/src/api/types.ts` (no duplication); pure view-only state (`FilterState`, local UI flags) is exempt (Addon 2 §B.2, `26`) | `scripts/check`, review |
 | Data fetching | Only through the single API client module (token, envelope handling, error mapping in one place) | Review |
 | Formatting | Prettier, defaults + the repo config; no manual alignment tricks | `scripts/check` |
 | Lint | ESLint with the React/hooks rules on | `scripts/check` |
