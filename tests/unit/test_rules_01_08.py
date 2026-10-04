@@ -90,6 +90,7 @@ def test_exc_001_duplicate_invoice_raised():
     assert len(findings) == 1
     f = findings[0]
     assert f.rule_id == "EXC-001"
+    assert f.catalog_rule_id == "EXC-007"
     assert f.severity == "High"
     assert f.subject_key == "V-00931|INV-88213"
     assert f.amount_at_risk == Decimal("45000.00")
@@ -169,6 +170,7 @@ def test_exc_002_unmapped_account_raised():
     assert len(findings) == 1
     f = findings[0]
     assert f.rule_id == "EXC-002"
+    assert f.catalog_rule_id == "EXC-004"
     assert f.severity == "Medium"
     assert f.subject_key == "account|5999-TEMP"
     assert f.amount_at_risk == Decimal("42300.00")
@@ -212,6 +214,7 @@ def test_exc_003_inactive_cost_centre_raised():
     assert len(findings) == 1
     f = findings[0]
     assert f.rule_id == "EXC-003"
+    assert f.catalog_rule_id == "EXC-005"
     assert f.severity == "Low"
     assert f.subject_key == "cost_center|CC-950"
     assert f.amount_at_risk == Decimal("96500.00")
@@ -250,6 +253,7 @@ def test_exc_004_period_mismatch_raised():
     assert len(findings) == 1
     f = findings[0]
     assert f.rule_id == "EXC-004"
+    assert f.catalog_rule_id == "EXC-009"
     assert f.severity == "High"
     assert f.amount_at_risk == Decimal("92000.00")
     assert f.owner_role == "GL Accountant"
@@ -299,6 +303,7 @@ def test_exc_005_unusual_credit_raised():
     assert len(findings) == 1
     f = findings[0]
     assert f.rule_id == "EXC-005"
+    assert f.catalog_rule_id == "EXC-012"
     assert f.severity == "Medium"
     assert f.subject_key == "IN01|5400|CC-110"
     assert f.amount_at_risk == Decimal("680000.00")
@@ -356,6 +361,7 @@ def test_exc_006_missing_recurring_cost_raised():
     assert len(findings) == 1
     f = findings[0]
     assert f.rule_id == "EXC-006"
+    assert f.catalog_rule_id == "EXC-015"
     assert f.severity == "High"
     assert f.subject_key == "V-00118|Office_Rent_Andheri"
     assert f.amount_at_risk == Decimal("450000.00")
@@ -408,6 +414,7 @@ def test_exc_007_unbudgeted_spend_raised():
     assert len(findings) == 1
     f = findings[0]
     assert f.rule_id == "EXC-007"
+    assert f.catalog_rule_id == "EXC-017"
     assert f.severity == "High"
     assert f.subject_key == "IN01|5450|CC-160"
     assert f.amount_at_risk == Decimal("840000.00")
@@ -462,6 +469,7 @@ def test_exc_008_material_variance_canonical_f13a():
     assert len(findings) == 1
     f = findings[0]
     assert f.rule_id == "EXC-008"
+    assert f.catalog_rule_id == "EXC-018"
     assert f.severity == "High"
     assert f.subject_key == "IN01|5200|CC-100"
     assert f.amount_at_risk == Decimal("540000.00")

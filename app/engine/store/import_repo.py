@@ -17,6 +17,45 @@ class ImportRepository:
     def __init__(self, db_manager: DatabaseManager):
         self.db = db_manager
 
+    @staticmethod
+    def _get_or_create_dimension_id(
+        duck_conn,
+        *,
+        table: str,
+        id_column: str,
+        code_column: str,
+        code: Optional[str],
+        extra_values: Optional[Dict[str, Any]] = None,
+    ) -> Optional[int]:
+        """Resolve a source code to its dimension ID, creating a row if absent."""
+        normalized_code = str(code or "").strip()
+        if not normalized_code:
+            return None
+        row = duck_conn.execute(
+            f"SELECT {id_column} FROM {table} WHERE {code_column} = ? LIMIT 1",
+            [normalized_code],
+        ).fetchone()
+        if row:
+            return int(row[0])
+
+        next_id = duck_conn.execute(
+            f"SELECT COALESCE(MAX({id_column}), 0) + 1 FROM {table}"
+        ).fetchone()[0]
+        new_id = int(next_id)
+        values = {
+            id_column: new_id,
+            code_column: normalized_code,
+            **(extra_values or {}),
+        }
+        columns = list(values)
+        placeholders = ", ".join("?" for _ in columns)
+        column_sql = ", ".join(columns)
+        duck_conn.execute(
+            f"INSERT INTO {table} ({column_sql}) VALUES ({placeholders})",
+            [values[column] for column in columns],
+        )
+        return new_id
+
     def commit_batch(
         self,
         batch: ImportBatchResult,
@@ -33,19 +72,18 @@ class ImportRepository:
 
         # 0b. Commit decision, computed BEFORE the audit row is written.
         #
-        # Per 04 section 12 and IMP-023 (scope F: "Reject; show the imbalance
-        # amount and the top contributing rows"), debit=credit balance is an
-        # unconditional file-level reject for every source_type - there is no
-        # sub-ledger exemption (section 2.2 is the source-type table, section 10
-        # is the confirm step; neither grants one). Per 19 section 5.5 the spec
-        # is the sole authority of record (spec-wins), so an unbalanced batch
-        # commits nothing regardless of source_type.
-        should_commit = bool(batch.is_balanced)
+        # Per 04 section 12 / IMP-023, balance is a file-level gate for every
+        # source type (no sub-ledger exemption). The parser computes
+        # `batch.is_balanced` using the configured minor-unit tolerance (default
+        # 0.00); that tolerance is persisted below so an accepted non-zero delta
+        # remains visible to EXC-001 and in the audit detail.
+        should_commit = batch.can_commit
 
         # DEF-010 (spec-wins fix): `status` records what ACTUALLY happened to the
-        # rows, and what happened is now the same for every source_type -
-        # unbalanced means rejected with zero rows committed (04 section 12 /
-        # IMP-023). `is_balanced` still records the measured balance fact.
+        # rows. A failed file-level gate (balance, structure, count reconciliation,
+        # duplicate file, or unaccepted control-total variance) rejects the batch
+        # with zero rows committed. `is_balanced` records only the balance-gate
+        # result, not an exact-zero test.
         batch_status = "committed" if should_commit else "rejected"
 
         # 1. Insert into SQLite FactImportBatch
@@ -58,15 +96,16 @@ class ImportRepository:
                         source_type, file_name, file_checksum, file_size_bytes, sheet_name,
                         profile_id, profile_version, total_source_rows, loaded_count,
                         quarantined_count, rejected_count, status, is_balanced,
-                        total_debit, total_credit, net_imbalance, data_quality_score
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        total_debit, total_credit, net_imbalance, balance_tolerance,
+                        data_quality_score
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         batch.source_type,
                         batch.file_name,
                         batch.file_checksum,
                         0,
-                        "Data",
+                        batch.sheet_name,
                         1,
                         1,
                         batch.total_source_rows,
@@ -78,6 +117,7 @@ class ImportRepository:
                         str(batch.total_debit),
                         str(batch.total_credit),
                         str(batch.net_imbalance),
+                        str(batch.balance_tolerance),
                         str(dq_score),
                     ),
                 )
@@ -89,8 +129,8 @@ class ImportRepository:
                         """
                         INSERT INTO FactValidationCheck (
                             import_batch_id, check_code, check_name, status, severity,
-                            offending_count, skip_reason, detail, weight
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            offending_count, skip_reason, detail, sample_rows, weight
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """,
                         (
                             batch_id,
@@ -101,6 +141,11 @@ class ImportRepository:
                             c.offending_count,
                             c.skip_reason,
                             c.detail,
+                            (
+                                json.dumps(c.sample_rows, default=str)
+                                if c.sample_rows
+                                else None
+                            ),
                             float(c.weight),
                         ),
                     )
@@ -134,6 +179,26 @@ class ImportRepository:
             try:
                 if batch.source_type == "budget":
                     budget_rows = []
+                    dimension_cache: Dict[tuple, Optional[int]] = {}
+
+                    def resolve_budget_dimension(
+                        table, id_column, code_column, code, extra_values=None
+                    ):
+                        normalized_code = str(code or "").strip()
+                        cache_key = (table, normalized_code)
+                        if cache_key not in dimension_cache:
+                            dimension_cache[cache_key] = (
+                                self._get_or_create_dimension_id(
+                                    duck_conn,
+                                    table=table,
+                                    id_column=id_column,
+                                    code_column=code_column,
+                                    code=normalized_code,
+                                    extra_values=extra_values,
+                                )
+                            )
+                        return dimension_cache[cache_key]
+
                     for i, tx in enumerate(transactions, start=1):
                         budget_id = (batch_id * 10000000) + i
                         period_id = 9
@@ -148,21 +213,32 @@ class ImportRepository:
                             except Exception:
                                 period_id = 9
 
-                        cc_id = None
-                        if tx.cost_center_code:
-                            cc_clean = tx.cost_center_code.replace("CC-", "")
-                            if cc_clean.isdigit():
-                                cc_id = int(cc_clean)
-
-                        acct_id = int(tx.account_code) if tx.account_code and tx.account_code.isdigit() else 5000
+                        company_code = tx.company_code or "IN01"
+                        account_code = tx.account_code or "5000"
+                        company_id = resolve_budget_dimension(
+                            "DimCompany", "company_id", "company_code", company_code,
+                            {"company_name": company_code},
+                        ) or 1
+                        account_id = resolve_budget_dimension(
+                            "DimAccount", "account_id", "account_code", account_code,
+                            {"account_name": account_code, "account_type": "unknown"},
+                        ) or 5000
+                        cost_center_id = resolve_budget_dimension(
+                            "DimCostCenter", "cost_center_id", "cost_center_code",
+                            tx.cost_center_code,
+                            {
+                                "cost_center_name": tx.cost_center_code or "",
+                                "company_id": company_id,
+                            },
+                        )
                         budget_rows.append((
                             budget_id,
                             batch_id,
                             "FY26-Approved",
                             "base",
-                            1,  # company_id default
-                            acct_id,
-                            cc_id,
+                            company_id,
+                            account_id,
+                            cost_center_id,
                             None,  # department_id
                             None,  # project_id
                             period_id,
@@ -184,8 +260,29 @@ class ImportRepository:
                         budget_rows,
                     )
                 else:
-                    # Prepare rows for FactActual
+                    # Resolve source entity/vendor codes so rule context keeps
+                    # actuals at the imported business-key grain.
                     rows_to_insert = []
+                    dimension_cache: Dict[tuple, Optional[int]] = {}
+
+                    def resolve_actual_dimension(
+                        table, id_column, code_column, code, extra_values=None
+                    ):
+                        normalized_code = str(code or "").strip()
+                        cache_key = (table, normalized_code)
+                        if cache_key not in dimension_cache:
+                            dimension_cache[cache_key] = (
+                                self._get_or_create_dimension_id(
+                                    duck_conn,
+                                    table=table,
+                                    id_column=id_column,
+                                    code_column=code_column,
+                                    code=normalized_code,
+                                    extra_values=extra_values,
+                                )
+                            )
+                        return dimension_cache[cache_key]
+
                     for i, tx in enumerate(transactions, start=1):
                         # Deterministic row_id
                         actual_id = (batch_id * 10000000) + i
@@ -202,22 +299,39 @@ class ImportRepository:
                             except Exception:
                                 period_id = 9
 
-                        cc_id = None
-                        if tx.cost_center_code:
-                            cc_clean = tx.cost_center_code.replace("CC-", "")
-                            if cc_clean.isdigit():
-                                cc_id = int(cc_clean)
+                        company_code = tx.company_code or "IN01"
+                        account_code = tx.account_code or "5000"
+                        company_id = resolve_actual_dimension(
+                            "DimCompany", "company_id", "company_code", company_code,
+                            {"company_name": company_code},
+                        ) or 1
+                        account_id = resolve_actual_dimension(
+                            "DimAccount", "account_id", "account_code", account_code,
+                            {"account_name": account_code, "account_type": "unknown"},
+                        ) or 5000
+                        cost_center_id = resolve_actual_dimension(
+                            "DimCostCenter", "cost_center_id", "cost_center_code",
+                            tx.cost_center_code,
+                            {
+                                "cost_center_name": tx.cost_center_code or "",
+                                "company_id": company_id,
+                            },
+                        )
+                        vendor_id = resolve_actual_dimension(
+                            "DimVendor", "vendor_id", "vendor_code", tx.vendor_code,
+                            {"vendor_name": tx.vendor_code or ""},
+                        )
 
                         rows_to_insert.append((
                             actual_id,
                             batch_id,
                             row_fingerprint,
-                            1,  # company_id default
-                            int(tx.account_code) if tx.account_code and tx.account_code.isdigit() else 5000,
-                            cc_id,
+                            company_id,
+                            account_id,
+                            cost_center_id,
                             None,  # department_id
                             None,  # project_id
-                            None,  # vendor_id
+                            vendor_id,
                             period_id,
                             tx.posting_date,
                             tx.document_date,
@@ -253,6 +367,9 @@ class ImportRepository:
                     )
             finally:
                 duck_conn.close()
+
+        for tx in transactions:
+            tx.import_batch_id = batch_id
 
         return batch_id
 

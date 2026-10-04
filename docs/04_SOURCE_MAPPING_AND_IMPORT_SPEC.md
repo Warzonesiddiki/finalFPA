@@ -346,6 +346,8 @@ the value" are all protocol violations (P13).
 | **Approved total (budgets)** | When the `ApprovedTotal` sheet is present: compare the sum of loaded budget lines with the approved figure; report the delta; fail by default with a recorded-acceptance path |
 | **No control totals supplied** | The check is `skipped` with the reason "no control-totals block supplied" — never reported as `pass` |
 
+**`ControlTotals` worksheet shape:** row 1 contains `Scope`, `SuppliedTotal`, and optional `Measure` and `Tolerance`; each subsequent non-empty row is one file-level total. `Scope` is a unique stable label used by `EXC-003`. `Measure` is `debit`, `credit`, or `net`; it may be omitted when `Scope` itself is one of those values. The loaded amount is respectively the sum of imported debits, credits, or net amounts. `Tolerance` defaults to `0.00` and cannot be negative. A variance beyond tolerance rejects the batch unless the import request carries `controlTotalAcceptance` with a non-blank `acceptedBy` and a reason of at least 10 characters. Acceptance details are persisted with `IMP-025`; they do not suppress the `EXC-003` finding.
+
 ## 13. Duplicate detection
 
 | Level | Key (documented in `03` §6) | Behaviour |

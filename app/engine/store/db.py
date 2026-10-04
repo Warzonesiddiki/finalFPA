@@ -55,6 +55,15 @@ class DatabaseManager:
                 conn.executescript(ddl_path.read_text(encoding="utf-8"))
 
             # Migration guard: Add newly added columns if FactException already existed
+            batch_columns = {
+                row[1] for row in conn.execute("PRAGMA table_info(FactImportBatch);").fetchall()
+            }
+            if "balance_tolerance" not in batch_columns:
+                conn.execute(
+                    "ALTER TABLE FactImportBatch ADD COLUMN balance_tolerance "
+                    "TEXT NOT NULL DEFAULT '0.00';"
+                )
+
             cursor = conn.execute("PRAGMA table_info(FactException);")
             existing_cols = {row[1] for row in cursor.fetchall()}
             migrations = [

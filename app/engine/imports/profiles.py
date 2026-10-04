@@ -87,6 +87,10 @@ BUILTIN_PROFILES = [
         source_type="actuals_d365",
         column_map={
             "voucher": "voucher_no",
+            "line no": "line_no",
+            "line number": "line_no",
+            "linenumber": "line_no",
+            "lineno": "line_no",
             "postingdate": "posting_date",
             "posting date": "posting_date",
             "companycode": "company_code",
@@ -123,6 +127,10 @@ BUILTIN_PROFILES = [
         column_map={
             "bankaccountid": "voucher_no",
             "subsystemref": "voucher_no",
+            "line no": "line_no",
+            "line number": "line_no",
+            "linenumber": "line_no",
+            "lineno": "line_no",
             "docnumber": "invoice_no",
             "valuedate": "posting_date",
             "transdate": "posting_date",

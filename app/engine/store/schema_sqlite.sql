@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS FactImportBatch (
     total_debit TEXT NOT NULL DEFAULT '0.00',
     total_credit TEXT NOT NULL DEFAULT '0.00',
     net_imbalance TEXT NOT NULL DEFAULT '0.00',
+    balance_tolerance TEXT NOT NULL DEFAULT '0.00',
     data_quality_score REAL NOT NULL DEFAULT 100.0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

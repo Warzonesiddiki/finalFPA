@@ -150,7 +150,7 @@ class ExceptionsRepository:
                     c.company_code, ac.account_code, cc.cost_center_code,
                     v.vendor_code, a.invoice_no, a.description,
                     a.debit, a.credit, a.net_amount, a.currency_code,
-                    a.source_row_ref, p.period_code
+                    a.source_row_ref, p.period_code, a.import_batch_id, a.line_no
                 FROM FactActual a
                 LEFT JOIN DimCompany c ON a.company_id = c.company_id
                 LEFT JOIN DimAccount ac ON a.account_id = ac.account_id
@@ -179,6 +179,8 @@ class ExceptionsRepository:
                     net_amount=Decimal(str(r[12])),
                     currency_code=r[13] or "INR",
                     period_code=r[15] or period_code,
+                    line_no=int(r[17] or 1),
+                    import_batch_id=int(r[16]) if r[16] is not None else None,
                     raw_values={},
                 )
                 tx_list.append(tx)
@@ -205,8 +207,11 @@ class ExceptionsRepository:
                 p_code = br[3] or period_code
                 amt = Decimal(str(br[4]))
                 budgets[(co, acct, cc, p_code)] = amt
-                key_ann = (co, acct, cc)
-                annual_budgets[key_ann] = annual_budgets.get(key_ann, ZERO) + amt
+                current_fy_prefix = str(period_code).split("-P", 1)[0].upper()
+                budget_fy_prefix = str(p_code).split("-P", 1)[0].upper()
+                if budget_fy_prefix == current_fy_prefix:
+                    key_ann = (co, acct, cc)
+                    annual_budgets[key_ann] = annual_budgets.get(key_ann, ZERO) + amt
 
             # 3. DimAccounts metadata
             dim_accounts: Dict[str, Dict[str, Any]] = {}
@@ -238,8 +243,53 @@ class ExceptionsRepository:
         finally:
             duck_conn.close()
 
+        sqlite_conn = self.db.get_sqlite_connection()
+        try:
+            import_batches = [
+                dict(row)
+                for row in sqlite_conn.execute(
+                    """
+                    SELECT batch_id, file_name, source_type, status, is_balanced,
+                           total_debit, total_credit, net_imbalance, balance_tolerance,
+                           created_at
+                    FROM FactImportBatch
+                    ORDER BY created_at, batch_id
+                    """
+                ).fetchall()
+            ]
+            control_totals: List[Dict[str, Any]] = []
+            control_rows = sqlite_conn.execute(
+                """
+                SELECT import_batch_id, sample_rows, detail
+                FROM FactValidationCheck
+                WHERE check_code = 'IMP-025' AND sample_rows IS NOT NULL
+                ORDER BY check_id
+                """
+            ).fetchall()
+            for control_row in control_rows:
+                try:
+                    decoded = json.loads(control_row["sample_rows"])
+                except (TypeError, json.JSONDecodeError):
+                    continue
+                if isinstance(decoded, dict):
+                    decoded = [decoded]
+                if not isinstance(decoded, list):
+                    continue
+                for total in decoded:
+                    if not isinstance(total, dict):
+                        continue
+                    control_totals.append({
+                        **total,
+                        "batch_id": total.get("batch_id", control_row["import_batch_id"]),
+                        "detail": total.get("detail", control_row["detail"]),
+                    })
+        finally:
+            sqlite_conn.close()
+
         return RuleContext(
             transactions=tx_list,
+            import_batches=import_batches,
+            control_totals=control_totals,
             budgets=budgets,
             annual_budgets=annual_budgets,
             dim_accounts=dim_accounts,

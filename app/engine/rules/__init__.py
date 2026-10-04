@@ -17,6 +17,14 @@ from app.engine.rules.rules_09_16 import (
     evaluate_exc_015,
     evaluate_exc_016,
 )
+from app.engine.rules.rules_catalog_001_008 import (
+    BATCH_CATALOG_001_008_EVALUATORS,
+    evaluate_catalog_exc_001,
+    evaluate_catalog_exc_002,
+    evaluate_catalog_exc_003,
+    evaluate_catalog_exc_006,
+    evaluate_catalog_exc_008,
+)
 from app.engine.rules.rules_01_08 import (
     BATCH_01_08_EVALUATORS,
     Finding,
@@ -49,6 +57,12 @@ __all__ = [
     "evaluate_exc_007",
     "evaluate_exc_008",
     "BATCH_01_08_EVALUATORS",
+    "BATCH_CATALOG_001_008_EVALUATORS",
+    "evaluate_catalog_exc_001",
+    "evaluate_catalog_exc_002",
+    "evaluate_catalog_exc_003",
+    "evaluate_catalog_exc_006",
+    "evaluate_catalog_exc_008",
     "BATCH_09_16_EVALUATORS",
     "evaluate_all_09_16",
     "evaluate_exc_009",

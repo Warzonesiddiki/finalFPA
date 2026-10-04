@@ -112,16 +112,14 @@ def test_rule_batch_has_no_double_invocation():
     for excluded in ("evaluate_exc_009", "evaluate_exc_012", "evaluate_exc_015"):
         assert excluded not in names
 
-    # 8 (01-08) + 5 (09-16) + 6 (17-24) = 19 evaluators covering 24 catalog rules
-    # (the 01-08 batch internally carries catalog EXC-009, EXC-012, EXC-015,
-    # EXC-017 and EXC-018 under engine-internal ids).
-    assert len(batch) == 19
+    # Five catalog-native evaluators + 8 legacy + 5 unique (09-16) + 6 (17-24).
+    assert len(batch) == 24
 
-    # Every catalog rule EXC-001..EXC-024 is reachable through the batch.
+    # Every catalog ID must map to a real, uniquely wired evaluator.
     coverage = catalog_rule_coverage()
-    assert len(coverage) == 24
     missing = [f"EXC-{i:03d}" for i in range(1, 25) if f"EXC-{i:03d}" not in coverage]
-    assert not missing, f"catalog rules not covered by the batch: {missing}"
+    assert len(coverage) == 24
+    assert not missing
 
 
 @pytest.mark.perf

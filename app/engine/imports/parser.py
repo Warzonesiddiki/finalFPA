@@ -4,9 +4,10 @@ import csv
 import hashlib
 import os
 import re
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import List, Dict, Tuple, Optional, Any, Set, Union
 
 from app.engine.calc import quantize_money, ZERO
@@ -36,12 +37,79 @@ def compute_file_checksum(filepath: str | Path) -> str:
     return h.hexdigest()
 
 
+def _excel_data_sheet(
+    filepath: str | Path, preferred_sheet: Optional[str] = None
+) -> Tuple[str, List[str], int]:
+    """Select the visible transaction sheet, excluding auxiliary workbook tabs."""
+    try:
+        from openpyxl import load_workbook
+    except ImportError as exc:  # pragma: no cover - declared runtime dependency
+        raise ImportError("openpyxl is required to import Excel workbooks") from exc
+
+    workbook = load_workbook(filepath, read_only=True, data_only=True)
+    try:
+        sheet_names = list(workbook.sheetnames)
+        visible_names = [
+            worksheet.title
+            for worksheet in workbook.worksheets
+            if worksheet.sheet_state == "visible"
+        ]
+        if preferred_sheet in visible_names:
+            selected = preferred_sheet
+        else:
+            visible_by_fold = {name.casefold(): name for name in visible_names}
+            selected = next(
+                (
+                    visible_by_fold[name]
+                    for name in ("data", "gl_export", "gl_actuals_template")
+                    if name in visible_by_fold
+                ),
+                None,
+            )
+            if selected is None:
+                auxiliary = {
+                    "controltotals",
+                    "approvedtotal",
+                    "vendorcategories",
+                    "recurringcosts",
+                    "approvalthresholds",
+                    "ownerassignments",
+                }
+                selected = next(
+                    (name for name in visible_names if name.casefold() not in auxiliary),
+                    None,
+                )
+        if selected is None:
+            raise ValueError("Workbook has no visible transaction sheet. [import.noDataRows]")
+        row_count = int(workbook[selected].max_row or 0)
+        return selected, sheet_names, row_count
+    finally:
+        workbook.close()
+
+
 def prescan_file(filepath: str | Path) -> PreScanResult:
     """Execute Step 2 Pre-scan per 04_SOURCE_MAPPING_AND_IMPORT_SPEC.md §3."""
     p = Path(filepath)
     size = p.stat().st_size
     checksum = compute_file_checksum(p)
     name = p.name
+
+    if p.suffix.lower() in {".xlsx", ".xlsm"}:
+        sheet_name, sheet_names, _row_count = _excel_data_sheet(p)
+        from app.engine.imports.hardening import load_hardened_excel_sheet
+
+        hardened = load_hardened_excel_sheet(p, sheet_name=sheet_name, header_rows=[1])
+        return PreScanResult(
+            file_name=name,
+            file_size_bytes=size,
+            file_checksum=checksum,
+            sheet_names=sheet_names,
+            estimated_rows=len(hardened.rows) + len(hardened.quarantined_rows),
+            header_row_candidate=hardened.header_row_index,
+            sample_headers=hardened.headers,
+            has_banner=False,
+            is_encrypted=False,
+        )
 
     # Basic CSV scan
     lines = []
@@ -538,6 +606,7 @@ def parse_csv_transactions(
     fy_end: str = "2026-12-31",
     project_currency: str = "INR",
     balance_tolerance: Decimal = ZERO,
+    source_row_refs: Optional[List[str]] = None,
 ) -> Tuple[ImportBatchResult, List[ParsedTransaction]]:
     """Parse CSV returning both the validation batch result and the valid parsed transactions."""
     p = Path(filepath)
@@ -564,6 +633,7 @@ def parse_csv_transactions(
     total_source_rows = 0
     total_debit = ZERO
     total_credit = ZERO
+    voucher_line_counts: Dict[Tuple[str, str], int] = {}
 
     with open(p, "r", encoding="utf-8", errors="replace") as f:
         reader = csv.reader(f)
@@ -587,8 +657,13 @@ def parse_csv_transactions(
                 headers_found = True
                 continue
 
+            source_row_index = total_source_rows
             total_source_rows += 1
-            source_row_ref = f"line {current_row_idx}"
+            source_row_ref = (
+                source_row_refs[source_row_index]
+                if source_row_refs is not None and source_row_index < len(source_row_refs)
+                else f"line {current_row_idx}"
+            )
             raw_row_dict = dict(zip([f"col_{i}" for i in range(len(row))], row))
 
             def get_col(field_name: str) -> Optional[str]:
@@ -610,6 +685,25 @@ def parse_csv_transactions(
             invoice_no = get_col("invoice_no")
             description = get_col("description")
             currency_raw = get_col("currency_code")
+
+            # Cross-batch duplicate keys use the voucher's line number, not the
+            # physical CSV row number. Derive a stable sequence within
+            # (company, voucher) when the source omits one, counting even rows
+            # later quarantined so the key still reflects source order.
+            voucher_key = (str(company_code).strip(), str(voucher).strip())
+            derived_line_no = voucher_line_counts.get(voucher_key, 0) + 1
+            explicit_line_no = get_col("line_no")
+            try:
+                line_no = (
+                    int(explicit_line_no)
+                    if explicit_line_no is not None
+                    else derived_line_no
+                )
+            except (TypeError, ValueError):
+                line_no = derived_line_no
+            voucher_line_counts[voucher_key] = max(
+                voucher_line_counts.get(voucher_key, 0), line_no
+            )
 
             debit_raw = get_col("debit")
             credit_raw = get_col("credit")
@@ -742,7 +836,7 @@ def parse_csv_transactions(
                 credit=credit,
                 net_amount=net_amount,
                 currency_code=currency,
-                line_no=total_source_rows,
+                line_no=line_no,
                 is_zero_amount=is_zero,
                 period_code=resolved_period,
                 raw_values=raw_row_dict,
@@ -849,6 +943,11 @@ def parse_csv_transactions(
     )
     checks.append(reconciled_report)
 
+    if profile.source_type != "budget":
+        from app.engine.imports.control_totals import control_totals_not_supplied_report
+
+        checks.append(control_totals_not_supplied_report())
+
     imbalance = quantize_money(total_debit - total_credit)
     is_balanced = (balance_report.status == "pass")
 
@@ -867,16 +966,173 @@ def parse_csv_transactions(
         net_imbalance=imbalance,
         checks=checks,
         quarantined_rows=quarantined,
+        balance_tolerance=quantize_money(balance_tolerance),
     )
     return batch, loaded
+
+
+def _excel_value_for_csv(value: Any) -> str:
+    """Serialize an Excel cell into the deterministic CSV parser's input form."""
+    if isinstance(value, datetime):
+        return value.date().isoformat()
+    if isinstance(value, date):
+        return value.isoformat()
+    if value is None:
+        return ""
+    return str(value)
+
+
+def parse_excel_transactions(
+    filepath: str | Path,
+    profile: Optional[MappingProfile] = None,
+    fiscal_year: int = 2026,
+    fy_start: str = "2026-01-01",
+    fy_end: str = "2026-12-31",
+    project_currency: str = "INR",
+    balance_tolerance: Decimal = ZERO,
+    control_total_acceptance: Optional[Dict[str, str]] = None,
+) -> Tuple[ImportBatchResult, List[ParsedTransaction]]:
+    """Parse the transaction sheet and optional ControlTotals sheet in an XLSX."""
+    from openpyxl import load_workbook
+    from openpyxl.utils.datetime import from_excel
+
+    from app.engine.imports.control_totals import read_control_totals_report
+    from app.engine.imports.hardening import load_hardened_excel_sheet
+
+    path = Path(filepath)
+    preferred_sheet = profile.sheet_selector if profile is not None else None
+    sheet_name, _sheet_names, _row_count = _excel_data_sheet(path, preferred_sheet)
+    header_row = profile.header_row if profile is not None else 1
+    hardened = load_hardened_excel_sheet(
+        path,
+        sheet_name=sheet_name,
+        header_rows=[header_row],
+    )
+    if profile is None:
+        profile = match_profile(hardened.headers) or BUILTIN_PROFILES[0]
+
+    workbook = load_workbook(path, read_only=False, data_only=True)
+    try:
+        worksheet = workbook[sheet_name]
+        date_columns = {
+            index
+            for index, header in enumerate(hardened.headers)
+            if "date" in str(header).casefold()
+        }
+        csv_rows: List[List[str]] = []
+        for row_index, row in zip(hardened.row_indices, hardened.rows):
+            serialized_row = []
+            for column_index, value in enumerate(row):
+                if (
+                    column_index in date_columns
+                    and isinstance(value, (int, float))
+                    and worksheet.cell(row=row_index, column=column_index + 1).is_date
+                ):
+                    value = from_excel(value, workbook.epoch).date()
+                serialized_row.append(_excel_value_for_csv(value))
+            csv_rows.append(serialized_row)
+    finally:
+        workbook.close()
+
+    source_row_refs = [f"{sheet_name}!{row_index}" for row_index in hardened.row_indices]
+    with TemporaryDirectory(prefix="fpa-xlsx-import-") as temp_dir:
+        csv_path = Path(temp_dir) / "transaction-sheet.csv"
+        with csv_path.open("w", encoding="utf-8", newline="") as temp_file:
+            writer = csv.writer(temp_file)
+            writer.writerow(hardened.headers)
+            writer.writerows(csv_rows)
+        batch, transactions = parse_csv_transactions(
+            csv_path,
+            profile=profile,
+            fiscal_year=fiscal_year,
+            fy_start=fy_start,
+            fy_end=fy_end,
+            project_currency=project_currency,
+            balance_tolerance=balance_tolerance,
+            source_row_refs=source_row_refs,
+        )
+
+    batch.file_name = path.name
+    batch.file_checksum = compute_file_checksum(path)
+    batch.sheet_name = sheet_name
+
+    hardening_gate_checks = {
+        "import.missingRequiredColumns": (
+            "IMP-005",
+            "Required columns present after mapping",
+        ),
+        "import.duplicateHeaders": (
+            "IMP-006",
+            "Duplicate column headers resolved",
+        ),
+        "import.noDataRows": ("IMP-008", "Data range not empty"),
+    }
+    for slug, (check_code, check_name) in hardening_gate_checks.items():
+        matching_findings = [finding for finding in hardened.findings if finding.slug == slug]
+        if matching_findings:
+            batch.checks.append(
+                ValidationCheckReport(
+                    check_code=check_code,
+                    check_name=check_name,
+                    status="fail",
+                    severity="high",
+                    offending_count=len(matching_findings),
+                    detail="; ".join(finding.message for finding in matching_findings),
+                    message_slug=slug,
+                )
+            )
+
+    hardening_quarantines: Dict[int, List[Any]] = {}
+    for finding in hardened.quarantined_rows:
+        if finding.row_index is not None:
+            hardening_quarantines.setdefault(finding.row_index, []).append(finding)
+    for row_index, findings in sorted(hardening_quarantines.items()):
+        batch.quarantined_rows.append(
+            {
+                "source_row_ref": f"{sheet_name}!{row_index}",
+                "reason_code": findings[0].slug,
+                "reason_detail": "; ".join(finding.message for finding in findings),
+                "raw_values": findings[0].raw_values or {},
+            }
+        )
+    if hardening_quarantines:
+        quarantined_count = len(hardening_quarantines)
+        batch.total_source_rows += quarantined_count
+        batch.quarantined_count += quarantined_count
+        reconciled = check_imp_024_row_count_reconciliation(
+            batch.total_source_rows,
+            batch.loaded_count,
+            batch.quarantined_count,
+            batch.rejected_count,
+        )
+        batch.checks = [
+            reconciled if check.check_code == "IMP-024" else check
+            for check in batch.checks
+        ]
+
+    if profile.source_type != "budget":
+        total_report = read_control_totals_report(
+            path,
+            transactions,
+            acceptance=control_total_acceptance,
+        )
+        batch.checks = [
+            check for check in batch.checks if check.check_code != "IMP-025"
+        ]
+        batch.checks.append(total_report)
+
+    return batch, transactions
 
 
 def parse_and_validate_csv(
     filepath: str | Path,
     profile: Optional[MappingProfile] = None,
     batch_id: int = 1,
+    balance_tolerance: Decimal = ZERO,
 ) -> ImportBatchResult:
     """Parse and validate CSV file according to 32 checks in 04 §10."""
-    batch, _ = parse_csv_transactions(filepath, profile)
+    batch, _ = parse_csv_transactions(
+        filepath, profile, balance_tolerance=balance_tolerance
+    )
     batch.batch_id = batch_id
     return batch

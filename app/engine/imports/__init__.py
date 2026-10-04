@@ -20,6 +20,7 @@ from app.engine.imports.parser import (
     prescan_file,
     parse_and_validate_csv,
     parse_csv_transactions,
+    parse_excel_transactions,
     compute_file_checksum,
 )
 
@@ -81,6 +82,7 @@ __all__ = [
     "prescan_file",
     "parse_and_validate_csv",
     "parse_csv_transactions",
+    "parse_excel_transactions",
     "compute_file_checksum",
     "HardeningFinding",
     "CsvDetectionResult",

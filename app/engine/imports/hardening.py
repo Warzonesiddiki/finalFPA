@@ -55,6 +55,7 @@ class ExcelHardenedData:
     quarantined_rows: List[HardeningFinding] = field(default_factory=list)
     findings: List[HardeningFinding] = field(default_factory=list)
     hidden_sheets: List[str] = field(default_factory=list)
+    row_indices: List[int] = field(default_factory=list)
 
 
 def detect_csv_encoding_and_delimiter(
@@ -650,6 +651,7 @@ def load_hardened_excel_sheet(
 
     # 8. Process data rows: X6 (blank ignored), X4 (Total ignored), and quarantine collection
     processed_rows: List[List[Any]] = []
+    processed_row_indices: List[int] = []
     ignored_blank_rows: List[int] = []
     ignored_total_rows: List[Tuple[int, List[Any]]] = []
     quarantined_row_findings: List[HardeningFinding] = []
@@ -693,6 +695,7 @@ def load_hardened_excel_sheet(
             continue
 
         processed_rows.append(row)
+        processed_row_indices.append(excel_row_num)
 
     # X13 / X14: Detect serial dates and text-formatted dates
     date_header_indices = [
@@ -824,4 +827,5 @@ def load_hardened_excel_sheet(
         quarantined_rows=quarantined_row_findings,
         findings=findings,
         hidden_sheets=hidden_sheets,
+        row_indices=processed_row_indices,
     )
