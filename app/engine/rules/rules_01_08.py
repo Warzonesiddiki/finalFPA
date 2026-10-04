@@ -85,6 +85,10 @@ class RuleContext:
     inactive_cost_centers: Set[str] = field(default_factory=set)
     # Recurring costs list
     master_recurring_costs: List[RecurringCostRuleItem] = field(default_factory=list)
+    # Persisted import-batch metadata; used by catalog EXC-001 / EXC-002.
+    import_batches: List[Dict[str, Any]] = field(default_factory=list)
+    # Structured IMP-025 details from optional ControlTotals blocks; used by EXC-003.
+    control_totals: List[Dict[str, Any]] = field(default_factory=list)
     period_id: str = "FY26-P09"
     # Doc 06 line 195 Purity: "no clock beyond an injected `as_of` date".
     # Doc 06 line 422 (EXC-011 Logic): the run date is "injected - never a raw
@@ -99,6 +103,14 @@ class RuleContext:
     # from the real calendar rather than an assumption.
     dim_period_end_dates: Dict[str, str] = field(default_factory=dict)
     config: Dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def committed_import_batches(self) -> List[Dict[str, Any]]:
+        """Import batches whose rows are in the analytic store."""
+        return [
+            batch for batch in self.import_batches
+            if str(_get_val(batch, "status", "")).strip().lower() == "committed"
+        ]
 
     def __post_init__(self) -> None:
         # Resolve the injected as_of exactly once, at context construction, so no

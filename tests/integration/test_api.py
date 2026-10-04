@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pytest
+from openpyxl import Workbook
 from fastapi.testclient import TestClient
 
 from app.api.main import SESSION_TOKEN, app
@@ -17,6 +18,51 @@ def test_health_endpoint():
     assert data["status"] == "ok"
     assert data["version"] == "0.1.0"
     assert data["engine_ready"] is True
+
+
+def test_import_xlsx_control_totals_acceptance_endpoint(tmp_path):
+    workbook = Workbook()
+    data = workbook.active
+    data.title = "Data"
+    data.append(
+        [
+            "Voucher",
+            "PostingDate",
+            "CompanyCode",
+            "MainAccount",
+            "CostCenter",
+            "Debit",
+            "Credit",
+            "Currency",
+        ]
+    )
+    data.append(["VCH-1", "2026-09-22", "IN01", "5300", "CC-110", 1000, 650, "INR"])
+    totals = workbook.create_sheet("ControlTotals")
+    totals.append(["Scope", "Measure", "SuppliedTotal", "Tolerance"])
+    totals.append(["gl_control_total", "net", 0, 0])
+    path = tmp_path / "actuals-with-controls.xlsx"
+    workbook.save(path)
+    workbook.close()
+
+    response = client.post(
+        "/api/v1/imports",
+        headers={"X-Session-Token": SESSION_TOKEN},
+        json={
+            "path": str(path),
+            "balanceTolerance": "500.00",
+            "controlTotalAcceptance": {
+                "acceptedBy": "controller.test",
+                "reason": "Documented legacy source variance",
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "committed"
+    assert data["sheetName"] == "Data"
+    assert data["isBalanced"] is True
+    assert data["loadedCount"] == 1
 
 
 def test_variance_demo_unauthorized():
@@ -150,11 +196,9 @@ def test_exceptions_endpoints_workflow():
     )
     assert res_run.status_code == 200
     run_data = res_run.json()["data"]
-    # 19 de-duplicated evaluators covering all 24 catalog rules (EXC-001..EXC-024).
-    # The previous value of 16 was the naive 8+8 concatenation of BATCH_01_08 and
-    # BATCH_09_16, which double-evaluated catalog EXC-009/012/015 and omitted the
-    # 17-24 batch entirely. See app/engine/rules/batch.py.
-    assert run_data["rulesRun"] == 19
+    # Five catalog-native evaluators fill the previously uncovered IDs without
+    # aliasing any of the legacy engine-numbered functions.
+    assert run_data["rulesRun"] == 24
     assert run_data["catalogRulesCovered"] == 24
     assert "totalFindings" in run_data
 

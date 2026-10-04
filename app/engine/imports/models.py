@@ -78,6 +78,8 @@ class ParsedTransaction:
     raw_values: Dict[str, Any] = field(default_factory=dict)
     is_zero_amount: bool = False
     period_code: Optional[str] = None
+    # Assigned on import; required for cross-batch exception checks.
+    import_batch_id: Optional[int] = None
 
 
 @dataclass
@@ -96,3 +98,16 @@ class ImportBatchResult:
     net_imbalance: Decimal
     checks: List[ValidationCheckReport] = field(default_factory=list)
     quarantined_rows: List[Dict[str, Any]] = field(default_factory=list)
+    balance_tolerance: Decimal = Decimal("0.00")
+    sheet_name: str = "Data"
+
+    @property
+    def can_commit(self) -> bool:
+        """Whether balance, critical structure, and control-total gates pass."""
+        blocking_checks = {"IMP-005", "IMP-006", "IMP-008", "IMP-025"}
+        if not self.is_balanced:
+            return False
+        return not any(
+            check.check_code in blocking_checks and check.status.lower() == "fail"
+            for check in self.checks
+        )

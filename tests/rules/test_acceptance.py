@@ -10,14 +10,15 @@ Every assertion here is a real bar from doc 14 §5.3 or a prerequisite from doc 
 unmeasurable corpus is a FAILURE with a message, because a green-vacuum
 acceptance run is worse than a red one.
 
-MARKER. The measurement parses a 250,037-row corpus and runs all 24 catalog
-rules twice (the §5.3 stability bar), which costs roughly two minutes - over the
-5 s threshold. Doc 17 §3.0: "New slow tests (scale, benchmark, long-running
-integration) MUST be marked `perf`". It therefore runs in `pytest -m perf` and is
-excluded from the fast gate by `addopts`. Nothing is weakened by that: the
-authoritative entry point is `scripts/acceptance.py`, which runs these same bars
-and exits non-zero. The unmarked tests below are the cheap structural checks
-that keep the default suite honest about the harness itself.
+MARKER. The measurement parses the sample corpus and runs every evaluator in
+the composed batch twice (the §5.3 stability bar), then scores against all 24
+catalog IDs. Missing evaluator mappings fail the catalog-coverage bar rather than
+being inferred from engine IDs. Doc 17 §3.0: "New slow tests (scale, benchmark,
+long-running integration) MUST be marked `perf`". It therefore runs in
+`pytest -m perf` and is excluded from the fast gate by `addopts`. Nothing is
+weakened by that: the authoritative entry point is `scripts/acceptance.py`, which
+runs these same bars and exits non-zero. The unmarked tests below are the cheap
+structural checks that keep the default suite honest about the harness itself.
 """
 
 from __future__ import annotations
@@ -70,10 +71,15 @@ def test_every_one_of_the_24_catalog_rules_has_a_planted_case():
 
 
 def test_batch_composer_wires_all_24_catalog_rules():
-    """All 24 rules must reach the composer; an unwired rule scores nothing."""
+    """Every catalog ID must map to exactly one real evaluator."""
     coverage = catalog_rule_coverage()
-    missing = [r for r in acc.CATALOG_RULE_IDS if r not in coverage]
-    assert not missing, f"catalog rules not wired into build_full_rule_batch(): {missing}"
+    missing = [rule_id for rule_id in acc.CATALOG_RULE_IDS if rule_id not in coverage]
+    assert len(coverage) == 24
+    assert not missing, f"catalog rules without evaluators: {missing}"
+    assert coverage["EXC-001"] == "evaluate_catalog_exc_001"
+    assert coverage["EXC-004"] == "evaluate_exc_002"
+    assert coverage["EXC-007"] == "evaluate_exc_001"
+    assert coverage["EXC-008"] == "evaluate_catalog_exc_008"
 
 
 def test_corpus_files_are_present():
@@ -262,9 +268,16 @@ def answer_key():
 
 
 def test_scoring_passes_on_a_perfect_run(monkeypatch, answer_key):
-    """Sanity: the bars are satisfiable, so a red run means something."""
+    """Sanity: the scoring bars are satisfiable when every rule is wired."""
+    from app.engine.rules import batch as rule_batch
+
     raises, controls, _ = answer_key
     monkeypatch.setattr(acc, "run_rules", lambda ctx: _perfect_findings(raises))
+    monkeypatch.setattr(
+        rule_batch,
+        "catalog_rule_coverage",
+        lambda: {rule_id: f"synthetic_{rule_id}" for rule_id in acc.CATALOG_RULE_IDS},
+    )
     report = acc.measure(None, raises, controls, stability_runs=2)
 
     assert report.passed, f"a perfect run must pass; got {[b.name for b in report.bars if not b.passed]}"
@@ -272,6 +285,41 @@ def test_scoring_passes_on_a_perfect_run(monkeypatch, answer_key):
     recall = next(b for b in report.bars if b.name == "Planted-exception recall")
     assert recall.passed
     assert not [r for r in report.rules if r.zero_coverage]
+
+
+def test_acceptance_rejects_catalog_gaps_even_when_all_plants_appear_to_fire(
+    monkeypatch, answer_key
+):
+    """Synthetic hits cannot hide catalog IDs omitted from the supplied composer map."""
+    from app.engine.rules import batch as rule_batch
+
+    raises, controls, _ = answer_key
+    missing_ids = {"EXC-001", "EXC-002", "EXC-003", "EXC-006", "EXC-008"}
+    complete_coverage = rule_batch.catalog_rule_coverage()
+    monkeypatch.setattr(acc, "run_rules", lambda ctx: _perfect_findings(raises))
+    monkeypatch.setattr(
+        rule_batch,
+        "catalog_rule_coverage",
+        lambda: {
+            rule_id: evaluator
+            for rule_id, evaluator in complete_coverage.items()
+            if rule_id not in missing_ids
+        },
+    )
+    report = acc.measure(None, raises, controls, stability_runs=1)
+
+    recall = next(b for b in report.bars if b.name == "Planted-exception recall")
+    coverage = next(b for b in report.bars if b.name == "Rule catalog coverage")
+    zero_coverage = next(b for b in report.bars if b.name == "Zero-coverage rules")
+
+    assert recall.passed, "the crafted findings represent a nominally perfect recall result"
+    assert coverage.measured == "19/24 wired"
+    assert not coverage.passed
+    assert all(rule_id in coverage.detail for rule_id in (
+        "EXC-001", "EXC-002", "EXC-003", "EXC-006", "EXC-008"
+    ))
+    assert not zero_coverage.passed
+    assert not report.passed
 
 
 def test_recall_bar_fails_when_plantings_are_missed(monkeypatch, answer_key):

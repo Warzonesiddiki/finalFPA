@@ -4,7 +4,7 @@ import argparse
 import sys
 from decimal import Decimal
 
-from app import __version__, __app_name__
+from app import __app_name__, __version__
 from app.engine.calc import calculate_variance, calculate_variance_pct, quantize_money
 
 
@@ -13,8 +13,9 @@ def _cmd_exceptions(args: argparse.Namespace) -> None:
 
     `run` is the entrypoint named as the NFR-007 measurement target in
     14_TESTING_QA_PLAN.md line 85 ("Timed `fpa exceptions --run`"). It delegates to
-    ExceptionsRepository.run_rules, which uses the de-duplicated full-catalog batch
-    from app.engine.rules.batch - catalog EXC-009, EXC-012 and EXC-015 must not be
+    ExceptionsRepository.run_rules, which uses the de-duplicated batch of
+    currently implemented evaluators from app.engine.rules.batch. Catalog coverage
+    is reported separately; catalog EXC-009, EXC-012 and EXC-015 must not be
     evaluated twice.
     """
     sub = getattr(args, "exceptions_command", None)

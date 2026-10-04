@@ -5,9 +5,10 @@
 running the full 250k-row scale fixture - the timing assertion lives in
 tests/perf/test_rules_perf.py (marked `perf`).
 
-The critical property: the CLI must go through the de-duplicated full-catalog batch
-in app.engine/rules.batch, so catalog EXC-009 / EXC-012 / EXC-015 are not evaluated
-twice and their findings are not raised twice.
+The critical property: the CLI must go through the de-duplicated batch of
+implemented evaluators in app.engine/rules.batch, so catalog EXC-009 / EXC-012 /
+EXC-015 are not evaluated twice and their findings are not raised twice. The
+coverage report must also expose any catalog IDs without an evaluator.
 """
 
 from __future__ import annotations
@@ -20,13 +21,12 @@ import pytest
 from app.engine.rules import build_full_rule_batch, catalog_rule_coverage
 from app.engine.rules.rules_01_08 import RuleContext
 
-
 # ---------------------------------------------------------------------------
 # Batch composition - the de-duplication guarantee
 # ---------------------------------------------------------------------------
 
 def test_full_batch_has_no_duplicate_evaluators():
-    """Every evaluator appears exactly once in the full-catalog batch."""
+    """Every implemented evaluator appears once in the composed batch."""
     batch = build_full_rule_batch()
     names = [ev.__name__ for ev in batch]
     assert len(names) == len(set(names)), f"duplicate evaluator: {names}"
@@ -48,11 +48,12 @@ def test_full_batch_excludes_the_three_reexported_rules():
         assert real in names
 
 
-def test_full_batch_covers_all_24_catalog_rules():
+def test_full_batch_wires_all_catalog_rules():
     batch_coverage = catalog_rule_coverage()
-    assert len(batch_coverage) == 24
     missing = [f"EXC-{i:03d}" for i in range(1, 25) if f"EXC-{i:03d}" not in batch_coverage]
-    assert not missing, f"catalog rules not covered: {missing}"
+
+    assert len(batch_coverage) == 24
+    assert not missing, f"catalog rules without evaluators: {missing}"
 
 
 def test_dedup_is_stable_across_calls():
@@ -94,8 +95,7 @@ def test_cli_exceptions_run_smoke(capsys, monkeypatch, isolated_project):
 
     payload = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
 
-    # The de-duplicated batch: 19 evaluators covering all 24 catalog rules.
-    assert payload["rulesRun"] == 19
+    assert payload["rulesRun"] == 24
     assert payload["catalogRulesCovered"] == 24
     assert payload["period"] == "FY26-P09"
     assert payload["totalFindings"] >= 0
@@ -115,7 +115,7 @@ def test_cli_exceptions_run_uses_default_as_of_from_period(capsys, monkeypatch, 
     # Same summary keys as the explicit-as_of run; the as_of itself is not echoed,
     # so assert the run completed against FY26-P09 without a caller-supplied date.
     assert payload["period"] == "FY26-P09"
-    assert payload["rulesRun"] == 19
+    assert payload["rulesRun"] == 24
 
 
 def test_cli_exceptions_run_accepts_explicit_as_of(capsys, monkeypatch, isolated_project):
@@ -131,7 +131,7 @@ def test_cli_exceptions_run_accepts_explicit_as_of(capsys, monkeypatch, isolated
     )
     main()
     payload = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
-    assert payload["rulesRun"] == 19
+    assert payload["rulesRun"] == 24
     assert payload["totalFindings"] >= 0
 
 

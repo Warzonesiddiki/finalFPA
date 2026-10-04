@@ -468,6 +468,7 @@ setting that generated them.
 | `row_count_rejected` | `INTEGER` | No | File-level rejection = all rows here |
 | `balance_result` | `VARCHAR(10)` | No | `pass` \| `fail` |
 | `balance_variance` | `DECIMAL(18,2)` | No | `0.00` when balanced |
+| `balance_tolerance` | `DECIMAL(18,2)` | No | Configured minor-unit tolerance used by `IMP-023`; retained for `EXC-001` audit detail |
 | `control_total_variance` | `DECIMAL(18,2)` | Yes | Null when no control-totals block was supplied |
 | `data_quality_score` | `SMALLINT` | Yes | 0–100 (`05` formula) |
 | `status` | `VARCHAR(12)` | No | `staged` \| `committed` \| `voided` \| `rejected` \| `cancelled` |

@@ -6,7 +6,7 @@ and docs/09_TECHNICAL_ARCHITECTURE.md §12.
 
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Any, Generic, List, Optional, Tuple, TypeVar
+from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar
 import duckdb
 
 from app.engine.calc import (

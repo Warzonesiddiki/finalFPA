@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from pathlib import Path
 from decimal import Decimal
 from typing import Optional, Dict, Any, List
@@ -17,7 +17,11 @@ import logging
 from app import __version__, __app_name__
 from app.engine.errors import get_error_catalog
 from app.engine.calc import calculate_variance, calculate_variance_pct, quantize_money, ZERO
-from app.engine.imports.parser import prescan_file, parse_csv_transactions
+from app.engine.imports.parser import (
+    prescan_file,
+    parse_csv_transactions,
+    parse_excel_transactions,
+)
 from app.engine.store.db import DatabaseManager
 from app.engine.store.import_repo import ImportRepository
 from app.engine.store.analytics_repo import AnalyticsRepository
@@ -186,9 +190,32 @@ class PreScanRequest(BaseModel):
     sourceType: Optional[str] = None
 
 
+class ControlTotalAcceptanceRequest(BaseModel):
+    acceptedBy: str = Field(min_length=1, max_length=120)
+    reason: str = Field(min_length=10, max_length=500)
+
+    @field_validator("acceptedBy")
+    @classmethod
+    def validate_accepted_by(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("acceptedBy must not be blank")
+        return cleaned
+
+    @field_validator("reason")
+    @classmethod
+    def validate_reason(cls, value: str) -> str:
+        cleaned = value.strip()
+        if len(cleaned) < 10:
+            raise ValueError("reason must contain at least 10 non-whitespace characters")
+        return cleaned
+
+
 class ImportFileRequest(BaseModel):
     path: str
     sourceType: Optional[str] = None
+    balanceTolerance: Decimal = Field(default=Decimal("0.00"), ge=0)
+    controlTotalAcceptance: Optional[ControlTotalAcceptanceRequest] = None
 
 
 class VoidBatchRequest(BaseModel):
@@ -436,7 +463,39 @@ def create_app() -> FastAPI:
         )
         predicted_run_id = binding.import_run_id
 
-        batch, transactions = parse_csv_transactions(p, profile=binding.profile)
+        control_acceptance = None
+        if payload.controlTotalAcceptance is not None:
+            control_acceptance = {
+                "accepted_by": payload.controlTotalAcceptance.acceptedBy.strip(),
+                "reason": payload.controlTotalAcceptance.reason.strip(),
+            }
+        if p.suffix.lower() in {".xlsx", ".xlsm"}:
+            batch, transactions = parse_excel_transactions(
+                p,
+                profile=binding.profile,
+                balance_tolerance=payload.balanceTolerance,
+                control_total_acceptance=control_acceptance,
+            )
+            control_check = next(
+                (check for check in batch.checks if check.check_code == "IMP-025"),
+                None,
+            )
+            if control_acceptance and control_check and control_check.status == "skipped":
+                raise HTTPException(
+                    status_code=400,
+                    detail="controlTotalAcceptance requires a ControlTotals worksheet",
+                )
+        else:
+            if control_acceptance:
+                raise HTTPException(
+                    status_code=400,
+                    detail="controlTotalAcceptance is supported only for Excel workbooks",
+                )
+            batch, transactions = parse_csv_transactions(
+                p,
+                profile=binding.profile,
+                balance_tolerance=payload.balanceTolerance,
+            )
         repo = ImportRepository(db_mgr)
         batch_id = repo.commit_batch(batch, transactions)
 
@@ -451,10 +510,13 @@ def create_app() -> FastAPI:
                 batch_id,
             )
 
+        import_status = "committed" if batch.can_commit else "rejected"
         return {
             "batchId": batch_id,
+            "status": import_status,
             "profileBinding": binding.to_dict(),
             "fileName": batch.file_name,
+            "sheetName": batch.sheet_name,
             "fileChecksum": batch.file_checksum,
             "sourceType": batch.source_type,
             "totalSourceRows": batch.total_source_rows,
@@ -465,6 +527,7 @@ def create_app() -> FastAPI:
             "totalDebit": str(batch.total_debit),
             "totalCredit": str(batch.total_credit),
             "netImbalance": str(batch.net_imbalance),
+            "balanceTolerance": str(batch.balance_tolerance),
         }
 
     @app.get(
