@@ -7,7 +7,7 @@ from app.engine.store.import_repo import ImportRepository
 from app.engine.store.db import DatabaseManager
 from app.engine.imports.models import ImportBatchResult, ParsedTransaction, ValidationCheckReport
 
-@pytest.mark.tst_id("TST-IMP-004")
+@pytest.mark.tst_id("TST-IMP-35")
 def test_import_repo_commit_batch(tmp_path):
     db_mgr = DatabaseManager(project_dir=tmp_path)
     repo = ImportRepository(db_mgr)

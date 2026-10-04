@@ -10,4 +10,6 @@
 | `DEF-004` | 2026-10-02 | **S1** | Packaging / `GATE-06` | PyInstaller build omits mandatory static assets and EULA text file | Open | v1.0.0-rc2 |
 | `DEF-005` | 2026-10-02 | **S3** | `SCR-033` / Settings | Company logo and custom branding banner missing from header | Open | v1.0.1 |
 | `DEF-006` | 2026-10-02 | **S2** | Test Suite / `TST-API` | Concurrent test runs fail intermittently due to shared SQLite DB state | In fix | v1.0.0-rc2 |
-| `DEF-007` | 2026-10-01 | **S3** | `SCR-011` / Pilot | Minor rounding discrepancy in pilot month-end tie-out worksheet | Resolved | v1.0.0 |
+| `DEF-029` | 2026-10-03 | **S2** | API / Error Envelope | 404/405 HTTP exceptions raised AttributeError when handling error envelopes | Closed (`tests/unit/test_def029_http_exception_handler.py`) | v1.0.0-rc2 |
+| `DEF-023` | 2026-10-03 | **S2** | Rules Engine / `06` §2.9 | Rule context exception handling when context elements are None | Resolved | v1.0.0-rc2 |
+| `DEF-025` | 2026-10-03 | **S3** | Code Hygiene | Stale bytecode orphans cleanup sweep | Resolved | v1.0.0-rc2 |

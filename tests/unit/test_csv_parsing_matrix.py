@@ -11,7 +11,7 @@ import pytest
 from app.engine.imports import parse_and_validate_csv, prescan_file
 
 
-@pytest.mark.tst_id("TST-IMP-005")
+@pytest.mark.tst_id("TST-IMP-10")
 def test_csv_delimiter_handling(tmp_path: Path):
     """
     Quoting doc 04 CSV table: delimiter handling (comma, semicolon, tab).

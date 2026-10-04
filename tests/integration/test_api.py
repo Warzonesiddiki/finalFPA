@@ -104,7 +104,6 @@ def test_bva_live_endpoints():
 # project directory, which is why its runtime and its results both drift when four
 # agents run suites concurrently. Marking it `perf` removes it from the fast gate
 # but does not fix the isolation; that is a separate change.
-@pytest.mark.perf
 def test_bva_live_with_budget_file():
     """Verify live BvA calculations with budget file."""
     budget_path = Path("sample-data/budget_fy26.csv")

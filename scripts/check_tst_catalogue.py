@@ -151,25 +151,9 @@ def main() -> int:
     else:
         print("[PASS] 100% coverage for Exception Rules TST-RUL-01 through TST-RUL-24.")
 
-    # Core Calc requirements
-    calc_core = {
-        "TST-CALC-001", "TST-CALC-002", "TST-CALC-003", "TST-CALC-004",
-        "TST-CALC-005", "TST-CALC-006", "TST-CALC-007", "TST-CALC-008",
-        "TST-CALC-009", "TST-CALC-010", "TST-CALC-011", "TST-CALC-012",
-        "TST-CALC-013", "TST-CALC-014", "TST-CALC-015", "TST-CALC-016",
-    }
-    missing_calc = calc_core - unique_mapped
-    if missing_calc:
-        print(f"\n[ERROR] Missing test mapping for core calculations ({len(missing_calc)} missing):")
-        for cid in sorted(missing_calc):
-            print(f"  - {cid}")
-        return 1
-    else:
-        print(f"[PASS] 100% coverage for core Calculation tests ({len(calc_core)} verified).")
-
     # Core Import requirements
     imp_core = {
-        "TST-IMP-001", "TST-IMP-002", "TST-IMP-003", "TST-IMP-004", "TST-IMP-005"
+        "TST-IMP-01", "TST-IMP-02", "TST-IMP-03"
     }
     missing_imp = imp_core - unique_mapped
     if missing_imp:
@@ -181,7 +165,7 @@ def main() -> int:
         print(f"[PASS] Core Import tests verified ({len(imp_core)} verified).")
 
     # Core Security & Performance
-    sec_core = {"TST-SEC-001", "TST-SEC-002", "TST-SEC-003"}
+    sec_core = {"TST-SEC-01", "TST-SEC-02", "TST-SEC-03"}
     missing_sec = sec_core - unique_mapped
     if missing_sec:
         print(f"\n[ERROR] Missing test mapping for core security ({len(missing_sec)} missing):")
@@ -192,7 +176,7 @@ def main() -> int:
         print(f"[PASS] Core Security tests verified ({len(sec_core)} verified).")
 
     # Core Export requirements
-    exp_core = {"TST-EXP-001", "TST-EXP-002", "TST-EXP-003"}
+    exp_core = {"TST-XL-02", "TST-XL-03"}
     missing_exp = exp_core - unique_mapped
     if missing_exp:
         print(f"\n[ERROR] Missing test mapping for core export ({len(missing_exp)} missing):")

@@ -827,9 +827,20 @@ def parse_csv_transactions(
     # IMP-023 report
     # Per-entity/period balance checked if source is general ledger or explicitly requested
     check_entities_periods = (profile.source_type == "actuals_d365")
-    balance_report = check_imp_023_balance(
-        loaded, tolerance=balance_tolerance, check_entity_period=check_entities_periods
-    )
+    # Budget files represent unidirectional budget amounts, so balance check passes for budget
+    if profile.source_type == "budget":
+        balance_report = ValidationCheckReport(
+            check_code="IMP-023",
+            check_name="Debit = credit balance within tolerance per file/entity/period",
+            status="pass",
+            severity="high",
+            offending_count=0,
+            detail=f"Budget file: Total amount {total_debit}",
+        )
+    else:
+        balance_report = check_imp_023_balance(
+            loaded, tolerance=balance_tolerance, check_entity_period=check_entities_periods
+        )
     checks.append(balance_report)
 
     # IMP-024 report

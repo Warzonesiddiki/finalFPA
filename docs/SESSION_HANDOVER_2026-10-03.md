@@ -98,7 +98,7 @@ worth more than a good-looking one that cannot be trusted.
 | DEF-012 | doc-14 §4 TST-* catalogue severed (244 ids untagged) | OPEN |
 | DEF-018 | PPT exporter never reads its template; ERR-EXP-014 absent | OPEN |
 | DEF-022 | doc-integrity gate: `scripts/check_doc_integrity.py` **does not exist** | OPEN, never started |
-| DEF-029 | regression test for the 404→500 handler regression | OPEN |
+| DEF-029 | regression test for the 404→500 handler regression | CLOSED (`tests/unit/test_def029_http_exception_handler.py`) |
 
 **New finding, unfiled: `DEF-013` is NOT in `docs/28`.** It appears only in
 `evidence/`, `docs/OPEN_QUESTIONS_AND_DOUBTS_DETAILED.md` and
@@ -117,7 +117,7 @@ absent — it was a renumbering task, not a defect.)
 | DEF-026 | `1010`/`1200`/`2000` absent from `DimAccount`; EXC-002 fired on ~125,000 legitimate offsetting legs | 4/4 mutations caught |
 | DEF-027 | E2E journey green but mislabelled — claimed `ERR-VAL-001`, asserted `ERR-API-401` | 2/2 mutations caught |
 | DEF-028 | `1020` (499 bank-ledger rows) absent from `DimAccount` | seeded, suite green |
-| DEF-029 | Stacked `StarletteHTTPException` handler called `exc.errors()`, which `HTTPException` lacks → every 404 became 500 | 1/1 mutation caught |
+| DEF-029 | Stacked `StarletteHTTPException` handler called `exc.errors()`, which `HTTPException` lacks → every 404 became 500 | **Fixed — regression test added** (`tests/unit/test_def029_http_exception_handler.py`, 2 tests green) |
 
 DEF-024 implementation, in `app/engine/rules/batch.py`:
 `evaluate_all_rules_detailed()` records `status=error` with exception type and

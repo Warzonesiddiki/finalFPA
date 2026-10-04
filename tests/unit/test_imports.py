@@ -6,7 +6,7 @@ from app.engine.imports import prescan_file, parse_and_validate_csv, compute_fil
 from app.engine.calc import ZERO
 
 
-@pytest.mark.tst_id("TST-IMP-001")
+@pytest.mark.tst_id("TST-IMP-01")
 def test_compute_file_checksum():
     sample_file = Path("sample-data/bank_ledger_actuals.csv")
     if sample_file.exists():
@@ -14,7 +14,7 @@ def test_compute_file_checksum():
         assert len(checksum) == 64
 
 
-@pytest.mark.tst_id("TST-IMP-002")
+@pytest.mark.tst_id("TST-IMP-02")
 def test_prescan_d365():
     sample_file = Path("sample-data/d365_gl_actuals.csv")
     if sample_file.exists():
@@ -25,7 +25,7 @@ def test_prescan_d365():
         assert "Voucher" in res.sample_headers
 
 
-@pytest.mark.tst_id("TST-IMP-003")
+@pytest.mark.tst_id("TST-IMP-03")
 def test_parse_and_validate_bank_ledger():
     sample_file = Path("sample-data/bank_ledger_actuals.csv")
     if sample_file.exists():

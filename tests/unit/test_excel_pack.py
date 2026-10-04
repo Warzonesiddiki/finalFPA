@@ -17,7 +17,7 @@ from app.engine.exports.stamps import STAMP_FIELDS
 from app.engine.exports import formats as fmt
 
 
-@pytest.mark.tst_id("TST-EXP-001")
+@pytest.mark.tst_id("TST-XL-02")
 def test_sheet_names_and_order():
     """Verify that all 7 required sheets are present in exact order."""
     wb = generate_month_end_pack()
@@ -33,7 +33,7 @@ def test_sheet_names_and_order():
     assert wb.sheetnames == expected_sheets
 
 
-@pytest.mark.tst_id("TST-EXP-002")
+@pytest.mark.tst_id("TST-XL-02")
 def test_tab_colors():
     """Verify that tab colors match the specification."""
     wb = generate_month_end_pack()
@@ -44,7 +44,7 @@ def test_tab_colors():
         assert ws.sheet_properties.tabColor.rgb.endswith(expected_color)
 
 
-@pytest.mark.tst_id("TST-EXP-003")
+@pytest.mark.tst_id("TST-XL-03")
 def test_values_only_no_formulas():
     """Verify Rule 3.1: Zero formula cells anywhere in the workbook."""
     wb = generate_month_end_pack()

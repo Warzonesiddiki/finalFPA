@@ -95,6 +95,7 @@ def collect_registered_defects(root: Path) -> set[str]:
         root / "docs" / "28_ACCEPTANCE_UAT_AND_GO_LIVE.md",
         root / "evidence" / "defect_log.md",
         root / "docs" / "SESSION_HANDOVER_2026-10-03.md",
+        root / "docs" / "SESSION_LOG.md",
     ]
 
     def_pat = re.compile(r"\b(DEF-\d{3})\b")
