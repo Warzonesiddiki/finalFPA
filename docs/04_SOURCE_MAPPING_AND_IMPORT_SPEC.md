@@ -329,7 +329,7 @@ failures appear in the validation report with counts and samples.
 
 | Level | Definition | Consequence |
 |---|---|---|
-| **File-level failure (reject)** | The file as a whole cannot be trusted or read: unreadable/encrypted, no header, missing required columns, duplicate headers unresolved, ≥ 90% rows unmapped, debit ≠ credit, checksum re-import, newer template, empty data range (default) | **Nothing is committed.** The batch is recorded as `rejected` with the failing check, the file is not added to the analytic model, and the report states exactly what to fix |
+| **File-level failure (reject)** | The file as a whole cannot be trusted or read: unreadable/encrypted, no header, missing required columns, duplicate headers unresolved, ≥ 90% rows unmapped, debit ≠ credit (journal-style sources; amount-style scope per §12 `DEC-056`), checksum re-import, newer template, empty data range (default) | **Nothing is committed.** The batch is recorded as `rejected` with the failing check, the file is not added to the analytic model, and the report states exactly what to fix |
 | **Row-level failure (quarantine)** | A single row cannot be attributed or parsed, but the rest of the file can: unparseable date/number, period outside the calendar, mixed currency, malformed dimension token, error cell | The row is written to `QuarantineRow` with raw values, its source reference, and a reason; it is **visible, countable, exportable and resolvable** (fix-and-reimport, import-as-is with a recorded decision, or discard with a recorded decision) |
 | **Warning** | Suspicious but loadable: zero-amount rows, both debit and credit, unknown accounts, inactive cost centres, sign-rule application | Loaded; recorded in the report for review; may also raise an exception via the rule engine (`06`) |
 
@@ -340,7 +340,8 @@ the value" are all protocol violations (P13).
 
 | Check | Rule |
 |---|---|
-| **Debit = credit** | Computed at minor-unit precision (exact; no epsilon, `05` §13) per file, per entity, per period, and overall. Tolerance may be configured only with a documented reason, and any non-zero tolerance is stated in the report |
+| **Debit = credit** | Journal-style sources (scope row below, `DEC-056`): computed at minor-unit precision (exact; no epsilon, `05` §13) per file, per entity, per period, and overall. Tolerance may be configured only with a documented reason, and any non-zero tolerance is stated in the report |
+| **Scope by source type (`DEC-056`)** | Journal-style sources (`actuals_d365`, budget) are rejected on any imbalance. Amount-style sub-ledger exports (`bank_ledger`, `payroll_procurement` per §2.2) are one-sided by nature; they are validated by **control totals / net-amount reconciliation** with the documented **₹500 tolerance** of `06` §8 instead — within tolerance the file loads and the variance is stated in the report; beyond tolerance it fails with the recorded-acceptance path above. This **scopes** `IMP-023`, it does not exempt any source from a money-integrity gate |
 | **Row-count reconciliation** | `source = loaded + quarantined + rejected`, asserted before commit (IMP-024) |
 | **Control totals (optional block)** | When the `ControlTotals` sheet is present: compare file totals (as supplied by the client) vs loaded totals vs previous-period totals where useful; report the variance. **Decision `DEC-022`:** a variance beyond tolerance **fails the import by default**; the user may accept it explicitly, and the acceptance is recorded on the batch (who, when, why) — never silent |
 | **Approved total (budgets)** | When the `ApprovedTotal` sheet is present: compare the sum of loaded budget lines with the approved figure; report the delta; fail by default with a recorded-acceptance path |

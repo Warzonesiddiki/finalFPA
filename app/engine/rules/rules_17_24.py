@@ -265,7 +265,9 @@ def evaluate_exc_020(context: RuleContext) -> List[Finding]:
         coverage_pct = quantize_money(
             (Decimal(len(covered)) / Decimal(len(open_periods))) * Decimal("100")
         )
-        span = f"{missing[0].split('-P')[1]}-{missing[-1].split('-P')[1]}"
+        p_start = missing[0].split("-P")[1]
+        p_end = missing[-1].split("-P")[1]
+        span = f"P{p_start}-P{p_end}" if p_start != p_end else f"P{p_start}"
         # "Registers on the budget matrix for the pair": the budget actually loaded.
         budget_total = quantize_money(sum(covered.values(), ZERO))
 

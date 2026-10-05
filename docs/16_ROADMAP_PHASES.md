@@ -1,5 +1,5 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-05
 > **Owning FRs/areas:** the phase model and the **next open item** pointer (Kickoff §14.1), phase
 > deliverables and Definition of Done per phase (Kickoff §5), the packaging spike that runs first after
 > approval (Addon 4 §L.13), the phase-gate contract and gate IDs beyond the Phase-0 checklists (`14`
@@ -34,6 +34,7 @@
 | UAT, pilot and go-live mechanics (`GATE-13`…`GATE-15`) | `28` |
 | Release checklist, semver mechanics, upgrade fixture, distribution | `24` |
 | Backlog entries produced by cuts and deferrals | `27` |
+| The execution blueprint, dated gap inventory and live taskboard (`TB-nnn`) | `33` — a derived execution view; this document, `27` and `28` own the underlying facts |
 
 ### 1.2 How to use it
 
@@ -47,17 +48,21 @@
 4. **A gate is passed only by its evidence pack** (§5.2), approved and recorded (`19`, Addon 4 §E.2).
 5. **Estimates are transparency, not promises.** They are re-estimated at every gate and reported with
    variance; a silent slip is a protocol violation (Addon 4 §D.5).
+6. **The live taskboard (`33`) mirrors this plan as tasks with statuses.** It never owns a fact: on
+   conflict the owning document wins (and this document for anything phase-shaped), and a task may be
+   marked done only together with its evidence.
 
 ### 1.3 The next open item (live pointer)
 
 | Field | Value |
 |---|---|
-| Item | **Phase 1 — Import & Validation (`GATE-07`)** — Implement ingestion pipeline for D365 and two custom system shapes: file pre-scan, profile mapping, 32 validation checks, staging quarantine, atomic commit, and import batch history (`FR-IMP-001` through `FR-IMP-031`). |
-| Why now | Packaging spike (`GATE-06`, `SPK-01`..`SPK-08`) verified green: PyInstaller onedir binary (310.2 MB ≤ 500 MB budget), React UI, and standalone portable package generated with SHA-256 manifest. |
-| Definition of done for this item | Engine import parser, mapping engine, all 32 validation checks implemented and tested against `sample-data/malformed/` negative corpus and good GL files; atomic DuckDB commits; UI import wizard and check report screens active; all P0 FRs passing. |
-| Next item after this one | Phase 2: BvA Variance & Drilldown (`GATE-08`, 19 FRs: lowest shared grain variance, waterfall bridge, and transaction drilldown). |
-| Next after that | Phase 3: Exception Engine & Register (`GATE-09`, 24 rules). |
-| Blocking | None. |
+| Item | **Planted-exception acceptance to green (`14` §5.2/§5.3 bars)** — answer `OQ-025`/`OQ-026`/`OQ-027`, run the `PROP-001` coherent corpus rebuild, fix the 21 misses / 422 extras / 14 zero-coverage rules, then re-run `scripts/acceptance.py` twice for the stability bar and drive `scripts/check` back to green (its perf suite now measures the §5.3 bars instead of skipping them as BLOCKED). |
+| Why now | Session 011 ran the §5.2 harness for the first time on the real corpus: verdict **FAIL** (recall 11/32, High 6/18, 1 control fired, extras 422, 14 zero-coverage rules; stability and 24/24 catalog coverage already pass). `14` §5.2 step 6 makes a red acceptance run release-blocking, and every miss/extra is classified by cause in `evidence/acceptance_remediation_2026-10-04.md`. |
+| Definition of done for this item | All seven §5.3 bars pass on two consecutive identical runs at seed 42; `scripts/check` exits 0; every remaining miss/extra is explained by an answered OQ or a documented, tuned threshold — never by relaxing a bar. |
+| Next item after this one | Open-S1 burn-down per `28` §12 (`DEF-015`…`DEF-018`, `DEF-012`/`DEF-014` traceability, `DEF-011` installer evidence), then the phase-gate evidence packs resume per §6. |
+| Next after that | Real-data pilot (`GATE-13`, `28` §6) — tie-out worksheet and classification log. |
+| Blocking | **None as of 2026-10-05** — `OQ-025`/`OQ-026`/`OQ-027` decided (`DEC-056`…`DEC-058`) and `PROP-001` approved (`DEC-059`); execution continues per `33` §5 (M0 ✅) |
+| Taskboard mirror | `33` §5, milestone M0/M1 (`TB-001`…`TB-013`) |
 
 > This table is the session-start pointer. `00_INDEX` §10 and the `SESSION_LOG` "Next step" must agree with
 > it; if they disagree, this table wins and the difference is corrected in the same commit.

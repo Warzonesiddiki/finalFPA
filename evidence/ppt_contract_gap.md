@@ -198,3 +198,32 @@ The landed template `packaging/templates/FPAMonthEndCopilot_v1.pptx` contains 7 
    - Select slides via `layout = next(l for l in prs.slide_layouts if l.name == f"FPA-PPT-00{i}")`.
    - Populate content into existing named shapes `shape.name == "PPT-00..."`.
    - Raise `ERR-EXP-014` when a required shape is absent.
+
+---
+
+## 4. CLOSED — 2026-10-05 (Addon 6 v2 work card `WC-2`, `DEF-018`)
+
+Everything measured in §1 and §2 of this report is **closed**. The prescription in §3 was implemented via the
+reuse adoptions (`ADP-001`/`002`/`003`) rather than the inline refactor sketched there, because Addon 6 §1
+forbids build-first once the Approved Source Catalog covers the capability. Mapping to §3:
+
+| §3 prescription | As built |
+|---|---|
+| Accept/resolve the template | `pptx_fill.core.resolve_template_path` — prefers `board_pack_template.pptx` (`12` §6 base deck), falls back to the shipped template, raises `ERR-EXP-014` when neither exists |
+| Open via `Presentation(template_path)` | `pptx_fill.core.open_template` |
+| Select the `FPA-PPT-00i` layout | `pptx_fill.core.resolve_layout` / `add_slide_from_layout` |
+| Populate named shapes | `pptx_fill.patterns.set_text` / `fill_table` / `replace_chart_data` |
+| Raise `ERR-EXP-014` when a shape is absent | `pptx_fill.core.resolve_shape` → `TemplateShapeError` (`ExportTemplateError` is an alias, so `12` §9.1's code has one implementation) |
+
+§1's "Template path referenced: **0** times" and the six `prs.slide_layouts[6]` call sites (old lines 377 /
+527 / 697 / 889 / 1099 / 1332) are all gone; the procedural `add_shape` / `add_textbox` / `add_table` path is
+no longer used for any slide.
+
+**One thing §3 did not anticipate, and it matters:** the template ships layouts only — 0 slides and 0
+placeholders — so a slide added for a layout renders the layout's shapes as *inherited* content that PowerPoint
+will not let a user click. Filling them in place on the layout would have satisfied §3 literally while breaking
+`FR-PPT-002` (native, editable output). Shapes are therefore **promoted** onto the slide, with every embedded
+part's relationship re-pointed at the slide. See `evidence/wc2/def018_closure_report.md` §2.
+
+Verification: **843 passed, 16 deselected**; `app.engine.pptx_fill` at **95 %** coverage; 103/103 contract
+names resolve per slide; `license_gate.py` PASS (exit 0).

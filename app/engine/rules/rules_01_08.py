@@ -22,6 +22,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from app.engine.calc.math import quantize_money, ZERO
+from app.engine.dedupe import iter_candidate_groups, normalise_invoice_no
 
 
 @dataclass
@@ -217,14 +218,11 @@ def resolve_as_of_date(
     return end.isoformat() if end else None
 
 
-def _normalize_invoice_no(invoice_no: Optional[str]) -> str:
-    """Normalise invoice number per §4 EXC-007: trim, upper-case, strip leading zeros and symbols."""
-    if not invoice_no:
-        return ""
-    inv_upper = str(invoice_no).strip().upper()
-    cleaned = re.sub(r"[^A-Z0-9]", "", inv_upper)
-    no_zeros = cleaned.lstrip("0")
-    return no_zeros if no_zeros else (cleaned or "0")
+# R12 (`BD-001`): invoice-number normalisation now has exactly one implementation, in
+# `app/engine/dedupe/normalize.py`, shared with every other duplicate rule. This alias is
+# kept because the name is referenced in `06` EXC-007's own wording and by this module's
+# callers; it delegates rather than re-implementing.
+_normalize_invoice_no = normalise_invoice_no
 
 
 # ==============================================================================
@@ -238,9 +236,10 @@ def evaluate_exc_001(context: RuleContext) -> List[Finding]:
     min_amount = Decimal(str(context.config.get("EXC-001_min_amount", "0.00")))
     exact_amount_match = bool(context.config.get("EXC-001_exact_amount_match", True))
 
-    # Group expense-side debit rows by (vendor_code, normalised invoice_no, amount)
-    groups: Dict[Tuple[str, str, Decimal], List[Any]] = {}
-
+    # Block expense-side debit rows by (vendor_code, normalised invoice_no, amount).
+    # The rule owns the key and the "≥ 2 rows" structural test; the grouping, candidate
+    # selection and deterministic ordering come from `dedupe.blocking` (R12).
+    keyed_rows: List[Tuple[Tuple[str, str, Decimal], Any]] = []
     for tx in context.transactions:
         vendor_code = _get_val(tx, "vendor_code")
         invoice_no = _get_val(tx, "invoice_no")
@@ -252,17 +251,20 @@ def evaluate_exc_001(context: RuleContext) -> List[Finding]:
         if not vendor_code or not invoice_no or amount <= ZERO:
             continue
 
-        norm_inv = _normalize_invoice_no(invoice_no)
+        norm_inv = normalise_invoice_no(invoice_no)
         if not norm_inv:
             continue
 
         amt_key = amount if exact_amount_match else ZERO
-        key = (str(vendor_code).strip(), norm_inv, amt_key)
-        groups.setdefault(key, []).append(tx)
+        keyed_rows.append(((str(vendor_code).strip(), norm_inv, amt_key), tx))
 
-    for (vendor_code, norm_inv, amt_key), tx_list in sorted(groups.items(), key=lambda x: (x[0][0], x[0][1])):
-        if len(tx_list) < 2:
-            continue
+    for (vendor_code, norm_inv, amt_key), tx_list in iter_candidate_groups(
+        keyed_rows,
+        key_of=lambda item: item[0],
+        is_candidate=lambda _key, rows: len(rows) >= 2,
+        order_by=lambda group: (group[0][0], group[0][1]),
+    ):
+        tx_list = [item[1] for item in tx_list]
 
         dates = [_parse_date(_get_val(tx, "posting_date")) for tx in tx_list]
         valid_dates = [d for d in dates if d is not None]
@@ -329,30 +331,51 @@ def evaluate_exc_002(context: RuleContext) -> List[Finding]:
     min_rows = int(context.config.get("EXC-002_min_rows", 1))
     min_amount = Decimal(str(context.config.get("EXC-002_min_amount", "0.00")))
 
-    # Group unmapped transactions by account_code
-    unmapped_groups: Dict[str, List[Any]] = {}
+    # Group unmapped transactions by dimension_type and source_value
+    unmapped_account_groups: Dict[str, List[Any]] = {}
+    unmapped_cc_groups: Dict[str, List[Any]] = {}
 
     for tx in context.transactions:
         acc = str(_get_val(tx, "account_code", "")).strip()
-        if not acc:
-            continue
+        cc = str(_get_val(tx, "cost_center_code", "")).strip()
 
-        is_unmapped = False
-        if context.dim_accounts:
-            meta = context.dim_accounts.get(acc)
-            if meta is None:
-                is_unmapped = True
-            elif meta.get("is_mapped") is False or meta.get("is_placeholder") is True:
-                is_unmapped = True
-        else:
-            # Pattern matching when dim_accounts master table is not injected
-            if any(term in acc.upper() for term in ["TEMP", "UNKNOWN", "UNMAPPED", "DORMANT"]) or acc.startswith("9999"):
-                is_unmapped = True
+        if acc:
+            is_unmapped_acc = False
+            if context.dim_accounts:
+                meta_acc = context.dim_accounts.get(acc)
+                if meta_acc is None:
+                    is_unmapped_acc = True
+                elif meta_acc.get("is_mapped") is False or meta_acc.get("is_placeholder") is True:
+                    is_unmapped_acc = True
+            else:
+                # Pattern matching when dim_accounts master table is not injected
+                if any(term in acc.upper() for term in ["TEMP", "UNKNOWN", "UNMAPPED", "DORMANT"]) or acc.startswith("9999"):
+                    is_unmapped_acc = True
 
-        if is_unmapped:
-            unmapped_groups.setdefault(acc, []).append(tx)
+            if is_unmapped_acc:
+                unmapped_account_groups.setdefault(acc, []).append(tx)
 
-    for acc, tx_list in sorted(unmapped_groups.items(), key=lambda x: x[0]):
+        if cc:
+            is_unmapped_cc = False
+            if context.dim_cost_centers:
+                meta_cc = context.dim_cost_centers.get(cc)
+                if meta_cc is None:
+                    is_unmapped_cc = True
+                elif (
+                    meta_cc.get("is_mapped") is False
+                    or meta_cc.get("is_placeholder") is True
+                    or meta_cc.get("owner_name") == "Unassigned"
+                    or cc.startswith("CC-999")
+                ):
+                    is_unmapped_cc = True
+            else:
+                if any(term in cc.upper() for term in ["TEMP", "UNKNOWN", "UNMAPPED", "UNASSIGNED"]) or cc.startswith("CC-999"):
+                    is_unmapped_cc = True
+
+            if is_unmapped_cc:
+                unmapped_cc_groups.setdefault(cc, []).append(tx)
+
+    for acc, tx_list in sorted(unmapped_account_groups.items(), key=lambda x: x[0]):
         if len(tx_list) < min_rows:
             continue
 
@@ -386,6 +409,48 @@ def evaluate_exc_002(context: RuleContext) -> List[Finding]:
                         "source_row_ref": _get_val(tx, "source_row_ref"),
                         "voucher_no": _get_val(tx, "voucher_no"),
                         "account_code": acc,
+                        "amount": str(quantize_money(_get_val(tx, "net_amount") or _get_val(tx, "debit"))),
+                    }
+                    for tx in tx_list[:5]
+                ],
+                catalog_rule_id="EXC-004",
+            )
+        )
+
+    for cc, tx_list in sorted(unmapped_cc_groups.items(), key=lambda x: x[0]):
+        if len(tx_list) < min_rows:
+            continue
+
+        total_amount = sum(
+            quantize_money(abs(_get_val(tx, "net_amount", ZERO) or _get_val(tx, "debit", ZERO)))
+            for tx in tx_list
+        )
+        total_amount = quantize_money(total_amount)
+        if total_amount < min_amount:
+            continue
+
+        subject_key = f"cost_center|{cc}"
+        evidence_refs = [str(_get_val(tx, "source_row_ref", f"row_{i}")) for i, tx in enumerate(tx_list, 1)]
+
+        findings.append(
+            Finding(
+                rule_id="EXC-002",
+                rule_name="Unmapped GL account or dimension",
+                severity="Medium",
+                tier="exact",
+                subject_key=subject_key,
+                subject_display=f"Unmapped Cost Center {cc}",
+                amount_at_risk=total_amount,
+                period_id=context.period_id,
+                owner_role="FP&A Analyst",
+                effective_threshold=f"min_rows {min_rows}; min_amount ₹{min_amount}",
+                detail=f"{len(tx_list)} rows post to unmapped placeholder cost center {cc} (total ₹{total_amount})",
+                evidence_refs=evidence_refs,
+                sample_rows=[
+                    {
+                        "source_row_ref": _get_val(tx, "source_row_ref"),
+                        "voucher_no": _get_val(tx, "voucher_no"),
+                        "cost_center_code": cc,
                         "amount": str(quantize_money(_get_val(tx, "net_amount") or _get_val(tx, "debit"))),
                     }
                     for tx in tx_list[:5]
@@ -560,10 +625,22 @@ def evaluate_exc_005(context: RuleContext) -> List[Finding]:
     min_credit_amount = Decimal(str(context.config.get("EXC-005_min_credit_amount", "500000.00")))
     offset_ratio_threshold = Decimal(str(context.config.get("EXC-005_offset_ratio", "0.90")))
 
-    # Group by (company_code, account_code, cost_center_code)
+    # Filter and group by (company_code, account_code, cost_center_code) within the same period (doc 06 EXC-012)
     groups: Dict[Tuple[str, str, str], List[Any]] = {}
 
+    current_period = str(context.period_id).strip() if context.period_id else None
+
     for tx in context.transactions:
+        tx_p = _get_val(tx, "period_code")
+        tx_period = str(tx_p).strip() if tx_p is not None else ""
+        if not tx_period or tx_period == "None":
+            p_date = _parse_date(_get_val(tx, "posting_date"))
+            if p_date:
+                tx_period = _derive_period_from_date(p_date) or ""
+
+        if current_period and tx_period and tx_period != current_period:
+            continue
+
         acc = str(_get_val(tx, "account_code", "")).strip()
         comp = str(_get_val(tx, "company_code", "IN01")).strip()
         cc = str(_get_val(tx, "cost_center_code", "")).strip()

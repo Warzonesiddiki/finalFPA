@@ -23,18 +23,31 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal
-from decimal import Decimal
 from pathlib import Path
-from typing import Any, Sequence
-import os
+from typing import Any, overload
 
 import openpyxl
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.workbook.defined_name import DefinedName
 
+from app.engine.calc.math import quantize_money
 from app.engine.exports import formats as fmt
-from app.engine.exports.stamps import STAMP_FIELDS, STAMP_FIELD_MAP
+from app.engine.exports.stamps import STAMP_FIELDS
+
+
+@overload
+def _coerce_money(value: None) -> None: ...
+@overload
+def _coerce_money(value: Decimal | str | int | float) -> Decimal: ...
+def _coerce_money(value: Decimal | str | int | float | None) -> Decimal | None:
+    """DEF-015: carry money as Decimal (17 §5.1); None stays None for gaps.
+
+    Single choke point over ``quantize_money`` (R12): float inputs recover via
+    str, never via ``Decimal(some_float)``, so sample-data float literals land
+    on their intended 2 dp value instead of their binary expansion.
+    """
+    return None if value is None else quantize_money(value)
 
 
 # -------------------------------------------------------------------------
@@ -120,6 +133,7 @@ TAB_COLORS = {
 # Data Models for Excel Pack Generation
 # -------------------------------------------------------------------------
 
+
 @dataclass
 class PackContext:
     project_name: str = "Acme Manufacturing"
@@ -136,9 +150,13 @@ class PackContext:
     units: str = "₹ whole units"
     grouping: str = "Indian (lakh/crore)"
     batch_ids: list[int] = field(default_factory=lambda: [1041, 1042, 1043])
-    source_files: list[str] = field(default_factory=lambda: [
-        "D365_GL_Sep26.xlsx", "Payroll_Sep26.csv", "Procurement_Sep26.xlsx"
-    ])
+    source_files: list[str] = field(
+        default_factory=lambda: [
+            "D365_GL_Sep26.xlsx",
+            "Payroll_Sep26.csv",
+            "Procurement_Sep26.xlsx",
+        ]
+    )
     filter_json: str = '{"entity":["IN01","IN02"],"period":["FY26-P09"]}'
     filter_human: str = "Entity=IN01, IN02 · Period=FY26-P09 · CC=All · Account=All"
     tie_out_state: str = "Balanced (debits = credits; variance ₹0.00)"
@@ -164,6 +182,11 @@ class BvARow:
     rows_count: int = 0
     commentary: str = ""
 
+    def __post_init__(self) -> None:
+        self.actual = _coerce_money(self.actual)
+        self.budget = _coerce_money(self.budget)
+        self.variance = _coerce_money(self.variance)
+
 
 @dataclass
 class PLRow:
@@ -180,6 +203,14 @@ class PLRow:
     signal: str
     notes: str = ""
     is_summary: bool = False
+
+    def __post_init__(self) -> None:
+        self.actual_mtd = _coerce_money(self.actual_mtd)
+        self.budget_mtd = _coerce_money(self.budget_mtd)
+        self.var_mtd = _coerce_money(self.var_mtd)
+        self.actual_ytd = _coerce_money(self.actual_ytd)
+        self.budget_ytd = _coerce_money(self.budget_ytd)
+        self.var_ytd = _coerce_money(self.var_ytd)
 
 
 @dataclass
@@ -213,6 +244,11 @@ class TransactionRow:
     batch_id: int
     fingerprint: str
     exception_ids: str = ""
+
+    def __post_init__(self) -> None:
+        self.debit = _coerce_money(self.debit)
+        self.credit = _coerce_money(self.credit)
+        self.net = _coerce_money(self.net)
 
 
 @dataclass
@@ -248,6 +284,11 @@ class ExceptionRow:
     last_seen_at: datetime | str
     closed_at: datetime | str | None
     run_id: int
+    correlation_id: str | None = None
+    claim_id: str | None = None
+
+    def __post_init__(self) -> None:
+        self.amount_at_risk = _coerce_money(self.amount_at_risk)
 
 
 @dataclass
@@ -271,6 +312,12 @@ class ForecastRow:
     version: str = "Base v3"
     updated_at: str = "2026-09-30 18:00"
 
+    def __post_init__(self) -> None:
+        self.actual = _coerce_money(self.actual)
+        self.budget = _coerce_money(self.budget)
+        self.forecast = _coerce_money(self.forecast)
+        self.variance = _coerce_money(self.variance)
+
 
 @dataclass
 class ImportBatchRow:
@@ -285,16 +332,23 @@ class ImportBatchRow:
     rows_committed: int
     rows_quarantined: int
     rows_rejected: int
-    debit_total: Decimal | float
-    credit_total: Decimal | float
-    balance_variance: Decimal | float
-    control_total_source: Decimal | float | None
-    control_variance: Decimal | float
+    debit_total: Decimal
+    credit_total: Decimal
+    balance_variance: Decimal
+    control_total_source: Decimal | None
+    control_variance: Decimal
     balance_result: str
     profile_version: str
     loaded_at: datetime | str
     loaded_by: str
     quarantine_ref: str = "—"
+
+    def __post_init__(self) -> None:
+        self.debit_total = _coerce_money(self.debit_total)
+        self.credit_total = _coerce_money(self.credit_total)
+        self.balance_variance = _coerce_money(self.balance_variance)
+        self.control_total_source = _coerce_money(self.control_total_source)
+        self.control_variance = _coerce_money(self.control_variance)
 
 
 @dataclass
@@ -323,133 +377,846 @@ class MonthEndPackData:
 # Sample Data Factory (for default pack generation & tests)
 # -------------------------------------------------------------------------
 
+
 def create_sample_pack_data(context: PackContext | None = None) -> MonthEndPackData:
     """Create a fully-populated MonthEndPackData instance with representative figures."""
     ctx = context or PackContext()
 
     bva = [
-        BvARow(1, "4000", "Revenue", "revenue", "All", 12500000.00, 12000000.00, 500000.00, 4.17, "Fav ▲", "materiality 2.0% or ₹500,000", 1, 1420, "Exceeded target due to volume expansion"),
-        BvARow(2, "4100", "  Domestic Sales", "revenue", "All", 9800000.00, 9500000.00, 300000.00, 3.16, "Fav ▲", "—", 3, 1100, "Higher enterprise uptake"),
-        BvARow(2, "4200", "  Export Sales", "revenue", "All", 2700000.00, 2500000.00, 200000.00, 8.00, "Fav ▲", "—", 4, 320, "Forex gain & shipment pull-forward"),
-        BvARow(1, "5000", "Cost of Goods Sold", "expense", "All", 6800000.00, 6500000.00, 300000.00, 4.62, "Adv ▼", "materiality 2.0% or ₹500,000", 2, 980, "Raw material price inflation"),
-        BvARow(2, "5100", "  Raw Materials", "expense", "All", 4500000.00, 4200000.00, 300000.00, 7.14, "Adv ▼", "—", 5, 620, "Steel and resin index hikes"),
-        BvARow(2, "5200", "  Direct Labour", "expense", "All", 2300000.00, 2300000.00, 0.00, 0.00, "—", "—", 8, 360, "On budget"),
-        BvARow(1, "6000", "Operating Expenses", "expense", "All", 3200000.00, 3350000.00, -150000.00, -4.48, "Fav ▲", "—", 6, 450, "Strict marketing cost control"),
-        BvARow(2, "6100", "  Salaries & Staff Costs", "expense", "All", 2100000.00, 2150000.00, -50000.00, -2.33, "Fav ▲", "—", 7, 280, "Hiring delay in Q3"),
-        BvARow(2, "6200", "  Marketing & Advertising", "expense", "All", 650000.00, 750000.00, -100000.00, -13.33, "Fav ▲", "—", 9, 90, "Re-phased campaigns to Q4"),
-        BvARow(2, "6300", "  G&A & Utilities", "expense", "All", 450000.00, 450000.00, 0.00, 0.00, "—", "—", 10, 80, "In line with forecast"),
+        BvARow(
+            1,
+            "4000",
+            "Revenue",
+            "revenue",
+            "All",
+            Decimal("12500000.00"),
+            Decimal("12000000.00"),
+            Decimal("500000.00"),
+            4.17,
+            "Fav ▲",
+            "materiality 2.0% or ₹500,000",
+            1,
+            1420,
+            "Exceeded target due to volume expansion",
+        ),
+        BvARow(
+            2,
+            "4100",
+            "  Domestic Sales",
+            "revenue",
+            "All",
+            Decimal("9800000.00"),
+            Decimal("9500000.00"),
+            Decimal("300000.00"),
+            3.16,
+            "Fav ▲",
+            "—",
+            3,
+            1100,
+            "Higher enterprise uptake",
+        ),
+        BvARow(
+            2,
+            "4200",
+            "  Export Sales",
+            "revenue",
+            "All",
+            Decimal("2700000.00"),
+            Decimal("2500000.00"),
+            Decimal("200000.00"),
+            8.00,
+            "Fav ▲",
+            "—",
+            4,
+            320,
+            "Forex gain & shipment pull-forward",
+        ),
+        BvARow(
+            1,
+            "5000",
+            "Cost of Goods Sold",
+            "expense",
+            "All",
+            Decimal("6800000.00"),
+            Decimal("6500000.00"),
+            Decimal("300000.00"),
+            4.62,
+            "Adv ▼",
+            "materiality 2.0% or ₹500,000",
+            2,
+            980,
+            "Raw material price inflation",
+        ),
+        BvARow(
+            2,
+            "5100",
+            "  Raw Materials",
+            "expense",
+            "All",
+            Decimal("4500000.00"),
+            Decimal("4200000.00"),
+            Decimal("300000.00"),
+            7.14,
+            "Adv ▼",
+            "—",
+            5,
+            620,
+            "Steel and resin index hikes",
+        ),
+        BvARow(
+            2,
+            "5200",
+            "  Direct Labour",
+            "expense",
+            "All",
+            Decimal("2300000.00"),
+            Decimal("2300000.00"),
+            Decimal("0.00"),
+            0.00,
+            "—",
+            "—",
+            8,
+            360,
+            "On budget",
+        ),
+        BvARow(
+            1,
+            "6000",
+            "Operating Expenses",
+            "expense",
+            "All",
+            Decimal("3200000.00"),
+            Decimal("3350000.00"),
+            Decimal("-150000.00"),
+            -4.48,
+            "Fav ▲",
+            "—",
+            6,
+            450,
+            "Strict marketing cost control",
+        ),
+        BvARow(
+            2,
+            "6100",
+            "  Salaries & Staff Costs",
+            "expense",
+            "All",
+            Decimal("2100000.00"),
+            Decimal("2150000.00"),
+            Decimal("-50000.00"),
+            -2.33,
+            "Fav ▲",
+            "—",
+            7,
+            280,
+            "Hiring delay in Q3",
+        ),
+        BvARow(
+            2,
+            "6200",
+            "  Marketing & Advertising",
+            "expense",
+            "All",
+            Decimal("650000.00"),
+            Decimal("750000.00"),
+            Decimal("-100000.00"),
+            -13.33,
+            "Fav ▲",
+            "—",
+            9,
+            90,
+            "Re-phased campaigns to Q4",
+        ),
+        BvARow(
+            2,
+            "6300",
+            "  G&A & Utilities",
+            "expense",
+            "All",
+            Decimal("450000.00"),
+            Decimal("450000.00"),
+            Decimal("0.00"),
+            0.00,
+            "—",
+            "—",
+            10,
+            80,
+            "In line with forecast",
+        ),
     ]
 
     pl = [
-        PLRow("Gross Revenue", "Revenue", 12500000.00, 12000000.00, 500000.00, 4.17, 98000000.00, 95000000.00, 3000000.00, 3.16, "Fav ▲", "Strong volume growth", is_summary=True),
-        PLRow("Cost of Goods Sold (COGS)", "COGS", 6800000.00, 6500000.00, 300000.00, 4.62, 53500000.00, 51000000.00, 2500000.00, 4.90, "Adv ▼", "Input cost pressure", is_summary=True),
-        PLRow("Gross Profit", "Profit", 5700000.00, 5500000.00, 200000.00, 3.64, 44500000.00, 44000000.00, 500000.00, 1.14, "Fav ▲", "Margin 45.6%", is_summary=True),
-        PLRow("Operating Expenses (OPEX)", "Opex", 3200000.00, 3350000.00, -150000.00, -4.48, 25800000.00, 26500000.00, -700000.00, -2.64, "Fav ▲", "Prudent overhead", is_summary=True),
-        PLRow("Operating Profit (EBITDA)", "Profit", 2500000.00, 2150000.00, 350000.00, 16.28, 18700000.00, 17500000.00, 1200000.00, 6.86, "Fav ▲", "EBITDA margin 20.0%", is_summary=True),
-        PLRow("Depreciation & Amortization", "Depreciation", 400000.00, 400000.00, 0.00, 0.00, 3200000.00, 3200000.00, 0.00, 0.00, "—", "Straight-line", is_summary=False),
-        PLRow("EBIT", "Profit", 2100000.00, 1750000.00, 350000.00, 20.00, 15500000.00, 14300000.00, 1200000.00, 8.39, "Fav ▲", "Operating profit", is_summary=True),
-        PLRow("Finance & Interest Costs", "Finance", 150000.00, 160000.00, -10000.00, -6.25, 1250000.00, 1300000.00, -50000.00, -3.85, "Fav ▲", "Term loan interest", is_summary=False),
-        PLRow("Profit Before Tax (PBT)", "Profit", 1950000.00, 1590000.00, 360000.00, 22.64, 14250000.00, 13000000.00, 1250000.00, 9.62, "Fav ▲", "Ahead of plan", is_summary=True),
-        PLRow("Tax Provision", "Tax", 487500.00, 397500.00, 90000.00, 22.64, 3562500.00, 3250000.00, 312500.00, 9.62, "Adv ▼", "25% corporate tax rate", is_summary=False),
-        PLRow("Net Income", "Profit", 1462500.00, 1192500.00, 270000.00, 22.64, 10687500.00, 9750000.00, 937500.00, 9.62, "Fav ▲", "Net margin 11.7%", is_summary=True),
+        PLRow(
+            "Gross Revenue",
+            "Revenue",
+            Decimal("12500000.00"),
+            Decimal("12000000.00"),
+            Decimal("500000.00"),
+            4.17,
+            Decimal("98000000.00"),
+            Decimal("95000000.00"),
+            Decimal("3000000.00"),
+            3.16,
+            "Fav ▲",
+            "Strong volume growth",
+            is_summary=True,
+        ),
+        PLRow(
+            "Cost of Goods Sold (COGS)",
+            "COGS",
+            Decimal("6800000.00"),
+            Decimal("6500000.00"),
+            Decimal("300000.00"),
+            4.62,
+            Decimal("53500000.00"),
+            Decimal("51000000.00"),
+            Decimal("2500000.00"),
+            4.90,
+            "Adv ▼",
+            "Input cost pressure",
+            is_summary=True,
+        ),
+        PLRow(
+            "Gross Profit",
+            "Profit",
+            Decimal("5700000.00"),
+            Decimal("5500000.00"),
+            Decimal("200000.00"),
+            3.64,
+            Decimal("44500000.00"),
+            Decimal("44000000.00"),
+            Decimal("500000.00"),
+            1.14,
+            "Fav ▲",
+            "Margin 45.6%",
+            is_summary=True,
+        ),
+        PLRow(
+            "Operating Expenses (OPEX)",
+            "Opex",
+            Decimal("3200000.00"),
+            Decimal("3350000.00"),
+            Decimal("-150000.00"),
+            -4.48,
+            Decimal("25800000.00"),
+            Decimal("26500000.00"),
+            Decimal("-700000.00"),
+            -2.64,
+            "Fav ▲",
+            "Prudent overhead",
+            is_summary=True,
+        ),
+        PLRow(
+            "Operating Profit (EBITDA)",
+            "Profit",
+            Decimal("2500000.00"),
+            Decimal("2150000.00"),
+            Decimal("350000.00"),
+            16.28,
+            Decimal("18700000.00"),
+            Decimal("17500000.00"),
+            Decimal("1200000.00"),
+            6.86,
+            "Fav ▲",
+            "EBITDA margin 20.0%",
+            is_summary=True,
+        ),
+        PLRow(
+            "Depreciation & Amortization",
+            "Depreciation",
+            Decimal("400000.00"),
+            Decimal("400000.00"),
+            Decimal("0.00"),
+            0.00,
+            Decimal("3200000.00"),
+            Decimal("3200000.00"),
+            Decimal("0.00"),
+            0.00,
+            "—",
+            "Straight-line",
+            is_summary=False,
+        ),
+        PLRow(
+            "EBIT",
+            "Profit",
+            Decimal("2100000.00"),
+            Decimal("1750000.00"),
+            Decimal("350000.00"),
+            20.00,
+            Decimal("15500000.00"),
+            Decimal("14300000.00"),
+            Decimal("1200000.00"),
+            8.39,
+            "Fav ▲",
+            "Operating profit",
+            is_summary=True,
+        ),
+        PLRow(
+            "Finance & Interest Costs",
+            "Finance",
+            Decimal("150000.00"),
+            Decimal("160000.00"),
+            Decimal("-10000.00"),
+            -6.25,
+            Decimal("1250000.00"),
+            Decimal("1300000.00"),
+            Decimal("-50000.00"),
+            -3.85,
+            "Fav ▲",
+            "Term loan interest",
+            is_summary=False,
+        ),
+        PLRow(
+            "Profit Before Tax (PBT)",
+            "Profit",
+            Decimal("1950000.00"),
+            Decimal("1590000.00"),
+            Decimal("360000.00"),
+            22.64,
+            Decimal("14250000.00"),
+            Decimal("13000000.00"),
+            Decimal("1250000.00"),
+            9.62,
+            "Fav ▲",
+            "Ahead of plan",
+            is_summary=True,
+        ),
+        PLRow(
+            "Tax Provision",
+            "Tax",
+            Decimal("487500.00"),
+            Decimal("397500.00"),
+            Decimal("90000.00"),
+            22.64,
+            Decimal("3562500.00"),
+            Decimal("3250000.00"),
+            Decimal("312500.00"),
+            9.62,
+            "Adv ▼",
+            "25% corporate tax rate",
+            is_summary=False,
+        ),
+        PLRow(
+            "Net Income",
+            "Profit",
+            Decimal("1462500.00"),
+            Decimal("1192500.00"),
+            Decimal("270000.00"),
+            22.64,
+            Decimal("10687500.00"),
+            Decimal("9750000.00"),
+            Decimal("937500.00"),
+            9.62,
+            "Fav ▲",
+            "Net margin 11.7%",
+            is_summary=True,
+        ),
     ]
 
     transactions = [
         TransactionRow(
-            1, "IN01", "5100", "Raw Materials", "CC-101", "Plant Ops", "PRJ-901", "Apex Steel Corp", "VND-401",
-            "FY26-P09", date(2026, 9, 14), date(2026, 9, 12), "VCH-2026-09-001", "DOC-8911", "INV-5521",
-            1, "Purchase of structural steel beams batch 4", "auto", 450000.00, 0.00, 450000.00, "Dr",
-            "INR", "D365", "D365_GL_Sep26.xlsx", "Sheet1!A102", 1041, "9f2c10aa45b1", "EXC-002"
+            1,
+            "IN01",
+            "5100",
+            "Raw Materials",
+            "CC-101",
+            "Plant Ops",
+            "PRJ-901",
+            "Apex Steel Corp",
+            "VND-401",
+            "FY26-P09",
+            date(2026, 9, 14),
+            date(2026, 9, 12),
+            "VCH-2026-09-001",
+            "DOC-8911",
+            "INV-5521",
+            1,
+            "Purchase of structural steel beams batch 4",
+            "auto",
+            Decimal("450000.00"),
+            Decimal("0.00"),
+            Decimal("450000.00"),
+            "Dr",
+            "INR",
+            "D365",
+            "D365_GL_Sep26.xlsx",
+            "Sheet1!A102",
+            1041,
+            "9f2c10aa45b1",
+            "EXC-002",
         ),
         TransactionRow(
-            2, "IN01", "6100", "Salaries & Staff Costs", "CC-201", "HR", "PRJ-000", "Payroll Internal", "VND-000",
-            "FY26-P09", date(2026, 9, 28), date(2026, 9, 28), "VCH-2026-09-042", "DOC-8942", "PAY-0926",
-            1, "Monthly plant staffing and operator payroll", "auto", 2100000.00, 0.00, 2100000.00, "Dr",
-            "INR", "Payroll", "Payroll_Sep26.csv", "line 15", 1042, "381bcf771a2d", ""
+            2,
+            "IN01",
+            "6100",
+            "Salaries & Staff Costs",
+            "CC-201",
+            "HR",
+            "PRJ-000",
+            "Payroll Internal",
+            "VND-000",
+            "FY26-P09",
+            date(2026, 9, 28),
+            date(2026, 9, 28),
+            "VCH-2026-09-042",
+            "DOC-8942",
+            "PAY-0926",
+            1,
+            "Monthly plant staffing and operator payroll",
+            "auto",
+            Decimal("2100000.00"),
+            Decimal("0.00"),
+            Decimal("2100000.00"),
+            "Dr",
+            "INR",
+            "Payroll",
+            "Payroll_Sep26.csv",
+            "line 15",
+            1042,
+            "381bcf771a2d",
+            "",
         ),
         TransactionRow(
-            3, "IN02", "4100", "Domestic Sales", "CC-301", "Sales", "PRJ-102", "Tata Motors Ltd", "VND-702",
-            "FY26-P09", date(2026, 9, 25), date(2026, 9, 25), "VCH-2026-09-088", "DOC-9011", "INV-9812",
-            1, "Direct supply delivery - commercial vehicle components", "auto", 0.00, 980000.00, -980000.00, "Cr",
-            "INR", "D365", "D365_GL_Sep26.xlsx", "Sheet1!A412", 1041, "7a8f9c11e3b5", ""
+            3,
+            "IN02",
+            "4100",
+            "Domestic Sales",
+            "CC-301",
+            "Sales",
+            "PRJ-102",
+            "Tata Motors Ltd",
+            "VND-702",
+            "FY26-P09",
+            date(2026, 9, 25),
+            date(2026, 9, 25),
+            "VCH-2026-09-088",
+            "DOC-9011",
+            "INV-9812",
+            1,
+            "Direct supply delivery - commercial vehicle components",
+            "auto",
+            Decimal("0.00"),
+            Decimal("980000.00"),
+            Decimal("-980000.00"),
+            "Cr",
+            "INR",
+            "D365",
+            "D365_GL_Sep26.xlsx",
+            "Sheet1!A412",
+            1041,
+            "7a8f9c11e3b5",
+            "",
         ),
         TransactionRow(
-            4, "IN01", "6200", "Marketing & Advertising", "CC-401", "Commercial", "PRJ-304", "Omni Media Agency", "VND-551",
-            "FY26-P09", date(2026, 9, 20), date(2026, 9, 18), "VCH-2026-09-065", "DOC-8977", "INV-1104",
-            1, "Digital media and product showcase campaign", "auto", 350000.00, 0.00, 350000.00, "Dr",
-            "INR", "Procurement", "Procurement_Sep26.xlsx", "Sheet1!B88", 1043, "6e11dd45aa89", "EXC-005"
+            4,
+            "IN01",
+            "6200",
+            "Marketing & Advertising",
+            "CC-401",
+            "Commercial",
+            "PRJ-304",
+            "Omni Media Agency",
+            "VND-551",
+            "FY26-P09",
+            date(2026, 9, 20),
+            date(2026, 9, 18),
+            "VCH-2026-09-065",
+            "DOC-8977",
+            "INV-1104",
+            1,
+            "Digital media and product showcase campaign",
+            "auto",
+            Decimal("350000.00"),
+            Decimal("0.00"),
+            Decimal("350000.00"),
+            "Dr",
+            "INR",
+            "Procurement",
+            "Procurement_Sep26.xlsx",
+            "Sheet1!B88",
+            1043,
+            "6e11dd45aa89",
+            "EXC-005",
         ),
         TransactionRow(
-            5, "IN02", "5200", "Direct Labour", "CC-102", "Assembly", "PRJ-902", "Workforce Solutions", "VND-309",
-            "FY26-P09", date(2026, 9, 22), date(2026, 9, 21), "VCH-2026-09-071", "DOC-8980", "INV-3301",
-            1, "Contract technician shift support", "manual", 180000.00, 0.00, 180000.00, "Dr",
-            "INR", "D365", "D365_GL_Sep26.xlsx", "Sheet1!A604", 1041, "bc309e1189ac", ""
+            5,
+            "IN02",
+            "5200",
+            "Direct Labour",
+            "CC-102",
+            "Assembly",
+            "PRJ-902",
+            "Workforce Solutions",
+            "VND-309",
+            "FY26-P09",
+            date(2026, 9, 22),
+            date(2026, 9, 21),
+            "VCH-2026-09-071",
+            "DOC-8980",
+            "INV-3301",
+            1,
+            "Contract technician shift support",
+            "manual",
+            Decimal("180000.00"),
+            Decimal("0.00"),
+            Decimal("180000.00"),
+            "Dr",
+            "INR",
+            "D365",
+            "D365_GL_Sep26.xlsx",
+            "Sheet1!A604",
+            1041,
+            "bc309e1189ac",
+            "",
         ),
     ]
 
     exceptions = [
         ExceptionRow(
-            101, "EXC-002", "Duplicate invoice number across vendors", "1.0", "Invoicing", "High", "▲",
-            "INV-5521 from Apex Steel Corp", "INV-5521|VND-401", "IN01", "5100", "Raw Materials", "CC-101",
-            "Apex Steel Corp", "FY26-P09", "FY26-P09", 450000.00, "open", "Rahul Mehta", 6, "Overdue 1 d",
-            date(2026, 9, 26), "materiality ₹100,000", "No", 2, date(2026, 9, 28), "VCH-2026-09-001",
-            datetime(2026, 9, 27, 10, 15), datetime(2026, 9, 30, 18, 0), None, 118
+            101,
+            "EXC-002",
+            "Duplicate invoice number across vendors",
+            "1.0",
+            "Invoicing",
+            "High",
+            "▲",
+            "INV-5521 from Apex Steel Corp",
+            "INV-5521|VND-401",
+            "IN01",
+            "5100",
+            "Raw Materials",
+            "CC-101",
+            "Apex Steel Corp",
+            "FY26-P09",
+            "FY26-P09",
+            Decimal("450000.00"),
+            "open",
+            "Rahul Mehta",
+            6,
+            "Overdue 1 d",
+            date(2026, 9, 26),
+            "materiality ₹100,000",
+            "No",
+            2,
+            date(2026, 9, 28),
+            "VCH-2026-09-001",
+            datetime(2026, 9, 27, 10, 15),
+            datetime(2026, 9, 30, 18, 0),
+            None,
+            118,
         ),
         ExceptionRow(
-            102, "EXC-005", "Spike vs 3-month trailing average", "1.2", "Variance", "Medium", "◆",
-            "Omni Media campaign marketing fee", "CC-401|6200", "IN01", "6200", "Marketing & Advertising", "CC-401",
-            "Omni Media Agency", "FY26-P09", "FY26-P09", 350000.00, "in_review", "Priya Sharma", 4, "—",
-            date(2026, 10, 5), "variance > 25% & ₹200,000", "No", 1, date(2026, 9, 29), "VCH-2026-09-065",
-            datetime(2026, 9, 28, 14, 22), datetime(2026, 9, 29, 11, 0), None, 118
+            102,
+            "EXC-005",
+            "Spike vs 3-month trailing average",
+            "1.2",
+            "Variance",
+            "Medium",
+            "◆",
+            "Omni Media campaign marketing fee",
+            "CC-401|6200",
+            "IN01",
+            "6200",
+            "Marketing & Advertising",
+            "CC-401",
+            "Omni Media Agency",
+            "FY26-P09",
+            "FY26-P09",
+            Decimal("350000.00"),
+            "in_review",
+            "Priya Sharma",
+            4,
+            "—",
+            date(2026, 10, 5),
+            "variance > 25% & ₹200,000",
+            "No",
+            1,
+            date(2026, 9, 29),
+            "VCH-2026-09-065",
+            datetime(2026, 9, 28, 14, 22),
+            datetime(2026, 9, 29, 11, 0),
+            None,
+            118,
         ),
         ExceptionRow(
-            103, "EXC-008", "Manual round-number journal entry", "1.0", "Journal", "Low", "●",
-            "Round number month-end accrual", "VCH-2026-09-099", "IN02", "6300", "G&A & Utilities", "CC-100",
-            "—", "FY26-P09", "FY26-P09", 500000.00, "explained", "Anand Patel", 2, "—",
-            date(2026, 10, 20), "exact multiple of 100,000", "No", 1, date(2026, 9, 30), "VCH-2026-09-099",
-            datetime(2026, 9, 30, 9, 0), datetime(2026, 9, 30, 16, 30), None, 118
+            103,
+            "EXC-008",
+            "Manual round-number journal entry",
+            "1.0",
+            "Journal",
+            "Low",
+            "●",
+            "Round number month-end accrual",
+            "VCH-2026-09-099",
+            "IN02",
+            "6300",
+            "G&A & Utilities",
+            "CC-100",
+            "—",
+            "FY26-P09",
+            "FY26-P09",
+            Decimal("500000.00"),
+            "explained",
+            "Anand Patel",
+            2,
+            "—",
+            date(2026, 10, 20),
+            "exact multiple of 100,000",
+            "No",
+            1,
+            date(2026, 9, 30),
+            "VCH-2026-09-099",
+            datetime(2026, 9, 30, 9, 0),
+            datetime(2026, 9, 30, 16, 30),
+            None,
+            118,
         ),
     ]
 
     forecast = [
-        ForecastRow(1, "4000", "Revenue", "FY26-P09", "Base", "locked_actuals", "project default", 12500000.00, 12000000.00, None, 500000.00, 4.17, "Fav ▲"),
-        ForecastRow(1, "4000", "Revenue", "FY26-P10", "Base", "run_rate", "line pin", None, 12200000.00, 12700000.00, 500000.00, 4.10, "Fav ▲"),
-        ForecastRow(1, "4000", "Revenue", "FY26-P11", "Base", "run_rate", "line pin", None, 12400000.00, 12850000.00, 450000.00, 3.63, "Fav ▲"),
-        ForecastRow(1, "4000", "Revenue", "FY26-P12", "Base", "run_rate", "line pin", None, 13000000.00, 13500000.00, 500000.00, 3.85, "Fav ▲"),
-        ForecastRow(1, "5000", "Cost of Goods Sold", "FY26-P09", "Base", "locked_actuals", "project default", 6800000.00, 6500000.00, None, 300000.00, 4.62, "Adv ▼"),
-        ForecastRow(1, "5000", "Cost of Goods Sold", "FY26-P10", "Base", "three_month_avg", "account group", None, 6600000.00, 6900000.00, 300000.00, 4.55, "Adv ▼"),
-        ForecastRow(1, "5000", "Cost of Goods Sold", "FY26-P11", "Base", "three_month_avg", "account group", None, 6700000.00, 7000000.00, 300000.00, 4.48, "Adv ▼"),
-        ForecastRow(1, "5000", "Cost of Goods Sold", "FY26-P12", "Base", "three_month_avg", "account group", None, 7000000.00, 7300000.00, 300000.00, 4.29, "Adv ▼"),
+        ForecastRow(
+            1,
+            "4000",
+            "Revenue",
+            "FY26-P09",
+            "Base",
+            "locked_actuals",
+            "project default",
+            Decimal("12500000.00"),
+            Decimal("12000000.00"),
+            None,
+            Decimal("500000.00"),
+            4.17,
+            "Fav ▲",
+        ),
+        ForecastRow(
+            1,
+            "4000",
+            "Revenue",
+            "FY26-P10",
+            "Base",
+            "run_rate",
+            "line pin",
+            None,
+            Decimal("12200000.00"),
+            Decimal("12700000.00"),
+            Decimal("500000.00"),
+            4.10,
+            "Fav ▲",
+        ),
+        ForecastRow(
+            1,
+            "4000",
+            "Revenue",
+            "FY26-P11",
+            "Base",
+            "run_rate",
+            "line pin",
+            None,
+            Decimal("12400000.00"),
+            Decimal("12850000.00"),
+            Decimal("450000.00"),
+            3.63,
+            "Fav ▲",
+        ),
+        ForecastRow(
+            1,
+            "4000",
+            "Revenue",
+            "FY26-P12",
+            "Base",
+            "run_rate",
+            "line pin",
+            None,
+            Decimal("13000000.00"),
+            Decimal("13500000.00"),
+            Decimal("500000.00"),
+            3.85,
+            "Fav ▲",
+        ),
+        ForecastRow(
+            1,
+            "5000",
+            "Cost of Goods Sold",
+            "FY26-P09",
+            "Base",
+            "locked_actuals",
+            "project default",
+            Decimal("6800000.00"),
+            Decimal("6500000.00"),
+            None,
+            Decimal("300000.00"),
+            4.62,
+            "Adv ▼",
+        ),
+        ForecastRow(
+            1,
+            "5000",
+            "Cost of Goods Sold",
+            "FY26-P10",
+            "Base",
+            "three_month_avg",
+            "account group",
+            None,
+            Decimal("6600000.00"),
+            Decimal("6900000.00"),
+            Decimal("300000.00"),
+            4.55,
+            "Adv ▼",
+        ),
+        ForecastRow(
+            1,
+            "5000",
+            "Cost of Goods Sold",
+            "FY26-P11",
+            "Base",
+            "three_month_avg",
+            "account group",
+            None,
+            Decimal("6700000.00"),
+            Decimal("7000000.00"),
+            Decimal("300000.00"),
+            4.48,
+            "Adv ▼",
+        ),
+        ForecastRow(
+            1,
+            "5000",
+            "Cost of Goods Sold",
+            "FY26-P12",
+            "Base",
+            "three_month_avg",
+            "account group",
+            None,
+            Decimal("7000000.00"),
+            Decimal("7300000.00"),
+            Decimal("300000.00"),
+            4.29,
+            "Adv ▼",
+        ),
     ]
 
     import_batches = [
         ImportBatchRow(
-            1041, "committed", "D365", "D365_GL_Sep26.xlsx", "Sheet1", "9f2c10aa45b1",
+            1041,
+            "committed",
+            "D365",
+            "D365_GL_Sep26.xlsx",
+            "Sheet1",
+            "9f2c10aa45b1",
             "9f2c10aa45b178e3290bca1149e088192a5b6781938b81920cae918239011928",
-            1420, 1420, 0, 0, 19300000.00, 19300000.00, 0.00, 19300000.00, 0.00,
-            "Balanced", "D365 v4", datetime(2026, 10, 1, 9, 30), "Tahir", "—"
+            1420,
+            1420,
+            0,
+            0,
+            Decimal("19300000.00"),
+            Decimal("19300000.00"),
+            Decimal("0.00"),
+            Decimal("19300000.00"),
+            Decimal("0.00"),
+            "Balanced",
+            "D365 v4",
+            datetime(2026, 10, 1, 9, 30),
+            "Tahir",
+            "—",
         ),
         ImportBatchRow(
-            1042, "committed", "Payroll", "Payroll_Sep26.csv", "default", "381bcf771a2d",
+            1042,
+            "committed",
+            "Payroll",
+            "Payroll_Sep26.csv",
+            "default",
+            "381bcf771a2d",
             "381bcf771a2d81920ca981023812839182390182390182390182390182390182",
-            280, 280, 0, 0, 2100000.00, 2100000.00, 0.00, 2100000.00, 0.00,
-            "Balanced", "Payroll v2", datetime(2026, 10, 1, 10, 15), "Tahir", "—"
+            280,
+            280,
+            0,
+            0,
+            Decimal("2100000.00"),
+            Decimal("2100000.00"),
+            Decimal("0.00"),
+            Decimal("2100000.00"),
+            Decimal("0.00"),
+            "Balanced",
+            "Payroll v2",
+            datetime(2026, 10, 1, 10, 15),
+            "Tahir",
+            "—",
         ),
         ImportBatchRow(
-            1043, "committed", "Procurement", "Procurement_Sep26.xlsx", "Sheet1", "6e11dd45aa89",
+            1043,
+            "committed",
+            "Procurement",
+            "Procurement_Sep26.xlsx",
+            "Sheet1",
+            "6e11dd45aa89",
             "6e11dd45aa8981920ca981023812839182390182390182390182390182390182",
-            90, 90, 0, 0, 650000.00, 650000.00, 0.00, 650000.00, 0.00,
-            "Balanced", "Procurement v1", datetime(2026, 10, 1, 11, 0), "Tahir", "—"
+            90,
+            90,
+            0,
+            0,
+            Decimal("650000.00"),
+            Decimal("650000.00"),
+            Decimal("0.00"),
+            Decimal("650000.00"),
+            Decimal("0.00"),
+            "Balanced",
+            "Procurement v1",
+            datetime(2026, 10, 1, 11, 0),
+            "Tahir",
+            "—",
         ),
     ]
 
     validation_checks = [
-        ValidationCheckRow("IMP-001", "Required headers present and non-empty", 10, "Pass", 0, "All target columns successfully bound"),
-        ValidationCheckRow("IMP-002", "Transaction date within fiscal calendar bounds", 10, "Pass", 0, "Dates strictly within FY26-P09"),
-        ValidationCheckRow("IMP-003", "Debit and credit balance within batch", 10, "Pass", 0, "Total batch debit equals credit exactly"),
-        ValidationCheckRow("IMP-004", "Valid Chart of Accounts mapping", 5, "Pass", 0, "All accounts verified in master COA"),
-        ValidationCheckRow("IMP-005", "Valid Cost Centre mapping", 5, "Pass", 0, "Cost centres verified against active list"),
-        ValidationCheckRow("IMP-006", "Currency consistency check", 2, "Pass", 0, "Consistent INR project base currency"),
+        ValidationCheckRow(
+            "IMP-001",
+            "Required headers present and non-empty",
+            10,
+            "Pass",
+            0,
+            "All target columns successfully bound",
+        ),
+        ValidationCheckRow(
+            "IMP-002",
+            "Transaction date within fiscal calendar bounds",
+            10,
+            "Pass",
+            0,
+            "Dates strictly within FY26-P09",
+        ),
+        ValidationCheckRow(
+            "IMP-003",
+            "Debit and credit balance within batch",
+            10,
+            "Pass",
+            0,
+            "Total batch debit equals credit exactly",
+        ),
+        ValidationCheckRow(
+            "IMP-004",
+            "Valid Chart of Accounts mapping",
+            5,
+            "Pass",
+            0,
+            "All accounts verified in master COA",
+        ),
+        ValidationCheckRow(
+            "IMP-005",
+            "Valid Cost Centre mapping",
+            5,
+            "Pass",
+            0,
+            "Cost centres verified against active list",
+        ),
+        ValidationCheckRow(
+            "IMP-006",
+            "Currency consistency check",
+            2,
+            "Pass",
+            0,
+            "Consistent INR project base currency",
+        ),
     ]
 
     return MonthEndPackData(
@@ -468,6 +1235,7 @@ def create_sample_pack_data(context: PackContext | None = None) -> MonthEndPackD
 # Formatting Helper Functions
 # -------------------------------------------------------------------------
 
+
 def _apply_header_block(
     ws: Any,
     sheet_title: str,
@@ -476,7 +1244,6 @@ def _apply_header_block(
     last_col: int = 14,
 ) -> None:
     """Apply the standard 4-row header block + spacer row 5 per §3.3."""
-    last_letter = get_column_letter(last_col)
 
     # Row 1: Title and Units
     ws.cell(row=1, column=1, value=sheet_title).font = FONT_TITLE
@@ -523,6 +1290,7 @@ def _style_table_header(ws: Any, row: int, cols: list[tuple[str, int, str]]) -> 
 # -------------------------------------------------------------------------
 # Sheet 1: Cover & Context
 # -------------------------------------------------------------------------
+
 
 def build_sheet_cover(ws: Any, data: MonthEndPackData) -> None:
     """Build Sheet 1: Cover & Context per §3.2, §3.3, §4.1."""
@@ -622,11 +1390,36 @@ def build_sheet_cover(ws: Any, data: MonthEndPackData) -> None:
     sheet_meta = [
         ("Cover & Context", 1, "Yes", "Self-describing audit stamp and controls"),
         ("Executive Summary & BvA", len(data.bva_rows), "Yes", "Budget vs Actual variance matrix"),
-        ("P&L Statement Analysis", len(data.pl_rows), "Yes", "Full profit and loss financial analysis"),
-        ("Transaction Detail Drilldown", len(data.transaction_rows), "Yes", "Line-level transaction audit drilldown"),
-        ("Exception Register", len(data.exception_rows), "Yes", "Accounting exception leads and SLA tracking"),
-        ("Forecast Summary", len(data.forecast_rows), "Yes", "Rolling forecast scenarios and accuracy"),
-        ("Import Reconciliation", len(data.import_batches), "Yes", "Source integrity, balance checks and tie-out"),
+        (
+            "P&L Statement Analysis",
+            len(data.pl_rows),
+            "Yes",
+            "Full profit and loss financial analysis",
+        ),
+        (
+            "Transaction Detail Drilldown",
+            len(data.transaction_rows),
+            "Yes",
+            "Line-level transaction audit drilldown",
+        ),
+        (
+            "Exception Register",
+            len(data.exception_rows),
+            "Yes",
+            "Accounting exception leads and SLA tracking",
+        ),
+        (
+            "Forecast Summary",
+            len(data.forecast_rows),
+            "Yes",
+            "Rolling forecast scenarios and accuracy",
+        ),
+        (
+            "Import Reconciliation",
+            len(data.import_batches),
+            "Yes",
+            "Source integrity, balance checks and tie-out",
+        ),
     ]
 
     for idx, (s_name, row_cnt, inc, note_txt) in enumerate(sheet_meta, start=40):
@@ -652,7 +1445,9 @@ def build_sheet_cover(ws: Any, data: MonthEndPackData) -> None:
         note_c.border = BORDER_THIN
 
     # Section 3: Control Totals (Row 48)
-    ws.cell(row=48, column=1, value="Control totals (read this before quoting a number)").font = FONT_SECTION
+    ws.cell(
+        row=48, column=1, value="Control totals (read this before quoting a number)"
+    ).font = FONT_SECTION
     ws.cell(row=48, column=1).fill = FILL_SECTION
     ws.merge_cells("A48:E48")
     ws.row_dimensions[48].height = 20
@@ -679,9 +1474,27 @@ def build_sheet_cover(ws: Any, data: MonthEndPackData) -> None:
     control_rows = [
         ("Actual (total)", act_total, fmt.MONEY_IN, "Executive Summary & BvA · row 'Totals'", "OK"),
         ("Budget (total)", bud_total, fmt.MONEY_IN, "Executive Summary & BvA · row 'Totals'", "OK"),
-        ("Variance (total)", var_total, fmt.MONEY_IN, "Executive Summary & BvA · row 'Totals'", "OK"),
-        ("Variance % (total)", var_pct, fmt.PCT_1DP, "Executive Summary & BvA · row 'Totals'", "OK"),
-        ("Forecast landing estimate", 13500000.00, fmt.MONEY_IN, "Forecast Summary · Landing estimate", "OK"),
+        (
+            "Variance (total)",
+            var_total,
+            fmt.MONEY_IN,
+            "Executive Summary & BvA · row 'Totals'",
+            "OK",
+        ),
+        (
+            "Variance % (total)",
+            var_pct,
+            fmt.PCT_1DP,
+            "Executive Summary & BvA · row 'Totals'",
+            "OK",
+        ),
+        (
+            "Forecast landing estimate",
+            13500000.00,
+            fmt.MONEY_IN,
+            "Forecast Summary · Landing estimate",
+            "OK",
+        ),
         ("Exceptions — open", open_exc, fmt.COUNT_INT, "Exception Register", "OK"),
         ("Exceptions — overdue", overdue_exc, fmt.COUNT_INT, "Exception Register", "OK"),
         ("Exceptions — high severity", high_exc, fmt.COUNT_INT, "Exception Register", "OK"),
@@ -722,7 +1535,7 @@ def build_sheet_cover(ws: Any, data: MonthEndPackData) -> None:
         "2. '—' means there was nothing to compare. 'n/a' means the percentage is undefined (a zero denominator). '₹ 0.00' is a real zero. They are never interchangeable.",
         "3. Green/red shading marks favourable/unfavourable and is always accompanied by a text label (Fav ▲ / Adv ▼) in the Signal column, so the meaning survives black-and-white printing.",
         "4. Filters used to build this pack are printed in the stamp above and repeated on every sheet's row 2.",
-        "5. This is an advisory analysis pack, not an audited statement. Every figure must be reviewed by a qualified accountant before it is used for a business decision, filing or external reporting."
+        "5. This is an advisory analysis pack, not an audited statement. Every figure must be reviewed by a qualified accountant before it is used for a business decision, filing or external reporting.",
     ]
 
     for offset, guide in enumerate(field_guides, start=62):
@@ -752,6 +1565,7 @@ def build_sheet_cover(ws: Any, data: MonthEndPackData) -> None:
 # -------------------------------------------------------------------------
 # Sheet 2: Executive Summary & BvA
 # -------------------------------------------------------------------------
+
 
 def build_sheet_executive_summary(ws: Any, data: MonthEndPackData) -> None:
     """Build Sheet 2: Executive Summary & BvA per §4.2."""
@@ -813,14 +1627,16 @@ def build_sheet_executive_summary(ws: Any, data: MonthEndPackData) -> None:
                 r_data.commentary,
             ]
 
-            for c_idx, (val, (_, _, num_fmt)) in enumerate(zip(values, cols), start=1):
+            for c_idx, (val, (_, _, num_fmt)) in enumerate(zip(values, cols, strict=True), start=1):
                 cell = ws.cell(row=current_row, column=c_idx, value=val)
                 cell.font = FONT_DATA
                 cell.border = BORDER_THIN
                 cell.number_format = num_fmt
 
                 # Alignment
-                if num_fmt in (fmt.MONEY_IN, fmt.PCT_1DP, fmt.COUNT_INT) and isinstance(val, (int, float, Decimal)):
+                if num_fmt in (fmt.MONEY_IN, fmt.PCT_1DP, fmt.COUNT_INT) and isinstance(
+                    val, (int, float, Decimal)
+                ):
                     cell.alignment = ALIGN_RIGHT
                 elif num_fmt == fmt.LABEL:
                     cell.alignment = ALIGN_CENTER
@@ -865,7 +1681,9 @@ def build_sheet_executive_summary(ws: Any, data: MonthEndPackData) -> None:
         ]
 
         ws.row_dimensions[current_row].height = 22
-        for c_idx, (t_val, (_, _, num_fmt)) in enumerate(zip(totals_values, cols), start=1):
+        for c_idx, (t_val, (_, _, num_fmt)) in enumerate(
+            zip(totals_values, cols, strict=True), start=1
+        ):
             cell = ws.cell(row=current_row, column=c_idx, value=t_val)
             cell.font = FONT_TOTAL
             cell.fill = FILL_TOTAL
@@ -884,6 +1702,7 @@ def build_sheet_executive_summary(ws: Any, data: MonthEndPackData) -> None:
 # -------------------------------------------------------------------------
 # Sheet 3: P&L Statement Analysis
 # -------------------------------------------------------------------------
+
 
 def build_sheet_pl_statement(ws: Any, data: MonthEndPackData) -> None:
     """Build Sheet 3: P&L Statement Analysis."""
@@ -924,7 +1743,11 @@ def build_sheet_pl_statement(ws: Any, data: MonthEndPackData) -> None:
         for r_data in data.pl_rows:
             is_net_income = "Net Income" in r_data.line_item
             row_font = FONT_TOTAL if r_data.is_summary else FONT_DATA
-            row_border = BORDER_TOTAL if is_net_income else (BORDER_TOTAL if r_data.is_summary else BORDER_THIN)
+            row_border = (
+                BORDER_TOTAL
+                if is_net_income
+                else (BORDER_TOTAL if r_data.is_summary else BORDER_THIN)
+            )
             row_fill = FILL_TOTAL if r_data.is_summary else None
 
             values = [
@@ -942,7 +1765,7 @@ def build_sheet_pl_statement(ws: Any, data: MonthEndPackData) -> None:
                 r_data.notes,
             ]
 
-            for c_idx, (val, (_, _, num_fmt)) in enumerate(zip(values, cols), start=1):
+            for c_idx, (val, (_, _, num_fmt)) in enumerate(zip(values, cols, strict=True), start=1):
                 cell = ws.cell(row=current_row, column=c_idx, value=val)
                 cell.font = row_font
                 if row_fill:
@@ -974,6 +1797,7 @@ def build_sheet_pl_statement(ws: Any, data: MonthEndPackData) -> None:
 # -------------------------------------------------------------------------
 # Sheet 4: Transaction Detail Drilldown
 # -------------------------------------------------------------------------
+
 
 def build_sheet_transaction_detail(ws: Any, data: MonthEndPackData) -> None:
     """Build Sheet 4: Transaction Detail Drilldown per §4.4."""
@@ -1062,7 +1886,7 @@ def build_sheet_transaction_detail(ws: Any, data: MonthEndPackData) -> None:
             ]
 
             ws.row_dimensions[current_row].height = 20
-            for c_idx, (val, (_, _, num_fmt)) in enumerate(zip(values, cols), start=1):
+            for c_idx, (val, (_, _, num_fmt)) in enumerate(zip(values, cols, strict=True), start=1):
                 cell = ws.cell(row=current_row, column=c_idx, value=val)
                 cell.font = FONT_DATA
                 cell.border = BORDER_THIN
@@ -1086,7 +1910,9 @@ def build_sheet_transaction_detail(ws: Any, data: MonthEndPackData) -> None:
 
         # Subtotal row
         ws.row_dimensions[current_row].height = 22
-        cell_lbl = ws.cell(row=current_row, column=1, value=f"Subtotal ({len(data.transaction_rows)} rows)")
+        cell_lbl = ws.cell(
+            row=current_row, column=1, value=f"Subtotal ({len(data.transaction_rows)} rows)"
+        )
         cell_lbl.font = FONT_TOTAL
         cell_lbl.fill = FILL_TOTAL
         cell_lbl.border = BORDER_TOTAL
@@ -1115,7 +1941,7 @@ def build_sheet_transaction_detail(ws: Any, data: MonthEndPackData) -> None:
         ws.row_dimensions[current_row].height = 20
         check_text = f"Check: Σ Debit − Σ Credit = ₹{subtotal_net:,.2f} — matches Import Reconciliation variance"
         c_chk = ws.cell(row=current_row, column=1, value=check_text)
-        c_chk.font = FONT_FAV if abs(subtotal_net) < 0.01 else FONT_ADV
+        c_chk.font = FONT_FAV if subtotal_net == 0 else FONT_ADV
         ws.merge_cells(f"A{current_row}:G{current_row}")
 
     ws.auto_filter.ref = f"A6:{get_column_letter(len(cols))}{max(current_row - 1, 6)}"
@@ -1124,6 +1950,7 @@ def build_sheet_transaction_detail(ws: Any, data: MonthEndPackData) -> None:
 # -------------------------------------------------------------------------
 # Sheet 5: Exception Register
 # -------------------------------------------------------------------------
+
 
 def build_sheet_exception_register(ws: Any, data: MonthEndPackData) -> None:
     """Build Sheet 5: Exception Register per §4.5."""
@@ -1164,6 +1991,8 @@ def build_sheet_exception_register(ws: Any, data: MonthEndPackData) -> None:
         ("Last seen at", 15, fmt.TS_DMY),
         ("Closed at", 15, fmt.TS_DMY),
         ("Run ID", 9, fmt.COUNT_INT),
+        ("Correlation ID", 20, fmt.CODE),
+        ("Claim ID", 25, fmt.CODE),
     ]
 
     _apply_header_block(
@@ -1177,7 +2006,9 @@ def build_sheet_exception_register(ws: Any, data: MonthEndPackData) -> None:
 
     current_row = 7
     if not data.exception_rows:
-        ws.cell(row=7, column=1, value="No open exceptions — nothing requires review.").font = FONT_EMPTY
+        ws.cell(
+            row=7, column=1, value="No open exceptions — nothing requires review."
+        ).font = FONT_EMPTY
         current_row = 8
     else:
         for r_data in data.exception_rows:
@@ -1213,10 +2044,12 @@ def build_sheet_exception_register(ws: Any, data: MonthEndPackData) -> None:
                 r_data.last_seen_at,
                 r_data.closed_at if r_data.closed_at else "—",
                 r_data.run_id,
+                r_data.correlation_id or "—",
+                r_data.claim_id or "—",
             ]
 
             ws.row_dimensions[current_row].height = 20
-            for c_idx, (val, (_, _, num_fmt)) in enumerate(zip(values, cols), start=1):
+            for c_idx, (val, (_, _, num_fmt)) in enumerate(zip(values, cols, strict=True), start=1):
                 cell = ws.cell(row=current_row, column=c_idx, value=val)
                 cell.font = FONT_DATA
                 cell.border = BORDER_THIN
@@ -1253,7 +2086,9 @@ def build_sheet_exception_register(ws: Any, data: MonthEndPackData) -> None:
         total_open = sum(1 for e in data.exception_rows if e.status == "open")
         total_overdue = sum(1 for e in data.exception_rows if "Overdue" in e.overdue)
         total_high = sum(1 for e in data.exception_rows if e.severity == "High")
-        total_unassigned = sum(1 for e in data.exception_rows if not e.owner or e.owner == "Unassigned")
+        total_unassigned = sum(
+            1 for e in data.exception_rows if not e.owner or e.owner == "Unassigned"
+        )
         total_risk = sum(e.amount_at_risk for e in data.exception_rows)
 
         # Row: Counts
@@ -1274,7 +2109,11 @@ def build_sheet_exception_register(ws: Any, data: MonthEndPackData) -> None:
         c_risk_val.border = BORDER_TOTAL
         c_risk_val.alignment = ALIGN_RIGHT
 
-        c_caveat = ws.cell(row=current_row, column=18, value="Indicator only — amounts at risk across different subjects are not additive as a ledger total.")
+        c_caveat = ws.cell(
+            row=current_row,
+            column=18,
+            value="Indicator only — amounts at risk across different subjects are not additive as a ledger total.",
+        )
         c_caveat.font = FONT_META
         current_row += 1
 
@@ -1291,6 +2130,7 @@ def build_sheet_exception_register(ws: Any, data: MonthEndPackData) -> None:
 # -------------------------------------------------------------------------
 # Sheet 6: Forecast Summary
 # -------------------------------------------------------------------------
+
 
 def build_sheet_forecast_summary(ws: Any, data: MonthEndPackData) -> None:
     """Build Sheet 6: Forecast Summary per §4.6."""
@@ -1357,7 +2197,7 @@ def build_sheet_forecast_summary(ws: Any, data: MonthEndPackData) -> None:
             ]
 
             ws.row_dimensions[current_row].height = 20
-            for c_idx, (val, (_, _, num_fmt)) in enumerate(zip(values, cols), start=1):
+            for c_idx, (val, (_, _, num_fmt)) in enumerate(zip(values, cols, strict=True), start=1):
                 cell = ws.cell(row=current_row, column=c_idx, value=val)
                 cell.font = FONT_DATA
                 cell.border = BORDER_THIN
@@ -1412,6 +2252,7 @@ def build_sheet_forecast_summary(ws: Any, data: MonthEndPackData) -> None:
 # -------------------------------------------------------------------------
 # Sheet 7: Import Reconciliation
 # -------------------------------------------------------------------------
+
 
 def build_sheet_import_reconciliation(ws: Any, data: MonthEndPackData) -> None:
     """Build Sheet 7: Import Reconciliation per §4.7."""
@@ -1484,7 +2325,7 @@ def build_sheet_import_reconciliation(ws: Any, data: MonthEndPackData) -> None:
             ]
 
             ws.row_dimensions[current_row].height = 20
-            for c_idx, (val, (_, _, num_fmt)) in enumerate(zip(values, cols), start=1):
+            for c_idx, (val, (_, _, num_fmt)) in enumerate(zip(values, cols, strict=True), start=1):
                 cell = ws.cell(row=current_row, column=c_idx, value=val)
                 cell.font = FONT_DATA
                 cell.border = BORDER_THIN
@@ -1510,8 +2351,16 @@ def build_sheet_import_reconciliation(ws: Any, data: MonthEndPackData) -> None:
         tot_comm = sum(b.rows_committed for b in data.import_batches)
         tot_quar = sum(b.rows_quarantined for b in data.import_batches)
         tot_rej = sum(b.rows_rejected for b in data.import_batches)
-        tot_deb = sum(b.debit_total for b in data.import_batches) if data.import_batches else Decimal("0.00")
-        tot_crd = sum(b.credit_total for b in data.import_batches) if data.import_batches else Decimal("0.00")
+        tot_deb = (
+            sum(b.debit_total for b in data.import_batches)
+            if data.import_batches
+            else Decimal("0.00")
+        )
+        tot_crd = (
+            sum(b.credit_total for b in data.import_batches)
+            if data.import_batches
+            else Decimal("0.00")
+        )
         tot_bal = tot_deb - tot_crd
 
         ws.row_dimensions[current_row].height = 22
@@ -1554,11 +2403,12 @@ def build_sheet_import_reconciliation(ws: Any, data: MonthEndPackData) -> None:
                 cell.number_format = fmt.MONEY_IN
                 cell.alignment = ALIGN_RIGHT
 
-        batch_last_row = current_row
         current_row += 2
 
         # Validation Checks Block
-        ws.cell(row=current_row, column=1, value="Validation checks (latest run)").font = FONT_SECTION
+        ws.cell(
+            row=current_row, column=1, value="Validation checks (latest run)"
+        ).font = FONT_SECTION
         ws.cell(row=current_row, column=1).fill = FILL_SECTION
         ws.merge_cells(f"A{current_row}:F{current_row}")
         current_row += 1
@@ -1573,7 +2423,14 @@ def build_sheet_import_reconciliation(ws: Any, data: MonthEndPackData) -> None:
         current_row += 1
 
         for chk in data.validation_checks:
-            row_vals = [chk.check_id, chk.check_name, chk.weight, chk.result, chk.rows_affected, chk.message]
+            row_vals = [
+                chk.check_id,
+                chk.check_name,
+                chk.weight,
+                chk.result,
+                chk.rows_affected,
+                chk.message,
+            ]
             for c_idx, val in enumerate(row_vals, start=1):
                 cell = ws.cell(row=current_row, column=c_idx, value=val)
                 cell.font = FONT_DATA
@@ -1603,6 +2460,7 @@ def build_sheet_import_reconciliation(ws: Any, data: MonthEndPackData) -> None:
 # -------------------------------------------------------------------------
 # Master Workbook Generator & File Exporter
 # -------------------------------------------------------------------------
+
 
 def generate_month_end_pack(data: MonthEndPackData | None = None) -> openpyxl.Workbook:
     """Generate the complete 7-sheet Month-End Excel Pack using openpyxl.

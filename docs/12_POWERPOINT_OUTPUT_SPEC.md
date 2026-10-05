@@ -666,6 +666,13 @@ amounts; the chart subtitle carries `<Units> · MTD · Base`.
 and deletes the other before writing, so the slide always has exactly one chart (asserted by
 `TST-PPT-02`) and the spike outcome needs no template rewrite.
 
+> **`SPK-08` outcome (recorded 2026-10-05, per this section's own instruction):** the pinned `python-pptx`
+> exposes no `XL_CHART_TYPE.WATERFALL` (checked against the installed enum: `False`; `COLUMN_STACKED` is
+> present), so the **stacked-column fallback above is the active variant** and the template ships it
+> (`scripts/make_pptx_template.py`, kind `column_stacked`: invisible `base` + visible `amount`, formatting
+> pre-styled in the template per §5.1). The "both variants as two shapes" template rule stays owed until a
+> python-pptx release gains native waterfall support — tracked as `TB-048` in `33`.
+
 ### 5.3 `PPT-006` forecast chart
 
 | Aspect | Rule |

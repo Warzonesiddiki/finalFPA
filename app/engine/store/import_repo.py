@@ -1,14 +1,63 @@
 """Import and staging repository managing atomic batch commit per 04_SOURCE_MAPPING_AND_IMPORT_SPEC.md §3."""
 
 import json
+from collections.abc import Sequence
 from decimal import Decimal
-from typing import List, Dict, Any, Optional
+from typing import Any
+
 import duckdb
-import sqlite3
 
 from app.engine.calc.quality_score import calculate_quality_score
-from app.engine.store.db import DatabaseManager
 from app.engine.imports.models import ImportBatchResult, ParsedTransaction
+from app.engine.store.db import DatabaseManager
+
+#: Rows per INSERT statement for the analytic-store bulk load.
+#:
+#: DuckDB's ``executemany`` executes the prepared statement once per row: the
+#: 26-column ``FactActual`` insert measured **236 rows/s** on the 250k-row
+#: sample corpus, i.e. roughly 18 minutes of commit time for one month-end
+#: import, and the doc-14 §5.2 acceptance run spent most of a 20-minute wall
+#: clock here (measured 2026-10-04; see ``scratch/bench_duckdb_insert.py``).
+#: Multi-row parameterised VALUES statements of this size measure ~3,700 rows/s
+#: (15x) with identical parameter binding, identical stored values, and the same
+#: atomic outcome.
+INSERT_BATCH_ROWS = 1000
+
+
+def _bulk_insert(
+    conn: duckdb.DuckDBPyConnection,
+    table: str,
+    columns: Sequence[str],
+    rows: Sequence[Sequence[Any]],
+) -> None:
+    """Insert ``rows`` into ``table`` with batched multi-row statements.
+
+    Atomicity is unchanged from the single ``executemany`` it replaces: every
+    batch runs inside one explicit transaction, so an interruption leaves
+    either all rows or none (Addon 1 P12 all-or-nothing imports). Each value is
+    still a bound parameter, so DuckDB applies exactly the same column types
+    and casts it applied before.
+    """
+    if not rows:
+        return
+    placeholder = "(" + ", ".join("?" for _ in columns) + ")"
+    column_sql = ", ".join(columns)
+    conn.execute("BEGIN TRANSACTION")
+    try:
+        for start in range(0, len(rows), INSERT_BATCH_ROWS):
+            chunk = rows[start : start + INSERT_BATCH_ROWS]
+            values_sql = ", ".join([placeholder] * len(chunk))
+            conn.execute(
+                f"INSERT INTO {table} ({column_sql}) VALUES {values_sql}",
+                [value for row in chunk for value in row],
+            )
+    except BaseException:
+        try:
+            conn.execute("ROLLBACK")
+        except Exception:
+            pass  # the original failure is the one that must propagate
+        raise
+    conn.execute("COMMIT")
 
 
 class ImportRepository:
@@ -19,14 +68,14 @@ class ImportRepository:
 
     @staticmethod
     def _get_or_create_dimension_id(
-        duck_conn,
+        duck_conn: duckdb.DuckDBPyConnection,
         *,
         table: str,
         id_column: str,
         code_column: str,
-        code: Optional[str],
-        extra_values: Optional[Dict[str, Any]] = None,
-    ) -> Optional[int]:
+        code: str | None,
+        extra_values: dict[str, Any] | None = None,
+    ) -> int | None:
         """Resolve a source code to its dimension ID, creating a row if absent."""
         normalized_code = str(code or "").strip()
         if not normalized_code:
@@ -38,10 +87,10 @@ class ImportRepository:
         if row:
             return int(row[0])
 
-        next_id = duck_conn.execute(
+        next_id_row = duck_conn.execute(
             f"SELECT COALESCE(MAX({id_column}), 0) + 1 FROM {table}"
-        ).fetchone()[0]
-        new_id = int(next_id)
+        ).fetchone()
+        new_id = int(next_id_row[0] if next_id_row else 0)
         values = {
             id_column: new_id,
             code_column: normalized_code,
@@ -59,7 +108,7 @@ class ImportRepository:
     def commit_batch(
         self,
         batch: ImportBatchResult,
-        transactions: List[ParsedTransaction],
+        transactions: list[ParsedTransaction],
     ) -> int:
         """Atomically commit an import batch: SQLite metadata + DuckDB facts."""
         # 0. Data Quality Score per 05 §8 (CALC-050).
@@ -72,11 +121,17 @@ class ImportRepository:
 
         # 0b. Commit decision, computed BEFORE the audit row is written.
         #
-        # Per 04 section 12 / IMP-023, balance is a file-level gate for every
-        # source type (no sub-ledger exemption). The parser computes
-        # `batch.is_balanced` using the configured minor-unit tolerance (default
-        # 0.00); that tolerance is persisted below so an accepted non-zero delta
-        # remains visible to EXC-001 and in the audit detail.
+        # Per DEC-056 (OQ-025) the balance gate is scoped by source type rather
+        # than applied to every file alike. A journal-style source (the D365
+        # general ledger, budget) keeps the unconditional exact debit=credit
+        # reject of 04 section 12 / IMP-023. An amount-style sub-ledger (bank
+        # ledger, payroll/procurement - 04 section 2.2) is validated by
+        # control-total / net-amount reconciliation inside the 06 section 8
+        # tolerance instead: it commits with the variance stated, which is what
+        # `parser.check_imp_023_subledger_reconciliation` records on the report.
+        #
+        # The effective tolerance is persisted below either way, so an accepted
+        # non-zero delta remains visible to EXC-001 and in the audit detail.
         should_commit = batch.can_commit
 
         # DEF-010 (spec-wins fix): `status` records what ACTUALLY happened to the
@@ -121,10 +176,17 @@ class ImportRepository:
                         str(dq_score),
                     ),
                 )
-                batch_id = cur.lastrowid
+                raw_batch_id = cur.lastrowid
+                assert raw_batch_id is not None, (
+                    "INSERT into FactImportBatch did not produce a row id"
+                )
+                batch_id: int = raw_batch_id
 
                 # Insert validation checks into SQLite
                 for c in batch.checks:
+                    # Weight is never None here: ValidationCheckReport.__post_init__
+                    # defaults it by severity. The assert narrows Optional for mypy.
+                    assert c.weight is not None
                     sqlite_conn.execute(
                         """
                         INSERT INTO FactValidationCheck (
@@ -141,11 +203,7 @@ class ImportRepository:
                             c.offending_count,
                             c.skip_reason,
                             c.detail,
-                            (
-                                json.dumps(c.sample_rows, default=str)
-                                if c.sample_rows
-                                else None
-                            ),
+                            (json.dumps(c.sample_rows, default=str) if c.sample_rows else None),
                             float(c.weight),
                         ),
                     )
@@ -177,25 +235,29 @@ class ImportRepository:
         if transactions and should_commit:
             duck_conn = self.db.get_duckdb_connection()
             try:
+                # One dimension cache for both branches (keys are (table, code)
+                # pairs, so budget and actuals resolutions never collide).
+                dimension_cache: dict[tuple[str, str], int | None] = {}
                 if batch.source_type == "budget":
                     budget_rows = []
-                    dimension_cache: Dict[tuple, Optional[int]] = {}
 
                     def resolve_budget_dimension(
-                        table, id_column, code_column, code, extra_values=None
-                    ):
+                        table: str,
+                        id_column: str,
+                        code_column: str,
+                        code: str | None,
+                        extra_values: dict[str, Any] | None = None,
+                    ) -> int | None:
                         normalized_code = str(code or "").strip()
                         cache_key = (table, normalized_code)
                         if cache_key not in dimension_cache:
-                            dimension_cache[cache_key] = (
-                                self._get_or_create_dimension_id(
-                                    duck_conn,
-                                    table=table,
-                                    id_column=id_column,
-                                    code_column=code_column,
-                                    code=normalized_code,
-                                    extra_values=extra_values,
-                                )
+                            dimension_cache[cache_key] = self._get_or_create_dimension_id(
+                                duck_conn,
+                                table=table,
+                                id_column=id_column,
+                                code_column=code_column,
+                                code=normalized_code,
+                                extra_values=extra_values,
                             )
                         return dimension_cache[cache_key]
 
@@ -215,71 +277,98 @@ class ImportRepository:
 
                         company_code = tx.company_code or "IN01"
                         account_code = tx.account_code or "5000"
-                        company_id = resolve_budget_dimension(
-                            "DimCompany", "company_id", "company_code", company_code,
-                            {"company_name": company_code},
-                        ) or 1
-                        account_id = resolve_budget_dimension(
-                            "DimAccount", "account_id", "account_code", account_code,
-                            {"account_name": account_code, "account_type": "unknown"},
-                        ) or 5000
+                        company_id = (
+                            resolve_budget_dimension(
+                                "DimCompany",
+                                "company_id",
+                                "company_code",
+                                company_code,
+                                {"company_name": company_code},
+                            )
+                            or 1
+                        )
+                        account_id = (
+                            resolve_budget_dimension(
+                                "DimAccount",
+                                "account_id",
+                                "account_code",
+                                account_code,
+                                {"account_name": account_code, "account_type": "unknown"},
+                            )
+                            or 5000
+                        )
                         cost_center_id = resolve_budget_dimension(
-                            "DimCostCenter", "cost_center_id", "cost_center_code",
+                            "DimCostCenter",
+                            "cost_center_id",
+                            "cost_center_code",
                             tx.cost_center_code,
                             {
                                 "cost_center_name": tx.cost_center_code or "",
                                 "company_id": company_id,
                             },
                         )
-                        budget_rows.append((
-                            budget_id,
-                            batch_id,
-                            "FY26-Approved",
-                            "base",
-                            company_id,
-                            account_id,
-                            cost_center_id,
-                            None,  # department_id
-                            None,  # project_id
-                            period_id,
-                            str(tx.net_amount if tx.net_amount else tx.debit),
-                            tx.currency_code or "INR",
-                            False,
-                            tx.source_row_ref or f"line {i}",
-                        ))
+                        budget_rows.append(
+                            (
+                                budget_id,
+                                batch_id,
+                                "FY26-Approved",
+                                "base",
+                                company_id,
+                                account_id,
+                                cost_center_id,
+                                None,  # department_id
+                                None,  # project_id
+                                period_id,
+                                str(tx.net_amount if tx.net_amount else tx.debit),
+                                tx.currency_code or "INR",
+                                False,
+                                tx.source_row_ref or f"line {i}",
+                            )
+                        )
 
-                    duck_conn.executemany(
-                        """
-                        INSERT INTO FactBudget (
-                            budget_id, import_batch_id, budget_version, scenario_code,
-                            company_id, account_id, cost_center_id, department_id,
-                            project_id, period_id, amount, currency_code,
-                            is_derived_spread, source_row_ref
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """,
+                    _bulk_insert(
+                        duck_conn,
+                        "FactBudget",
+                        (
+                            "budget_id",
+                            "import_batch_id",
+                            "budget_version",
+                            "scenario_code",
+                            "company_id",
+                            "account_id",
+                            "cost_center_id",
+                            "department_id",
+                            "project_id",
+                            "period_id",
+                            "amount",
+                            "currency_code",
+                            "is_derived_spread",
+                            "source_row_ref",
+                        ),
                         budget_rows,
                     )
                 else:
                     # Resolve source entity/vendor codes so rule context keeps
                     # actuals at the imported business-key grain.
                     rows_to_insert = []
-                    dimension_cache: Dict[tuple, Optional[int]] = {}
 
                     def resolve_actual_dimension(
-                        table, id_column, code_column, code, extra_values=None
-                    ):
+                        table: str,
+                        id_column: str,
+                        code_column: str,
+                        code: str | None,
+                        extra_values: dict[str, Any] | None = None,
+                    ) -> int | None:
                         normalized_code = str(code or "").strip()
                         cache_key = (table, normalized_code)
                         if cache_key not in dimension_cache:
-                            dimension_cache[cache_key] = (
-                                self._get_or_create_dimension_id(
-                                    duck_conn,
-                                    table=table,
-                                    id_column=id_column,
-                                    code_column=code_column,
-                                    code=normalized_code,
-                                    extra_values=extra_values,
-                                )
+                            dimension_cache[cache_key] = self._get_or_create_dimension_id(
+                                duck_conn,
+                                table=table,
+                                id_column=id_column,
+                                code_column=code_column,
+                                code=normalized_code,
+                                extra_values=extra_values,
                             )
                         return dimension_cache[cache_key]
 
@@ -301,16 +390,30 @@ class ImportRepository:
 
                         company_code = tx.company_code or "IN01"
                         account_code = tx.account_code or "5000"
-                        company_id = resolve_actual_dimension(
-                            "DimCompany", "company_id", "company_code", company_code,
-                            {"company_name": company_code},
-                        ) or 1
-                        account_id = resolve_actual_dimension(
-                            "DimAccount", "account_id", "account_code", account_code,
-                            {"account_name": account_code, "account_type": "unknown"},
-                        ) or 5000
+                        company_id = (
+                            resolve_actual_dimension(
+                                "DimCompany",
+                                "company_id",
+                                "company_code",
+                                company_code,
+                                {"company_name": company_code},
+                            )
+                            or 1
+                        )
+                        account_id = (
+                            resolve_actual_dimension(
+                                "DimAccount",
+                                "account_id",
+                                "account_code",
+                                account_code,
+                                {"account_name": account_code, "account_type": "unknown"},
+                            )
+                            or 5000
+                        )
                         cost_center_id = resolve_actual_dimension(
-                            "DimCostCenter", "cost_center_id", "cost_center_code",
+                            "DimCostCenter",
+                            "cost_center_id",
+                            "cost_center_code",
                             tx.cost_center_code,
                             {
                                 "cost_center_name": tx.cost_center_code or "",
@@ -318,51 +421,77 @@ class ImportRepository:
                             },
                         )
                         vendor_id = resolve_actual_dimension(
-                            "DimVendor", "vendor_id", "vendor_code", tx.vendor_code,
+                            "DimVendor",
+                            "vendor_id",
+                            "vendor_code",
+                            tx.vendor_code,
                             {"vendor_name": tx.vendor_code or ""},
                         )
 
-                        rows_to_insert.append((
-                            actual_id,
-                            batch_id,
-                            row_fingerprint,
-                            company_id,
-                            account_id,
-                            cost_center_id,
-                            None,  # department_id
-                            None,  # project_id
-                            vendor_id,
-                            period_id,
-                            tx.posting_date,
-                            tx.document_date,
-                            tx.voucher_no,
-                            None,
-                            tx.invoice_no,
-                            tx.line_no,
-                            tx.description,
-                            str(tx.debit),
-                            str(tx.credit),
-                            str(tx.net_amount),
-                            tx.currency_code,
-                            tx.journal_category,
-                            "D365" if "d365" in batch.source_type else "Other",
-                            batch.file_name,
-                            tx.source_row_ref,
-                            False,
-                        ))
+                        rows_to_insert.append(
+                            (
+                                actual_id,
+                                batch_id,
+                                row_fingerprint,
+                                company_id,
+                                account_id,
+                                cost_center_id,
+                                None,  # department_id
+                                None,  # project_id
+                                vendor_id,
+                                period_id,
+                                tx.posting_date,
+                                tx.document_date,
+                                tx.voucher_no,
+                                None,
+                                tx.invoice_no,
+                                tx.line_no,
+                                tx.description,
+                                str(tx.debit),
+                                str(tx.credit),
+                                str(tx.net_amount),
+                                tx.currency_code,
+                                tx.journal_category,
+                                "D365" if "d365" in batch.source_type else "Other",
+                                batch.file_name,
+                                tx.source_row_ref,
+                                False,
+                            )
+                        )
 
-                    # Batch insert via DuckDB executemany
-                    duck_conn.executemany(
-                        """
-                        INSERT INTO FactActual (
-                            actual_id, import_batch_id, row_fingerprint, company_id, account_id,
-                            cost_center_id, department_id, project_id, vendor_id, period_id,
-                            posting_date, document_date, voucher_no, document_no, invoice_no,
-                            line_no, description, debit, credit, net_amount, currency_code,
-                            journal_category, source_system, source_file_name, source_row_ref,
-                            is_zero_amount
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """,
+                    # Bulk insert, batched (see INSERT_BATCH_ROWS for why
+                    # executemany is not used here).
+                    _bulk_insert(
+                        duck_conn,
+                        "FactActual",
+                        (
+                            "actual_id",
+                            "import_batch_id",
+                            "row_fingerprint",
+                            "company_id",
+                            "account_id",
+                            "cost_center_id",
+                            "department_id",
+                            "project_id",
+                            "vendor_id",
+                            "period_id",
+                            "posting_date",
+                            "document_date",
+                            "voucher_no",
+                            "document_no",
+                            "invoice_no",
+                            "line_no",
+                            "description",
+                            "debit",
+                            "credit",
+                            "net_amount",
+                            "currency_code",
+                            "journal_category",
+                            "source_system",
+                            "source_file_name",
+                            "source_row_ref",
+                            "is_zero_amount",
+                        ),
                         rows_to_insert,
                     )
             finally:
@@ -373,7 +502,7 @@ class ImportRepository:
 
         return batch_id
 
-    def list_batches(self) -> List[Dict[str, Any]]:
+    def list_batches(self) -> list[dict[str, Any]]:
         """Return history of all import batches from SQLite."""
         conn = self.db.get_sqlite_connection()
         try:
@@ -382,7 +511,7 @@ class ImportRepository:
         finally:
             conn.close()
 
-    def get_batch_detail(self, batch_id: int) -> Optional[Dict[str, Any]]:
+    def get_batch_detail(self, batch_id: int) -> dict[str, Any] | None:
         """Return batch metadata, validation checks, and quarantined rows."""
         conn = self.db.get_sqlite_connection()
         try:
@@ -392,10 +521,14 @@ class ImportRepository:
                 return None
             batch_dict = dict(batch_row)
 
-            checks_cur = conn.execute("SELECT * FROM FactValidationCheck WHERE import_batch_id = ?", (batch_id,))
+            checks_cur = conn.execute(
+                "SELECT * FROM FactValidationCheck WHERE import_batch_id = ?", (batch_id,)
+            )
             checks = [dict(r) for r in checks_cur.fetchall()]
 
-            quarantine_cur = conn.execute("SELECT * FROM QuarantineRow WHERE import_batch_id = ?", (batch_id,))
+            quarantine_cur = conn.execute(
+                "SELECT * FROM QuarantineRow WHERE import_batch_id = ?", (batch_id,)
+            )
             quarantined = [dict(r) for r in quarantine_cur.fetchall()]
 
             batch_dict["checks"] = checks
@@ -457,8 +590,8 @@ class ImportRepository:
     def preview_budget_replace(
         self,
         budget_version: str,
-        incoming_rows: List[Dict[str, Any]],
-    ) -> Dict[str, Any]:
+        incoming_rows: list[dict[str, Any]],
+    ) -> dict[str, Any]:
         """Preview diff between current budget version and incoming budget rows per FR-IMP-028."""
         conn = self.db.get_duckdb_connection()
         try:
@@ -474,12 +607,12 @@ class ImportRepository:
             GROUP BY 1, 2
             """
             cursor = conn.execute(existing_sql, [budget_version])
-            old_totals: Dict[str, Decimal] = {}
+            old_totals: dict[str, Decimal] = {}
             for row in cursor.fetchall():
                 comp, period, amt = row
                 old_totals[f"{comp}|{period}"] = Decimal(str(amt or 0))
 
-            new_totals: Dict[str, Decimal] = {}
+            new_totals: dict[str, Decimal] = {}
             for r in incoming_rows:
                 comp = str(r.get("company_code", "IN01"))
                 period = str(r.get("period_code", r.get("period", "FY26-P01")))
@@ -500,13 +633,15 @@ class ImportRepository:
                 delta = new_amt - old_amt
                 old_grand += old_amt
                 new_grand += new_amt
-                diff_items.append({
-                    "companyCode": comp,
-                    "periodCode": period,
-                    "oldTotal": str(old_amt),
-                    "newTotal": str(new_amt),
-                    "delta": str(delta),
-                })
+                diff_items.append(
+                    {
+                        "companyCode": comp,
+                        "periodCode": period,
+                        "oldTotal": str(old_amt),
+                        "newTotal": str(new_amt),
+                        "delta": str(delta),
+                    }
+                )
 
             return {
                 "budgetVersion": budget_version,
@@ -521,7 +656,7 @@ class ImportRepository:
     def commit_budget_replace(
         self,
         budget_version: str,
-        incoming_rows: List[Dict[str, Any]],
+        incoming_rows: list[dict[str, Any]],
         batch_id: int,
     ) -> int:
         """Atomically replace existing budget version with incoming rows per FR-IMP-028."""

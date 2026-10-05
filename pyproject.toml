@@ -23,6 +23,8 @@ dev = [
     "pyinstaller>=6.10.0",
     "ruff>=0.6.0",
     "mypy>=1.11.0",
+    "import-linter>=2.0.0",
+    "types-openpyxl>=3.1.5",
 ]
 
 [build-system]
@@ -65,3 +67,53 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",
 ]
+
+# TB-014: headless-engine boundary (docs/09 §4.1, docs/17 §3).
+# app/engine/** may not import fastapi, pywebview, app.api, app.desktop or
+# app.jobs. Enforced by `lint-imports`, run from scripts/check.py.
+# TB-015: shared ruff config (docs/17 §3.1). Line length 100; absolute
+# imports within app.*; no wildcards; stdlib → third-party → local grouping.
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C901", "T201", "PLR0913"]
+ignore = ["E501"]
+
+[tool.ruff.lint.pycodestyle]
+max-line-length = 100
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.flake8-unused-arguments]
+ignore-variadic-names = true
+
+[tool.ruff.lint.per-file-ignores]
+# scripts/ and tests/ legitimately print and take many fixture args.
+"scripts/*" = ["T201", "PLR0913"]
+"tests/*" = ["T201", "PLR0913"]
+"app/api/*" = ["T201"]
+"app/cli/*" = ["T201"]
+
+# TB-016: mypy config (docs/17 §3.1). --strict on app/engine, standard
+# mypy on the rest of app/; no `# type: ignore` without a reason comment.
+[tool.mypy]
+python_version = "3.12"
+warn_unused_configs = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = "app.engine.*"
+strict = true
+
+[tool.importlinter]
+root_package = "app"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "headless-engine boundary (09 S4.1)"
+type = "forbidden"
+source_modules = ["app.engine"]
+forbidden_modules = ["fastapi", "pywebview", "app.api", "app.desktop", "app.jobs"]

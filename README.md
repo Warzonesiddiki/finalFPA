@@ -17,8 +17,8 @@
 
 ## 2. Current Project Phase
 
-- **Current Phase:** **Post-Packaging & Feature Waves Complete (v1.0.0-rc2)**
-- **Status:** **Feature Complete & Verified** (All 24 exception rules implemented, UI screen families built across BvA, Exceptions, Forecast, Reports, Settings, Import History & Mapping Queue, AI Suite, Chart Inventory 12/12, build pipeline & evidence pack verified).
+- **Current Phase:** **Acceptance gate (doc 14 §5.3) — red but fully measured.** App version `0.1.0` (`pyproject.toml`).
+- **Status:** Engine, API, CLI, UI and packaging waves are built; the planted-exception acceptance harness runs for real (verdict **FAIL, exit 1**: recall 11/32, extras 422 — every miss/extra classified in `evidence/acceptance_remediation_2026-10-04.md`). The sample corpus is balanced, loadable and byte-reproducible from one command. In flight: `OQ-025`…`027` decided 2026-10-05 (`DEC-056`…`058`), coherent corpus rebuild `PROP-001` approved (`DEC-059`); the real-data pilot stays blocked on client data. **`STATE.md` and `docs/16_ROADMAP_PHASES.md` §1.3 are the live records** — this section was corrected on 2026-10-05 because it claimed "Feature Complete & Verified (v1.0.0-rc2)", which was false (Addon 6 §14.3, truthfulness defect).
 
 ---
 

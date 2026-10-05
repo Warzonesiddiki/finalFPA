@@ -80,6 +80,34 @@ def test_evaluate_exc_020():
     findings = evaluate_exc_020(ctx)
     assert len(findings) == 1
     assert findings[0].rule_id == "EXC-020"
+    assert findings[0].subject_key == "IN01|6000|P02"
+
+@pytest.mark.tst_id("TST-RUL-20")
+def test_evaluate_exc_020_span():
+    # Catalog 06 EXC-020 sample case (Planting P20):
+    # account 5450 has budget lines for FY26-P01..P06 but none for P07..P09,
+    # while actuals exist for all three months. Expected span: P07-P09, coverage 66.67%.
+    ctx = RuleContext(
+        period_id="FY26-P09",
+        transactions=[
+            {"company_code": "IN01", "account_code": "5450", "cost_center_code": "CC1", "posting_date": "2026-07-15", "net_amount": Decimal("50000"), "source_row_ref": "r1"},
+            {"company_code": "IN01", "account_code": "5450", "cost_center_code": "CC1", "posting_date": "2026-08-15", "net_amount": Decimal("50000"), "source_row_ref": "r2"},
+            {"company_code": "IN01", "account_code": "5450", "cost_center_code": "CC1", "posting_date": "2026-09-15", "net_amount": Decimal("50000"), "source_row_ref": "r3"},
+        ],
+        budgets={
+            **{("IN01", "5450", "CC1", f"FY26-P0{i}"): Decimal("55000") for i in range(1, 7)},
+            **{("IN01", "6000", "CC1", f"FY26-P0{i}"): Decimal("100000") for i in range(1, 10)},
+        },
+        config={"EXC-020_min_coverage_gap_periods": "1", "EXC-020_include_no_actuals_pairs": False}
+    )
+    findings = evaluate_exc_020(ctx)
+    assert len(findings) == 1
+    assert findings[0].rule_id == "EXC-020"
+    assert findings[0].subject_key == "IN01|5450|P07-P09"
+    assert findings[0].severity == "Medium"
+    assert "coverage 66.67%" in findings[0].detail
+    assert "missing FY26-P07, FY26-P08, FY26-P09" in findings[0].detail
+    assert findings[0].amount_at_risk == Decimal("330000.00")
 
 @pytest.mark.tst_id("TST-RUL-21")
 def test_evaluate_exc_021():

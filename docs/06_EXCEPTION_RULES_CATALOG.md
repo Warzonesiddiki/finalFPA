@@ -580,13 +580,13 @@ results stale (`FR-SET-010`).
 | **Severity** | **Medium** |
 | **Owner role** | FP&A Analyst |
 | **Depends on** | Budget loaded |
-| **Subject key** | `entity_account_pair` |
+| **Subject key** | `company_code\|account_code\|period_span` (e.g. `IN01\|5450\|P07-P09` or `IN01\|6000\|P02`) |
 | **Logic** | Compute the coverage matrix over (entity × account) for the open periods of the fiscal year (`IMP-031`). For each pair with **partial** coverage (budget in some periods but not all) or **no** coverage while actuals exist, raise one exception per pair, stating the missing periods and the coverage percentage |
 | **Thresholds** | `min_coverage_gap_periods` = `1`; `include_no_actuals_pairs` = `false` (budget gaps where nothing is spent are informational and are shown on the Check screen instead) |
 | **Tier** | `exact` |
 | **Mitigation** | It flags the **budget artefact**, not the spend, so closing it means fixing the budget or recording an explicit decision that the pair is intentionally unbudgeted. The Check screen shows the full coverage percentage so the reviewer sees scale, not just instances |
-| **Sample case** | Planting P20: account `5450` has budget lines for FY26-P01…P06 but none for P07…P09, while actuals exist for all three months |
-| **Expected verdict** | **Raised** once for the pair, `Medium`, `coverage 67% · missing FY26-P07, P08, P09` |
+| **Sample case** | Planting P20: account `5450` (entity `IN01`) has budget lines for FY26-P01…P06 but none for P07…P09, while actuals exist for all three months |
+| **Expected verdict** | **Raised** once for the pair, `Medium`, key `IN01\|5450\|P07-P09`, `coverage 66.67% · missing FY26-P07, FY26-P08, FY26-P09` |
 | **Registers on** | The budget matrix for the pair |
 
 ### EXC-021 — Amount crossing the approval threshold
@@ -737,7 +737,7 @@ false-positive log (`14`).
 | `P17` | `EXC-017` | 1 | High | New cost centre `CC-160` spends ₹8,40,000.00 with no budget line |
 | `P18` | `EXC-018` | 1 | High | Canonical case F13a (`+540,000.00`, `+5.4%`) |
 | `P19` | `EXC-019` | 1 | Medium | `5500/CC-130` at 88% annual consumption, YTD +14.3% |
-| `P20` | `EXC-020` | 1 | Medium | Pair coverage 67% (missing P07–P09) |
+| `P20` | `EXC-020` | 1 | Medium | Pair coverage 67% (missing P07–P09, key `IN01\|5450\|P07-P09`) |
 | `P21` | `EXC-021` | 2 | High | One voucher above the ₹5,00,000 single threshold; one above the ₹25,00,000 dual threshold |
 | `P22` | `EXC-022` | 1 | Low | Round ₹15,00,000 manual journal at 3.6× the entity average |
 | `P23` | `EXC-023` | 1 | High | Voucher imbalance ₹5,000.00 (truncated credit line) |

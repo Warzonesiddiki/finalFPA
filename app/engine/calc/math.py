@@ -11,10 +11,11 @@ Owns:
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 from enum import Enum
-from typing import Iterable, Sequence
+from typing import Any
 
 # Precision and constant definitions per CALC-007, CALC-030
 ZERO = Decimal("0.00")
@@ -27,6 +28,7 @@ ONE_HUNDRED = Decimal("100")
 
 class RatioState(str, Enum):
     """Ratio computation outcome states per §4.2 and §5.1."""
+
     VALID = "valid"
     NULL = "null"  # 0/0: nothing to compare -> displayed as "—"
     UNDEFINED = "undefined"  # x/0: division by zero -> displayed as "n/a"
@@ -34,6 +36,7 @@ class RatioState(str, Enum):
 
 class Direction(str, Enum):
     """Direction-aware favourability line direction per CALC-012."""
+
     HIGHER_IS_FAVOURABLE = "higher_is_favourable"
     LOWER_IS_FAVOURABLE = "lower_is_favourable"
     NEUTRAL = "neutral"
@@ -41,6 +44,7 @@ class Direction(str, Enum):
 
 class Favourability(str, Enum):
     """Favourability outcome per CALC-012."""
+
     FAVOURABLE = "favourable"
     UNFAVOURABLE = "unfavourable"
     NEUTRAL = "neutral"
@@ -48,6 +52,7 @@ class Favourability(str, Enum):
 
 class DisplayScale(int, Enum):
     """Display scale divisor per CALC-032."""
+
     WHOLE = 1
     THOUSANDS = 1_000
     LAKHS = 100_000
@@ -57,6 +62,7 @@ class DisplayScale(int, Enum):
 
 class NegativeFormat(str, Enum):
     """Negative number presentation format per CALC-033."""
+
     PARENTHESES = "parentheses"
     MINUS = "minus"
     BOTH = "both"
@@ -64,12 +70,14 @@ class NegativeFormat(str, Enum):
 
 class GroupingFormat(str, Enum):
     """Digit grouping format per CALC-033."""
+
     INTERNATIONAL = "international"
     INDIAN = "indian"
 
 
 class KPI(str, Enum):
     """KPI register per §5.2 and extended KPI library (KPI-001 .. KPI-012)."""
+
     KPI_001 = "KPI-001"  # Gross margin %
     KPI_002 = "KPI-002"  # Operating expense ratio
     KPI_003 = "KPI-003"  # Budget burn %
@@ -87,6 +95,7 @@ class KPI(str, Enum):
 @dataclass(frozen=True)
 class RatioResult:
     """Result of a guarded ratio computation per §4.2 and §5.1."""
+
     value: Decimal | None  # Stored at 6 decimal places if valid, None if null/undefined
     state: RatioState
     display: str  # Formatted display string ("40.0%", "—", "n/a")
@@ -108,6 +117,7 @@ class RatioResult:
 @dataclass(frozen=True)
 class PeriodFact:
     """Fact record for period aggregations per §2.3."""
+
     fiscal_year: int
     period_number: int
     net_amount: Decimal
@@ -117,6 +127,7 @@ class PeriodFact:
 @dataclass(frozen=True)
 class PeriodAggregations:
     """Aggregate window totals for a selected period per CALC-003 .. CALC-006."""
+
     mtd: Decimal
     ytd: Decimal
     py_mtd: Decimal
@@ -129,6 +140,7 @@ class PeriodAggregations:
 # ---------------------------------------------------------------------------
 # Core Quantization & Arithmetic Helpers
 # ---------------------------------------------------------------------------
+
 
 def quantize_money(amount: Decimal | str | int | float) -> Decimal:
     """Quantize money to 2 decimal places using half-up rounding per §6.1."""
@@ -193,7 +205,10 @@ def safe_divide(
 # Variance Calculations (CALC-010, CALC-011, CALC-013)
 # ---------------------------------------------------------------------------
 
-def calculate_variance(actual: Decimal | str | int | float, budget: Decimal | str | int | float) -> Decimal:
+
+def calculate_variance(
+    actual: Decimal | str | int | float, budget: Decimal | str | int | float
+) -> Decimal:
     """Canonical variance = Actual - Budget per CALC-010."""
     act = quantize_money(actual)
     bud = quantize_money(budget)
@@ -249,6 +264,7 @@ def calculate_pp_variance(
 # Direction-Aware Favourability (CALC-012)
 # ---------------------------------------------------------------------------
 
+
 def get_account_direction(account_type: str) -> Direction:
     """Derive direction from account type per §4.3."""
     clean = account_type.strip().lower()
@@ -256,7 +272,15 @@ def get_account_direction(account_type: str) -> Direction:
         return Direction.HIGHER_IS_FAVOURABLE
     if clean in ("expense", "opex", "cogs", "cost of goods sold", "direct cost"):
         return Direction.LOWER_IS_FAVOURABLE
-    if clean in ("asset", "liability", "equity", "balance_sheet", "balance sheet", "memo", "statistical"):
+    if clean in (
+        "asset",
+        "liability",
+        "equity",
+        "balance_sheet",
+        "balance sheet",
+        "memo",
+        "statistical",
+    ):
         return Direction.NEUTRAL
     return Direction.NEUTRAL
 
@@ -321,6 +345,7 @@ def format_favourability(fav: Favourability | str, style: str = "table") -> str:
 # ---------------------------------------------------------------------------
 # Period Aggregations: MTD, YTD, PY MTD, PY YTD, TTM (CALC-003 .. CALC-006)
 # ---------------------------------------------------------------------------
+
 
 def aggregate_mtd(
     facts: Iterable[PeriodFact],
@@ -438,7 +463,12 @@ def calculate_period_aggregations(
     py_mtd = aggregate_py_mtd(fact_list, fiscal_year, period_number, account_code)
     py_ytd = aggregate_py_ytd(fact_list, fiscal_year, period_number, account_code)
     ttm_total, ttm_n, ttm_label = aggregate_ttm(
-        fact_list, fiscal_year, period_number, account_code, max_periods=12, periods_per_year=periods_per_year
+        fact_list,
+        fiscal_year,
+        period_number,
+        account_code,
+        max_periods=12,
+        periods_per_year=periods_per_year,
     )
 
     return PeriodAggregations(
@@ -455,6 +485,7 @@ def calculate_period_aggregations(
 # ---------------------------------------------------------------------------
 # Ratio and KPI Library (KPI-001 .. KPI-012)
 # ---------------------------------------------------------------------------
+
 
 def calculate_gross_margin_pct(
     revenue: Decimal | str | int | float,
@@ -540,7 +571,9 @@ def calculate_mape_lite(
 
     if not terms:
         if zero_actual_count > 0:
-            return RatioResult(value=None, state=RatioState.UNDEFINED, display="n/a"), zero_actual_count
+            return RatioResult(
+                value=None, state=RatioState.UNDEFINED, display="n/a"
+            ), zero_actual_count
         return RatioResult(value=None, state=RatioState.NULL, display="—"), zero_actual_count
 
     mean_mape = quantize_ratio(sum(terms) / Decimal(len(terms)))
@@ -602,7 +635,7 @@ def calculate_forecast_variance_pct(
     return safe_divide(diff, fc, abs_denominator=True)
 
 
-def calculate_kpi(kpi_id: KPI | str, **kwargs) -> RatioResult | Decimal:
+def calculate_kpi(kpi_id: KPI | str, **kwargs: Any) -> RatioResult | Decimal:
     """Unified entry point for the KPI registry (KPI-001 .. KPI-012)."""
     kpi_enum = KPI(kpi_id) if isinstance(kpi_id, str) else kpi_id
 
@@ -641,6 +674,7 @@ def calculate_kpi(kpi_id: KPI | str, **kwargs) -> RatioResult | Decimal:
 # Formatting and Display Helpers (CALC-013, CALC-030 .. CALC-033)
 # ---------------------------------------------------------------------------
 
+
 def _format_digits_grouped(digits_str: str, grouping: GroupingFormat) -> str:
     """Group digit string according to International or Indian standards."""
     if len(digits_str) <= 3:
@@ -649,7 +683,7 @@ def _format_digits_grouped(digits_str: str, grouping: GroupingFormat) -> str:
     if grouping == GroupingFormat.INDIAN:
         last3 = digits_str[-3:]
         rest = digits_str[:-3]
-        parts = []
+        parts: list[str] = []
         while len(rest) > 2:
             parts.insert(0, rest[-2:])
             rest = rest[:-2]

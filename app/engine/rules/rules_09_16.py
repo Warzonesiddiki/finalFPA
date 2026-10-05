@@ -260,15 +260,54 @@ def evaluate_exc_013(context: RuleContext) -> List[Finding]:
     spike_ratio = Decimal(str(context.config.get("EXC-013_spike_ratio", "2.5")))
     min_deviation = Decimal(str(context.config.get("EXC-013_min_deviation", "50000.00")))
 
-    # Aggregate current period by (company_code, account_code, cost_center_code)
+    current_period = str(context.period_id).strip()
+    current_end = _period_end_from_id(current_period)
+
+    # 1) Aggregate current period and prior periods by (company_code, account_code, cost_center_code)
     current_totals: Dict[Tuple[str, str, str], List[Any]] = {}
+    prior_period_totals: Dict[Tuple[str, str, str], Dict[str, Decimal]] = {}
+
     for tx in context.transactions:
         comp = str(_get_val(tx, "company_code", "IN01")).strip()
         acc = str(_get_val(tx, "account_code", "")).strip()
         cc = str(_get_val(tx, "cost_center_code", "")).strip()
-        current_totals.setdefault((comp, acc, cc), []).append(tx)
 
-    historical_baselines = context.config.get("historical_averages", {})
+        tx_p = _get_val(tx, "period_code")
+        tx_period = str(tx_p).strip() if tx_p is not None else ""
+        if not tx_period or tx_period == "None":
+            p_date = _parse_date(_get_val(tx, "posting_date"))
+            if p_date:
+                tx_period = _derive_period_from_date(p_date) or ""
+
+        amt = quantize_money(abs(_get_val(tx, "net_amount", ZERO) or _get_val(tx, "debit", ZERO)))
+
+        if not tx_period or tx_period == current_period:
+            current_totals.setdefault((comp, acc, cc), []).append(tx)
+        elif tx_period and current_end:
+            tx_end = _period_end_from_id(tx_period)
+            if tx_end and tx_end < current_end:
+                # Prior period
+                p_dict = prior_period_totals.setdefault((comp, acc, cc), {})
+                p_dict[tx_period] = p_dict.get(tx_period, ZERO) + amt
+
+    historical_baselines = dict(context.config.get("historical_averages", {}))
+
+    # If historical_baselines was not injected, derive trailing average over previous baseline_periods (default 3)
+    baseline_periods = int(context.config.get("EXC-013_baseline_periods", 3))
+    for key, p_dict in prior_period_totals.items():
+        key_str = f"{key[0]}|{key[1]}|{key[2]}"
+        if key_str not in historical_baselines:
+            # Sort prior periods by period end date
+            sorted_periods = sorted(
+                p_dict.items(),
+                key=lambda kv: (_period_end_from_id(kv[0]) or date.min, kv[0]),
+            )
+            if len(sorted_periods) >= baseline_periods:
+                recent_periods = sorted_periods[-baseline_periods:]
+                amounts = [amt for _, amt in recent_periods]
+                mean_baseline = sum(amounts, ZERO) / Decimal(baseline_periods)
+                if mean_baseline > ZERO:
+                    historical_baselines[key_str] = quantize_money(mean_baseline)
 
     for (comp, acc, cc), tx_list in sorted(current_totals.items(), key=lambda x: (x[0][0], x[0][1])):
         curr_total = sum(
@@ -315,8 +354,57 @@ def evaluate_exc_014(context: RuleContext) -> List[Finding]:
     min_amount = Decimal(str(context.config.get("EXC-014_min_amount", "100000.00")))
     historical_pairs = context.config.get("known_vendor_accounts", set())
 
-    groups: Dict[Tuple[str, str], List[Any]] = {}
+    current_period = str(context.period_id).strip()
+    current_end = _period_end_from_id(current_period)
+
+    # 1) If known_vendor_accounts not provided in config, derive from prior period transactions
+    historical_pairs = set(context.config.get("known_vendor_accounts", set()))
+    historical_vendor_activity: Dict[str, Dict[str, Set[str]]] = {}  # vendor -> {"periods": set(), "accounts": set(), "rows": 0}
+
+    # Separate current period transactions from prior periods
+    current_txs: List[Any] = []
+    prior_txs: List[Any] = []
+
     for tx in context.transactions:
+        tx_p = _get_val(tx, "period_code")
+        tx_period = str(tx_p).strip() if tx_p is not None else ""
+        if not tx_period or tx_period == "None":
+            p_date = _parse_date(_get_val(tx, "posting_date"))
+            if p_date:
+                tx_period = _derive_period_from_date(p_date) or ""
+
+        if not tx_period or tx_period == current_period:
+            current_txs.append(tx)
+        elif tx_period and current_end:
+            tx_end = _period_end_from_id(tx_period)
+            if tx_end and tx_end < current_end:
+                prior_txs.append(tx)
+
+    if not historical_pairs and prior_txs:
+        for tx in prior_txs:
+            vendor = str(_get_val(tx, "vendor_code", "")).strip()
+            acc = str(_get_val(tx, "account_code", "")).strip()
+            tx_p = _get_val(tx, "period_code")
+            tx_period = str(tx_p).strip() if tx_p is not None else ""
+            if not tx_period or tx_period == "None":
+                p_date = _parse_date(_get_val(tx, "posting_date"))
+                if p_date:
+                    tx_period = _derive_period_from_date(p_date) or ""
+
+            if vendor and acc:
+                historical_pairs.add((vendor, acc))
+                v_entry = historical_vendor_activity.setdefault(vendor, {"periods": set(), "accounts": set(), "rows": 0})
+                v_entry["periods"].add(tx_period)
+                v_entry["accounts"].add(acc)
+                v_entry["rows"] += 1
+
+    # Thresholds per doc 06
+    min_history_rows = int(context.config.get("EXC-014_min_history_rows", 3))
+    min_history_periods = int(context.config.get("EXC-014_min_history_periods", 2))
+    max_historical_accounts = int(context.config.get("EXC-014_max_historical_accounts", 3))
+
+    groups: Dict[Tuple[str, str], List[Any]] = {}
+    for tx in current_txs:
         vendor = str(_get_val(tx, "vendor_code", "")).strip()
         acc = str(_get_val(tx, "account_code", "")).strip()
         if not vendor or not acc:
@@ -324,6 +412,16 @@ def evaluate_exc_014(context: RuleContext) -> List[Finding]:
 
         pair = (vendor, acc)
         if historical_pairs and pair not in historical_pairs:
+            # Check consistent vendor precondition if activity was measured
+            if vendor in historical_vendor_activity:
+                act = historical_vendor_activity[vendor]
+                if act["rows"] < min_history_rows:
+                    continue
+                if len(act["periods"]) < min_history_periods:
+                    continue
+                if len(act["accounts"]) > max_historical_accounts:
+                    continue
+
             amt = quantize_money(abs(_get_val(tx, "net_amount", ZERO) or _get_val(tx, "debit", ZERO)))
             if amt >= min_amount:
                 groups.setdefault(pair, []).append(tx)

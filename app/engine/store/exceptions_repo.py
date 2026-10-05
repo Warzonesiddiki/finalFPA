@@ -106,6 +106,8 @@ class ExceptionListItem:
     last_seen_date: str
     created_at: str
     updated_at: str
+    correlation_id: Optional[str] = None
+    claim_id: Optional[str] = None
 
 
 @dataclass
@@ -320,7 +322,13 @@ class ExceptionsRepository:
         finally:
             duck_conn.close()
 
-    def run_rules(self, period_code: str = "FY26-P09", as_of_date: Optional[str] = None) -> Dict[str, Any]:
+    def run_rules(
+        self,
+        period_code: str = "FY26-P09",
+        as_of_date: Optional[str] = None,
+        correlation_id: Optional[str] = None,
+        claim_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """Run the full de-duplicated catalog (EXC-001..EXC-024) and record atomically.
 
         Uses `build_full_rule_batch()` rather than concatenating the 01-08 and
@@ -328,6 +336,9 @@ class ExceptionsRepository:
         EXC-012 and EXC-015 twice (they are re-exported by both batches) and
         raises duplicate findings. See app/engine/rules/batch.py.
         """
+        import uuid
+        run_corr_id = correlation_id or f"run-{uuid.uuid4().hex[:12]}"
+        run_claim_id = claim_id or "claim-unspecified"
         context = self.build_rule_context(period_code=period_code, as_of_date=as_of_date)
         findings: List[Finding] = []
 
@@ -377,8 +388,9 @@ class ExceptionsRepository:
                                 owner_role, owner_name, period_code, period_id,
                                 subject_key, subject_display, subject_amount, amount_at_risk,
                                 effective_threshold, evidence_count, evidence_refs, sample_rows,
-                                first_seen_date, last_seen_date, flagged_again, created_at, updated_at
-                            ) VALUES (?, ?, ?, ?, 'open', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+                                first_seen_date, last_seen_date, flagged_again,
+                                correlation_id, claim_id, created_at, updated_at
+                            ) VALUES (?, ?, ?, ?, 'open', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)
                             """,
                             (
                                 ident,
@@ -399,6 +411,8 @@ class ExceptionsRepository:
                                 sample_rows_json,
                                 today_date,
                                 today_date,
+                                run_corr_id,
+                                run_claim_id,
                                 now_str,
                                 now_str,
                             ),
@@ -596,6 +610,8 @@ class ExceptionsRepository:
                     last_seen_date=r["last_seen_date"] or "",
                     created_at=r["created_at"] or "",
                     updated_at=r["updated_at"] or "",
+                    correlation_id=r["correlation_id"] if "correlation_id" in r.keys() else None,
+                    claim_id=r["claim_id"] if "claim_id" in r.keys() else None,
                 )
                 items.append(item)
 
@@ -689,6 +705,8 @@ class ExceptionsRepository:
                 last_seen_date=row["last_seen_date"] or "",
                 created_at=row["created_at"] or "",
                 updated_at=row["updated_at"] or "",
+                correlation_id=row["correlation_id"] if "correlation_id" in row.keys() else None,
+                claim_id=row["claim_id"] if "claim_id" in row.keys() else None,
             )
 
             # Parse sample rows & evidence refs

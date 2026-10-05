@@ -18,6 +18,7 @@ from decimal import Decimal
 from typing import Any
 
 from app.engine.calc.math import ZERO, quantize_money
+from app.engine.dedupe import count_distinct, iter_candidate_groups
 from app.engine.rules.rules_01_08 import Finding, RuleContext, _get_val
 
 
@@ -672,7 +673,12 @@ def evaluate_catalog_exc_008(context: RuleContext) -> list[Finding]:
     if run_period is None:
         return []
 
-    groups: dict[tuple[str, str, Decimal, str, str, int], list[Any]] = defaultdict(list)
+    # Block by the catalog's EXC-008 key: (company, account, absolute amount, posting date,
+    # cost centre, net sign). The rule owns the key, the in-period filter and the
+    # "at least two distinct vouchers" requirement; `dedupe.blocking` owns the grouping and
+    # deterministic ordering so this rule and EXC-007 block the same way (R12).
+    BlockKey = tuple[str, str, Decimal, str, str, int]
+    keyed: list[tuple[BlockKey, Any]] = []
     for tx in context.transactions:
         if not _in_run_period(tx, context, run_period):
             continue
@@ -692,7 +698,7 @@ def evaluate_catalog_exc_008(context: RuleContext) -> list[Finding]:
         ):
             continue
         sign = 1 if net > ZERO else -1
-        groups[(company, account, amount, posting_date, cost_center, sign)].append(tx)
+        keyed.append(((company, account, amount, posting_date, cost_center, sign), tx))
 
     absolute_floor = _money(
         context.config.get(
@@ -726,12 +732,22 @@ def evaluate_catalog_exc_008(context: RuleContext) -> list[Finding]:
             )
 
     findings: list[Finding] = []
-    for (company, account, amount, posting_date, cost_center, _sign), rows in sorted(
-        groups.items(), key=lambda item: item[0]
+    for (company, account, amount, posting_date, cost_center, _sign), found in iter_candidate_groups(
+        keyed,
+        key_of=lambda item: item[0],
+        # `06` EXC-008: `require_different_voucher = true`. Rows in the same voucher are
+        # normal multi-line postings and are excluded -- the requirement that removes the
+        # largest class of false positives.
+        is_candidate=lambda _key, rows: count_distinct(
+            rows, lambda item: _text(item[1], "voucher_no")
+        )
+        >= 2,
+        order_by=lambda group: group[0],
     ):
+        rows = [item[1] for item in found]
+        # Presentation only: the voucher list the finding shows the reviewer. Every row here
+        # already passed the `not voucher: continue` filter above, so no blank can appear.
         vouchers = sorted({_text(tx, "voucher_no") for tx in rows})
-        if len(vouchers) < 2:
-            continue
         budget = abs(account_budget.get((company, account), ZERO))
         threshold = (
             _money(configured_minimum)

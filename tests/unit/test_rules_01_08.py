@@ -177,6 +177,36 @@ def test_exc_002_unmapped_account_raised():
     assert len(f.evidence_refs) == 6
 
 
+@pytest.mark.tst_id("TST-RUL-02B")
+def test_exc_002_unmapped_cost_center_raised():
+    """Planting P4b: 2 rows post to placeholder cost centre CC-999."""
+    txs = [
+        make_tx(
+            source_row_ref=f"row_{i}",
+            cost_center_code="CC-999",
+            debit=Decimal("14000.00"),
+            net_amount=Decimal("14000.00"),
+        )
+        for i in range(1, 3)
+    ]
+
+    ctx = RuleContext(
+        transactions=txs,
+        dim_cost_centers={"CC-999": {"owner_name": "Unassigned", "is_active": True}},
+        period_id="FY26-P09",
+    )
+    findings = evaluate_exc_002(ctx)
+
+    assert len(findings) == 1
+    f = findings[0]
+    assert f.rule_id == "EXC-002"
+    assert f.catalog_rule_id == "EXC-004"
+    assert f.severity == "Medium"
+    assert f.subject_key == "cost_center|CC-999"
+    assert f.amount_at_risk == Decimal("28000.00")
+    assert len(f.evidence_refs) == 2
+
+
 def test_exc_002_mapped_account_not_raised():
     """Properly mapped account in chart of accounts should not raise."""
     tx = make_tx(account_code="5100", debit=Decimal("50000.00"), net_amount=Decimal("50000.00"))
@@ -331,6 +361,34 @@ def test_exc_005_precision_control_offset_above_threshold():
         config={"EXC-005_min_credit_amount": Decimal("500000.00"), "EXC-005_offset_ratio": Decimal("0.90")},
     )
     assert len(evaluate_exc_005(ctx)) == 0
+
+
+def test_exc_005_ignores_different_period_debits():
+    """Debits in different periods cannot offset current period credits."""
+    tx_credit = make_tx(
+        account_code="5400",
+        cost_center_code="CC-110",
+        credit=Decimal("680000.00"),
+        net_amount=Decimal("-680000.00"),
+        posting_date="2026-09-25",
+    )
+    tx_debit_prior = make_tx(
+        account_code="5400",
+        cost_center_code="CC-110",
+        debit=Decimal("10000000.00"),
+        net_amount=Decimal("10000000.00"),
+        posting_date="2026-08-15",
+    )
+
+    ctx = RuleContext(
+        transactions=[tx_credit, tx_debit_prior],
+        dim_accounts={"5400": {"account_type": "EXPENSE"}},
+        period_id="FY26-P09",
+        config={"EXC-005_min_credit_amount": Decimal("500000.00"), "EXC-005_offset_ratio": Decimal("0.90")},
+    )
+    findings = evaluate_exc_005(ctx)
+    assert len(findings) == 1
+    assert findings[0].subject_key == "IN01|5400|CC-110"
 
 
 # ==============================================================================

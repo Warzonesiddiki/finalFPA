@@ -3,7 +3,7 @@ import csv
 from decimal import Decimal
 from typing import Dict, List, Any
 
-# TODO: Get actual salt from configuration (SEC-041)
+# TODO (BL-033 / 27_BACKLOG): Get actual salt from configuration (SEC-041)
 SALT = "project-2026-salt"
 
 def hash_value(value: str) -> str:

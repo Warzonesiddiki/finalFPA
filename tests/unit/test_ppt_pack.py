@@ -28,6 +28,7 @@ from app.engine.exports.ppt_fit import (
     compute_character_budget,
     trim_text_to_budget,
 )
+from app.engine.pptx_fill.ppt_spec import SLIDE_SHAPE_ORDER
 
 
 def test_character_budget_formula():
@@ -95,8 +96,22 @@ def test_slide_1_cover_and_stamp():
     assert "PPT-001_periodline" in shape_names
     assert "PPT-001_sources" in shape_names
     assert "PPT-001_stamp" in shape_names
-    assert "PPT-001_footer_disclaimer" in shape_names
-    assert "PPT-001_footer_page" in shape_names
+    # DEF-018: the deck is a filled copy of the template, so the footer shapes come from
+    # the template's own names (§3.6) rather than being created at runtime. Assert the
+    # names *and* their §3.7 content, which the pre-DEF-018 test never checked.
+    assert "PPT-001_footer_left" in shape_names
+    assert "PPT-001_footer_right" in shape_names
+
+    def _text(name):
+        return next(
+            (s for s in s1.shapes if s.name == name),
+            next(s for s in s1.slide_layout.shapes if s.name == name),
+        ).text_frame.text
+
+    assert _text("PPT-001_footer_left") == SHORT_DISCLAIMER
+    assert _text("PPT-001_footer_right") == (
+        f"Slide 1 of 6 · Pack v{ctx.pack_version} · {ctx.period}"
+    )
 
     # Check title text
     # resolving through layout since it's a layout shape
@@ -245,7 +260,12 @@ def test_slide_6_forecast_chart_and_disclaimer():
 
 
 def test_shape_whitelist_no_raster_screenshots():
-    """Whitelist check (§3.2 / TST-PPT-02): All objects are native editable shapes, tables, charts."""
+    """Whitelist check (§3.2 / TST-PPT-02): All objects are native editable shapes, tables, charts.
+
+    The single permitted raster is the brand logo the template carries on the cover
+    (``PPT-001_logo``). Everything else — including every data-bearing object — must be a
+    native shape, table or chart, so an editor can change any figure in the deck.
+    """
     prs = generate_powerpoint_deck()
 
     allowed_types = {
@@ -254,12 +274,19 @@ def test_shape_whitelist_no_raster_screenshots():
         MSO_SHAPE_TYPE.TABLE,
         MSO_SHAPE_TYPE.CHART,
     }
+    permitted_pictures = {("PPT-001", "PPT-001_logo")}
 
-    for slide_idx, slide in enumerate(prs.slides, start=1):
+    for slide_id, slide in zip(SLIDE_SHAPE_ORDER, prs.slides, strict=False):
         for shape in slide.shapes:
+            if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
+                assert (slide_id, shape.name) in permitted_pictures, (
+                    f"Shape {shape.name} on {slide_id} is a raster image; "
+                    f"only {sorted(permitted_pictures)} may be"
+                )
+                continue
             assert (
                 shape.shape_type in allowed_types
-            ), f"Shape {shape.name} on slide {slide_idx} has unallowed type {shape.shape_type}"
+            ), f"Shape {shape.name} on {slide_id} has unallowed type {shape.shape_type}"
 
 
 def test_save_and_reopen_deck(tmp_path: Path):

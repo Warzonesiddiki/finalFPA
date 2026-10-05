@@ -16,12 +16,11 @@ import json
 import re
 import uuid
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 import jsonschema
-from jsonschema.exceptions import ValidationError as JSONSchemaValidationError
 
 # ---------------------------------------------------------------------------
 # Constants & Verdict Language List (§8.1, §5.1, §7)
@@ -79,7 +78,10 @@ PROMPT_01_OUTPUT_SCHEMA = {
                 "required": ["label", "direction", "evidence_ids"],
                 "properties": {
                     "label": {"type": "string", "maxLength": 80},
-                    "direction": {"type": "string", "enum": ["favourable", "unfavourable", "neutral"]},
+                    "direction": {
+                        "type": "string",
+                        "enum": ["favourable", "unfavourable", "neutral"],
+                    },
                     "evidence_ids": {
                         "type": "array",
                         "minItems": 1,
@@ -111,7 +113,13 @@ PROMPT_02_OUTPUT_SCHEMA = {
             "maxItems": 60,
             "items": {
                 "type": "object",
-                "required": ["source_column", "target_field", "confidence", "reason", "evidence_ids"],
+                "required": [
+                    "source_column",
+                    "target_field",
+                    "confidence",
+                    "reason",
+                    "evidence_ids",
+                ],
                 "properties": {
                     "source_column": {"type": "string", "maxLength": 200},
                     "target_field": {"type": "string", "maxLength": 60},
@@ -186,7 +194,7 @@ PROMPT_04_OUTPUT_SCHEMA = {
     "additionalProperties": False,
 }
 
-PROMPT_SCHEMAS: Dict[str, dict] = {
+PROMPT_SCHEMAS: dict[str, dict[str, Any]] = {
     "PROMPT-01": PROMPT_01_OUTPUT_SCHEMA,
     "commentary": PROMPT_01_OUTPUT_SCHEMA,
     "PROMPT-02": PROMPT_02_OUTPUT_SCHEMA,
@@ -202,15 +210,18 @@ PROMPT_SCHEMAS: Dict[str, dict] = {
 # Exceptions
 # ---------------------------------------------------------------------------
 
+
 class AISchemaValidationError(Exception):
     """Raised when an AI response fails strict JSON or schema validation."""
-    def __init__(self, message: str, errors: Optional[List[str]] = None):
+
+    def __init__(self, message: str, errors: list[str] | None = None):
         super().__init__(message)
         self.errors = errors or []
 
 
 class CapExceededException(Exception):
     """Raised when an AI call exceeds configured usage/token/cost caps."""
+
     def __init__(self, message: str, cap_name: str, current_usage: Any, limit: Any):
         super().__init__(message)
         self.cap_name = cap_name
@@ -222,9 +233,12 @@ class CapExceededException(Exception):
 # 1. JSON Schema Validation (§8.1, §8.3)
 # ---------------------------------------------------------------------------
 
-def validate_json_schema(raw_response: str | dict, schema_or_prompt_id: str | dict) -> dict:
+
+def validate_json_schema(
+    raw_response: str | dict[str, Any], schema_or_prompt_id: str | dict[str, Any]
+) -> dict[str, Any]:
     """Strictly parse and validate AI response against JSON Schema.
-    
+
     Tolerates clean markdown json code blocks (```json ... ```) but rejects
     trailing arbitrary text, missing fields, invalid types, or extra properties.
     """
@@ -242,14 +256,14 @@ def validate_json_schema(raw_response: str | dict, schema_or_prompt_id: str | di
         cleaned = raw_response.strip()
         # Handle markdown code blocks cleanly if present
         if cleaned.startswith("```json"):
-            cleaned = cleaned[len("```json"):].strip()
+            cleaned = cleaned[len("```json") :].strip()
             if cleaned.endswith("```"):
                 cleaned = cleaned[:-3].strip()
         elif cleaned.startswith("```"):
             cleaned = cleaned[3:].strip()
             if cleaned.endswith("```"):
                 cleaned = cleaned[:-3].strip()
-        
+
         try:
             data = json.loads(cleaned)
         except json.JSONDecodeError as exc:
@@ -270,9 +284,9 @@ def validate_json_schema(raw_response: str | dict, schema_or_prompt_id: str | di
     return data
 
 
-def sanitize_fields(prompt_id: str, data: dict) -> dict:
+def sanitize_fields(prompt_id: str, data: dict[str, Any]) -> dict[str, Any]:
     """Apply field-level sanitation per §8.1 step 4.
-    
+
     e.g. Strip newlines or markdown headers/bullets from PROMPT-01 commentary.
     """
     cleaned = dict(data)
@@ -287,7 +301,7 @@ def sanitize_fields(prompt_id: str, data: dict) -> dict:
     return cleaned
 
 
-def check_banned_phrases(text: str) -> List[str]:
+def check_banned_phrases(text: str) -> list[str]:
     """Check text for banned verdict language (§8.1 step 6)."""
     text_lower = text.lower()
     found = []
@@ -299,16 +313,16 @@ def check_banned_phrases(text: str) -> List[str]:
 
 
 def validate_evidence_ids(
-    data: dict, allowed_evidence_ids: Set[str] | List[str]
-) -> Tuple[dict, bool, List[str]]:
+    data: dict[str, Any], allowed_evidence_ids: set[str] | list[str]
+) -> tuple[dict[str, Any], bool, list[str]]:
     """Validate evidence IDs against payload IDs (§8.1 step 5).
-    
+
     Strips unknown evidence IDs and returns (updated_data, mismatch_flag, stripped_ids).
     """
     allowed_set = set(allowed_evidence_ids)
     updated = dict(data)
     mismatch_found = False
-    stripped: List[str] = []
+    stripped: list[str] = []
 
     if "drivers" in updated and isinstance(updated["drivers"], list):
         new_drivers = []
@@ -371,7 +385,8 @@ def validate_evidence_ids(
 # 2. Anti-Hallucination Number Reconciliation (§8.2 - DEC-026)
 # ---------------------------------------------------------------------------
 
-def normalize_number_token(token: str) -> Optional[Decimal]:
+
+def normalize_number_token(token: str) -> Decimal | None:
     """Parse and normalize numeric string tokens across currencies, Indian/Western formatting, percentages."""
     cleaned = token.strip()
     # Strip currency symbols
@@ -402,14 +417,14 @@ def normalize_number_token(token: str) -> Optional[Decimal]:
         return None
 
 
-def extract_payload_numbers(payload: Any) -> Set[Decimal]:
+def extract_payload_numbers(payload: Any) -> set[Decimal]:
     """Recursively extract all numeric values from payload data structures.
-    
+
     Generates base numbers and valid scaled variants (e.g. millions, lakhs, crores, percentages).
     """
-    numbers: Set[Decimal] = set()
+    numbers: set[Decimal] = set()
 
-    def add_number_variants(dec_val: Decimal):
+    def add_number_variants(dec_val: Decimal) -> None:
         dec_norm = dec_val.normalize()
         numbers.add(dec_norm)
         # Add absolute value as well
@@ -428,7 +443,7 @@ def extract_payload_numbers(payload: Any) -> Set[Decimal]:
             except Exception:
                 pass
 
-    def traverse(obj: Any):
+    def traverse(obj: Any) -> None:
         if isinstance(obj, (int, float)):
             try:
                 add_number_variants(Decimal(str(obj)))
@@ -443,7 +458,9 @@ def extract_payload_numbers(payload: Any) -> Set[Decimal]:
                 add_number_variants(parsed)
             # Also find standalone numbers inside strings
             # Match currency/percent/amounts: ₹1,05,40,000, 10540000, 5.4%, etc.
-            tokens = re.findall(r"(?:[₹\$€£]\s*)?[+-]?\d{1,3}(?:,\d{2,3})*(?:\.\d+)?%?|[+-]?\d+(?:\.\d+)?%?", obj)
+            tokens = re.findall(
+                r"(?:[₹\$€£]\s*)?[+-]?\d{1,3}(?:,\d{2,3})*(?:\.\d+)?%?|[+-]?\d+(?:\.\d+)?%?", obj
+            )
             for t in tokens:
                 p = normalize_number_token(t)
                 if p is not None:
@@ -470,11 +487,11 @@ NUMERIC_TOKEN_PATTERN = re.compile(
 SENTENCE_SPLIT_PATTERN = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9₹\"'\[])")
 
 
-def split_sentences(text: str) -> List[str]:
+def split_sentences(text: str) -> list[str]:
     """Split text into sentences cleanly without splitting decimal numbers."""
     # First split on newlines
     lines = [line.strip() for line in text.split("\n") if line.strip()]
-    sentences: List[str] = []
+    sentences: list[str] = []
     for line in lines:
         parts = SENTENCE_SPLIT_PATTERN.split(line)
         for p in parts:
@@ -483,19 +500,19 @@ def split_sentences(text: str) -> List[str]:
     return sentences
 
 
-def check_sentence_numbers(sentence: str, allowed_numbers: Set[Decimal]) -> Tuple[bool, List[str]]:
+def check_sentence_numbers(sentence: str, allowed_numbers: set[Decimal]) -> tuple[bool, list[str]]:
     """Check if all numeric tokens in a sentence match allowed payload numbers.
-    
+
     Returns (is_valid, offending_tokens).
     """
     matches = NUMERIC_TOKEN_PATTERN.findall(sentence)
-    offending: List[str] = []
+    offending: list[str] = []
 
     for token in matches:
         norm = normalize_number_token(token)
         if norm is None:
             continue
-        
+
         # Check direct or close float match (to handle float rounding e.g. 10.54)
         matched = False
         if norm in allowed_numbers or abs(norm) in allowed_numbers:
@@ -505,29 +522,35 @@ def check_sentence_numbers(sentence: str, allowed_numbers: Set[Decimal]) -> Tupl
                 if abs(norm - allowed) < Decimal("0.0001"):
                     matched = True
                     break
-        
+
         if not matched:
             offending.append(token)
 
     return len(offending) == 0, offending
 
 
-def check_word_counts(text: str, allowed_numbers: Set[Decimal]) -> Tuple[bool, List[str]]:
+def check_word_counts(text: str, allowed_numbers: set[Decimal]) -> tuple[bool, list[str]]:
     """Check ordinal and prose counts (e.g. 'three rows', 'two items') against payload counts (§8.2).
-    
+
     Returns (mismatch_detected, warnings). Note: Word counts are flagged, NOT stripped.
     """
-    warnings: List[str] = []
+    warnings: list[str] = []
     text_lower = text.lower()
 
     # Pattern for word count followed by target nouns: e.g. 'three rows', 'two items'
-    pattern = re.compile(r"\b(" + "|".join(WORD_TO_COUNT.keys()) + r")\s+(rows?|items?|postings?|transactions?|exceptions?|months?)\b")
+    pattern = re.compile(
+        r"\b("
+        + "|".join(WORD_TO_COUNT.keys())
+        + r")\s+(rows?|items?|postings?|transactions?|exceptions?|months?)\b"
+    )
     for match in pattern.finditer(text_lower):
         word = match.group(1)
         count_val = Decimal(WORD_TO_COUNT[word])
         noun = match.group(2)
         if count_val not in allowed_numbers:
-            warnings.append(f"Prose count '{word} {noun}' ({count_val}) does not match any count in payload.")
+            warnings.append(
+                f"Prose count '{word} {noun}' ({count_val}) does not match any count in payload."
+            )
 
     return len(warnings) > 0, warnings
 
@@ -537,12 +560,12 @@ class NumberReconciliationResult:
     reconciled_text: str
     number_mismatch_flag: bool
     completely_discarded: bool
-    warnings: List[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
     removed_sentences_count: int = 0
     total_sentences_count: int = 0
 
 
-def reconcile_text_numbers(text: str, allowed_numbers: Set[Decimal]) -> NumberReconciliationResult:
+def reconcile_text_numbers(text: str, allowed_numbers: set[Decimal]) -> NumberReconciliationResult:
     """Reconcile numbers in text per DEC-026: strip offending sentences and replace with placeholder."""
     sentences = split_sentences(text)
     if not sentences:
@@ -552,9 +575,9 @@ def reconcile_text_numbers(text: str, allowed_numbers: Set[Decimal]) -> NumberRe
             completely_discarded=False,
         )
 
-    reconciled_sentences: List[str] = []
+    reconciled_sentences: list[str] = []
     mismatch_flag = False
-    warnings: List[str] = []
+    warnings: list[str] = []
     removed_count = 0
 
     for s in sentences:
@@ -588,8 +611,8 @@ def reconcile_text_numbers(text: str, allowed_numbers: Set[Decimal]) -> NumberRe
 
 
 def reconcile_numbers(
-    data: dict, payload: Any, prompt_id: Optional[str] = None
-) -> Tuple[dict, NumberReconciliationResult]:
+    data: dict[str, Any], payload: Any, prompt_id: str | None = None
+) -> tuple[dict[str, Any], NumberReconciliationResult]:
     """Reconcile all numbers across response fields (commentary, drivers, caveats, body_markdown)."""
     allowed_numbers = extract_payload_numbers(payload)
     updated = dict(data)
@@ -623,7 +646,9 @@ def reconcile_numbers(
                 new_caveats.append(cav)
             else:
                 res.number_mismatch_flag = True
-                res.warnings.append(f"Caveat removed due to unreconciled figures: {', '.join(offending)}")
+                res.warnings.append(
+                    f"Caveat removed due to unreconciled figures: {', '.join(offending)}"
+                )
         updated["caveats"] = new_caveats
 
     # Reconcile driver labels if present (§8.2)
@@ -636,7 +661,9 @@ def reconcile_numbers(
             if not valid:
                 res.number_mismatch_flag = True
                 drv_copy["label"] = NUMBER_REMOVED_PLACEHOLDER
-                res.warnings.append(f"Driver label modified due to unreconciled figures: {', '.join(offending)}")
+                res.warnings.append(
+                    f"Driver label modified due to unreconciled figures: {', '.join(offending)}"
+                )
             new_drivers.append(drv_copy)
         updated["drivers"] = new_drivers
 
@@ -647,6 +674,7 @@ def reconcile_numbers(
 # 3. AI Draft Provenance Tracking (§12)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class AIDraftProvenance:
     feature_code: str
@@ -654,26 +682,24 @@ class AIDraftProvenance:
     prompt_version: str
     model: str
     provider: str
-    input_scope: dict
+    input_scope: dict[str, Any]
     draft_id: str = field(default_factory=lambda: f"draft_{uuid.uuid4().hex[:12]}")
-    generated_at: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
-    )
+    generated_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     redaction_applied: bool = True
     truncated: bool = False
     number_mismatch_flag: bool = False
     confidence: str = "medium"
     status: str = "draft"  # 'draft', 'approved', 'rejected', 'superseded'
     stamp: str = AI_DRAFT_STAMP
-    warnings: List[str] = field(default_factory=list)
-    banned_phrases_detected: List[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+    banned_phrases_detected: list[str] = field(default_factory=list)
     evidence_mismatch_flag: bool = False
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
-def stamp_ai_draft(output_data: dict, provenance: AIDraftProvenance) -> dict:
+def stamp_ai_draft(output_data: dict[str, Any], provenance: AIDraftProvenance) -> dict[str, Any]:
     """Stamp draft with required provenance and visible AI draft label per §5, §12."""
     return {
         "stamp": provenance.stamp,
@@ -687,19 +713,21 @@ def stamp_ai_draft(output_data: dict, provenance: AIDraftProvenance) -> dict:
 # 4. Usage Logging and Cost / Token Capping (§9)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class AICapConfig:
     """Configurable token and spend caps per docs/10_AI_INTEGRATION_SPEC.md §9.1."""
+
     output_tokens_per_call: int = 800
     input_tokens_per_call: int = 6000
     calls_per_hour: int = 60
     monthly_tokens: int = 2_000_000
-    monthly_cost: float = 1500.0  # In INR
+    monthly_cost: Decimal = Decimal("1500.00")  # In INR
     # Default rates per 1,000 tokens in INR (§9.2)
-    input_rate_per_1k: float = 0.15
-    output_rate_per_1k: float = 0.77
+    input_rate_per_1k: Decimal = Decimal("0.15")
+    output_rate_per_1k: Decimal = Decimal("0.77")
     # Feature-specific output token limits
-    feature_output_token_caps: Dict[str, int] = field(
+    feature_output_token_caps: dict[str, int] = field(
         default_factory=lambda: {
             "PROMPT-01": 800,
             "commentary": 800,
@@ -716,6 +744,7 @@ class AICapConfig:
 @dataclass
 class FactAIUsage:
     """Usage log entry per docs/03_DATA_DICTIONARY.md §5 and §9.3."""
+
     usage_id: str
     occurred_at: str
     feature_code: str
@@ -731,7 +760,7 @@ class FactAIUsage:
     truncation_flags: bool = False
     redaction_applied: bool = True
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
         d["estimated_cost"] = str(self.estimated_cost)
         return d
@@ -740,31 +769,33 @@ class FactAIUsage:
 @dataclass
 class CapCheckResult:
     allowed: bool
-    cap_name: Optional[str] = None
+    cap_name: str | None = None
     current_usage: Any = None
     limit: Any = None
-    reset_date: Optional[str] = None
-    message: Optional[str] = None
+    reset_date: str | None = None
+    message: str | None = None
     outcome: str = "ok"
 
 
 class AIUsageTracker:
     """In-memory and persistent tracker for AI usage and cap enforcement (§9)."""
 
-    def __init__(self, config: Optional[AICapConfig] = None):
+    def __init__(self, config: AICapConfig | None = None):
         self.config = config or AICapConfig()
-        self.logs: List[FactAIUsage] = []
+        self.logs: list[FactAIUsage] = []
 
     def calculate_estimated_cost(self, tokens_in: int, tokens_out: int) -> Decimal:
         """Calculate estimated cost in INR from token counts and rates (§9.2)."""
         cost_in = (Decimal(tokens_in) / Decimal(1000)) * Decimal(str(self.config.input_rate_per_1k))
-        cost_out = (Decimal(tokens_out) / Decimal(1000)) * Decimal(str(self.config.output_rate_per_1k))
+        cost_out = (Decimal(tokens_out) / Decimal(1000)) * Decimal(
+            str(self.config.output_rate_per_1k)
+        )
         total = (cost_in + cost_out).quantize(Decimal("0.000001"))
         return total
 
-    def get_hourly_call_count(self, now: Optional[datetime] = None) -> int:
+    def get_hourly_call_count(self, now: datetime | None = None) -> int:
         """Return number of calls in the past 60 minutes."""
-        current_time = now or datetime.now(timezone.utc)
+        current_time = now or datetime.now(UTC)
         count = 0
         for entry in self.logs:
             try:
@@ -776,9 +807,9 @@ class AIUsageTracker:
                 pass
         return count
 
-    def get_monthly_usage(self, now: Optional[datetime] = None) -> Tuple[int, Decimal]:
+    def get_monthly_usage(self, now: datetime | None = None) -> tuple[int, Decimal]:
         """Return (total_tokens, total_cost) for current month."""
-        current_time = now or datetime.now(timezone.utc)
+        current_time = now or datetime.now(UTC)
         curr_year = current_time.year
         curr_month = current_time.month
 
@@ -789,7 +820,7 @@ class AIUsageTracker:
             try:
                 entry_dt = datetime.fromisoformat(entry.occurred_at)
                 if entry_dt.year == curr_year and entry_dt.month == curr_month:
-                    total_tokens += (entry.tokens_in + entry.tokens_out)
+                    total_tokens += entry.tokens_in + entry.tokens_out
                     total_cost += entry.estimated_cost
             except Exception:
                 pass
@@ -800,15 +831,15 @@ class AIUsageTracker:
         self,
         feature_code: str,
         estimated_input_tokens: int = 0,
-        now: Optional[datetime] = None,
+        now: datetime | None = None,
     ) -> CapCheckResult:
         """Check whether current call is permitted under configured caps (§9.1)."""
-        current_time = now or datetime.now(timezone.utc)
+        current_time = now or datetime.now(UTC)
         # Compute reset date (first day of next month)
         if current_time.month == 12:
-            reset_dt = datetime(current_time.year + 1, 1, 1, tzinfo=timezone.utc)
+            reset_dt = datetime(current_time.year + 1, 1, 1, tzinfo=UTC)
         else:
-            reset_dt = datetime(current_time.year, current_time.month + 1, 1, tzinfo=timezone.utc)
+            reset_dt = datetime(current_time.year, current_time.month + 1, 1, tzinfo=UTC)
         reset_date_str = reset_dt.strftime("%Y-%m-%d")
 
         # 1. Per-call input token cap
@@ -850,14 +881,16 @@ class AIUsageTracker:
             )
 
         # 4. Monthly cost cap
-        if float(monthly_cost) >= self.config.monthly_cost:
+        limit_cost = Decimal(str(self.config.monthly_cost))
+        current_cost = Decimal(str(monthly_cost))
+        if current_cost >= limit_cost:
             return CapCheckResult(
                 allowed=False,
                 cap_name="monthly_cost",
-                current_usage=float(monthly_cost),
-                limit=self.config.monthly_cost,
+                current_usage=current_cost,
+                limit=limit_cost,
                 reset_date=reset_date_str,
-                message=f"Monthly cost cap reached (₹{monthly_cost:.2f}/₹{self.config.monthly_cost:.2f}). Resets on {reset_date_str}.",
+                message=f"Monthly cost cap reached (₹{current_cost:.2f}/₹{limit_cost:.2f}). Resets on {reset_date_str}.",
                 outcome="cap_exceeded",
             )
 
@@ -876,13 +909,13 @@ class AIUsageTracker:
         outcome: str = "ok",
         truncation_flags: bool = False,
         redaction_applied: bool = True,
-        timestamp: Optional[str] = None,
+        timestamp: str | None = None,
     ) -> FactAIUsage:
         """Record an AI call into the usage log (§9.3)."""
         cost = self.calculate_estimated_cost(tokens_in, tokens_out)
         usage_entry = FactAIUsage(
             usage_id=f"ai_{uuid.uuid4().hex[:12]}",
-            occurred_at=timestamp or datetime.now(timezone.utc).isoformat(),
+            occurred_at=timestamp or datetime.now(UTC).isoformat(),
             feature_code=feature_code,
             model=model,
             prompt_version=prompt_version,
@@ -903,45 +936,50 @@ class AIUsageTracker:
         """Export usage log as CSV per §9.3 (contains no payload content)."""
         output = io.StringIO()
         writer = csv.writer(output)
-        writer.writerow([
-            "usage_id",
-            "occurred_at",
-            "feature_code",
-            "model",
-            "prompt_version",
-            "provider",
-            "input_row_count",
-            "tokens_in",
-            "tokens_out",
-            "estimated_cost",
-            "latency_ms",
-            "outcome",
-            "truncation_flags",
-            "redaction_applied",
-        ])
+        writer.writerow(
+            [
+                "usage_id",
+                "occurred_at",
+                "feature_code",
+                "model",
+                "prompt_version",
+                "provider",
+                "input_row_count",
+                "tokens_in",
+                "tokens_out",
+                "estimated_cost",
+                "latency_ms",
+                "outcome",
+                "truncation_flags",
+                "redaction_applied",
+            ]
+        )
         for entry in self.logs:
-            writer.writerow([
-                entry.usage_id,
-                entry.occurred_at,
-                entry.feature_code,
-                entry.model,
-                entry.prompt_version,
-                entry.provider,
-                entry.input_row_count,
-                entry.tokens_in,
-                entry.tokens_out,
-                str(entry.estimated_cost),
-                entry.latency_ms,
-                entry.outcome,
-                entry.truncation_flags,
-                entry.redaction_applied,
-            ])
+            writer.writerow(
+                [
+                    entry.usage_id,
+                    entry.occurred_at,
+                    entry.feature_code,
+                    entry.model,
+                    entry.prompt_version,
+                    entry.provider,
+                    entry.input_row_count,
+                    entry.tokens_in,
+                    entry.tokens_out,
+                    str(entry.estimated_cost),
+                    entry.latency_ms,
+                    entry.outcome,
+                    entry.truncation_flags,
+                    entry.redaction_applied,
+                ]
+            )
         return output.getvalue()
 
 
 # ---------------------------------------------------------------------------
 # 5. Model Pinning and Fallback Management (§10)
 # ---------------------------------------------------------------------------
+
 
 class ModelPinningManager:
     """Enforces explicit model versions and manages ordered fallback chain (§10)."""
@@ -951,11 +989,11 @@ class ModelPinningManager:
     def __init__(
         self,
         pinned_model: str = "gpt-4o-2024-08-06",
-        fallbacks: Optional[List[str]] = None,
+        fallbacks: list[str] | None = None,
     ):
         self.validate_model_name(pinned_model)
         self.pinned_model = pinned_model
-        self.fallbacks: List[str] = []
+        self.fallbacks: list[str] = []
         if fallbacks:
             for fb in fallbacks[:3]:  # Max 3 entries per §10.3
                 self.validate_model_name(fb)
@@ -971,7 +1009,7 @@ class ModelPinningManager:
                 "Must use an explicit pinned model version."
             )
 
-    def get_execution_chain(self) -> List[str]:
+    def get_execution_chain(self) -> list[str]:
         """Return ordered list of models ending with 'rule_based' fallback (§10.3)."""
         return [self.pinned_model] + self.fallbacks + ["rule_based"]
 
@@ -980,35 +1018,36 @@ class ModelPinningManager:
 # 6. End-to-End Guardrail Pipeline (§8.1)
 # ---------------------------------------------------------------------------
 
+
 class AIGuardrailPipeline:
     """Executes the complete 10-step AI output validation pipeline (§8.1)."""
 
     def __init__(
         self,
-        usage_tracker: Optional[AIUsageTracker] = None,
-        model_manager: Optional[ModelPinningManager] = None,
+        usage_tracker: AIUsageTracker | None = None,
+        model_manager: ModelPinningManager | None = None,
     ):
         self.usage_tracker = usage_tracker or AIUsageTracker()
         self.model_manager = model_manager or ModelPinningManager()
 
     def process_ai_output(
         self,
-        raw_response: str | dict,
+        raw_response: str | dict[str, Any],
         prompt_id: str,
         prompt_version: str,
         payload: Any,
-        input_scope: dict,
-        allowed_evidence_ids: Optional[Set[str] | List[str]] = None,
-        model: Optional[str] = None,
+        input_scope: dict[str, Any],
+        allowed_evidence_ids: set[str] | list[str] | None = None,
+        model: str | None = None,
         provider: str = "azure",
         tokens_in: int = 0,
         tokens_out: int = 0,
         latency_ms: int = 0,
         redaction_applied: bool = True,
-    ) -> Tuple[Optional[dict], AIDraftProvenance, Optional[FactAIUsage]]:
+    ) -> tuple[dict[str, Any] | None, AIDraftProvenance, FactAIUsage | None]:
         """Validate and reconcile AI response through §8.1 pipeline."""
         chosen_model = model or self.model_manager.pinned_model
-        warnings: List[str] = []
+        warnings: list[str] = []
         truncated = False
 
         # Step 2 & 3: Parse JSON & Schema Validation
@@ -1054,7 +1093,7 @@ class AIGuardrailPipeline:
                 warnings.append(f"Unknown evidence IDs stripped: {', '.join(stripped_ids)}")
 
         # Step 6: Banned-phrase / verdict language check
-        banned_found: List[str] = []
+        banned_found: list[str] = []
         for text_field in ("commentary", "body_markdown", "summary"):
             if text_field in cleaned and isinstance(cleaned[text_field], str):
                 banned_found.extend(check_banned_phrases(cleaned[text_field]))
@@ -1078,7 +1117,9 @@ class AIGuardrailPipeline:
                 else:
                     break
             cleaned["commentary"] = curr
-            warnings.append("Commentary exceeded 600 characters and was truncated at sentence boundary.")
+            warnings.append(
+                "Commentary exceeded 600 characters and was truncated at sentence boundary."
+            )
 
         # Step 9: Confidence present & valid
         confidence = cleaned.get("confidence", "medium")
@@ -1121,7 +1162,9 @@ class AIGuardrailPipeline:
 
         if recon_result.completely_discarded:
             provenance.status = "rejected"
-            warnings.append("Entire draft was removed because no figures matched payload data. Discarded.")
+            warnings.append(
+                "Entire draft was removed because no figures matched payload data. Discarded."
+            )
             return None, provenance, usage
 
         stamped = stamp_ai_draft(cleaned, provenance)

@@ -67,6 +67,23 @@ from app.engine.calc.quality_score import (
     calculate_quality_score,
     create_f12_fixture_checks,
 )
+from app.engine.calc.observable import (
+    ObservableHop,
+    ObservableNumber,
+    observe_number_1_tb_balance,
+    observe_number_2_net_amount,
+    observe_number_3_variance,
+    observe_number_4_variance_pct,
+    observe_number_5_favourability,
+    observe_number_6_percentage_points,
+    observe_number_7_bridge_residual,
+    observe_number_8_dq_score,
+    observe_number_9_gross_margin,
+    observe_number_10_budget_burn,
+    observe_number_11_mape_lite,
+    observe_number_12_rounding_footnote,
+    get_twelve_observable_numbers,
+)
 
 
 __all__ = [
@@ -133,5 +150,20 @@ __all__ = [
     "QualityScoreResult",
     "calculate_quality_score",
     "create_f12_fixture_checks",
+    "ObservableHop",
+    "ObservableNumber",
+    "observe_number_1_tb_balance",
+    "observe_number_2_net_amount",
+    "observe_number_3_variance",
+    "observe_number_4_variance_pct",
+    "observe_number_5_favourability",
+    "observe_number_6_percentage_points",
+    "observe_number_7_bridge_residual",
+    "observe_number_8_dq_score",
+    "observe_number_9_gross_margin",
+    "observe_number_10_budget_burn",
+    "observe_number_11_mape_lite",
+    "observe_number_12_rounding_footnote",
+    "get_twelve_observable_numbers",
 ]
 

@@ -86,6 +86,8 @@ CREATE TABLE IF NOT EXISTS FactException (
     first_seen_date TEXT,
     last_seen_date TEXT,
     flagged_again INTEGER NOT NULL DEFAULT 0,
+    correlation_id TEXT,
+    claim_id TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

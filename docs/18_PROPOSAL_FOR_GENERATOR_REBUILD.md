@@ -5,7 +5,7 @@
 - **Author:** Aion CLI (Engine / Architecture Teammate)
 - **Reviewers:** Lead (01a102c2-8761-7722-a75e-b58905e1bc56), FP&A Core Team
 - **Date:** 2026-10-03
-- **Status:** Proposed / Draft
+- **Status:** **Approved 2026-10-05 — `DEC-059`** (owner: approve, bundled with the `OQ-025/026/027` rulings as one regeneration). Original: Proposed / Draft, 2026-10-03.
 
 ---
 

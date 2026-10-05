@@ -78,6 +78,8 @@ class DatabaseManager:
                 ("first_seen_date", "TEXT"),
                 ("last_seen_date", "TEXT"),
                 ("flagged_again", "INTEGER NOT NULL DEFAULT 0"),
+                ("correlation_id", "TEXT"),
+                ("claim_id", "TEXT"),
             ]
             for col_name, col_type in migrations:
                 if col_name not in existing_cols:

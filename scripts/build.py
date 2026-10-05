@@ -580,8 +580,36 @@ def build_licence_text(root: Path, payload: Path) -> str:
         "file in _internal/*.dist-info/licenses/. UI dependency licences are",
         "published with each npm package and listed above by name and version.",
         "",
+
+        "",
+        "Part 3 - Adopted source (copy-edit) notices",
+        "------------------------------------------------------------",
     ]
+    # Doc 15 step 4a: copied source is NOT a distribution dependency, so neither
+    # pip freeze nor an SBOM lists it - this file is the only place a user
+    # licence obligation is discharged. Derived verbatim from THIRD_PARTY_NOTICES.md
+    # and never hand-written here, so the payload cannot drift from the registry.
+    lines += _adopted_source_notices(root)
+    lines.append("")
     return "\n".join(lines)
+
+
+def _adopted_source_notices(root: Path) -> list[str]:
+    """The `## WS-nn ... (ADP-nnn)` sections of THIRD_PARTY_NOTICES.md, verbatim."""
+    notices = root / "THIRD_PARTY_NOTICES.md"
+    if not notices.exists():
+        return ["  (THIRD_PARTY_NOTICES.md is missing - this payload would ship",
+                "   copied source with no notice. See docs/15 step 4a.)"]
+    out: list[str] = []
+    keep = False
+    for line in notices.read_text(encoding="utf-8").splitlines():
+        if line.startswith("## "):
+            keep = bool(re.match(r"##\s+WS-\d+", line))
+        if keep:
+            out.append(line)
+    if not out:
+        return ["  (THIRD_PARTY_NOTICES.md lists no adopted sources)"]
+    return out
 
 
 def build_readme_text(version: str) -> str:

@@ -8,6 +8,519 @@ anything deferred to the backlog or the open-questions log.
 
 ---
 
+## Session 015 — 2026-10-05 (five agents live: verification of peers' handoffs, `team.py reject`,
+handoff-integrity gates, streams + subagent fan-out, `DOC-01` payload-notices gap closed)
+
+### Objective
+Keep five agents working in one checkout without letting quality slip: verify what peers hand over,
+send back what cannot be verified, and close the packaging-notices gap found while auditing.
+
+### What happened
+- **Verified `TB-008` (antigravity, rule diffs)**: re-ran the handoff's own command myself — 88 passed,
+  identical to the claim, and no file in the claim window was missing from `## Changed`.
+- **Rejected three handoffs, with the machinery to do it.** `team.py reject` did not exist — a reviewer
+  could only accept, so a bad handoff either stalled in `review` or the author idled. It now writes the
+  required actions into the handoff, returns the task to `in-progress`, **re-arms the author's claim**
+  (their paths stay reserved and they keep working) and messages them. Used on `TB-007` (code moved ahead
+  of `06`'s subject-key row, and the span branch it added had no test), `TB-016`/`TB-017` (Changed lists
+  hiding 7 and 4 changed files), and `UX-01`/`RV-01` (Doc-sync said only 'docs-only: no behaviour change'
+  and Verification ran only `team.py check`, which tests the coordination layer, not the deliverable).
+- **Handoff-integrity gates added to `team.py check`**: a required section that is present but empty or a
+  stub now FAILs; a file changed inside a claim window but absent from `## Changed` FAILs (strict) or warns;
+  a docs-only handoff verified only by `team.py check` warns. The window rule is what exposed the undeclared
+  files, and the tokeniser was hardened twice against false positives (bare file names, `docs/18`,
+  dotfiles like `.nvmrc`, versions like `3.14.7`).
+- **Per-agent streams** in `team/config.json` (ordered queues) now drive `team.py leader`, and starvation is
+  judged per stream, not per board. Twelve new work cards were added and triaged so no seat can run dry:
+  `UX-02…UX-05`, `SPEC-01…SPEC-03`, `RV-02`, `RV-03`, `PERF-01`, `ENG-01`, `DOC-01`. Subagent fan-out is
+  now written down (`team/README.md` §11): subagents never claim, parallel work splits by item not by
+  function, and each must return its command and raw output.
+- **My own `R12` guard was wrong and the suite said so.** The full run gave *925 passed, 1 failed*: the
+  guard counted `@overload` stubs of `_coerce_money` as duplicate implementations. Overload declarations are
+  types, not implementations, so the scan now skips them — and a new self-test builds both shapes to prove
+  the exemption stays narrow (two overloads + one body passes, two bodies still fails). 7 passed.
+- **`DOC-01` closed a live compliance gap.** The payload notices file carried **no adopted-source notices**
+  while Apache-2.0/CC0-1.0/MIT code ships in the binary, and the file that ships is *generated* by
+  `build.build_licence_text`, so the checked-in copy was not what users receive. The generator now appends a
+  *Part 3* derived verbatim from `THIRD_PARTY_NOTICES.md`, and new **CHECK 6** fails the build when an
+  `ADP-nnn` cited by a shipped header is missing from it. Falsification test included. Evidence:
+  `evidence/doc01/notices-audit.md`; handoff `HO-014`.
+
+### Measured
+- `python -m pytest tests/unit/test_gate_license.py -q` → 3 passed · `python scripts/license_gate.py` → exit 0 (six checks) · `python scripts/check_doc_integrity.py` → exit 0
+- `python -m pytest tests/unit/test_engine_common.py -q` → 7 passed (after the `@overload` fix)
+- `python -m pytest tests/unit/test_rules_01_08.py …test_rules_batch.py -q` → 88 passed (TB-008 reproduced)
+- `python -m pytest -m "not perf" -q -o addopts=""` -> **940 passed / 16 deselected** (623.30 s), FULL_EXIT=0 - 884 pre-team baseline + 41 dedupe + 7 R12-guard (incl. the @overload self-test) + 3 licence-gate CHECK 6 + 5 others. The first run of this session gave 925 passed / 1 failed, and that one failure was my own guard, which is why the guard was fixed rather than the code or the assertion relaxed.
+
+### Still red / limitations
+- `scripts/check.py` still exits 1 on the five pre-existing `14` §5.3 bars (recall 11/32, control 1 fired, High 6/18, 422 extras, 14 zero-coverage rules) — blocked on the corpus rebuild `TB-006`/`TB-011` that `freebuff2` is running.
+- The payload's EULA/disclaimer text still has no source in the repository; `build.py` reports it as a blocker rather than inventing it — needs an owner ruling.
+- Nothing is committed. `TB-048` (waterfall) still owed until python-pptx exposes `WATERFALL`.
+
+
+### Addendum — `OPS-01`, the non-stop supervision loop
+
+The owner asked for a loop that checks every member's board every 20 minutes, adds work and verifies results, without
+stopping. A prompt cannot do that across turns, so it was built as a process instead: **`scripts/team_watchdog.py`**
+(`TB-102`, stdlib only, no new dependency).
+
+Each tick: regenerates `team/taskboard.md` + `team/digest.md`, runs `team.py check`, surveys every seat, and turns findings into
+actions. `decide()` is a **pure function** of (survey, previous state, config) so every rule is unit-tested; `apply()` is the only
+side-effecting part and it has an **allow-list of four kinds** - `nudge`, `escalate`, `draft`, `done`. Anything else is refused and
+logged, which is what makes the loop safe: it cannot verify a handoff, accept a handoff, or commit, because a watchdog that
+rubber-stamps work would destroy the only guarantee this team has.
+
+Rules implemented, each with a test: an idle seat whose stream still has claimable work is nudged with the exact claim command; a
+seat with no claim, no claimable stream and an empty stream produces a **draft card for the owner** instead of a nudge; a seat that
+is blocked is nudged once and then cooled down; a claim past its TTL is escalated to the owner with the `--steal` command; a
+handoff that has waited more than 30 minutes for a verifier is escalated; completion is announced once and ends the loop.
+
+Measured: `python -m pytest tests/unit/test_team_watchdog.py -q` -> **10 passed**; first live tick at 12:32Z read the real board,
+reported `check exit 1 (2 fail, 10 warn), 7 active claims, 45 cards todo` and issued 1 nudge. The loop is running as pid 10508;
+it survives my turn ending but not a machine restart, and `python scripts/team_watchdog.py loop --interval 20` brings it back.
+
+Also verified and rejected this turn: **`TB-025`** (opencode) - its own commands reproduce (21 passed, `mypy` clean on `app/jobs`,
+the package really exists) but `## Changed` declared 1 of the 5 files the claim window shows it wrote, including the whole
+`app/jobs/` package the task was about. Substantively fine, formally unverifiable; returned with the exact list.
+
+### Addendum 3 - a second seat ran out of quota, mid-claim
+
+`opencode` ended its day holding `TB-027` (extract `app/cli/`). Three things, in order:
+
+1. **The claim was released, not stolen**, with an audit note recording that the uncommitted work in `app/cli/`
+   is *inherited, not discarded*, and `TB-027` went back to `todo` so it can be claimed cleanly. Freeing the
+   paths matters: while a dead seat holds `app/cli/`, no other agent can write there.
+2. **A replacement seat was onboarded properly**, not improvised: `opencode2` is registered in
+   `team/config.json` (agents, lanes, prefer, stream) so claims, heartbeats and `check` know it exists, and it has
+   its own kickoff at `team/kickoff/opencode2.md` - identity, the repo, the start sequence, the inherited claim,
+   its stream (`TB-031`, `TB-032`, `ENG-01`, `TB-029`, `TB-022`*), the non-stop loop, the rails, the handoff
+   format, and the three rules that cost teammates handoffs today (declare every changed file, never weaken a
+   test, money is `Decimal`).
+3. **The away feature is what made this safe.** Without it the watchdog would have nudged `opencode` every 40
+   minutes for the rest of the day - noise that teaches the team to ignore the loop. It also stops the leader view
+   from reporting a dead seat as `IDLE`.
+
+Measured: `pytest tests/unit/test_team_watchdog.py -q` -> **14 passed**; `check_doc_integrity.py` -> **PASS**
+(101 markdown files); `team.py check` -> **PASS, 0 fail**; `team.py status` shows no stranded claims.
+
+### Addendum 4 - verifying `UX-03` found a hole in my own guard, not just in the handoff
+
+`hermes` handed off `UX-03` (screen-by-screen conformance for all 43 screens in `08`). I reproduced its own
+commands: `scripts/generate_screen_conformance_matrix.py` -> exit 0, 43 screens; `scripts/verify_audit_citations.py`
+-> exit 0, all citations resolve; `team.py check` -> 0 errors. The artefact is real and the matrix is the thing I
+wanted. Two formal problems, both mine to enforce: the handoff declared one file while three were written, and
+**two of those files were written outside the claim's own scope** - which my undeclared-file rule could not see,
+because it only looked inside the claim.
+
+**The hole, closed at the root.** `team.py check` now also reports files written inside a claim window but
+*outside* the claimed scopes, narrowed to files no other live claim covers and not leader-only paths, with tool
+caches (`.ruff_cache`, `.mypy_cache`, `.pytest_cache`, `.coverage`, `dist/`) excluded so the signal is not noise.
+R14 - one writer per path - means nothing if the paths outside your claim are unpoliced. Two bugs of my own were
+found while building it and fixed: a variable named `covered` shadowed the existing `covered()` helper (crash on
+every `check`), and the first filter flagged 21 cases, nearly all legitimate.
+
+Third item: the handoff claims 242 citations across five evidence files; the checker reports 146. Unexplained, so
+it is in the rejection.
+
+`UX-03` was therefore **rejected on form, accepted on substance** - and hermes' stream grew by six cards, all
+shaped for a 30+ subagent fan-out: one subagent per screen group (`UX-08`, keyboard/focus/ARIA against WCAG 2.2
+AA), one per number (`UX-09`, the twelve an FP&A analyst must never get wrong, traced import to export), one per
+error family (`UX-10`), plus the board narrative (`UX-06`), the first-run journey (`UX-11`), the adversarial code
+review (`RV-06`), and `SPEC-05` - executable-ready test specs for the 14 zero-coverage exception rules, which is
+the acceptance gate's critical path and the single highest-leverage thing a subagent fleet can produce this week.
+
+Measured: `team.py check` -> **PASS, 0 fail**; `tests/unit/test_team_watchdog.py` -> **14 passed**;
+`check_doc_integrity.py` -> **exit 0**; `license_gate.py` six checks -> **exit 0**.
+### Addendum 5 - the continuity layer, and three audits that measured nothing
+
+**The problem this solves is real and specific.** Five agents share one checkout and several
+are quota-bound. When a seat stops mid-task, the next seat to touch that path inherits code and
+no reasoning: `docs/` says what is specified, `STATE.md` says what is true, and nothing said
+what we had already learned or where the reasoning behind a decision went.
+
+**What landed** (`TB-103`, `memory/`, stdlib only, no new runtime dependency):
+
+- `memory/journal/memory.jsonl` and `knowledge.jsonl` are **append-only source of truth**,
+  written under an `O_EXCL` lock. `MEMORY.md`, `KNOWLEDGE.md`, `RESUME.md` and
+  `memory/agents/<seat>.md` are *rendered* from them, and only the block between
+  `<!-- BEGIN GENERATED:memory.py -->` and `<!-- END GENERATED:memory.py -->` is rewritten.
+  A concurrent append therefore cannot lose another agent's entry, and hand-written prose
+  survives every render. A hand-edit inside that block is lost by design - that is the error
+  the architecture exists to prevent.
+- `python scripts/memory.py resume --agent <seat>` is the one command a cold agent needs: the
+  authored brief (rails, where the truth lives, the working loop, the recording protocol) plus
+  live state recomputed on the spot - live claims, recorded blockers, dependency-blocked cards,
+  that seat's stream in order, **whether the seat is parked**, and the traps already paid for.
+- `memory.py verify` is a gate, not a claim. It fails on a duplicate id, an unknown agent, an
+  unrecognised kind/topic, an empty entry, a missing `RESUME` section, a missing per-seat log
+  or an empty journal. `tests/unit/test_memory.py` has a **falsification test for each check**,
+  plus a 5-process concurrent-append test and a test that a subprocess cannot reach the
+  production journal. 30 tests, exit 0.
+- One host lesson is baked into the code: **lock staleness is decided by mtime age, never by a
+  pid probe, because `os.kill(pid, 0)` terminates the process on Windows.** The usual liveness
+  check would have killed the very process holding the lock.
+- `memory.py prompt` prints the standing instruction to hand to a seat; it is stored in
+  `memory/CONTINUITY_PROMPT.md` between explicit delimiters, and the command fails loudly if
+  those delimiters are lost.
+
+**Why `memory/` is excluded from the `team.py` claim-window scan.** For the same reason
+`team/`, `scratch/` and `vendor/` are: every agent writes there by design, and flagging it
+would teach agents to ignore the flag. Its integrity is gated by `memory.py verify` instead -
+which is the right division, because the memory layer's job is to be unable to smuggle
+undeclared *product* changes, not to police its own append-only log.
+
+**Verification then found the same failure mode three times in a row.** `UX-08` (a11y audit),
+`UX-09` (the twelve analyst numbers) and `UX-10` (error catalogue) all handed off with clean
+exit codes. All three were generated, not measured:
+
+- `scripts/audit_accessibility_matrix.py` is 109 lines whose 43-row audit table is a **string
+  literal beginning at line 37**. It never opens a `.tsx` file. "43 screens audited, exit 0"
+  means a pre-written table was printed.
+- I opened four cited lines by hand. `ui/src/main.tsx:145` is an `<h1>` heading string;
+  `ui/src/components/import/PreScanModal.tsx:1` is `import React, { useState } from 'react'`;
+  `ui/src/components/check/CheckScreen.tsx:2` is a docstring; and
+  `ui/src/components/exceptions/BulkActionBar.tsx:15` - the *one* real defect the audit
+  reported, a bulk-select checkbox missing `aria-label` - is `const [targetStatus, ...] =
+  useState<string>('')`. Four for four. So 42 rows reading "Conforming" were never measured,
+  and the audit's headline result is worthless.
+- `scripts/verify_audit_citations.py` could not have caught it. It concatenates `docs/*.md` and
+  asks whether `SCR-`/`FR-`/`CALC-` identifier strings appear somewhere in them. **It never
+  resolves a `file:line` code citation at all.** "PASS: all citations resolved" is fully
+  compatible with a fabricated citation.
+
+All three rejected with the specific lines quoted, the claims re-armed, and WIP held at 2 by
+releasing the `UX-09`/`UX-10` claims so hermes works them in order.
+
+**And verifying them found two real defects in my own coordination layer** (`TB-104`):
+
+1. The `## Changed` tokeniser split on the commas *inside* a brace group, so
+   `sample-data/import_history/{01_bank_batch_037.csv,02_gl_batch_039.xlsx}` was parsed as
+   `{01_bank_batch_037.csv` and FAILed the existence check as a path that does not exist.
+   Brace groups are now expanded *before* splitting (`_expand_braces`).
+2. `.xlsx` was missing from the changed-path extension allowlist, so **33 of the 55 files
+   under `sample-data/` could not be declared at all.** The handoff-integrity gate was blind
+   to precisely the lane that changes them most. The allowlist now covers the data, document
+   and image formats the lanes actually ship.
+
+Both carry regression tests in `tests/unit/test_team_changed_paths.py` (14 tests - 10 cases, one
+parametrised over 5 rejection inputs, one on the rejected-handoff rule).
+
+**The rule that came out of it**, written into `docs/33` §5.10 and queued as `SPEC-08`/`DOC-05`:
+
+> A deliverable is verified when **a command recomputes its numbers from the subject** - not
+> when a document describes it, a generator prints it, or a checker greps a different directory
+> than the claim is about. A checker that cannot resolve what it claims to verify is not a
+> check. Uniform verdicts are a warning, not a result: "43 of 43 conforming" is the shape of an
+> unmeasured claim, and an honest `NOT VERIFIED - <reason>` beats a green tick nobody measured.
+
+**Board.** 53 cards added across three waves with every seat included; `todo` 46 -> 94, all six
+streams refreshed. Wave 2 was shaped by the finding above (`UX-14` a checker that can fail,
+`ENG-05` retire the four literal-printing generators, `LEAD-01` the false-evidence register,
+`LEAD-02` the verification bottleneck - 20 handoffs waiting while seats had claimable work).
+Wave 3 is the defect register's own debt: `QUAL-01` (DEF-015, money as `Decimal` end to end),
+`QUAL-02` (traceability generated from code), `QUAL-05` (determinism, which the already-filed
+tie-out evidence depends on), `UX-19` (the board pack and the exceptions register must never
+disagree), `RV-11`, `DOC-07`, `DOC-08` (the unsigned `GATE-13` packet).
+
+## Session 014 — 2026-10-05 (Addon 6 v2 Work Card WC-1: `WS-01` dead → Tier C → owner chose BUILD; `app/engine/dedupe/`; register repair)
+
+### Objective
+Execute Addon 6 v2 work card **`WC-1`** (`WS-01` dedupe → `app/engine/dedupe/`) in the §9 order
+(WC-6 → WC-2 → **WC-1**), and leave the repo's records consistent whatever the outcome.
+
+### What happened
+| Step | Outcome |
+|---|---|
+| `S0` preflight | The capability was already spec-complete: `06`'s duplicate rules are all Tier `exact`, the `EXC-007` normalisation clause was implemented inline, and the card's headline weighted/fuzzy scorer is required by **no** `06` rule — the eight `fuzzy`-tier rules are magnitude/pairing/completeness/budget/controls. |
+| `S2` fetch | **FAILED, measured twice with the exit preserved:** `git clone --depth 1 … vendor/_upstream/WS-01` → `remote: Repository not found.` / `fatal: repository … not found`, **git exit 128**. Web search found no renamed successor. No pinned SHA ⇒ no `ADP-004` (`R5`). |
+| Escalation | §6 S4 + §14 **Tier C STOP** → `OQ-028` (`18`) + `evidence/wc1/ws01-escalation-packet.md` (measured facts, S0 finding, exactly 3 options, recommended default, acceptance-gate impact = none) → **owner chose option 1: BUILD + `BD` row.** |
+| Rollback | Clean: `vendor/_upstream/WS-01` never created; `vendor/_staging/` unchanged; no `app/` file touched at that point. |
+
+### What changed
+| File | Change |
+|---|---|
+| `app/engine/dedupe/normalize.py` | **New** (`BD-001`, BUILD — no `Adapted from` header). `normalise_alnum_upper`, `normalise_invoice_no`; the `06` clause's limit (leading zeros collapse only at the alnum string's start) documented, not widened; three preserved edge cases (`None`/falsy → `""`; separators-only → `"0"`; all-zeros unchanged) pinned by tests. |
+| `app/engine/dedupe/blocking.py` | **New**. `group_by_key`, `iter_candidate_groups` (with `order_by` for determinism), `count_distinct`, `Group`, `CandidatePredicate`. |
+| `app/engine/dedupe/__init__.py` | **New**. Exports + the `BD-001`/`OQ-028` rationale, including why no fuzzy scorer exists. |
+| `app/engine/rules/rules_01_08.py` | `R12`: imports the shared primitives; `_normalize_invoice_no` is now an **alias** of `normalise_invoice_no`; `evaluate_exc_001` blocks through `iter_candidate_groups`. |
+| `app/engine/rules/rules_catalog_001_008.py` | `R12`: `evaluate_catalog_exc_008` blocks through `iter_candidate_groups` + `count_distinct`; the `vouchers` presentation line restored after the guard caught its loss. |
+| `tests/unit/test_dedupe.py` | **New**, 41 tests. |
+| `docs/18_...` | `DEC-066`; `OQ-028` marked decided; header counts 22/66; **`D-13` register repair** (below). |
+| `docs/32` §2, `docs/09` §3.15, `docs/33` §5.8, `docs/14` §13.2, `CHANGELOG`, `STATE.md` | `BD-001`; `ADR-014`; `TB-100`; the dated coverage amendment; the two changelog entries; state. |
+
+### Verification (all numbers measured this session)
+- `python -m pytest tests/unit/test_dedupe.py --cov=app.engine.dedupe` → **41 passed**, `app/engine/dedupe` at **100 % statements / 100 % branches**.
+- `tests/unit/test_rules_01_08.py`, `test_rules_catalog_001_008.py`, `test_rules_batch.py`, `test_import_repository_catalog_metadata.py`, `test_control_totals_import.py` → **54 passed**.
+- `python -m pytest tests/rules/test_acceptance.py` (background run, 277 s) → **26 passed, 5 failed — the five failures are the pre-existing `14` §5.3 bars, byte-identical to baseline**: recall 11/32, control 1 fired (`P30`), High 6/18, 422 extras, zero-coverage list unchanged. This is the behaviour-preservation proof for the `R12` rewiring.
+- `license_gate.py` / doc integrity: re-run at session close (see `STATE.md`).
+- `python -m pytest -m "not perf" -q -o addopts=""` → **884 passed, 16 deselected** in 468.42 s — the 843
+  baseline **plus** the 41 new `test_dedupe.py` tests, so the `R12` rewiring regressed nothing anywhere.
+- `python scripts/check_doc_integrity.py` → **PASSED** (91 markdown files, links + cross-project ids).
+- `python scripts/license_gate.py` → **PASSED all five checks, exit 0** (5 `Adapted from` headers). CHECK 5
+  first **failed** on the three new BUILD modules, because their prose explained the absence of an
+  `Adapted from` header in those very words — correct behaviour by the gate; the prose was reworded to
+  "ADP provenance header" rather than the gate being weakened.
+- `python scripts/team.py check` → **PASS, exit 0** (0 fail; 2 warnings, both expected: `TB-045`'s own
+  in-progress state from `33`, and unclaimed uncommitted working-tree edits).
+
+### Team layer (built the same session, because the owner added three more agents)
+`team/README.md` (normative protocol) · `scripts/team.py` (claims/tasks/board/digest/handoff/verify/check,
+stdlib only) · `team/config.json` · `team/agents/*.md` · `team/kickoff/*.md` (**the copy-paste prompts for
+`buffy`, `antigravity`, `opencode`, `freebuff2`, `hermes`**) · `team/inbox/*` (incl. `owner.md`) · `team/log/` ·
+`team/lessons.md` · `team/reviews/README.md` · `team/handoffs/TEMPLATE.md` + `HO-001` · generated
+`team/taskboard.md` (48 tasks) and `team/digest.md` · `AGENTS.md` + `GEMINI.md` pointers ·
+`.gitignore` ignores only `team/claims/` + `team/state/` (records stay tracked).
+Verified by falsification, not by assertion: an overlapping claim is refused, a non-leader writing a
+leader-only path is refused, the WIP limit trips, and **released claims free their paths** — the last one
+was a genuine bug the tests exposed (closed claims kept blocking) and it is fixed. A 12-assertion CLI smoke
+test (`preflight`, `sync` idempotency, `task add`, `claim`, `touch`, `handoff`, the `release --done` refusal
+without a handoff, `review` state, the **self-verification refusal**, and peer `verify` → `done`) passed with
+every probe artefact deleted afterwards; a task-id allocation bug it exposed (a freed `T-nnn` number could be
+reused and overwrite a live task file) was fixed to allocate `max+1` with an existence guard.
+
+**The team started working the moment the layer went live:** `opencode` claimed `TB-030` (DEF-015 float
+money, `app/engine/store/**` + `tests/unit/test_def015_decimal_money.py`) and `freebuff2` claimed `TB-006`
+(the P0 corpus rebuild, `sample-data/`), each with its own scopes — the claim guard keeping them apart in a
+shared checkout. `hermes` joined as the fifth seat (product/UX + spec-domain) with `UX-01` (the month-end
+walked hour by hour) as its first claim.
+
+### Register repair (`D-13`) — found while doing the doc-sync sweep
+The `docs/18` DEC register held **65 rows but only 64 unique IDs**: the `DEC-064` row was appended **twice**
+and `DEC-063` — the WS-10 `ADP-002` adoption, cited by `09` §3.13 (`ADR-012`), `STATE.md` and the `DEF-018`
+closure report — **had never been appended**. Repaired line-wise by script (CRLF preserved, verified after:
+66 rows, 66 unique, `DEC-001`…`DEC-066`): `DEC-063` reconstructed from `ADR-012` and placed in ID order, the
+duplicate removed, and a dated note (`D-13`) added under the table. **No decision changed** and no ID was
+reused; `DEC-063`'s row says plainly that it was recorded late and why. The register's only remaining
+non-numeric-order step is the pre-existing, documented `DEC-054` renumber (`DEF-014` fix).
+
+### Deliberately not done
+- **The contract file was not edited.** `project prompt/ADDON_6_REUSE.md` still hashes to
+  `81f5aaee2461851f125e68c0bc7731de5fcf576e814f0beae1e0abfd6ee801d3` (re-verified this session), which is the
+  identity `DEC-062` records. Annotating the stale `WS-01` row would have broken that hash, so the dead URL is
+  flagged in `BD-001`/`DEC-066` instead — the contract is the owner's document, the registry is ours.
+- No commit; working tree only. `scripts/check.py` still exits 1 on the five pre-existing `14` §5.3 bars
+  (`TB-020` corpus rebuild, M1) — untouched by this card.
+
+### Next step
+`WC-1` is closed in the §9 order. Next: onboard the three new agents by pasting `team/kickoff/<agent>.md`
+into each tool; then the P0 acceptance path (`TB-006` corpus rebuild → `TB-010` → `TB-011` → `TB-009` →
+`TB-012` green) and `RV-01` (every agent writes an independent whole-project review; `buffy` synthesises it
+as `RV-90`).
+
+### Fifth agent + the leader's own lane (same session, later)
+
+`hermes` onboarded (product/UX + spec-domain, `UX-01`) and **all five seats went to work**:
+`antigravity` `TB-007`, `opencode` `TB-030`, `freebuff2` `TB-006`, `hermes` `UX-01`/`RV-01`.
+
+**Leader work delivered, both handed off for peer verification:**
+- `TB-026` slice 1 — `tests/unit/test_engine_common.py` (`HO-002`, `evidence/tb026/survey.md`). The survey
+  found the money/period helpers were *already* single-homed, so the missing piece was the guard, not the
+  consolidation: an `ast` walk that fails on any capability defined twice outside a documented allowlist.
+  **Mutation-verified** — an injected second `count_distinct` makes it fail naming both lines; restore → 6
+  passed. Creating `engine/common/` was deliberately **not** forced through its `TB-016` dependency: it would
+  have imported backwards (`common → calc`/`rules`), which is the boundary violation `TB-014`/`TB-016` exist to
+  prevent.
+- `TB-018` slice 1 — `.python-version` = **3.14.7** and `.nvmrc` = **26.10.0**, both verified against the
+  machine. `ADR-002` says pin Python **3.12.x** while the tree, the 884 tests and the packaging all run 3.14.7,
+  so the pin records reality and the discrepancy went to the owner as **`OQ-029`** (`R1`: the ADR is not edited
+  silently). `uv.lock` is **owed** — `uv` is not installed and installing it is a network + machine change, so
+  it is task `T-001` awaiting the owner.
+
+**Three defects found by testing the coordination layer, not by reading it:**
+1. **Released claims kept blocking their paths** (fixed: `is_active` honours `closed_utc`).
+2. **A freed `T-nnn` number could be reused and overwrite a live task file** (fixed: allocate `max+1` with an
+   existence guard).
+3. **Two handoffs shared the id `HO-003`** (my hand-written one raced hermes' CLI one), and a leader probe then
+   appended a verification to the **wrong** handoff and flipped `UX-01` to `done` without any check running. Fixed
+   properly: the id **number** is now the atomic unit (`O_EXCL` lock sentinel, number advances past any existing
+   file), `resolve_handoff()` refuses an ambiguous id, the collision was resolved (mine → `HO-005`), and the
+   false verification was **removed** and `UX-01` reverted to `review` — verified proof: asking for `HO-004`
+   now yields `HO-007`.
+
+**Also added while leading:** lane-affinity task assignment in `team.py leader` (it first suggested a *corpus*
+task to the UX seat), a `STARVATION` warning in `check` (idle agents vs claimable P0/P1), and a `do_not_claim`
+guard for `app/api/openapi.json` — **the owner's own uncommitted edit**, which no agent (leader included) may
+claim.
+
+---
+
+## Session 013 — 2026-10-05 (Addon 6 v2 Work Card WC-2 — `DEF-018` closed: the deck is now a filled copy of the template)
+
+### Objective
+Execute Addon 6 v2 work card **WC-2** end to end (S0→S10) and close the S1 defect it exists for:
+`DEF-018`, which proved `ppt_pack.py` builds all six slides from scratch, violating `12` §3.6.
+
+### What changed
+| File | Change |
+|---|---|
+| `app/engine/pptx_fill/core.py` | **New** (`ADP-001`, WS-02 Apache-2.0). Template/layout/shape resolution by name, `promote_layout_shapes` (deep-copies layout shapes onto the slide and re-points every `r:embed`/`r:link`/`r:id` at the **slide's** part), `remove_slide`, `set_value_axis`. `TemplateShapeError` is the canonical `ERR-EXP-014`. |
+| `app/engine/pptx_fill/patterns.py` | **New** (`ADP-002`, WS-10 CC0-1.0). The three fill verbs — `set_text`, `fill_table`, `replace_chart_data` — plus `TextStyle` overrides. |
+| `app/engine/pptx_fill/ppt_spec.py` | **New** (`ADP-001`). The `12` §3.6 shape contract and the canonical per-slide write order, declared rather than discovered. |
+| `app/engine/pptx_fill/layout.py` | **New** (`ADP-003`, WS-03 MIT, `DEC-064`). The overflow cascade re-expressed against python-pptx shapes + `ppt_fit`, **flag-gated default OFF** (`FPA_PPT_OVERFLOW_CASCADE`). |
+| `app/engine/exports/ppt_pack.py` | All six builders rewritten to fill named template shapes. `ExportTemplateError` is now an alias of `TemplateShapeError` (R12). 1570 → 1056 lines. |
+| `packaging/templates/FPAMonthEndCopilot_v1.pptx` + `scripts/make_pptx_template.py` | Regenerated: `PPT-004_table` 7→**6** rows (per `DEC-065`), bridge chart switched to the §5.2 `column_stacked` waterfall fallback, forecast series pre-styled per §5.3. |
+| `tests/unit/test_pptx_fill_patterns.py` | **New**, 49 tests, written from the contract (E13 — WS-10 ships none). |
+| `tests/unit/test_pptx_fill_layout.py` | **New**, 33 tests, adapted from WS-03's `test_layout_adaptive.py` (E13/R6). |
+| `tests/unit/test_ppt_pack.py` | Two legacy assertions updated **and strengthened** (see below). |
+| `docs/18`, `docs/32`, `docs/33`, `CHANGELOG.md`, `STATE.md` | `DEC-065`; the three `ADP-nnn` rows closed out with what the surgical edit actually found; `TB-048` added; changelog + state entries. |
+
+### Architecture note (the part worth remembering)
+The template ships **0 slides and 0 placeholders** — layouts with 103 named shapes. Adding a slide for a
+layout therefore leaves the slide *empty*, and the layout's shapes render as inherited content that
+PowerPoint does **not** let an editor click. Editing `slide.slide_layout.shapes` in place persists (verified
+by probe) but would have traded one §3.6 breach for another — the deck's central promise is that all
+content is natively editable. So layout shapes are **promoted**: each shape's element is deep-copied onto
+the slide's `spTree` in layout order, preserving geometry, styling and z-order, and every relationship id
+is re-pointed because a promoted graphic frame otherwise references a chart/image part related to the
+*layout*, which the slide does not own. Verified end to end: one chart part per slide (never shared), correct
+content types, survives save/reopen, 103/103 contract names present.
+
+The second load-bearing finding: **assigning to `text_frame.text` destroys the template's run formatting.**
+python-pptx rebuilds the run and drops its `rPr` — the font size, weight, colour and typeface the template
+author set all vanish. Every fill verb therefore writes into an **existing run**; pinned by
+`test_set_text_preserves_template_run_formatting` as the regression this adoption exists to prevent.
+
+### Defects found and fixed along the way
+- **Footer name mismatch.** Code created `PPT-00N_footer_disclaimer`/`_footer_page`; the template ships
+  `footer_left`/`footer_right`. The footer could never have matched the template.
+- **KPI chips** were created as `PPT-002_kpiN_chip` against the template's `*_signal`.
+- **Phantom accent bars.** `_add_accent_bar` added `PPT-00N_accent` to slides 2–6, where the template has no
+  accent shape — runtime geometry duplicating template geometry.
+- **Fabricated bridge tie-out.** The driver list sums to **+₹375,000** while opening → closing moves
+  **+₹875,000**, and the slide printed `Opening + Σ drivers = Closing — OK` as a hard-coded string. With the
+  §5.2 stacked-column fallback the base series is computed, so that ₹500,000 gap would have become a visible
+  unexplained step. It is now an explicit `Other (unexplained)` step in the chart *and* the driver list, and
+  the tie-out line states the residual. Measured after: bar tops march 15,770,000 → 16,645,000 and the
+  closing bar equals the final step exactly.
+- **`set_value_axis` swallowed `0.0`.** The inherited `if minimum:` guard treats `0.0` as falsy, so a
+  legitimate zero axis bound was silently dropped. Now `is not None`.
+
+### Tests changed rather than deleted (R7)
+Two assertions in `tests/unit/test_ppt_pack.py` encoded the from-scratch behaviour `DEF-018` called a defect,
+so they asserted the wrong thing. Both were rewritten to assert the `12` §3.6/§3.7 contract and are
+**stronger** than before: the footer test now checks the §3.7 *content* of each footer shape, not just its
+existence; the shape whitelist permits exactly one raster — the template's own `PPT-001_logo` — and fails on
+any other picture anywhere in the deck.
+
+### Verification (this session)
+- Full suite: **843 passed, 16 deselected, 0 failed** (317.67 s).
+- Real user path: `python scripts/run_uat_dry_run.py` → **exit 0**, all six `TST-UAT-*` PASS, with the deck generated through the same `generate_powerpoint_deck` call the API uses.
+- Coverage: **87.21 %** total; **`app.engine.pptx_fill` 95 %** (R6 >= 90 %) across 82 new tests.
+- `scripts/check_doc_integrity.py` → **PASS** (88 markdown files, links + IDs consistent).
+- `scripts/license_gate.py` → **PASS exit 0** (5 adapted headers all matching the E8 format, 0 forbidden-license
+  hits in shipped code, `vendor/_upstream/` gitignored and untracked, 9/9 runtime deps on the GO list, 0 DT
+  tools in runtime).
+- Generated deck verified structurally: all 103 contract names resolve per slide, chart series keep their
+  template styling (`base` invisible, `Actual`/`Forecast`/`Budget` colours and the Budget dash survive
+  `replace_data`), `None` gaps between closed and forecast periods are preserved per §5.3, and two runs from
+  the same context produce identical slide XML (§3.6 `TST-PPT-08`).
+
+### Still red (pre-existing, untouched by WC-2)
+`scripts/check.py` still exits 1 on the five `14` §5.3 performance-bar failures — blocked on the M1 corpus
+rebuild (`TB-020`). ruff/mypy remain unwired (`TB-015`/`TB-016`). Neither is caused by, nor blocks, WC-2.
+
+### Deferred
+- `TB-048` — `12` §5.2's "template carries both bridge variants as two shapes" stays owed until a
+  python-pptx release exposes `XL_CHART_TYPE.WATERFALL`. The stacked fallback is documented and shipped.
+- `DEC-065` records the `12` §4.1 row-count reading (a spec **interpretation**, R1 — the doc was not edited).
+
+### Next step
+WC-2 is closed. Per the Addon 6 §9 card order the next card is **WC-1** (`scripts/check.py` green — the §5.3
+perf bars, blocked on `TB-020`), with **WC-5** running in parallel as the corpus build track.
+
+---
+
+## Session 012 — 2026-10-05 (Final Verification of Session 011 · Doc 09 Perfection Pass · New Execution Blueprint & Taskboard)
+
+### Objective
+Close session 011's two open verification items, then serve two owner requests: (a) a “hybrid
+architecture” upgrade to `09` — **declined by the owner mid-flight** (“drop hybrid, upgrade the current
+existing architecture for perfection”); (b) a detailed roadmap + blueprint + taskboard to follow for
+extreme perfection with zero compromises.
+
+### What changed
+| File | Change |
+|---|---|
+| `docs/09_TECHNICAL_ARCHITECTURE.md` | Perfection pass (12 edits): module map reconciled with the real tree (`exceptions/`, `security/`, `errors.py`, `static/`) + dated gap note for `app/jobs/`/`engine/common/`/import-linter; §4.3 rows for `engine/errors`/`security`/`exceptions` with verified entry points; §5.2 gains `launch`, real `exceptions run` flags, and a dated implemented-vs-required status (4 of 10 commands; `doctor` stub; `bva` calculator); §6 invariant (5) atomic batched commit (DEF-030); §14 measured evidence (3,717 rows/s 15×, 72.6 s commit, 24.7 s harness), corrected header, stale `Appender` claim dropped, `NFR-016` cross-ref fixed (§7.4 → §8/`ADR-006`); §15.4 real script entry points + gate-wiring gaps → `TB-014`–`TB-019`. No new ADR: ADR-001…010 stand unchanged. |
+| `docs/32_EXECUTION_BLUEPRINT_AND_TASKBOARD.md` | **New.** Definition of Done (D1–D10), six doctrine rules, 7 workstreams, **dated gap inventory `G-01`…`G-22`** (every row evidence-backed), milestones M0→M6 (owner decisions → acceptance green → gate green → S1 burn-down → architecture alignment → gate evidence → pilot/UAT/go-live), taskboard `TB-001`…`TB-047` with blockers + closed `TB-090`…`098`, and the operating rules. |
+| `docs/16_ROADMAP_PHASES.md` | `32` added as owner row (§1.1), board pointer (§1.2 item 6), **§1.3 next-open-item retargeted** from “Phase 1” (stale) to the acceptance-to-green item with `OQ-025/026/027` as the named blocker. |
+| `docs/00_INDEX.md` | Doc map, count line (33 docs), Source-of-Truth rows (31 + 32), ID registry `TB-nnn`, §10 phase-status cells updated (defects → live register; blocking questions → the three OQs). |
+| `CHANGELOG.md` | Added + Changed entries, both with **Impact: S — docs only**. |
+
+### Verification (this session)
+- Corpus determinism after the final generator tweak: full re-run → all 5 CSVs **sha256-identical**
+  (GL `0667630f…e37f` still matches the acceptance report's recorded checksum).
+- `scripts/verify_trial_balance.py` → `PASS - PERFECT BALANCE` (250,040 rows, all entities/periods 0.00).
+- `scripts/check_doc_integrity.py` → **PASSED** (87 md files); `scripts/check_contract_drift.py` → **PASSED**;
+  `scripts/check_tst_catalogue.py` → PASSED (34 IDs / 41 markers).
+- Not run here (env limitation, unchanged): ruff/mypy — recorded on the board as `TB-015`/`TB-016`.
+
+### Next step
+Per `16` §1.3 / `32` §5: owner answers `OQ-025/026/027` (`TB-001`–`003`, 🚧) → `PROP-001` rebuild
+(`TB-005/006`) → the seven acceptance bars on two identical runs (`TB-012`) → `scripts/check` green.
+
+### Amendments (same session, 2026-10-05)
+1. **Doc renumber:** Addon 6 (received this session) allocates `docs/32_REUSE_AND_PROVENANCE.md` to the
+   reuse/provenance registry; the execution taskboard created earlier today is now
+   `docs/33_EXECUTION_BLUEPRINT_AND_TASKBOARD.md` — every reference above reading `32` **for the
+   taskboard** reads `33` (recorded as `DEC-060`). The taskboard yields the number because Addon 6
+   executes literally and docs 00–31 are spec of record; a derived doc is not.
+2. **M0 closed:** `OQ-025`…`027` decided (`DEC-056`…`DEC-058`), `PROP-001` approved (`DEC-059`) —
+   recorded in `18` §5; `04` §11/§12 and `14` §5.2 amended spec-first; board `TB-001`…`TB-005` ✅.
+3. **Addon 6 assigned:** reuse-first build contract saved at `project prompt/ADDON_6_REUSE.md` with its
+   SHA-256 in `DEC-060`; provenance registry + `THIRD_PARTY_NOTICES.md` + `vendor/_upstream/` gitignore
+   created; `README.md` §2 corrected (was claiming "Feature Complete & Verified, v1.0.0-rc2").
+4. **Addon 6 v2 replaced v1 in place** (owner, same session): new SHA-256 `81f5aaee…01d3` → `DEC-062`;
+   deltas (WS-03/WS-10 COPY-EDIT, DT tools, gates 4A/4B, rails L1–L3, E13, WC-6/WC-5) and the new
+   mandatory **`scripts/license_gate.py`** — created, wired as `scripts/check.py`'s final step, and
+   **PASSING (exit 0)** on the current tree. WC-6 closed with README §2. WC-2 remains at S5: WS-02
+   staged and recorded (ADP-001/ADR-011/DEC-061); WS-10+WS-03 fetches and S6–S10 are next.
+
+---
+
+## Session 011 — 2026-10-04 (Acceptance Remediation: DEF-030 Bulk Load, Reproducible Balance, Corpus Period Window, Honest Verdict)
+
+### Objective
+Run the doc 14 §5.2 planted-exception acceptance harness for real, on the corpus the DEF-019 rebuild left
+behind, and fix what blocks it — in the order the measurements dictate.
+
+### Correction to a past entry (rule of this log)
+The Fallback Pilot entry below ends “`GATE-13` exited as Approved under the approved fallback framework”.
+That is **not** the current, corrected record: `28` §4.6.5 carries unsigned placeholders for the analyst,
+consultant and owner, §4.6.2–4.6.4 are marked BLOCKED, and `GATE-13` remains **Pending** per `00_INDEX`
+line 386. Recorded here so the two entries cannot be read as contradicting each other.
+
+### What changed
+| File | Change |
+|---|---|
+| `app/engine/store/import_repo.py` | **DEF-030.** `_bulk_insert` replaces both `executemany` calls with batched multi-row `INSERT`s inside one explicit transaction; `INSERT_BATCH_ROWS = 1000` carries the measured figures. |
+| `tests/unit/test_def030_bulk_insert.py` | New: chunk-boundary equality, rollback-across-chunks (mutation-verified), positive control, empty-batch no-op. |
+| `sample-data/generate_sample_data.py` | `BASELINE_WINDOW_DAYS = 182` bounds baseline posting dates to FY26-P01…P09; `ResidualTrackingWriter` + a balanced-legs block emit the planted-residual balancing legs from the **measured** per entity × month residual. |
+| `app/engine/rules/acceptance.py` | Stale DEF-010 carve-out wording replaced with the measured consequence; duplicate per-rule heading removed. |
+| `docs/14_TESTING_QA_PLAN.md` | §5.2 step 1 amended: planted-residual balancing legs are part of the corpus, why, and that PROP-001 holds the structural alternative. |
+| `docs/18_…OPEN_QUESTIONS.md` | `OQ-025` (sub-ledger gate vs one-sided exports), `OQ-026` (answer-key vs catalog keys/scope), `OQ-027` (import-history fixture) — the first questions in this project that **block** a gate. |
+| `docs/28_ACCEPTANCE_UAT_AND_GO_LIVE.md` | `DEF-030` row; DEF-010 row updated to the spec-wins fix with re-measured per-file row counts; the old “planted cases do not depend on the sub-ledgers” note corrected. |
+| `evidence/acceptance_remediation_2026-10-04.md` | New: every miss and extra classified, with the measured before/after. |
+
+### Measurements (all reproduced in this session)
+- Bulk load: `executemany` 50,000 rows = **211.70 s** (236 rows/s) vs batched **13.45 s** (3,717 rows/s);
+  GL commit end-to-end **72.6 s** for 250,040 rows (was ~19 minutes).
+- Corpus: entity/period residuals all `0.00`; GL `PASS - PERFECT BALANCE`; GL commits 250,040/250,040.
+- Acceptance (corpus checksum `0667630f…e37f`): extras **21,112 → 422**, of which EXC-011 **20,691 → 1**;
+  recall unchanged at **11/32**; High **6/18**; 1 control fired; 14 zero-coverage rules; **verdict FAIL, exit 1**.
+- Tests green: `tests/rules/` (39), `test_def030_bulk_insert.py` (4), `test_def019_double_entry.py`,
+  `test_import_repo.py`, `test_def010_batch_metadata.py`, `test_control_totals_import.py`,
+  `test_import_repository_catalog_metadata.py`, `test_budget_replace.py`.
+
+### Gate state and next step
+The gate is red and now diagnostic: the remaining misses are 2 unreachable plantings (sub-ledger sources,
+`OQ-025`), 4 unmatchable by key/scope (`OQ-026`), 3 key-format mismatches where the rule did raise, 10
+needing per-rule work on the loaded corpus, and 370 of the 422 extras come from a corpus whose budget and
+actuals are drawn independently at random (PROP-001 coherence rebuild). Next: owner answers on `OQ-025/026/027`,
+then the corpus-coherence rebuild, then per-rule work; re-run `scripts/acceptance.py` twice for the stability bar.
+
+---
+
 ## Session 010 — 2026-10-03 (Isolation Widening, Tokenizer Fix, Nightly E2E, NFR Corrections, Re-Scope Application & Defect Closures)
 
 ### Objective
@@ -823,3 +1336,340 @@ Phase 5; the KPI-card default set is client-confirmable (`PPT-KPI-DEFAULT`).
   7. Pack issuance executed with executive narrative and immutable commentary lock.
   8. Completed Tie-Out Worksheet and Difference Classification Log attached to `docs/28_ACCEPTANCE_UAT_AND_GO_LIVE.md` (§4.6) and `packaging/pilot_tieout_worksheet_completed.xlsx`.
   `GATE-13` exited as Approved under the approved fallback framework, unblocking Stage A UAT (`GATE-14`).
+
+## Addendum 6 — LEAD-03: the citation opener, and what it found beyond the four lines
+
+**Card:** `LEAD-03` (P1, verification lane) · **claim:** `buffy-20261005T1841Z-f219` ·
+**handoff:** `HO-043` · **records:** `TB-105`, `docs/33` §5.12
+
+### Why this card exists
+
+`TB-104` rejected three audits. The step that caught them was a human opening four cited lines by
+hand — a check that worked, done once, by accident, and not repeatable. `LEAD-03` is that step as a
+command.
+
+```
+python scripts/open_cited_lines.py <report.md>            # four citations, the default
+python scripts/open_cited_lines.py <report.md> --limit 0  # sweep every citation
+python scripts/open_cited_lines.py --handoff HO-nnn       # follow a handoff to its evidence
+python scripts/open_cited_lines.py <report.md> --context 2 --json
+```
+
+It finds the `file:line` citations a report makes, opens each one, prints the line that is actually
+there, and compares the backticked `key="value"` claims sitting beside the citation against that
+line. Exit `0` requires that every sampled citation resolved **and** every claim token is on its
+cited line. A report that cites **no** source line fails, because a document with no citations has
+measured nothing.
+
+### What it found on the rejected trio
+
+| Handoff | Evidence | Exit | What the command found |
+|---|---|---|---|
+| `HO-031` | `evidence/ux/a11y-keyboard.md` | 1 | 4 files real, 4 line numbers in range, 4 lines carrying none of the claimed attributes |
+| `HO-033` | `evidence/ux/numbers-trace.md` | 1 | cites no line — names `app/engine/calc/math.py` on all twelve rows |
+| `HO-035` | `evidence/ux/error-catalogue.md` | 1 | cites no source file at all |
+
+`ui/src/main.tsx:145`, the first citation, is
+`{activeTab === 'home' && 'Executive Month-End Overview (SCR-001)'}`. The row claims
+`role="main"` and `aria-label="Home Overview"`.
+
+### The finding beyond the spot-checks
+
+The `TB-104` rejection opened four lines by hand. The command counted the whole population:
+**`aria-` occurs 0 times across all 60 `.tsx` files in `ui/src`.**
+
+So the 42 `Conforming` verdicts are not mis-cited readings of a real implementation. They assert
+`role="main"`, `aria-label="…"` and `aria-live="polite"` attributes that exist nowhere in the UI.
+Every screen in that matrix is in fact **`NOT AUDITED`** — which is precisely what the rejection
+demanded and what the code shows. A uniform verdict across an entire population is the signature of
+not looking.
+
+### A gate that can only fail proves nothing
+
+Two fixtures ship under `evidence/ops/`, identical in shape and differing only in whether the claim
+is true. The false one's row `FAKE-003` is the load-bearing case: real file, in-range line,
+non-blank line reading `LOCK_TIMEOUT = 60.0`, wrong claim. A checker confirming existence and range
+would pass it — which is exactly what `verify_audit_citations.py` did. The honest control returns
+green, guarded by a test, because a gate tightened until everything fails looks strict and measures
+nothing.
+
+Both fixtures cite `scripts/memory.py` and `ui/src` constants rather than lines inside a file under
+active development. The first draft cited `scripts/open_cited_lines.py:83` and described it as
+"blank"; the next edit to that script made the description false. A fixture that drifts into a false
+claim is a fixture that starts lying — the exact failure this card exists to stop.
+
+### Two defects the tool found in its own author
+
+Both surfaced only by running it over its own output, which is why that run is worth doing:
+
+1. **A false green.** A `FILE_MISSING` row printed `absent: none — all present`, because the
+   missing-claim list was empty for want of having read anything. Absence of evidence rendering as
+   evidence. Now `not checked — the cited line was never opened`, guarded by
+   `test_unopened_line_never_reports_all_present`.
+2. **Quoted evidence read as claims.** Fenced code blocks were scanned, so
+   `evidence/ops/lead-03-citation-audit.md` failed its own tool on its own captured output. Fences
+   are now skipped; inline code spans deliberately are not, since a backticked `path:line` in prose
+   or a table is the claim under test. Writing this document's two claims as a single sentence then
+   made each citation carry both claims, and it failed again — restated one claim per line, it is
+   green.
+
+### The limit, stated plainly
+
+The command proves a claim is **on** a line. It cannot prove the line is the **right** line for the
+claim — that still takes a reader. It removes the possibility of an unchecked claim, not the
+possibility of a wrong one. Only backticked `key="value"` pairs are treated as claims; a row whose
+only backticked text is a screen id is reported `cited only, nothing checked` and the run ends
+`INCONCLUSIVE`, because inventing a claim would manufacture failures in honest reports.
+
+### Gates
+
+```
+pytest tests/unit/test_open_cited_lines.py -q                      -> 34 passed (3 consecutive runs)
+pytest test_memory + test_team_changed_paths + test_team_watchdog
+       + test_open_cited_lines -q                                  -> 93 passed, exit 0
+ruff check scripts/open_cited_lines.py tests/unit/...              -> All checks passed
+mypy scripts/open_cited_lines.py                                   -> Success, 0 errors
+scripts/check_doc_integrity.py                                     -> exit 0, 113 markdown files
+scripts/license_gate.py                                            -> exit 0, all six checks
+scripts/open_cited_lines.py evidence/ops/lead-03-citation-audit.md --limit 0 -> exit 0
+```
+
+Follow-on: `LEAD-01` (false-evidence register) can now cite measured counts rather than
+impressions; `LEAD-02` (verification bottleneck) should make this a required reviewer command.
+
+## Addendum 7 — LEAD-01: the false-evidence register, and the pattern I did not expect
+
+**Card:** `LEAD-01` (P0, verification lane) · **claim:** `buffy-20261005T1916Z-2c19` ·
+**handoff:** `HO-046` · **records:** `TB-106`, `docs/33` §5.13
+
+### The card, and what measuring it found
+
+`LEAD-01` asked for "one row per rejected handoff with the pattern it failed on", and said three of
+the session's rejects share one root cause. It did not say how many rejections there were.
+
+Reading every `### Rejected by` block on the board: **10 rejected handoffs, 5 patterns.**
+
+| Pattern | Count | Handoffs |
+|---|---|---|
+| `A-hidden-blast-radius` | **4** | `HO-003`, `HO-010`, `HO-012`, `HO-013` |
+| `C-literal-generator` | 3 | `HO-031`, `HO-033`, `HO-035` |
+| `B-written-outside-scope` | 1 | `HO-025` |
+| `D-checker-cannot-fail` | 1 | `HO-004` |
+| `F-spec-code-drift` | 1 | `HO-006` |
+
+The most frequent pattern is not the one the card was written about. `## Changed` listing one file
+while the claim window showed four to seven has happened **four times**, and every one was caught by
+a human reading the claim window. The three literal-generator rejections were the same mistake made
+three times in one sitting by an author who was not trying to deceive anyone.
+
+The lesson is about method, not blame: **count the failures before writing the rule about them.** A
+card scoped to a pattern I already believed was dominant would have shipped a register organised
+around the wrong row.
+
+### Generated, not written
+
+`scripts/false_evidence_register.py` derives the roster from the handoffs that actually carry a
+`### Rejected by` block, re-audits each one's evidence *at generation time* through
+`scripts/open_cited_lines.py`, and `--check` fails when it has drifted. A hand-written register is a
+snapshot that starts lying the moment somebody is rejected.
+
+Three refusals, because each is a way this kind of file rots:
+
+1. **An unclassified rejection is a hard error.** `build()` raises. A new pattern nobody has looked
+   at is exactly what the file exists to surface; omitting it quietly reduces the register to the
+   patterns we already knew about.
+2. **A pattern entry keyed on a handoff that was never rejected** is a row that can never recur, so
+   `test_every_pattern_entry_exists_on_the_board` fails on one.
+3. **A verdict where no verdict applies is worse than `n/a`.** Running the citation audit over a
+   blast-radius rejection produces "the test file cites no source line" — true, and useless. The
+   first draft of the generator did exactly this and printed that verdict for six of ten rows.
+
+### Five agents, one checkout
+
+The first generated roster said `HO-031` cited **43 fabricated lines**. Twelve minutes later it said
+**zero**. Nothing had changed in the generator: `hermes` had rewritten
+`evidence/ux/a11y-keyboard.md` at 00:32, converting every `Conforming` row to `NOT AUDITED` and
+`FAIL (No ARIA)` — exactly what the `TB-104` rejection demanded, and independent confirmation of the
+`aria-` = 0 finding in `TB-105`.
+
+The lesson is not to distrust the measurement; it is to label it. Every such column now says
+**now**, not *at rejection time*, and the register states the distinction in the table footnote. A
+rejection records a pattern; a re-measurement records whether the artefact has moved since. Two
+different claims, and conflating them is how a register starts asserting things that are no longer
+true.
+
+### The rule it records
+
+> A generator whose output does not change when its input changes is a printer, not a generator.
+
+### What would have caught what
+
+Ranked by how many rejections each stops on first run — the only ranking that decides what to build
+next:
+
+1. **`scripts/open_cited_lines.py`** (`TB-105`, shipped) — stops `HO-031` outright, reports
+   `HO-033`/`HO-035` as citing no line at all.
+2. **The `## Changed` vs claim-window rule** (`team.py check`, shipped in `TB-101`) — stops four
+   rejections automatically. It currently **WARNs**. Making an undeclared shipped file **FAIL** is
+   the highest-value small change left in this register.
+3. **The claim-window scan** (`TB-101`) — stops `HO-025`.
+4. **A spec-to-code constant check** — **does not exist.** The `HO-006` pattern, code shipping ahead
+   of the catalogue `DEC-057` requires, was caught by a human reading two files. Nothing on this
+   board would have caught it. That is the honest reason `LEAD-01` is a register rather than a
+   solved problem.
+
+### Gates
+
+```
+pytest tests/unit/test_false_evidence_register.py -q                  -> 14 passed
+pytest tests/unit/test_open_cited_lines.py
+       tests/unit/test_false_evidence_register.py -q                   -> 48 passed, exit 0
+ruff check (all four new files)                                        -> All checks passed
+mypy scripts/open_cited_lines.py scripts/false_evidence_register.py    -> Success, 0 errors
+python scripts/false_evidence_register.py --check                     -> current, exit 0
+python scripts/check_doc_integrity.py                                  -> exit 0
+python scripts/license_gate.py                                         -> exit 0, all six checks
+```
+
+## Addendum 8 — LEAD-02: verification was a role, not a duty
+
+**Card:** `LEAD-02` (P0, verification lane) · **claim:** `buffy-20261005T1932Z-e0ce` ·
+**handoff:** `HO-048` · **records:** `TB-107`, `team/README.md` §6.1
+
+### The measurement
+
+| | |
+|---|---|
+| Handoffs handed off, never verified | **26** |
+| Median wait | **317 min** (5.3 h) |
+| Max wait | 417 min |
+| Over the 30-min service level | 20 |
+| Distinct verifiers | **2** — `antigravity` (11), `buffy` (1) |
+| Load concentration | **92%** |
+| Seats that never verified anything | 4 of 6 |
+
+The card said 20. It is 26, and the shape matters more than the total.
+
+### One sentence
+
+`team/README.md` §6 read: *"The default reviewer for money-path changes is `antigravity`."* Naming a
+default reviewer turned verification into a **role** held by the longest-tenured seat. It then
+behaved exactly like a role: the work concentrated with tenure, and when `antigravity`'s quota
+ended on 2026-10-05 the function did not redistribute to the four seats that had never verified
+anything.
+
+So this was not a discipline problem and not a throughput problem. It was one sentence assigning a
+duty to a person, and a person running out of quota.
+
+I left the sentence in place and documented it as the worked example. Deleting it would have removed
+the reason the rule exists.
+
+### The four refusals
+
+Each exists because breaking it produced a real failure here:
+
+1. **Never an `AWAY` seat.** Assigning to `antigravity` looks like a fair rotation and produces
+   nothing.
+2. **Never the author.** `team.py verify` requires a different agent, so the queue must not propose
+   what the tool forbids.
+3. **Never the same two people twice running.** Assignment is least-recently-*verified* first.
+   Oldest-first FIFO preserves the concentration exactly — it hands work to whoever is idle as a
+   verifier, which is the same two people.
+4. **Never a verdict with no service level.** `--sla` (default 30 min, matching the watchdog's
+   threshold) turns "late" into a number.
+
+And one exclusion that moved the headline: a **rejected** handoff is not in the queue. It waits for
+its author, not a verifier. Counting those would have reported 36 instead of 26 and hidden the real
+bottleneck inside a bigger fake one.
+
+### The after-number I am not claiming
+
+The mechanism landed minutes before the measurement. What is measurable is the *proposed*
+distribution — **7 / 7 / 7 / 6** across the four active seats, against 92% on two — not a realised
+wait time. The median falls only once seats actually drain the queue, and `team/README.md` §6.1 says
+in place to re-measure `--stats` rather than assume the fix worked.
+
+Writing "verification wait reduced from 317 min to X" before X exists would be exactly the habit
+`TB-105` and `TB-106` exist to stop — in the same session that wrote them. The mechanism is the
+deliverable; the wait time is the follow-up.
+
+### What rotation cannot fix
+
+The 8 oldest handoffs are all `antigravity`'s, and `antigravity` is AWAY. No rotation reaches them,
+because the author cannot verify their own work and the seat is gone. They need a documented
+disposition — re-verify under the seats that covered its lane, or close them — and that is the part
+of this card that is still owed.
+
+### Gates
+
+```
+pytest tests/unit/test_verification_queue.py -q                      -> 18 passed
+ruff check (script + tests)                                          -> All checks passed
+mypy scripts/verification_queue.py                                   -> 0 errors in that file
+        (27 remaining are scripts/team.py's ENG-01 baseline, visible because this file imports it)
+python scripts/verification_queue.py --stats                         -> 26 waiting, median 317, 92%
+python scripts/team.py check                                         -> PASS, 0 fail, 40 warn, exit 0
+```
+
+## Addendum 9 — DOC-03: the acceptance gate is fail-fast, and it is hiding five bars
+
+**Card:** `DOC-03` (P1, docs lane) · **claim:** `buffy-20261005T2004Z-217d` ·
+**handoff:** `HO-050` · **records:** `TB-108`
+
+### Measured: 3 of 9 gates red
+
+```
+green  LICENCE 0 (8.2s)   DOC-INTEGRITY 0 (0.6s)   MEMORY 0 (0.2s)   EVID-REGISTER 0 (1.0s)
+green  TEAM-CHECK 0 (301.8s)   UNIT 0 (472.6s)
+RED    RUFF-LINT 1   RUFF-FORMAT 1   ACCEPTANCE 1
+```
+
+The full unit suite is green. Both ruff reds are pre-existing and repo-wide — 1850 lint errors,
+173 files unformatted — and every file added this session is ruff-clean and was checked individually.
+
+### What I found while building it
+
+`scripts/check.py` line 12:
+
+```python
+print(f"FAILED: {desc} exited with code {res.returncode}")
+sys.exit(res.returncode)
+```
+
+The gate exits on the **first** failed bar. Measured this pass it exits 1 at Ruff Format Check and
+reports nothing after it — so the five `docs/14` §5.3 bars (recall 11/32, control 1 fired, High
+6/18, 422 extras, 14 zero-coverage rules) are currently **invisible**.
+
+They are not passing. Nobody can tell, because the gate stopped. And the stop *looks* like a clean
+result: a reader sees "1 of 9 red" when the truth is "unknown, with at least 6".
+
+A fail-fast gate answers *which bar failed first*. A ship decision needs *how many* are red. Those
+are different questions, and only the second one is decision-relevant. So `release_dossier.py`
+deliberately **never short-circuits**, and prints that fact in its own output.
+
+This is the same shape as the fabricated audits in `TB-104`: one uniform verdict standing in for a
+population nobody examined. It took three rejected audits to learn it for evidence; the acceptance
+gate has been doing it silently all along.
+
+### Two more measured facts
+
+- `evidence/open_decisions.md` declares **18** tracked open decisions and lists **2**. The register
+  does not deliver its own count.
+- 8 handoffs authored by `antigravity` are unreachable by any rotation: the seat is AWAY and cannot
+  verify its own work.
+
+### What the dossier deliberately does not do
+
+It reports gate **exit status**, not gate **adequacy**. A gate that exits 0 proves only that it ran,
+and three audits this session exited 0 on fabrications. Section 7 of the dossier says so rather than
+implying full coverage, and skipped gates are labelled as not-passing rather than quietly omitted.
+
+### Gates
+
+```
+pytest tests/unit/test_release_dossier.py -q   -> 11 passed
+ruff check (script + tests)                     -> All checks passed
+mypy scripts/release_dossier.py                 -> 0 errors in that file
+pytest tests/unit -q                            -> green (472.6s)
+python scripts/release_dossier.py --check       -> current, exit 0
+```

@@ -221,6 +221,41 @@ def test_exc_013_out_of_pattern_spike_raised():
     assert findings[0].rule_id == "EXC-013"
     assert findings[0].amount_at_risk == Decimal("141000.00")  # 186k - 45k
 
+def test_exc_013_auto_derives_trailing_average():
+    """EXC-013 derives 3-period trailing average from prior transactions when config omitted."""
+    prior_txs = [
+        make_tx(
+            source_row_ref=f"row_prior_{p}",
+            account_code="5600",
+            cost_center_code="CC-140",
+            posting_date=f"2026-0{p}-15",
+            debit=Decimal("45000.00"),
+            net_amount=Decimal("45000.00"),
+        )
+        for p in range(6, 9)
+    ]
+    curr_tx = make_tx(
+        source_row_ref="row_spike_curr",
+        account_code="5600",
+        cost_center_code="CC-140",
+        posting_date="2026-09-15",
+        debit=Decimal("186000.00"),
+        net_amount=Decimal("186000.00"),
+    )
+    ctx = RuleContext(
+        transactions=prior_txs + [curr_tx],
+        period_id="FY26-P09",
+        config={
+            "EXC-013_spike_ratio": Decimal("2.5"),
+            "EXC-013_min_deviation": Decimal("50000.00"),
+        },
+    )
+    findings = evaluate_exc_013(ctx)
+    assert len(findings) == 1
+    assert findings[0].rule_id == "EXC-013"
+    assert findings[0].amount_at_risk == Decimal("141000.00")
+
+
 
 @pytest.mark.tst_id("TST-RUL-14")
 def test_exc_014_unusual_vendor_account_combination():
@@ -244,6 +279,38 @@ def test_exc_014_unusual_vendor_account_combination():
     assert len(findings) == 1
     assert findings[0].rule_id == "EXC-014"
     assert findings[0].amount_at_risk == Decimal("260000.00")
+
+def test_exc_014_auto_derives_history():
+    """EXC-014 derives historical vendor accounts from prior transactions when config omitted."""
+    prior_txs = [
+        make_tx(
+            source_row_ref=f"row_v_prior_{i}",
+            vendor_code="V-00276",
+            account_code="5100",
+            posting_date=f"2026-0{6 + (i % 3)}-10",
+            debit=Decimal("50000.00"),
+            net_amount=Decimal("50000.00"),
+        )
+        for i in range(5)
+    ]
+    curr_tx = make_tx(
+        source_row_ref="row_p14_curr",
+        vendor_code="V-00276",
+        account_code="5800",
+        posting_date="2026-09-26",
+        debit=Decimal("260000.00"),
+        net_amount=Decimal("260000.00"),
+    )
+    ctx = RuleContext(
+        transactions=prior_txs + [curr_tx],
+        period_id="FY26-P09",
+        config={"EXC-014_min_amount": Decimal("100000.00")},
+    )
+    findings = evaluate_exc_014(ctx)
+    assert len(findings) == 1
+    assert findings[0].rule_id == "EXC-014"
+    assert findings[0].subject_key == "V-00276|5800"
+
 
 
 # ==============================================================================

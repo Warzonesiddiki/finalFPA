@@ -38,3 +38,11 @@ data/
 htmlcov/
 .mypy_cache/
 .ruff_cache/
+
+# Addon 6 — upstream clones are never committed (R3)
+vendor/_upstream/
+
+# Team layer (scripts/team.py) — live claim locks and heartbeats are machine-local, never committed
+# Records (tasks/, handoffs/, inbox/, log/, taskboard.md, digest.md) ARE committed: they are the audit trail.
+team/claims/
+team/state/

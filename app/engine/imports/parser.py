@@ -488,6 +488,79 @@ def check_imp_022_both_debit_credit(
     return None
 
 
+# ---------------------------------------------------------------------------
+# DEC-056 (OQ-025): the debit=credit gate is a property of a JOURNAL.
+# ---------------------------------------------------------------------------
+#
+# `04` §2.2 lists the bank ledger and the payroll/procurement feed as
+# amount-style sources: every row carries one signed amount, and the file
+# reconciles against a supplied control total rather than balancing to zero.
+# Applying an unconditional exact debit=credit test to them rejects a file that
+# is arithmetically fine and makes every fact it carries unreachable - which is
+# what left the two sub-ledgers at 0 committed rows and P1 unreachable.
+#
+# So the gate is scoped by source type, per the DEC-056 ruling:
+#   * journal-style (`actuals_d365`, `budget`) keep the unconditional exact
+#     debit=credit reject;
+#   * amount-style sub-ledgers are validated by control-total / net-amount
+#     reconciliation within the `06` §8 tolerance. Inside it the batch LOADS
+#     and the variance is stated - in this report and in
+#     `FactImportBatch.net_imbalance`, which is what EXC-001 reads.
+AMOUNT_STYLE_SOURCE_TYPES = frozenset({"actuals_procurement", "actuals_payroll"})
+
+# `06` §8 tolerance for a sub-ledger that reconciles within rupees.
+SUB_LEDGER_RECONCILIATION_TOLERANCE = Decimal("500.00")
+
+
+def is_amount_style_source(source_type: str) -> bool:
+    """True when `source_type` is an amount-style sub-ledger under DEC-056."""
+    return str(source_type) in AMOUNT_STYLE_SOURCE_TYPES
+
+
+def check_imp_023_subledger_reconciliation(
+    transactions: List[ParsedTransaction],
+    tolerance: Decimal = ZERO,
+) -> ValidationCheckReport:
+    """Check IMP-023 for an amount-style sub-ledger (DEC-056, tolerance `06` §8).
+
+    An amount-style source is not required to balance to zero; it is required to
+    reconcile to its supplied control total within the tolerance. A CSV supplies
+    no `ControlTotals` worksheet, so the reconciliation actually available is
+    the file's own net amount, and that is what this measures.
+    """
+    tol = quantize_money(tolerance)
+    total_debit = quantize_money(sum((t.debit for t in transactions), ZERO))
+    total_credit = quantize_money(sum((t.credit for t in transactions), ZERO))
+    net = quantize_money(total_debit - total_credit)
+    variance = quantize_money(abs(net))
+    reconciled = variance <= tol
+
+    if reconciled:
+        status = "pass" if variance == ZERO else "warn"
+        detail = (
+            f"Amount-style sub-ledger (DEC-056): net ₹{net} reconciles within "
+            f"tolerance ₹{tol} (Total Debit: ₹{total_debit}, Total Credit: "
+            f"₹{total_credit}). The batch loads and the variance is stated for EXC-001."
+        )
+    else:
+        status = "fail"
+        detail = (
+            f"Amount-style sub-ledger (DEC-056): net ₹{net} exceeds the ₹{tol} "
+            f"reconciliation tolerance (Total Debit: ₹{total_debit}, "
+            f"Total Credit: ₹{total_credit})"
+        )
+
+    return ValidationCheckReport(
+        check_code="IMP-023",
+        check_name="Sub-ledger net reconciles to control total within tolerance",
+        status=status,
+        severity="high",
+        offending_count=0 if reconciled else 1,
+        detail=detail,
+        message_slug=None if reconciled else "import.balanceMismatch",
+    )
+
+
 def check_imp_023_balance(
     transactions: List[ParsedTransaction],
     tolerance: Decimal = ZERO,
@@ -922,6 +995,7 @@ def parse_csv_transactions(
     # Per-entity/period balance checked if source is general ledger or explicitly requested
     check_entities_periods = (profile.source_type == "actuals_d365")
     # Budget files represent unidirectional budget amounts, so balance check passes for budget
+    effective_balance_tolerance = quantize_money(balance_tolerance)
     if profile.source_type == "budget":
         balance_report = ValidationCheckReport(
             check_code="IMP-023",
@@ -930,6 +1004,14 @@ def parse_csv_transactions(
             severity="high",
             offending_count=0,
             detail=f"Budget file: Total amount {total_debit}",
+        )
+    elif is_amount_style_source(profile.source_type):
+        # DEC-056: an amount-style sub-ledger reconciles rather than balances.
+        # With no caller-supplied tolerance, `06` §8's ₹500 applies.
+        if effective_balance_tolerance == ZERO:
+            effective_balance_tolerance = SUB_LEDGER_RECONCILIATION_TOLERANCE
+        balance_report = check_imp_023_subledger_reconciliation(
+            loaded, tolerance=effective_balance_tolerance
         )
     else:
         balance_report = check_imp_023_balance(
@@ -949,7 +1031,10 @@ def parse_csv_transactions(
         checks.append(control_totals_not_supplied_report())
 
     imbalance = quantize_money(total_debit - total_credit)
-    is_balanced = (balance_report.status == "pass")
+    # For an amount-style sub-ledger the gate is a reconciliation, not an exact
+    # zero (DEC-056), so a batch that reconciled inside tolerance HAS passed the
+    # gate even though its report carries a warning naming the variance.
+    is_balanced = balance_report.status != "fail"
 
     batch = ImportBatchResult(
         batch_id=1,
@@ -966,7 +1051,7 @@ def parse_csv_transactions(
         net_imbalance=imbalance,
         checks=checks,
         quarantined_rows=quarantined,
-        balance_tolerance=quantize_money(balance_tolerance),
+        balance_tolerance=effective_balance_tolerance,
     )
     return batch, loaded
 

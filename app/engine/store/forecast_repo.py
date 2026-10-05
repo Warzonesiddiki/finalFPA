@@ -7,33 +7,22 @@ and docs/26_API_CONTRACT.md §3.6.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any
 
-from app.engine.calc.math import quantize_money, ZERO
+from app.engine.calc.math import ZERO, quantize_money
 from app.engine.forecast.methods import (
-    ForecastMethod,
-    Scenario,
     PeriodActual,
-    calc_locked_actuals,
+    calc_avg_3m,
     calc_remaining_budget,
     calc_run_rate,
-    calc_avg_3m,
 )
 from app.engine.forecast.scenarios import (
-    ScenarioType,
-    ForecastVersionStatus,
-    FactForecastRow,
-    FactForecastVersion,
-    ScenarioAdjustmentConfig,
-    ScenarioGenerator,
-    calculate_signed_error,
-    calculate_absolute_error,
-    calculate_signed_bias,
-    evaluate_forecast_accuracy,
     ForecastAccuracyReport,
+    ScenarioGenerator,
+    evaluate_forecast_accuracy,
 )
 from app.engine.store.db import DatabaseManager
 
@@ -49,11 +38,11 @@ class ForecastLineDTO:
     account_group: str
     method_used: str
     is_manual_override: bool
-    override_reason: Optional[str]
-    period_amounts: Dict[str, str]  # period_code -> amount
+    override_reason: str | None
+    period_amounts: dict[str, str]  # period_code -> amount
     fy_landing: str
     is_eligible: bool
-    ineligibility_reason: Optional[str] = None
+    ineligibility_reason: str | None = None
 
 
 @dataclass
@@ -65,12 +54,12 @@ class ForecastWorkspaceDTO:
     version_no: int
     status: str
     is_locked: bool
-    closed_periods: List[str]
-    open_periods: List[str]
+    closed_periods: list[str]
+    open_periods: list[str]
     last_generated_at: str
     generated_by: str
-    lines: List[ForecastLineDTO]
-    totals: Dict[str, str]  # period_code -> total amount, plus fy_landing
+    lines: list[ForecastLineDTO]
+    totals: dict[str, str]  # period_code -> total amount, plus fy_landing
 
 
 class ForecastRepository:
@@ -80,7 +69,7 @@ class ForecastRepository:
         self.db = db_manager
         self.scenario_gen = ScenarioGenerator()
 
-    def get_periods_split(self) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def get_periods_split(self) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         """Split FY26 periods into closed (1..9) and open (10..12) based on DimPeriod status."""
         duck_conn = self.db.get_duckdb_connection()
         try:
@@ -93,7 +82,12 @@ class ForecastRepository:
             closed_p = []
             open_p = []
             for r in rows:
-                p_info = {"period_id": r[0], "period_code": r[1], "period_label": r[2], "status": r[3]}
+                p_info = {
+                    "period_id": r[0],
+                    "period_code": r[1],
+                    "period_label": r[2],
+                    "status": r[3],
+                }
                 # P01-P09 are closed/locked actuals; P10-P12 are forecast remainder per SCR-027
                 if r[0] <= 9:
                     closed_p.append(p_info)
@@ -136,7 +130,7 @@ class ForecastRepository:
                 ORDER BY a.account_id, p.period_number ASC
             """
             act_rows = duck_conn.execute(act_query).fetchall()
-            actuals_by_acct: Dict[int, List[PeriodActual]] = {}
+            actuals_by_acct: dict[int, list[PeriodActual]] = {}
             for ar in act_rows:
                 aid = ar[0]
                 actuals_by_acct.setdefault(aid, []).append(
@@ -151,7 +145,7 @@ class ForecastRepository:
                 GROUP BY b.account_id, p.period_code, p.period_number
             """
             bgt_rows = duck_conn.execute(bgt_query).fetchall()
-            annual_bgt_by_acct: Dict[int, Decimal] = {}
+            annual_bgt_by_acct: dict[int, Decimal] = {}
             for br in bgt_rows:
                 aid = br[0]
                 annual_bgt_by_acct[aid] = annual_bgt_by_acct.get(aid, ZERO) + Decimal(str(br[3]))
@@ -164,19 +158,19 @@ class ForecastRepository:
                 WHERE scenario_id = ? AND is_manual_override = TRUE
             """
             override_rows = duck_conn.execute(overrides_query, (sc_key,)).fetchall()
-            overrides: Dict[Tuple[int, int], Tuple[Decimal, str]] = {}
+            overrides: dict[tuple[int, int], tuple[Decimal, str]] = {}
             for ov in override_rows:
                 overrides[(ov[0], ov[1])] = (Decimal(str(ov[2])), ov[3] or "Manual override")
 
             # 5. Generate forecast per account
-            now_dt = datetime.now(timezone.utc)
+            now_dt = datetime.now(UTC)
             now_str = now_dt.strftime("%d-%b %H:%M")
             version_id = f"FC-FY26-{sc_key.upper()}-v1"
 
-            forecast_lines: List[ForecastLineDTO] = []
-            fact_forecast_inserts: List[Tuple] = []
+            forecast_lines: list[ForecastLineDTO] = []
+            fact_forecast_inserts: list[tuple[Any, ...]] = []
 
-            period_totals: Dict[str, Decimal] = {p: ZERO for p in (closed_codes + open_codes)}
+            period_totals: dict[str, Decimal] = {p: ZERO for p in (closed_codes + open_codes)}
             fy_grand_total = ZERO
 
             for acct in accounts:
@@ -203,7 +197,7 @@ class ForecastRepository:
                 else:
                     method = default_method
 
-                period_amounts: Dict[str, str] = {}
+                period_amounts: dict[str, str] = {}
                 line_sum = ZERO
 
                 # Populate closed periods with locked actuals (FR-FC-001)
@@ -226,7 +220,7 @@ class ForecastRepository:
                     inel_reason = None
 
                     # Compute base projections for open periods
-                    open_projections: Dict[str, Decimal] = {}
+                    open_projections: dict[str, Decimal] = {}
                     try:
                         if method == "run_rate":
                             if not loaded_acts:
@@ -235,11 +229,15 @@ class ForecastRepository:
                                 for op in open_p:
                                     period_amounts[op["period_code"]] = "—"
                             else:
-                                results, _ = calc_run_rate(loaded_acts, n=run_rate_n, remaining_periods=open_codes)
+                                results, _ = calc_run_rate(
+                                    loaded_acts, n=run_rate_n, remaining_periods=open_codes
+                                )
                                 for r in results:
                                     open_projections[r.period_code] = r.amount
                         elif method == "remaining_budget":
-                            results = calc_remaining_budget(ann_bgt, loaded_acts, remaining_periods=open_codes)
+                            results = calc_remaining_budget(
+                                ann_bgt, loaded_acts, remaining_periods=open_codes
+                            )
                             for r in results:
                                 open_projections[r.period_code] = r.amount
                         elif method == "avg_3m":
@@ -291,23 +289,25 @@ class ForecastRepository:
                         line_sum += final_amt
 
                         forecast_id = (aid * 1000) + op_id
-                        fact_forecast_inserts.append((
-                            forecast_id,
-                            version_id,
-                            sc_key,
-                            effective_method,
-                            1,
-                            aid,
-                            None,
-                            None,
-                            op_id,
-                            str(quantize_money(final_amt)),
-                            is_ov,
-                            ov_reason,
-                            json.dumps({"method": effective_method, "account_group": agroup}),
-                            now_dt.isoformat(),
-                            generated_by,
-                        ))
+                        fact_forecast_inserts.append(
+                            (
+                                forecast_id,
+                                version_id,
+                                sc_key,
+                                effective_method,
+                                1,
+                                aid,
+                                None,
+                                None,
+                                op_id,
+                                str(quantize_money(final_amt)),
+                                is_ov,
+                                ov_reason,
+                                json.dumps({"method": effective_method, "account_group": agroup}),
+                                now_dt.isoformat(),
+                                generated_by,
+                            )
+                        )
 
                 fy_grand_total += line_sum
                 forecast_lines.append(
@@ -318,8 +318,17 @@ class ForecastRepository:
                         statement_line=stline,
                         account_group=agroup,
                         method_used=method,
-                        is_manual_override=any((aid, op["period_id"]) in overrides for op in open_p),
-                        override_reason=next((overrides[(aid, op["period_id"])][1] for op in open_p if (aid, op["period_id"]) in overrides), None),
+                        is_manual_override=any(
+                            (aid, op["period_id"]) in overrides for op in open_p
+                        ),
+                        override_reason=next(
+                            (
+                                overrides[(aid, op["period_id"])][1]
+                                for op in open_p
+                                if (aid, op["period_id"]) in overrides
+                            ),
+                            None,
+                        ),
                         period_amounts=period_amounts,
                         fy_landing=str(quantize_money(line_sum)),
                         is_eligible=is_eligible,
@@ -329,7 +338,10 @@ class ForecastRepository:
 
             # 6. Bulk commit FactForecast to DuckDB (atomic per version)
             if fact_forecast_inserts:
-                duck_conn.execute("DELETE FROM FactForecast WHERE scenario_id = ? AND is_manual_override = FALSE", (sc_key,))
+                duck_conn.execute(
+                    "DELETE FROM FactForecast WHERE scenario_id = ? AND is_manual_override = FALSE",
+                    (sc_key,),
+                )
                 duck_conn.executemany(
                     """
                     INSERT OR REPLACE INTO FactForecast (
@@ -349,7 +361,13 @@ class ForecastRepository:
                         status, generated_at, generated_by, notes
                     ) VALUES (?, 9, ?, 1, 'draft', ?, ?, ?)
                     """,
-                    (version_id, sc_key, now_dt.isoformat(), generated_by, f"Generated {sc_key} forecast"),
+                    (
+                        version_id,
+                        sc_key,
+                        now_dt.isoformat(),
+                        generated_by,
+                        f"Generated {sc_key} forecast",
+                    ),
                 )
 
         finally:
@@ -380,7 +398,7 @@ class ForecastRepository:
         reason: str,
         scenario_id: str = "base",
         user: str = "Aarti",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Record an audited manual override per FR-FC-006 and CALC-064."""
         if not reason or not reason.strip():
             raise ValueError("Manual override requires a mandatory non-empty reason.")
@@ -394,7 +412,7 @@ class ForecastRepository:
 
         duck_conn = self.db.get_duckdb_connection()
         try:
-            now_str = datetime.now(timezone.utc).isoformat()
+            now_str = datetime.now(UTC).isoformat()
             forecast_id = (account_id * 1000) + p_num
             version_id = f"FC-FY26-{scenario_id.upper()}-v1"
 
@@ -420,15 +438,20 @@ class ForecastRepository:
                     user,
                 ),
             )
-            return {"applied": True, "forecastId": forecast_id, "amount": str(amount), "reason": reason}
+            return {
+                "applied": True,
+                "forecastId": forecast_id,
+                "amount": str(amount),
+                "reason": reason,
+            }
         finally:
             duck_conn.close()
 
-    def lock_version(self, version_id: str, locked_by: str = "Aarti") -> Dict[str, Any]:
+    def lock_version(self, version_id: str, locked_by: str = "Aarti") -> dict[str, Any]:
         """Lock forecast version making it immutable for pack issuance per FR-FC-009."""
         duck_conn = self.db.get_duckdb_connection()
         try:
-            now_str = datetime.now(timezone.utc).isoformat()
+            now_str = datetime.now(UTC).isoformat()
             duck_conn.execute(
                 """
                 UPDATE FactForecastVersion
@@ -437,11 +460,16 @@ class ForecastRepository:
                 """,
                 (now_str, locked_by, version_id),
             )
-            return {"status": "locked", "versionId": version_id, "lockedBy": locked_by, "lockedAt": now_str}
+            return {
+                "status": "locked",
+                "versionId": version_id,
+                "lockedBy": locked_by,
+                "lockedAt": now_str,
+            }
         finally:
             duck_conn.close()
 
-    def get_scenario_comparison(self, account_id: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_scenario_comparison(self, account_id: int | None = None) -> list[dict[str, Any]]:
         """Compare Base, Best, and Worst scenarios side-by-side per FR-FC-003 and SCR-028."""
         duck_conn = self.db.get_duckdb_connection()
         try:
@@ -456,7 +484,7 @@ class ForecastRepository:
             """
             rows = duck_conn.execute(query).fetchall()
 
-            accts: Dict[int, Dict[str, Any]] = {}
+            accts: dict[int, dict[str, Any]] = {}
             for r in rows:
                 aid = r[0]
                 if aid not in accts:

@@ -482,14 +482,13 @@ def corpus_integrity(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> List[Dict[str, An
     (`ImportBatchResult.total_debit` / `total_credit` / `net_imbalance` are
     already `Decimal`); nothing here re-derives an engine result.
 
-    Doc 04 §12 and `IMP-023` (severity F) make `debit != credit` a reject.
-    `ImportRepository.commit_batch` (import_repo.py:111) gates only the general
-    ledger:
-
-        should_commit = batch.is_balanced or (batch.source_type != "actuals_d365")
-
-    so an unbalanced SUB-LEDGER commits anyway while `04` §12 states the reject
-    unconditionally. That divergence is reported, never resolved here.
+    Doc 04 §12 and `IMP-023` (severity F) make `debit != credit` a reject, and
+    since the DEF-010 spec-wins fix `ImportRepository.commit_batch` computes
+    `should_commit = bool(batch.is_balanced)` for EVERY source type - no
+    sub-ledger exemption. An unbalanced file therefore commits zero rows and is
+    recorded `rejected`, whichever shape it arrived in. That is reported here as
+    a corpus precondition (general ledger -> BLOCKED; sub-ledger -> divergence
+    with its plantings unreachable), never resolved by the harness.
 
     `data_quality_score` is read, never assumed: since `DEF-009` it is computed
     by `calculate_quality_score()`, so a failing `IMP-023` yields a real score
@@ -524,8 +523,7 @@ def corpus_integrity(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> List[Dict[str, An
             "recorded_status": "committed" if batch.is_balanced else "rejected",
             "status": "committed" if batch.is_balanced else "rejected",
             "balanced": bool(batch.is_balanced),
-            "balance_gate": "enforced (doc 04 §12/IMP-023)" if is_gl
-                            else "WARNING-ONLY in code (doc 04 §12 says reject)",
+            "balance_gate": "enforced (doc 04 §12/IMP-023, every source type)",
             "rows": batch.total_source_rows,
             "loaded_count": batch.loaded_count,
             "quarantined_count": batch.quarantined_count,
@@ -556,10 +554,12 @@ def corpus_integrity(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> List[Dict[str, An
 def measure_committed_rows(db) -> Dict[str, int]:
     """Count rows that actually landed in FactActual, per source file.
 
-    Measured rather than assumed. The point is that `commit_batch` records
-    `status='rejected'` from `is_balanced` alone, so the batch metadata and the
-    analytic store can disagree; the acceptance run must not assert a row count
-    it has not checked.
+    Measured rather than assumed. `commit_batch` now derives both the audit row
+    and the rows it writes from one `should_commit` decision (DEF-010), so the
+    metadata and the analytic store agree by construction - but the harness
+    still measures the landed count instead of trusting it, because a row count
+    is exactly the sort of thing a broken corpus or a silently skipped insert
+    changes without changing the report.
     """
     conn = db.get_duckdb_connection()
     try:
@@ -910,23 +910,24 @@ def attach_corpus_gate(
                 f"failing check(s)={failed} of {row.get('checks_run')} run, "
                 f"data_quality_score={row.get('data_quality_score')}, and "
                 f"{landed_txt}. Doc 04 §12 / IMP-023 rejects the file and "
-                f"import_repo.py:111 gates exactly this source_type, so NO facts "
-                f"exist for the rules to fire on. Every planted case lives in this "
-                f"file, so the doc 14 §5.3 bars are NOT MEASURED. This is a corpus "
-                f"precondition failure, not a rule-logic result."
+                f"commit_batch enforces that gate for every source type "
+                f"(DEF-010, spec-wins), so NO facts exist for the rules to fire on. "
+                f"Every planted case lives in this file, so the doc 14 §5.3 bars are "
+                f"NOT MEASURED. This is a corpus precondition failure, not a "
+                f"rule-logic result."
             )
         else:
             report.divergences.append(
                 f"Sub-ledger {name} is unbalanced "
-                f"(net={row.get('net_imbalance')}, failing check(s)={failed}) yet "
-                f"{landed_txt}. Doc 04 §12 and IMP-023 state the reject "
-                f"unconditionally; import_repo.py:111 gates only "
-                f"source_type='actuals_d365' and its comment cites '04 §2.2 & §10', "
-                f"which are the source-type table and the confirm step and state no "
-                f"sub-ledger exemption. The batch row is also RECORDED as "
-                f"status='{row.get('recorded_status')}' from is_balanced alone, so the "
-                f"audit metadata disagrees with the analytic store. Not scored as a "
-                f"blocker here; owner ruling required (DEF-010)."
+                f"(net={row.get('net_imbalance')}, failing check(s)={failed}) and "
+                f"{landed_txt}: the file-level IMP-023 reject is enforced "
+                f"unconditionally (DEF-010), so none of its rows reach FactActual "
+                f"and any planting the answer key assigns to this source is "
+                f"unreachable by construction. The corpus must either be rebuilt "
+                f"balanced (04 §12) or the gate scoped per source type - an owner "
+                f"decision recorded in 18 (OQ-025). Not scored as a blocker here; "
+                f"it is reported so the recall bars are never read as rule-logic "
+                f"results while a source cannot load."
             )
 
 
@@ -1058,15 +1059,15 @@ def render_markdown(report: AcceptanceReport) -> str:
           f"{b.measured if b.measurable else 'NOT MEASURED'} | {result} |")
     A("")
 
+    # One heading only: an earlier version emitted this section twice, once
+    # unconditionally and once conditionally, which read as a duplicated table
+    # in every report.
     if not report.measurable:
         A("## Per-rule recall (doc 14 §5.4) - DIAGNOSTIC ONLY, NOT A BAR RESULT")
         A("")
     else:
         A("## Per-rule recall (doc 14 §5.4)")
         A("")
-
-    A("## Per-rule recall (doc 14 §5.4)")
-    A("")
     A("| Rule | Evaluator | Plantings | Detected | Recall | Controls | Controls fired | Findings | Extras |")
     A("|---|---|---|---|---|---|---|---|---|")
     for r in report.rules:

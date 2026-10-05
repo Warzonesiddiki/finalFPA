@@ -1,17 +1,19 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-05
 > **Owning FRs/areas:** architecture, ADRs, engine boundary, CLI, storage layout, job queue, crash recovery, migrations, configuration layering, data-volume rule, code-health guardrails
 > **TL;DR (≤ 15 lines):** This document owns how the system is built. §3 is the **ADR index** (`ADR-000`
-> template + `ADR-001`…`ADR-010`): the approved stack (ADR-001), the pinned toolchain (ADR-002), the
+> template + `ADR-001`…`ADR-013`): the approved stack (ADR-001), the pinned toolchain (ADR-002), the
 > unsigned-installer stance (ADR-003), the non-synced storage location (ADR-004), real-Windows validation
 > (ADR-005), the single-process/threaded-job model (ADR-006), hand-written SQL over an ORM (ADR-007),
-> forward-only migrations with backup (ADR-008), static-UI serving through the local API (ADR-009), and
-> AI providers over OpenAI-compatible HTTP (ADR-010).
+> forward-only migrations with backup (ADR-008), static-UI serving through the local API (ADR-009),
+> AI providers over OpenAI-compatible HTTP (ADR-010), and the Addon 6 reuse adoptions: WS-02 template-fill
+> engine (ADR-011), WS-10 fill patterns (ADR-012), WS-03 overflow cascade behind a flag (ADR-013).
 > §4 is the module map and the **headless-engine boundary rule**; §5 the CLI with exit codes; §6 the data
 > flow; §7 storage layout, `%LOCALAPPDATA%` decision and the **storage-growth maths**; §8 the job queue,
 > cancellation and crash recovery; §9 the local API and security posture; §10 configuration layering;
 > §11 recompute/invalidation semantics; §12 the data-volume rule; §13 schema migration; §14 performance
-> budgets mapped to `NFR`; §15 spikes, code-health guardrails and the fresh-clone gate.
+> budgets mapped to `NFR` (with the measured DEF-030 bulk-load evidence); §15 spikes, code-health
+> guardrails and the fresh-clone gate.
 
 ---
 
@@ -78,6 +80,10 @@
 | `ADR-008` | Forward-only schema migrations with mandatory backup (§3.9) | **Accepted** | 2026-10-01 | Costly |
 | `ADR-009` | The local API serves the built UI as static assets (§3.10) | **Accepted** | 2026-10-01 | Cheap |
 | `ADR-010` | AI providers are reached over the OpenAI-compatible HTTP interface; no vendor SDK (§3.11) | **Accepted** | 2026-10-01 | Cheap |
+| `ADR-011` | Adopt WS-02 `m3dev/pptx-template` as `ADP-001` — the template-fill engine behind `ppt_pack.py` (§3.12) | **Accepted** | 2026-10-05 | Cheap (module swap behind an interface) |
+| `ADR-012` | Adopt WS-10 `keithmcnulty/ppt-generation` as `ADP-002` — fill patterns for charts/tables/placeholders (§3.13) | **Accepted** | 2026-10-05 | Cheap (one 77-line module) |
+| `ADR-013` | Adopt WS-03 `deckforge` overflow cascade as `ADP-003` — flag-gated, default off (§3.14) | **Accepted** | 2026-10-05 | Cheap (one module behind a flag) |
+| `ADR-014` | Extract the duplicate-detection primitives into `app/engine/dedupe/` (BUILD, `BD-001`) — one implementation for `EXC-007`/`EXC-008` (§3.15) | **Accepted** | 2026-10-05 | Cheap (module addition; call sites unchanged) |
 
 ### 3.2 `ADR-001` — Authoritative technical stack
 
@@ -351,6 +357,145 @@ retry/backoff rather than inheriting it.
 **Affected docs.** `10` (§3 provider configuration), `13` (secrets), `14` (AI fixtures), `24` (API-version
 notes in release notes), `26` (endpoints that trigger AI actions).
 
+### 3.12 `ADR-011` — Adopt WS-02 `m3dev/pptx-template` as `ADP-001` (template-fill engine)
+
+**Status:** Accepted (owner-commissioned Addon 6 §9 work card WC-2, pre-approved) · **Date:** 2026-10-05 ·
+**Source:** Addon 6 §3 catalog `WS-02`, §4 license gate, §6 procedure.
+
+**Context.** `DEF-018` (S1) proved the deck is built from scratch: `ppt_pack.py` calls `Presentation()`
+with no template and all six builders use `slide_layouts[6]`, violating `12` §3.6 ("never build layouts
+from scratch — copy the template and fill it"), `ERR-EXP-014` does not exist, and `ppt_spec.py` does
+not exist. A correct fill engine (shape-name resolution, placeholder mapping, overflow handling) is well
+over 50 lines, so Addon 6 §1's reuse-first decision tree applies and routes it to catalog entry WS-02.
+
+**Decision.** COPY-EDIT the upstream `pptx_template/` package (minus its CLI, per the NEVER-take column)
+from pinned commit `dc448cb…` into `app/engine/pptx_fill/` as **`ADP-001`**, Apache-2.0 obligations
+fulfilled (`THIRD_PARTY_NOTICES.md` carries the license text; adapted files carry the ADP header, E8).
+`ppt_pack.py` becomes a caller of the fill engine behind its existing interface (R12 — the
+from-scratch builders are replaced, not paralleled); `ppt_spec.py` becomes the canonical shape order;
+the `ERR-EXP-*` family lands in `engine/errors.py`; tests travel with the code at ≥90 % coverage (R6).
+
+**Alternatives considered.** Build our own fill engine (correct under the old rules, but Addon 6 §1
+forbids build-first once the catalog covers the capability, and it is strictly slower). WS-03
+`deckforge` (license unverified — code copy forbidden by default). Pure pattern-lift (retained only
+as WC-2's documented fallback if upstream cannot express name-based resolution — any such divergence
+is recorded in the `ADP-001` provenance row).
+
+**Consequences.** Positive: an S1 defect closed with a battle-tested fill path; doc 12 conformance
+tested; no wholesale fork (8 files, one package). Negative/owed: Apache-2.0 notice obligations on
+every modified file and in the installer payload (`15`); upstream pinned to a SHA (no auto-update);
+E9 dependency audit at staging time (upstream must run on `ADR-001` deps only — `python-pptx`/`openpyxl`
+are already approved; any new import triggers `R9` before landing).
+
+**Reversibility.** Cheap — the adoption sits behind `build_ppt_pack`'s interface; reverting restores
+the previous builder module from git.
+
+**Affected docs.** `12` (§3.6 conformance), `32` (`ADP-001`), `15` (notices payload), `28` (`DEF-018`),
+`00` (ID registry), `18` (`DEC-061`).
+
+### 3.13 `ADR-012` — Adopt WS-10 `keithmcnulty/ppt-generation` as `ADP-002` (fill patterns)
+
+**Status:** Accepted (owner-commissioned Addon 6 §9 work card WC-2, pre-approved) · **Date:** 2026-10-05 ·
+**Source:** Addon 6 v2 §3 catalog `WS-10`, §4 license gate, §6 procedure.
+
+**Context.** WC-2's Done-When requires “WS-10 patterns for chart/table fills”: `ppt_pack.py` must push
+series data into native charts via `chart.replace_data`, fill table cells, and resolve placeholder text
+by shape name (`12` §3.6). That pattern layer is capability-level code (>50 lines once tests and
+adapters are counted), so §1's decision tree routes it to catalog entry WS-10 (COPY-EDIT, CC0-1.0).
+
+**Decision.** COPY-EDIT the single upstream file `edit_pres.py` (77 lines, pinned `062c4920…`) into
+`app/engine/pptx_fill/patterns.py` as **`ADP-002`**. License gate 4A PASS (CC0-1.0 `LICENSE`); CC0 needs
+no attribution but the catalog says attribute anyway, so `THIRD_PARTY_NOTICES.md` carries the notice and
+every adapted file carries the ADP header (E8). The upstream demo's pandas selection and hardcoded slide
+indices are stripped (E3/E9 — pandas is not a runtime dep, no R9); resolution becomes name-based per
+`12` §3.6.
+
+**Alternatives considered.** Build the pattern helpers ourselves (forbidden by §1 once the catalog
+covers the capability). Skip patterns and inline fills in `ppt_pack.py` (would parallel the adopted
+module — R12 defect).
+
+**Consequences.** Positive: proven fill patterns for the three fill verbs WC-2 needs; one module, one
+file; CC0 imposes no copy-left. Negative/owed: upstream ships no tests → E13 is satisfied by new
+spec-derived tests (`tests/unit/test_pptx_fill_patterns.py`); pinned SHA (no auto-update).
+
+**Reversibility.** Cheap — one module behind `ppt_pack.py`'s existing call sites.
+
+**Affected docs.** `12` (§3.6), `32` (`ADP-002`), `15` (notices payload), `00` (ID registry), `18`
+(`DEC-063`).
+
+### 3.14 `ADR-013` — Adopt WS-03 `deckforge` overflow cascade as `ADP-003` (flag-gated)
+
+**Status:** Accepted (owner-commissioned Addon 6 §9 work card WC-2, pre-approved) · **Date:** 2026-10-05 ·
+**Source:** Addon 6 v2 §3 catalog `WS-03`, §4 license gate, §6 procedure, §7 E12 escalation.
+
+**Context.** WC-2 requires “WS-03 overflow logic behind a flag until doc 12 amendment if needed” — the
+three-step cascade (font-shrink → reflow → slide-split) that keeps `12` §3.4's no-overlap guarantee honest
+when content exceeds its box. Post-clone (E12) the upstream handler proved coupled to `kiwisolver`
+(constraint solver), `PIL`/fonts (text measuring) and deckforge's pydantic IR/themes — **none** of which
+are `ADR-001` runtime dependencies (E9), and copying the whole layout package would be R13. The take-list
+was therefore amended under §10 (6-field intake in `DEC-064`, Tier B: license GO + 1 module + no spec
+change + no API change).
+
+**Decision.** COPY-EDIT `src/deckforge/layout/overflow.py` only (pinned `ae71696f…`, MIT) into
+`app/engine/pptx_fill/layout.py` as **`ADP-003`**, with the cascade re-expressed against python-pptx
+shapes and our existing `ppt_fit` budget maths (§3.4 stays the canonical, always-on trim path). The
+adoption lands **behind a flag, default OFF**, until doc 12 goes through its amendment process (R1 — the
+spec is never edited to accommodate copied code; the flag makes the adoption inert w.r.t. spec).
+
+**Alternatives considered.** Build our own cascade (§1 forbids build-first while the catalog covers it);
+land the full layout package (R13 + two non-approved deps → E12 STOP); drop WS-03 entirely (contradicts
+the pre-approved card).
+
+**Consequences.** Positive: S1-grade overflow handling available without new dependencies; upstream
+`tests/unit/test_layout_adaptive.py` adapted as regression cover (E13/R6). Negative/owed: flag off means
+behaviour is unchanged until a `12` amendment turns it on (WC-2's explicit instruction); R12 relationship
+recorded in `ADP-003` — trim (ppt_fit) is the spec path, the cascade is opt-in and complements it.
+
+**Reversibility.** Cheap — flag-gated module; removing the flag setting restores today's behaviour.
+
+**Affected docs.** `12` (§3.4/§3.6 conformance, future amendment), `32` (`ADP-003`, E12 amended
+take-list), `15` (notices payload), `00` (ID registry), `18` (`DEC-064`).
+
+### 3.15 `ADR-014` — One implementation of duplicate detection: extract `app/engine/dedupe/` (BUILD)
+
+**Status:** Accepted (owner ruling on `OQ-028`; Addon 6 v2 work card `WC-1`) · **Date:** 2026-10-05 ·
+**Source:** Addon 6 v2 §3 catalog `WS-01`, §14 Tier C escalation, owner decision `DEC-066`.
+
+**Context.** `WC-1` was pre-approved as a COPY-EDIT of catalog `WS-01`
+(`github.com/ricothanfx/invoice-dedupe`). The repository no longer exists — `git clone --depth 1` returns
+`remote: Repository not found.` with **git exit 128** (measured twice, exit preserved) — so §6 S2 cannot
+complete and no `ADP` row can be written (`R5`). The escalation
+(`evidence/wc1/ws01-escalation-packet.md`) also showed the capability needs no adoption: `06`'s duplicate
+rules are all Tier **`exact`**, the `EXC-007` normalisation clause is already implemented verbatim, and the
+dead catalog source's headline weighted/fuzzy scorer is required by **no** `06` rule — wiring it into the
+duplicate rules would move them off `exact` and breach `R1`. What remained was a genuine `R12` symptom: the
+normaliser and the two blockers lived **inline** in `rules_01_08.py` and `rules_catalog_001_008.py`, two
+copies of one capability with no shared interface.
+
+**Decision.** BUILD `app/engine/dedupe/` as our own code (`BD-001`, `32` §2) — normalisation
+(`normalise_alnum_upper`, `normalise_invoice_no`) and blocking (`group_by_key`, `iter_candidate_groups`,
+`count_distinct`, plus the `Group`/`CandidatePredicate` types) — and rewire `evaluate_exc_001` (`EXC-007`)
+and `evaluate_catalog_exc_008` (`EXC-008`) through it, with `_normalize_invoice_no` kept as an **alias** of
+the single implementation rather than a second function. No upstream line is copied, so no file carries an
+`Adapted from` header and no notices entry is owed. Adopting a fuzzy scorer instead was rejected because it
+changes rule tiers (`R1`), which is a spec decision, not an implementation one.
+
+**Alternatives considered.** `dedupeio/dedupe` (MIT, but a record-linkage ML stack → `R9` + `R13`, and it
+solves the fuzzy problem the spec deliberately does not have); `pimverschuuren/Deduplication` and
+`pmessan/duplicate_invoice_finder` (licences unverifiable → `L2`); leaving the inline code in place as two
+copies (keeps the defect `R12` exists to prevent).
+
+**Consequences.** Positive: one implementation for every duplicate rule; the `06` clause's limit (leading
+zeros collapse only at the start of the alphanumeric string, so `INV-00088213` does **not** block with
+`INV-88213`) is now documented once instead of being an unexamined behaviour, and widening it is recorded as
+an `R1` spec question rather than silently assumed. Negative/owed: none to the spec — behaviour was measured
+**identical to baseline** (acceptance bars unchanged: recall 11/32, 1 control fired, High 6/18, 422 extras,
+the same 14 zero-coverage rules); 41 tests travel with the code at 100 % statements/branches (R6).
+
+**Reversibility.** Cheap — the rule modules previously carried the logic inline and can again.
+
+**Affected docs.** `18` (`DEC-066`), `32` (`BD-001`), `33` (`TB-100`), `STATE.md`.
+
 ## 4. Module boundaries and repo structure
 
 ### 4.1 The headless-engine boundary rule (Addon 2 §B.1 — non-negotiable)
@@ -358,18 +503,23 @@ notes in release notes), `26` (endpoints that trigger AI actions).
 ```
 app/
   engine/          ← PURE PYTHON. No FastAPI, no pywebview, no HTTP, no UI imports. Ever.
-    calc/          formulas (CALC-nnn, KPI-nnn)
-    rules/         one module per exception rule (EXC-nnn)
+    calc/          formulas (CALC-nnn, KPI-nnn): math.py, quality_score.py
+    rules/         one module per exception rule (EXC-nnn) + the batch composer
+    exceptions/    register support: owner auto-assign resolver (`06` §2.5)
     forecast/      method resolution, generation, accuracy
-    imports/       parse → map → validate → stage → commit
-    store/         repositories (hand-written SQL, ADR-007)
+    imports/       parse → map → validate → stage → commit (profiles, hardening, control totals)
+    store/         repositories (hand-written SQL, ADR-007) + schema_*.sql + migrations
     exports/       Excel pack (openpyxl), PPT deck (python-pptx)
     ai/            provider client, prompt assembly, redaction, schema validation
-    common/        Decimal helpers, period maths, hashing, message slugs
+    security/      hostile-input sanitiser (`13` §11): strips HTML/control chars, caps lengths
+    errors.py      the error catalog behind `26` §5 / `08` §16 (code → message + hint)
+    common/        Decimal helpers, period maths, hashing, message slugs — the canonical home
+                   for every helper that must exist exactly once (§4.3)
   api/             FastAPI app, routers, schemas, error envelope, session token
   cli/             argparse entry points over the engine
   desktop/         pywebview shell, single-instance mutex, window/DPI handling
-  jobs/            worker thread, job registry, progress/ETA, cancellation
+  jobs/            worker thread, job registry, progress/ETA, cancellation (ADR-006)
+  static/          the built UI served at `/` in production (ADR-009)
 ui/                React + TS + Vite SPA (src/, theme/tokens.ts, e2e/ Playwright)
 tests/             unit, golden, rules, contract, artefacts, integration, e2e, perf, manual, fixtures (prior-version projects)
 packaging/         PyInstaller spec, Inno Setup script, icons, version metadata
@@ -381,6 +531,11 @@ docs/              this documentation set
 **Enforcement:** an import-linter rule (run by `scripts/check`) fails the build if `app/engine/**` imports
 `fastapi`, `pywebview`, `app.api`, `app.desktop` or `app.jobs`. Violations fail code review, and the rule
 is a quality-gate item.
+
+**Dated gap note (2026-10-05):** two layers in this map are targets not yet matched by the code —
+`app/jobs/` (only the API server thread in `app/desktop/shell.py` exists today; there is no job registry)
+and `app/engine/common/` (helpers still scattered, e.g. inside `imports/mapping_suggestions.py`) — and the
+import-linter rule above is not yet configured. Tracked as `TB-014`, `TB-025`, `TB-026` in `33`.
 
 ### 4.2 Layer responsibilities
 
@@ -404,7 +559,10 @@ is a quality-gate item.
 | `engine/exports` | Excel pack and PPT deck generation with the shared formatting rules (`08` §14) | `build_excel_pack()`, `build_ppt_pack()` |
 | `engine/ai` | Provider client, prompt assembly from versioned templates, redaction, schema validation, caps, usage log | `draft_commentary()`, `suggest_mappings()`, `validate_response()` |
 | `engine/store` | Repositories over DuckDB and SQLite; schema application; migrations | `open_project()`, `apply_migrations()`, per-aggregate repositories |
-| `engine/common` | Decimal/money helpers, fiscal-period maths, hashing (`row_fingerprint`, `identity_hash`), message slugs | used everywhere |
+| `engine/common` | Decimal/money helpers, fiscal-period maths, hashing (`row_fingerprint`, `identity_hash`), message slugs — the canonical home; until the package exists these helpers must never be reimplemented a second time (§4.1 gap note) | used everywhere |
+| `engine/errors` | The versioned error catalog: code → message + hint for every user-facing failure, projected by `GET /meta/error-catalog` (`26` §5, `08` §16) | `get_error_catalog()` |
+| `engine/security` | Hostile-input sanitisation for imported text: strip HTML/control characters, cap field lengths, mask PII before anything reaches logs or AI prompts (`13` §11) | `Sanitizer`, `hash_value()`, `mask_email()` |
+| `engine/exceptions` | Exception-register support: initial owner auto-assign by the 6-step resolver (`06` §2.5) | `resolve_exception_owner()` |
 
 **Rule:** no module outside `engine/calc` implements a formula, and no module outside `engine/rules`
 implements a rule. Duplicated arithmetic is a defect, not a shortcut — it is the root cause of the
@@ -429,13 +587,19 @@ python -m app.cli <command> --project <path> [options]
 | `import` | Import a file end-to-end (pre-scan → validate → commit) | `--file <path> --source-type <t> --profile <name> [--dry-run]` |
 | `validate` | Validate a file without committing (produces the report) | `--file <path> --source-type <t> [--report <path>]` |
 | `bva` | Emit BvA figures for a filter context | `--period <code> --window <mtd\|ytd\|py_mtd\|py_ytd\|ttm> [--entity <code>] [--account <code>]` |
-| `exceptions` | Run rules (or list the register) | `[--run] [--period <code>] [--severity <s>] [--status <s>] [--export <path>]` |
+| `exceptions` | Run rules (or list the register) | `run [--period <code>] [--as-of <date>] [--json]` (register filters `--severity/--status/--export` pending) |
 | `forecast` | Generate, list or lock forecast versions | `[--generate] [--scenario <code>] [--lock] [--accuracy]` |
 | `export-xlsx` | Build the Excel pack | `--period <code> --out <path> [--window <w>]` |
 | `export-ppt` | Build the PowerPoint deck | `--period <code> --out <path> [--scenario <code>]` |
 | `doctor` | Environment/project health: DB integrity, disk space, schema compatibility, WebView2 presence, permissions, profile versions | `[--json]` |
 | `migrate` | Apply pending schema migrations (with backup) | `[--backup <path>] [--dry-run]` |
 | `report` | Emit the validation report for a batch | `--batch <id> --out <path>` |
+
+**Implemented as of 2026-10-05:** `doctor` (a stub today — it emits a fixed healthy payload; the real
+DB-integrity/disk/WebView2 checks of the row above are pending), `bva` (a two-amount variance calculator
+only — not yet the filter-context report above), `launch` (no options) and `exceptions run` are the only
+commands that exist. `import`, `validate`, `forecast`, `export-xlsx`, `export-ppt`, `migrate` and `report`
+are required by Addon 2 §B.1 and are not yet implemented. All of it is tracked in `33` (`TB-027`, `TB-028`).
 
 ### 5.3 Behaviour and exit codes
 
@@ -506,7 +670,9 @@ command here is a thin adapter over the engine. A framework buys nothing that th
 
 **Invariants in the flow:** (1) every fact row carries its `import_batch_id`; (2) derived results are
 computed on demand (§11); (3) the UI receives aggregated, page-sized payloads only (§12); (4) AI sits
-outside the numeric path entirely.
+outside the numeric path entirely; (5) the commit is atomic end-to-end — the bulk load issues batched
+parameterised `INSERT`s inside one explicit transaction and rolls back every chunk on any failure
+(DEF-030, regression `tests/unit/test_def030_bulk_insert.py`).
 
 ## 7. Storage, files and environment
 
@@ -685,15 +851,15 @@ architecture-level rules:
 
 ## 14. Performance budgets mapped to the architecture
 
-| NFR | Budget | Architectural driver |
+| NFR (with its budget) | Architectural driver | Where it is defended |
 |---|---|---|
 | `NFR-001` Cold start ≤ 10 s (sample project) | Avoid import-time work: lazy-load AI/export modules; open stores once; defer rule/dimension work until requested | `ADR-006`, lazy imports, single process |
-| `NFR-002` Import 250k rows ≤ 60 s | Bulk insert via DuckDB `Appender`/batched `INSERT`, vectorised validation, validation and staging in one pass, no per-row round-trips | `engine/imports`, DuckDB native bulk paths |
+| `NFR-002` Import 250k rows ≤ 60 s | Batched multi-row parameterised `INSERT` (batches of 1 000) inside one explicit transaction — measured **3,717 rows/s, 15×** over `executemany` (DEF-030; bench `scratch/bench_duckdb_insert.py`, 250,040-row GL commit 72.6 s, was ~19 min); vectorised validation; validation and staging in one pass; no per-row round-trips. The ≤ 60 s end-to-end bar is re-measured by the perf suite at every gate (`14` §8) | `engine/imports`, `import_repo._bulk_insert` |
 | `NFR-003` Dashboard interaction ≤ 2 s | Pre-aggregated dimension joins, server-side aggregation, page-sized payloads, virtualised grids, indexed fact columns | `engine/calc`, §12 |
 | `NFR-004` PPT generation ≤ 15 s | `python-pptx` with native charts (no image rendering), reused base deck, single pass over aggregated data | `engine/exports` |
 | `NFR-005` Memory ≤ 1.5 GB during import | Streaming parse (no full-file DataFrame), bounded batches, staged rows written to disk | `engine/imports` |
 | `NFR-006` Installer ≤ 500 MB | PyInstaller `onedir`, excluded dev dependencies, `--exclude-module` for unused scientific stacks, compressed Inno Setup | `packaging/`, `ADR-001` |
-| `NFR-007` Rule run ≤ 60 s over 250k rows | Set-based evaluation in SQL where possible, one pass per rule family, indexed subject keys | `engine/rules` |
+| `NFR-007` Rule run ≤ 60 s over 250k rows | Set-based evaluation in SQL where possible, one pass per rule family, indexed subject keys. Measured 2026-10-04: the complete acceptance harness (corpus checks + all 24 rules + scoring) over the 250,040-row corpus ran in **24.7 s** | `engine/rules`, `evidence/acceptance_report.json` |
 | `NFR-008` Offline walkthrough passes | No background network calls anywhere; AI strictly user-initiated | `ADR-009`, §9 |
 | `NFR-009` Excel pack ≤ 120 s at 250k rows | Write-only workbook mode, one pass over aggregates, no full-sheet DataFrame (`11` §13) | `engine/exports` |
 | `NFR-010` Diagnostics zip ≤ 20 MB | Metadata-only bundle with a capped log tail; opt-in for data rows | `FR-XC-005` |
@@ -702,7 +868,7 @@ architecture-level rules:
 | `NFR-013` Screen ≥ 1366×768, 100–150 % scaling correct | Responsive layout, DPI-aware sizing, minimum-size enforcement | `ui/` |
 | `NFR-014` Coverage: engine ≥ 90 %, backend ≥ 75 % | Test discipline enforced in `scripts/check` | `14` |
 | `NFR-015` Cross-artifact equality (zero tolerance) | Values-only workbooks, engine authority, parsed-back assertions | `14` §7 |
-| `NFR-016` UI responsive during long jobs | Worker-thread jobs + polling API; no blocking calls on the UI thread | `09` §7.4 |
+| `NFR-016` UI responsive during long jobs | Worker-thread jobs + polling API; no blocking calls on the UI thread | `09` §8, `ADR-006` |
 
 *(Numbers themselves are owned by `14`; this table records which architectural decision protects each.)*
 
@@ -765,6 +931,12 @@ Every phase gate proves that a **clean `git clone`** plus the documented bootstr
 
 **Rule:** `scripts/build` from a clean checkout is part of every release checklist (`24`), and packaging
 evidence always comes from a real Windows 11 machine (`ADR-005`).
+
+**Entry points as built (2026-10-05):** `scripts/check.py`, `scripts/build.py` and `scripts/acceptance.py`
+exist today; `scripts/dev` and `scripts/release` are not yet created (tracked as `TB-019` in `33`). The
+exact step list of the gate is owned by `14` §13.1; the `ADR-002` lint/format/type steps (`ruff`, `mypy`)
+and the §4.1 import-linter rule are required by spec and not yet wired into the gate (tracked as
+`TB-014`–`TB-017` in `33`).
 
 ## 16. Traceability
 

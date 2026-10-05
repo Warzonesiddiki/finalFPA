@@ -1,9 +1,9 @@
 > **Status:** Draft v0.1 — living document (updated every session)
-> **Last updated:** 2026-10-01
+> **Last updated:** 2026-10-05
 > **Owning FRs/areas:** meta — navigation, coverage, ownership, IDs, gates
 > **TL;DR (≤ 15 lines):** This is the entry point for the whole documentation set. Read section 2 for
-> the reading plans, section 3 for the document map, section 4 for the Addon Coverage Matrix (all 31
-> spec sections (00–30) plus CHANGELOG, PHASE0_SUMMARY, SESSION_LOG → owning doc → status), section 5 for the Source-of-Truth Matrix (one owner per fact
+> the reading plans, section 3 for the document map, section 4 for the Addon Coverage Matrix (all 34
+> spec sections (00–33) plus CHANGELOG, PHASE0_SUMMARY, SESSION_LOG → owning doc → status), section 5 for the Source-of-Truth Matrix (one owner per fact
 > type), section 6 for the document standard and header template, section 8 for the permanent ID
 > registry, and section 9 for the live quality-gate tracker. Phase 0 is complete only when every row of
 > section 4 reads `INTEGRATED` and all six gates in section 9 tracked. Never bulk-read the whole doc set:
@@ -60,7 +60,7 @@ precise, terse, and testable.
 
 ## 3. Document map
 
-31 documents (`00`–`30`) + 3 process/auxiliary files. "Owns" = the fact type that lives **in full** in that document
+34 documents (`00`–`33`) + 3 process/auxiliary files. "Owns" = the fact type that lives **in full** in that document
 (everything else must cross-reference, never duplicate).
 
 | # | File | Owns | Status |
@@ -97,6 +97,8 @@ precise, terse, and testable.
 | 29 | `29_CLIENT_REQUIREMENTS_PACK.md` | Plain-language client pack (no requirement codes): what it does, what the AI does not do, the decisions needed with recommendations, what we need from the client, timeline/UAT/training, disclaimer, sign-off block | Draft v0.1 |
 | 30 | `30_DOCUMENTATION_SET_REVIEW_GUIDE.md` | Review guide, 5-minute pre-flight checklist, session-report standard, evidence matrix, red-flag ladder, oracle procedure | Approved v1.0 |
 | 31 | `31_POST_GO_LIVE_REVIEW_TEMPLATE.md` | Post-go-live first accuracy report and month-end review templates | Draft v0.1 |
+| 32 | `32_REUSE_AND_PROVENANCE.md` | Reuse adoptions (`ADP-nnn`), build decisions (`BD-nnn`), upstream SHAs + license evidence (Addon 6) | Living registry (v0.1) |
+| 33 | `33_EXECUTION_BLUEPRINT_AND_TASKBOARD.md` | Execution blueprint (workstreams + milestones), dated gap inventory, live taskboard (`TB-nnn`) | Living board (v0.1) |
 | — | `CHANGELOG.md` | Every doc/spec change (Keep a Changelog + semver) and gate approvals | Living |
 | — | `SESSION_LOG.md` | Append-only session memory: what changed, FRs touched, tests, next step | Living |
 | — | `PHASE0_SUMMARY.md` | One-page Phase 0 presentation for approval: product, what the set locks, key decisions, top risks, open questions, gate snapshot, approval ask | Draft v0.1 (awaiting recorded approval) |
@@ -269,6 +271,9 @@ cross-reference.** Never paste a formula, threshold, layout, or rule into a seco
 | UAT, DoD, go-live | `28_ACCEPTANCE_UAT_AND_GO_LIVE` |
 | Client-facing requirements pack | `29_CLIENT_REQUIREMENTS_PACK` |
 | Review guide, pre-flight checklist, evidence matrix, red-flag ladder, oracle procedure | `30_DOCUMENTATION_SET_REVIEW_GUIDE` |
+| Post-go-live review templates | `31_POST_GO_LIVE_REVIEW_TEMPLATE` |
+| Reuse adoptions, provenance, build decisions (`ADP-nnn`, `BD-nnn`) | `32_REUSE_AND_PROVENANCE` |
+| Execution blueprint, dated gap inventory, taskboard (`TB-nnn`) | `33_EXECUTION_BLUEPRINT_AND_TASKBOARD` |
 
 ## 6. Document standard
 
@@ -335,6 +340,9 @@ as cross-references in `11`/`12`.
 | `DEF-nnn` | Defect (UAT period) | `28` | `DEF-002` |
 | `PROMPT-nn` | Versioned prompt template | `10` | `PROMPT-01` |
 | `MAP-nnn` | Mapping profile | `04` | `MAP-003` |
+| `TB-nnn` | Execution taskboard task (`33` §5; `G-nn` = gap-inventory row, `M0`–`M6` = milestones, `WS-n` = workstreams) | `33` | `TB-014` |
+| `ADP-nnn` | Reuse adoption / provenance record (Addon 6) | `32` | `ADP-003` |
+| `BD-nnn` | Build decision — searched, found nothing, built it (Addon 6) | `32` | `BD-001` |
 | `SCN-nnn` | Forecast/analysis scenario | `07` | `SCN-002` |
 | `GATE-nn` | Quality gate: `GATE-01`…`05` = the five kickoff/Addon 1–4 Phase-0 checklists (owner `14` §15); provisional `GATE-05B` = Addon 5 deltas pending contract (owner `14` §15.6); `GATE-06` = packaging spike and `GATE-07`…`12` = phases 1–6 (owner `16`); `GATE-13`…`15` = pilot/UAT/go-live (owner `28`) | `16`, `14`, `28` | `GATE-01`, `GATE-05B`, `GATE-07`, `GATE-14` |
 
@@ -360,13 +368,13 @@ The authoritative checkbox lists live in doc `14` §15; this table tracks status
 | Item | Value |
 |---|---|
 | Phase | **Phase 1–6 & Pilot Readiness (`GATE-13`)** |
-| Authoritative next-action list | `16_ROADMAP_PHASES.md` §1.3 |
-| Docs complete | `00`–`31` (32 docs) + `CHANGELOG`, `SESSION_LOG` |
+| Authoritative next-action list | `16_ROADMAP_PHASES.md` §1.3 (the single item), decomposed as tasks in `33` §5 |
+| Docs complete | `00`–`33` (34 docs) + `CHANGELOG`, `SESSION_LOG` |
 | Packaging Spike (`GATE-06`) | **PASS** — PyInstaller onedir binary verified (310.2 MB), React UI compiled, portable package + SHA-256 generated |
 | Product code | Engine core, API loopback, CLI, Vite UI, pywebview shell, packaging pipeline |
 | App version / docs version | 0.1.0 / 0.1.0 |
-| Open questions count / Defect count | Tracked in `18` §4 / 6 open defects (`DEF-001` S2 Open, `DEF-002` S2 Open, `DEF-003` S1 Open, `DEF-004` S1 Open, `DEF-005` S3 Open, `DEF-006` S2 In-fix; `DEF-007` Resolved) |
-| Blocking questions | None (Pending decisions in `18` §5.4 tracked) |
+| Open questions count / Defect count | Tracked in `18` §4 / the live defect register in `28` §3.2 and `28` §12 (the Phase-0-era enumeration of `DEF-001`…`007` is superseded by that register) |
+| Blocking questions | **None as of 2026-10-05** — `OQ-025`/`OQ-026`/`OQ-027` decided (`DEC-056`…`DEC-058`), `PROP-001` approved (`DEC-059`); execution tracked in `16` §1.3 and `33` §3 `G-17` |
 
 ## 11. How this document is updated
 

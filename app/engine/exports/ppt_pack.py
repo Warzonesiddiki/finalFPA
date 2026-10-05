@@ -9,6 +9,12 @@ Generates an executive-ready 6-slide widescreen (16:9) presentation using python
   - Slide 5: Exceptions and control risks (PPT-005)
   - Slide 6: Rolling forecast & outlook (PPT-006)
 
+The deck is a *filled copy* of ``packaging/templates/FPAMonthEndCopilot_v1.pptx``
+(docs/12 §3.6, `DEF-018`): geometry, colours, fonts, chart types and z-order all come
+from the template, and this module only writes text and data into the shapes the template
+already names. The fill itself is delegated to ``app.engine.pptx_fill`` (``ADP-001``…
+``ADP-003``); this module holds the deck's data contract and its per-slide content.
+
 All content is natively editable (no raster screenshots, no static image charts).
 """
 
@@ -16,40 +22,67 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
+from decimal import Decimal
 from pathlib import Path
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any
 
-from pptx import Presentation
-from pptx.chart.data import CategoryChartData
 from pptx.dml.color import RGBColor
-from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION
-from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN
-from pptx.util import Inches, Pt
+from pptx.presentation import Presentation as PresentationObject
+from pptx.util import Inches
 
+from app.engine.calc.math import quantize_money
 from app.engine.exports.ppt_fit import (
     TRIMMED_FOOTNOTE,
     compute_character_budget,
     trim_text_to_budget,
 )
+from app.engine.pptx_fill import (
+    TemplateShapeError,
+    TextStyle,
+    add_slide_from_layout,
+    fill_table,
+    open_template,
+    replace_chart_data,
+    resolve_shape,
+    set_notes,
+    set_text,
+    shape_names,
+)
+from app.engine.pptx_fill.layout import handle_overflow
+from app.engine.pptx_fill.ppt_spec import SLIDE_LAYOUTS
+
 
 # -----------------------------------------------------------------------------
 # Universal Theme Tokens (§3.3)
 # -----------------------------------------------------------------------------
-COLOR_BRAND_PRIMARY = RGBColor(0x1F, 0x3A, 0x5F)  # #1F3A5F
-COLOR_BRAND_SECONDARY = RGBColor(0xB7, 0x79, 0x1F)  # #B7791F
-COLOR_TEXT_PRIMARY = RGBColor(0x1F, 0x29, 0x37)  # #1F2937
-COLOR_TEXT_SECONDARY = RGBColor(0x6B, 0x72, 0x80)  # #6B7280
-COLOR_SURFACE_CARD = RGBColor(0xF7, 0xF8, 0xFA)  # #F7F8FA
-COLOR_CARD_BORDER = RGBColor(0xE5, 0xE7, 0xEB)  # #E5E7EB
-COLOR_WHITE = RGBColor(0xFF, 0xFF, 0xFF)
+def _rgb(red: int, green: int, blue: int) -> Any:
+    """Typed boundary over pptx's untyped RGBColor constructor.
 
-COLOR_SEMANTIC_FAV_TEXT = RGBColor(0x1B, 0x5E, 0x20)  # #1B5E20
-COLOR_SEMANTIC_FAV_FILL = RGBColor(0xE8, 0xF5, 0xE9)  # #E8F5E9
-COLOR_SEMANTIC_UNFAV_TEXT = RGBColor(0xB3, 0x26, 0x1E)  # #B3261E
-COLOR_SEMANTIC_UNFAV_FILL = RGBColor(0xFD, 0xEC, 0xEA)  # #FDECEA
-COLOR_SEMANTIC_WARNING_TEXT = RGBColor(0x8A, 0x53, 0x00)  # #8A5300
-COLOR_SEMANTIC_WARNING_FILL = RGBColor(0xFF, 0xF4, 0xE5)  # #FFF4E5
+    python-pptx ships no type stubs (no types-python-pptx on PyPI), so the
+    untyped constructor is called exactly once, here — 17 §3.1 permits a
+    ``type: ignore`` with a reason comment (this comment), never a bare escape.
+    """
+    # python-pptx ships no type stubs (no types-python-pptx on PyPI): the untyped
+    # constructor is called exactly once, here — 17 §3.1 permits a type: ignore
+    # with a reason comment (this comment), never a bare escape.
+    return RGBColor(red, green, blue)  # type: ignore[no-untyped-call]  # reason: pptx has no stubs; single documented boundary
+
+
+COLOR_BRAND_PRIMARY = _rgb(0x1F, 0x3A, 0x5F)  # #1F3A5F
+COLOR_BRAND_SECONDARY = _rgb(0xB7, 0x79, 0x1F)  # #B7791F
+COLOR_TEXT_PRIMARY = _rgb(0x1F, 0x29, 0x37)  # #1F2937
+COLOR_TEXT_SECONDARY = _rgb(0x6B, 0x72, 0x80)  # #6B7280
+COLOR_SURFACE_CARD = _rgb(0xF7, 0xF8, 0xFA)  # #F7F8FA
+COLOR_CARD_BORDER = _rgb(0xE5, 0xE7, 0xEB)  # #E5E7EB
+COLOR_WHITE = _rgb(0xFF, 0xFF, 0xFF)
+
+COLOR_SEMANTIC_FAV_TEXT = _rgb(0x1B, 0x5E, 0x20)  # #1B5E20
+COLOR_SEMANTIC_FAV_FILL = _rgb(0xE8, 0xF5, 0xE9)  # #E8F5E9
+COLOR_SEMANTIC_UNFAV_TEXT = _rgb(0xB3, 0x26, 0x1E)  # #B3261E
+COLOR_SEMANTIC_UNFAV_FILL = _rgb(0xFD, 0xEC, 0xEA)  # #FDECEA
+COLOR_SEMANTIC_WARNING_TEXT = _rgb(0x8A, 0x53, 0x00)  # #8A5300
+COLOR_SEMANTIC_WARNING_FILL = _rgb(0xFF, 0xF4, 0xE5)  # #FFF4E5
 
 FONT_FAMILY = "Calibri"
 
@@ -93,9 +126,19 @@ class KPICardData:
 
 @dataclass
 class BridgeDriverItem:
+    """One bridge step. Amount is money: Decimal per 17 §5.1 (DEF-015).
+
+    Float inputs are coerced via str (the ``quantize_money`` recovery pattern),
+    never via ``Decimal(some_float)``, so sample-data float literals land on
+    their intended 2 dp value instead of their binary expansion.
+    """
+
     name: str
-    amount: float
+    amount: Decimal
     is_favourable: bool = False
+
+    def __post_init__(self) -> None:
+        self.amount = quantize_money(self.amount)
 
 
 @dataclass
@@ -167,9 +210,7 @@ class DeckContext:
         default_factory=lambda: [
             KPICardData("ACTUAL", "₹ 1,66,45,000.00", "vs PY +12.4%"),
             KPICardData("BUDGET", "₹ 1,57,70,000.00", "as budgeted"),
-            KPICardData(
-                "VARIANCE", "+₹ 8,75,000.00", "+5.5% · Adv ▼", "unfavourable"
-            ),
+            KPICardData("VARIANCE", "+₹ 8,75,000.00", "+5.5% · Adv ▼", "unfavourable"),
             KPICardData("GROSS MARGIN %", "40.0%", "vs budget +1.2 pp"),
             KPICardData("BUDGET BURN %", "25.8%", "YTD vs annual"),
             KPICardData(
@@ -188,16 +229,16 @@ class DeckContext:
     narrative_author: str = "A. Sharma"
     narrative_date: str = "01-10-2026"
 
-    # Slide 3 Bridge
-    bridge_opening: float = 15770000.0
-    bridge_closing: float = 16645000.0
+    # Slide 3 Bridge (money: Decimal per 17 §5.1, DEF-015)
+    bridge_opening: Decimal = Decimal("15770000.00")
+    bridge_closing: Decimal = Decimal("16645000.00")
     bridge_drivers: list[BridgeDriverItem] = field(
         default_factory=lambda: [
-            BridgeDriverItem("Materials", 78000.0, is_favourable=False),
-            BridgeDriverItem("Contractors", 140000.0, is_favourable=False),
-            BridgeDriverItem("Repairs", -25000.0, is_favourable=True),
-            BridgeDriverItem("Utilities", 2000.0, is_favourable=False),
-            BridgeDriverItem("Opex other", 180000.0, is_favourable=False),
+            BridgeDriverItem("Materials", Decimal("78000.00"), is_favourable=False),
+            BridgeDriverItem("Contractors", Decimal("140000.00"), is_favourable=False),
+            BridgeDriverItem("Repairs", Decimal("-25000.00"), is_favourable=True),
+            BridgeDriverItem("Utilities", Decimal("2000.00"), is_favourable=False),
+            BridgeDriverItem("Opex other", Decimal("180000.00"), is_favourable=False),
         ]
     )
 
@@ -310,9 +351,7 @@ class DeckContext:
     forecast_landing_estimate: str = "₹ 12,84,00,000.00"
     forecast_vs_budget: str = "+₹ 34,00,000.00 (+2.7%)"
     forecast_accuracy_mape: str = "1.5% · bias +8k"
-    forecast_accuracy_details: str = (
-        "8 periods compared · 0 excluded (zero actual)"
-    )
+    forecast_accuracy_details: str = "8 periods compared · 0 excluded (zero actual)"
     forecast_periods: list[str] = field(
         default_factory=lambda: [
             "P01",
@@ -329,23 +368,23 @@ class DeckContext:
             "P12",
         ]
     )
-    forecast_actuals: list[Optional[float]] = field(
+    forecast_actuals: list[Decimal | None] = field(
         default_factory=lambda: [
-            140.0,
-            145.0,
-            150.0,
-            148.0,
-            155.0,
-            160.0,
-            158.0,
-            162.0,
-            166.45,
+            Decimal("140.00"),
+            Decimal("145.00"),
+            Decimal("150.00"),
+            Decimal("148.00"),
+            Decimal("155.00"),
+            Decimal("160.00"),
+            Decimal("158.00"),
+            Decimal("162.00"),
+            Decimal("166.45"),
             None,
             None,
             None,
         ]
     )
-    forecast_projected: list[Optional[float]] = field(
+    forecast_projected: list[Decimal | None] = field(
         default_factory=lambda: [
             None,
             None,
@@ -355,182 +394,168 @@ class DeckContext:
             None,
             None,
             None,
-            166.45,
-            165.0,
-            168.0,
-            170.0,
+            Decimal("166.45"),
+            Decimal("165.00"),
+            Decimal("168.00"),
+            Decimal("170.00"),
         ]
     )
-    forecast_budget: list[Optional[float]] = field(
+    forecast_budget: list[Decimal | None] = field(
         default_factory=lambda: [
-            142.0,
-            142.0,
-            145.0,
-            145.0,
-            150.0,
-            150.0,
-            155.0,
-            155.0,
-            157.7,
-            160.0,
-            162.0,
-            165.0,
+            Decimal("142.00"),
+            Decimal("142.00"),
+            Decimal("145.00"),
+            Decimal("145.00"),
+            Decimal("150.00"),
+            Decimal("150.00"),
+            Decimal("155.00"),
+            Decimal("155.00"),
+            Decimal("157.70"),
+            Decimal("160.00"),
+            Decimal("162.00"),
+            Decimal("165.00"),
         ]
     )
-    outlook_method_mix: str = (
-        "Methods: Remaining budget 62% · 3-mo run-rate 38% · overrides: 0"
-    )
+    outlook_method_mix: str = "Methods: Remaining budget 62% · 3-mo run-rate 38% · overrides: 0"
     outlook_narrative: str = (
         "Full-year landing estimate projects ₹ 12.84 Cr, representing a +₹ 34 Lakh (+2.7%) variance "
         "against the approved annual budget. Second-half production acceleration accounts for "
         "the volume uptick, while energy cost inflation remains bounded by fixed-price supply agreements."
     )
 
+    def __post_init__(self) -> None:
+        # DEF-015: money fields are Decimal end-to-end (17 §5.1). Coerce so a
+        # caller passing floats (e.g. legacy sample literals) lands on the
+        # intended 2 dp value via str, never on the binary expansion.
+        self.bridge_opening = quantize_money(self.bridge_opening)
+        self.bridge_closing = quantize_money(self.bridge_closing)
+        for attr in ("forecast_actuals", "forecast_projected", "forecast_budget"):
+            setattr(
+                self,
+                attr,
+                [None if v is None else quantize_money(v) for v in getattr(self, attr)],
+            )
+
 
 # -----------------------------------------------------------------------------
 # Helper Utilities for Slides
 # -----------------------------------------------------------------------------
-def _add_accent_bar(slide, name: str) -> Any:
-    """Adds the universal brand accent bar at the top of the slide."""
-    accent = slide.shapes.add_shape(
-        MSO_SHAPE.RECTANGLE,
-        Inches(0),
-        Inches(0),
-        Inches(SLIDE_WIDTH_INCHES),
-        Inches(0.08),
+#: ERR-EXP-014 lives with the fill engine that raises it (one implementation, R12).
+#: Kept exported here because callers catch ``ExportTemplateError``.
+ExportTemplateError = TemplateShapeError
+
+#: Semantic text/fill colours per KPI signal (§3.3).
+SIGNAL_TEXT_COLORS = {
+    "favourable": COLOR_SEMANTIC_FAV_TEXT,
+    "unfavourable": COLOR_SEMANTIC_UNFAV_TEXT,
+    "warning": COLOR_SEMANTIC_WARNING_TEXT,
+    "neutral": COLOR_BRAND_PRIMARY,
+}
+SIGNAL_FILL_COLORS = {
+    "favourable": COLOR_SEMANTIC_FAV_FILL,
+    "unfavourable": COLOR_SEMANTIC_UNFAV_FILL,
+    "warning": COLOR_SEMANTIC_WARNING_FILL,
+    "neutral": COLOR_SURFACE_CARD,
+}
+
+
+def _fill_footer(slide: Any, slide_num: int, ctx: DeckContext) -> None:
+    """Fill the standard footer band (§3.7) into the template's own footer shapes.
+
+    Left carries the short-form disclaimer, right the page/version string; both are
+    already positioned and styled at 8 pt secondary by the template.
+    """
+    prefix = f"PPT-{slide_num:03d}"
+    set_text(resolve_shape(slide, f"{prefix}_footer_left"), SHORT_DISCLAIMER)
+    set_text(
+        resolve_shape(slide, f"{prefix}_footer_right"),
+        f"Slide {slide_num} of 6 · Pack v{ctx.pack_version} · {ctx.period}",
+        style=TextStyle(align=PP_ALIGN.RIGHT),
     )
-    accent.name = name
-    accent.fill.solid()
-    accent.fill.fore_color.rgb = COLOR_BRAND_PRIMARY
-    accent.line.fill.background()
-    return accent
 
 
-def _add_footer_band(slide, slide_num: int, ctx: DeckContext) -> None:
-    """Adds standard footer band (§3.7): short disclaimer (left) and page string (right)."""
-    # Left disclaimer text box
-    tb_left = slide.shapes.add_textbox(
-        Inches(0.45), Inches(7.04), Inches(9.30), Inches(0.28)
-    )
-    tb_left.name = f"PPT-00{slide_num}_footer_disclaimer"
-    tf_l = tb_left.text_frame
-    tf_l.word_wrap = True
-    p_l = tf_l.paragraphs[0]
-    p_l.text = SHORT_DISCLAIMER
-    p_l.font.name = FONT_FAMILY
-    p_l.font.size = Pt(8)
-    p_l.font.color.rgb = COLOR_TEXT_SECONDARY
-
-    # Right page/version text box
-    tb_right = slide.shapes.add_textbox(
-        Inches(10.28), Inches(7.04), Inches(2.60), Inches(0.28)
-    )
-    tb_right.name = f"PPT-00{slide_num}_footer_page"
-    tf_r = tb_right.text_frame
-    tf_r.word_wrap = True
-    p_r = tf_r.paragraphs[0]
-    p_r.text = (
-        f"Slide {slide_num} of 6 · Pack v{ctx.pack_version} · {ctx.period}"
-    )
-    p_r.alignment = PP_ALIGN.RIGHT
-    p_r.font.name = FONT_FAMILY
-    p_r.font.size = Pt(8)
-    p_r.font.color.rgb = COLOR_TEXT_SECONDARY
+def _signal_style(signal: str) -> TextStyle:
+    """Run override that recolours a shape to the semantics of its signal (§3.3)."""
+    return TextStyle(color=SIGNAL_TEXT_COLORS.get(signal, COLOR_BRAND_PRIMARY))
 
 
-def _set_cell_text(
-    cell: Any,
+def _resolve_shape(slide: Any, shape_name: str) -> Any:
+    """Resolve a named template shape (ERR-EXP-014 when absent). See §3.6."""
+    return resolve_shape(slide, shape_name)
+
+
+def _slide_shape_names(slide: Any) -> list[str]:
+    """Every shape name available on the slide — used by the contract tests."""
+    return shape_names(slide)
+
+
+def _trim_prose(
     text: str,
-    font_size_pt: int = 10,
-    bold: bool = False,
-    color: RGBColor = COLOR_TEXT_PRIMARY,
-    align: PP_ALIGN = PP_ALIGN.LEFT,
-    fill_color: Optional[RGBColor] = None,
-) -> None:
-    """Format table cell text and background cleanly."""
-    cell.text = text
-    if fill_color:
-        cell.fill.solid()
-        cell.fill.fore_color.rgb = fill_color
-    tf = cell.text_frame
-    tf.word_wrap = True
-    if tf.paragraphs:
-        p = tf.paragraphs[0]
-        p.alignment = align
-        p.font.name = FONT_FAMILY
-        p.font.size = Pt(font_size_pt)
-        p.font.bold = bold
-        p.font.color.rgb = color
+    width_inches: float,
+    height_inches: float,
+    font_pt: float,
+    max_lines: int,
+) -> tuple[str, bool]:
+    """Trim prose to its §3.4 character budget.
+
+    Returns the text to write and whether trimming occurred, so the caller can put the
+    untrimmed text in the speaker notes (§3.7) and add the trimmed-for-space footnote.
+    """
+    budget = compute_character_budget(
+        box_width_inches=width_inches,
+        box_height_inches=height_inches,
+        font_size_pt=font_pt,
+        configured_max_lines=max_lines,
+    )
+    return trim_text_to_budget(text, budget)
 
 
-class ExportTemplateError(Exception):
-    def __init__(self, message: str):
-        super().__init__(message)
-        self.code = "ERR-EXP-014"
+def _write_prose(
+    shape: Any,
+    text: str,
+    width_inches: float,
+    height_inches: float,
+    font_pt: float,
+    max_lines: int,
+) -> tuple[str, bool]:
+    """Trim prose to its §3.4 budget, write it, then run the opt-in overflow cascade.
 
-def _resolve_shape(slide, shape_name: str) -> Any:
-    # Prove both directions: check slide.shapes first, then slide.slide_layout.shapes
-    for shape in slide.shapes:
-        if shape.name == shape_name:
-            return shape
-    for shape in slide.slide_layout.shapes:
-        if shape.name == shape_name:
-            return shape
-    raise ExportTemplateError(f"ERR-EXP-014: Missing shape '{shape_name}' in template.")
+    The cascade runs *after* the write so it measures what the slide actually carries.
+    Returns the text written and whether trimming occurred.
+    """
+    trimmed, was_trimmed = _trim_prose(text, width_inches, height_inches, font_pt, max_lines)
+    set_text(shape, trimmed)
+    # Flag-gated and off by default (ADR-013); a no-op unless FPA_PPT_OVERFLOW_CASCADE is set.
+    handle_overflow(shape, max_lines=max_lines)
+    return trimmed, was_trimmed
 
 
 # -----------------------------------------------------------------------------
 # Slide 1: Cover & Metadata (PPT-001)
 # -----------------------------------------------------------------------------
-def build_slide_1(prs: Presentation, ctx: DeckContext) -> Any:
-    # Find Layout FPA-PPT-001
-    layout = None
-    for l in prs.slide_layouts:
-        if l.name == "FPA-PPT-001":
-            layout = l
-            break
-    if not layout:
-        raise ExportTemplateError("ERR-EXP-014: Missing layout 'FPA-PPT-001' in template.")
-    
-    slide = prs.slides.add_slide(layout)
+def build_slide_1(prs: PresentationObject, ctx: DeckContext) -> Any:
+    slide = add_slide_from_layout(prs, SLIDE_LAYOUTS["PPT-001"])
 
-    # Title: Project Name
-    sh_title = _resolve_shape(slide, "PPT-001_title")
-    sh_title.text = ctx.project_name
+    set_text(_resolve_shape(slide, "PPT-001_title"), ctx.project_name)
+    set_text(_resolve_shape(slide, "PPT-001_packline"), f"Month-end pack — {ctx.month_year}")
 
-    # Pack line
-    sh_pack = _resolve_shape(slide, "PPT-001_packline")
-    sh_pack.text = f"Month-end pack — {ctx.month_year}"
-
-    # Period line
-    sh_period = _resolve_shape(slide, "PPT-001_periodline")
     entities_str = ", ".join(ctx.entities)
-    sh_period.text = f"{ctx.period} · {ctx.window} · {ctx.scenario} · Entities: {entities_str}"
+    set_text(
+        _resolve_shape(slide, "PPT-001_periodline"),
+        f"{ctx.period} · {ctx.window} · {ctx.scenario} · Entities: {entities_str}",
+    )
 
-    # Sources block
-    sh_sources = _resolve_shape(slide, "PPT-001_sources")
-    # preserve formatting by not wiping out the whole textframe if possible, but python-pptx shape.text does reset.
-    tf = sh_sources.text_frame
-    tf.clear()
-    p_main = tf.paragraphs[0]
-    p_main.text = "SOURCES"
-    p_main.font.bold = True
-    
-    for src in ctx.sources[:7]:
-        p_src = tf.add_paragraph()
-        p_src.text = f"{src.filename} · batch {src.batch_id} · {src.row_count:,} rows"
-        
+    # Source-files block: up to 7 rows, then a count of the remainder (§3.7).
+    source_lines = [
+        f"{s.filename} · batch {s.batch_id} · {s.row_count:,} rows" for s in ctx.sources[:7]
+    ]
     if len(ctx.sources) > 7:
-        p_rem = tf.add_paragraph()
-        p_rem.text = f"… (+{len(ctx.sources) - 7} more files — full list in the Excel pack)"
-
-    # Stamp block
-    sh_stamp = _resolve_shape(slide, "PPT-001_stamp")
-    tf = sh_stamp.text_frame
-    tf.clear()
-    p_main = tf.paragraphs[0]
-    p_main.text = "STAMP"
-    p_main.font.bold = True
+        source_lines.append(f"… (+{len(ctx.sources) - 7} more files — full list in the Excel pack)")
+    set_text(
+        _resolve_shape(slide, "PPT-001_sources"),
+        ["SOURCES", *source_lines],
+        styles=[TextStyle(bold=True), *([None] * len(source_lines))],
+    )
 
     stamp_fields = [
         f"Project:      {ctx.project_name}",
@@ -542,17 +567,15 @@ def build_slide_1(prs: Presentation, ctx: DeckContext) -> Any:
         f"Units:        {ctx.units}",
         f"Batch IDs:    {', '.join(str(s.batch_id) for s in ctx.sources)}",
     ]
-    for s_field in stamp_fields:
-        p_st = tf.add_paragraph()
-        p_st.text = s_field
-        p_st.font.name = FONT_FAMILY
-        p_st.font.size = Pt(9)
-        p_st.font.color.rgb = COLOR_TEXT_PRIMARY
+    set_text(
+        _resolve_shape(slide, "PPT-001_stamp"),
+        ["STAMP", *stamp_fields],
+        styles=[TextStyle(bold=True), *([None] * len(stamp_fields))],
+    )
 
-    # Footer band
-    _add_footer_band(slide, 1, ctx)
+    _fill_footer(slide, 1, ctx)
 
-    # Speaker notes: canonical disclaimer + machine readable JSON stamp
+    # Speaker notes: canonical disclaimer + machine readable JSON stamp (TST-PPT-09)
     stamp_dict = {
         "schema": "fpa.ppt.stamp.v1",
         "slide": "PPT-001",
@@ -572,11 +595,9 @@ def build_slide_1(prs: Presentation, ctx: DeckContext) -> Any:
         "sources": [s.batch_id for s in ctx.sources],
     }
     stamp_json = json.dumps(stamp_dict, indent=2)
-    slide.notes_slide.notes_text_frame.text = (
-        f"{CANONICAL_DISCLAIMER}\n\n"
-        f"--- FPA STAMP (JSON) ---\n"
-        f"{stamp_json}\n"
-        f"--- END FPA STAMP ---"
+    set_notes(
+        slide,
+        f"{CANONICAL_DISCLAIMER}\n\n--- FPA STAMP (JSON) ---\n{stamp_json}\n--- END FPA STAMP ---",
     )
     return slide
 
@@ -584,195 +605,63 @@ def build_slide_1(prs: Presentation, ctx: DeckContext) -> Any:
 # -----------------------------------------------------------------------------
 # Slide 2: Executive KPI Dashboard (PPT-002)
 # -----------------------------------------------------------------------------
-def build_slide_2(prs: Presentation, ctx: DeckContext) -> Any:
-    # not-yet-doc-12-conformant: using procedural path
-    blank_layout = prs.slide_layouts[6]
-    slide = prs.slides.add_slide(blank_layout)
+def build_slide_2(prs: PresentationObject, ctx: DeckContext) -> Any:
+    slide = add_slide_from_layout(prs, SLIDE_LAYOUTS["PPT-002"])
 
-    # Accent bar
-    _add_accent_bar(slide, "PPT-002_accent")
-
-    # Title & kicker
-    tb_title = slide.shapes.add_textbox(
-        Inches(0.45), Inches(0.35), Inches(12.43), Inches(0.60)
-    )
-    tb_title.name = "PPT-002_title"
-    tf = tb_title.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = f"Executive summary — {ctx.period}"
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(24)
-    p.font.bold = True
-    p.font.color.rgb = COLOR_BRAND_PRIMARY
-
-    tb_kicker = slide.shapes.add_textbox(
-        Inches(0.45), Inches(0.95), Inches(12.43), Inches(0.30)
-    )
-    tb_kicker.name = "PPT-002_kicker"
-    tf = tb_kicker.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = (
+    set_text(_resolve_shape(slide, "PPT-002_title"), f"Executive summary — {ctx.period}")
+    set_text(
+        _resolve_shape(slide, "PPT-002_kicker"),
         f"{ctx.window} · {ctx.scenario} · Budget {ctx.budget_version} · "
-        f"{len(ctx.entities)} entities"
+        f"{len(ctx.entities)} entities",
     )
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(12)
-    p.font.color.rgb = COLOR_TEXT_SECONDARY
 
-    # 6 KPI cards: 2 rows of 3 columns
-    # x: 0.45, 4.68, 8.91; y: 1.45, 3.10; w: 3.97, h: 1.45
-    card_xs = [0.45, 4.68, 8.91, 0.45, 4.68, 8.91]
-    card_ys = [1.45, 1.45, 1.45, 3.05, 3.05, 3.05]
-
+    # The template carries six KPI blocks laid out 3x2; each is filled by name.
     for idx, kpi in enumerate(ctx.kpis[:6]):
-        cx = card_xs[idx]
-        cy = card_ys[idx]
         kpi_num = idx + 1
-
-        # Card container rectangle
-        card_rect = slide.shapes.add_shape(
-            MSO_SHAPE.ROUNDED_RECTANGLE,
-            Inches(cx),
-            Inches(cy),
-            Inches(3.97),
-            Inches(1.45),
-        )
-        card_rect.name = f"PPT-002_kpi{kpi_num}_card"
-        card_rect.fill.solid()
-        card_rect.fill.fore_color.rgb = COLOR_SURFACE_CARD
-        card_rect.line.color.rgb = COLOR_CARD_BORDER
-
-        # Left signal chip
-        chip_color = COLOR_BRAND_PRIMARY
-        if kpi.signal == "favourable":
-            chip_color = COLOR_SEMANTIC_FAV_TEXT
-        elif kpi.signal == "unfavourable":
-            chip_color = COLOR_SEMANTIC_UNFAV_TEXT
-        elif kpi.signal == "warning":
-            chip_color = COLOR_BRAND_SECONDARY
-
-        chip = slide.shapes.add_shape(
-            MSO_SHAPE.RECTANGLE,
-            Inches(cx),
-            Inches(cy),
-            Inches(0.08),
-            Inches(1.45),
-        )
-        chip.name = f"PPT-002_kpi{kpi_num}_chip"
+        signal = kpi.signal
+        fill = SIGNAL_FILL_COLORS.get(signal, COLOR_SURFACE_CARD)
+        chip = _resolve_shape(slide, f"PPT-002_kpi{kpi_num}_signal")
         chip.fill.solid()
-        chip.fill.fore_color.rgb = chip_color
-        chip.line.fill.background()
+        chip.fill.fore_color.rgb = SIGNAL_TEXT_COLORS.get(signal, COLOR_BRAND_PRIMARY)
+        card = _resolve_shape(slide, f"PPT-002_kpi{kpi_num}_card")
+        card.fill.solid()
+        card.fill.fore_color.rgb = fill
 
-        # Label
-        tb_label = slide.shapes.add_textbox(
-            Inches(cx + 0.16), Inches(cy + 0.10), Inches(3.75), Inches(0.25)
+        set_text(_resolve_shape(slide, f"PPT-002_kpi{kpi_num}_label"), kpi.label)
+        set_text(
+            _resolve_shape(slide, f"PPT-002_kpi{kpi_num}_value"),
+            kpi.value,
+            style=_signal_style(signal),
         )
-        tb_label.name = f"PPT-002_kpi{kpi_num}_label"
-        tf = tb_label.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = kpi.label
-        p.font.name = FONT_FAMILY
-        p.font.size = Pt(10)
-        p.font.bold = True
-        p.font.color.rgb = COLOR_TEXT_SECONDARY
+        set_text(_resolve_shape(slide, f"PPT-002_kpi{kpi_num}_compare"), kpi.comparison)
 
-        # Value
-        tb_val = slide.shapes.add_textbox(
-            Inches(cx + 0.16), Inches(cy + 0.35), Inches(3.75), Inches(0.45)
-        )
-        tb_val.name = f"PPT-002_kpi{kpi_num}_value"
-        tf = tb_val.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = kpi.value
-        p.font.name = FONT_FAMILY
-        p.font.size = Pt(22)
-        p.font.bold = True
-        if kpi.signal == "unfavourable":
-            p.font.color.rgb = COLOR_SEMANTIC_UNFAV_TEXT
-        elif kpi.signal == "favourable":
-            p.font.color.rgb = COLOR_SEMANTIC_FAV_TEXT
-        else:
-            p.font.color.rgb = COLOR_BRAND_PRIMARY
-
-        # Comparison line
-        tb_comp = slide.shapes.add_textbox(
-            Inches(cx + 0.16), Inches(cy + 0.88), Inches(3.75), Inches(0.25)
-        )
-        tb_comp.name = f"PPT-002_kpi{kpi_num}_compare"
-        tf = tb_comp.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = kpi.comparison
-        p.font.name = FONT_FAMILY
-        p.font.size = Pt(10)
-        p.font.color.rgb = COLOR_TEXT_SECONDARY
-
-    # Provenance label
-    tb_prov = slide.shapes.add_textbox(
-        Inches(0.45), Inches(4.65), Inches(12.43), Inches(0.22)
-    )
-    tb_prov.name = "PPT-002_narrative_label"
-    tf = tb_prov.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = f"Executive narrative · approved by {ctx.narrative_author}, {ctx.narrative_date}"
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(9)
-    p.font.color.rgb = COLOR_TEXT_SECONDARY
-
-    # Executive narrative box (budget 894 chars per §3.4)
-    budget = compute_character_budget(
-        box_width_inches=12.43,
-        box_height_inches=1.70,
-        font_size_pt=12.0,
-        configured_max_lines=6,
-    )
-    trimmed_narrative, was_trimmed = trim_text_to_budget(
-        ctx.executive_narrative, budget
+    set_text(
+        _resolve_shape(slide, "PPT-002_narrative_label"),
+        f"Executive narrative · approved by {ctx.narrative_author}, {ctx.narrative_date}",
     )
 
-    tb_narr = slide.shapes.add_textbox(
-        Inches(0.45), Inches(4.88), Inches(12.43), Inches(1.65)
+    narrative_shape = _resolve_shape(slide, "PPT-002_narrative")
+    trimmed_narrative, was_trimmed = _write_prose(
+        narrative_shape,
+        ctx.executive_narrative,
+        width_inches=narrative_shape.width.inches,
+        height_inches=narrative_shape.height.inches,
+        font_pt=12.0,
+        max_lines=6,
     )
-    tb_narr.name = "PPT-002_narrative"
-    tf = tb_narr.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = trimmed_narrative
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(12)
-    p.font.color.rgb = COLOR_TEXT_PRIMARY
 
-    # Footnote
-    tb_foot = slide.shapes.add_textbox(
-        Inches(0.45), Inches(6.64), Inches(12.43), Inches(0.24)
-    )
-    tb_foot.name = "PPT-002_footnote"
-    tf = tb_foot.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    foot_text = (
-        f"{ctx.units} · month × account × cost centre · Simple sum — no eliminations"
-    )
+    foot_text = f"{ctx.units} · month × account × cost centre · Simple sum — no eliminations"
     if was_trimmed:
         foot_text += f" · {TRIMMED_FOOTNOTE}"
-    p.text = foot_text
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(9)
-    p.font.color.rgb = COLOR_TEXT_SECONDARY
+    set_text(_resolve_shape(slide, "PPT-002_footnote"), foot_text)
 
-    # Footer band
-    _add_footer_band(slide, 2, ctx)
+    _fill_footer(slide, 2, ctx)
 
-    # Speaker notes
-    slide.notes_slide.notes_text_frame.text = (
+    set_notes(
+        slide,
         f"Slide 2: Executive Summary\n"
         f"Filter: {ctx.period} · {ctx.window} · {ctx.scenario}\n"
-        f"Full Executive Narrative:\n{ctx.executive_narrative}"
+        f"Full Executive Narrative:\n{ctx.executive_narrative}",
     )
     return slide
 
@@ -780,122 +669,120 @@ def build_slide_2(prs: Presentation, ctx: DeckContext) -> Any:
 # -----------------------------------------------------------------------------
 # Slide 3: Budget vs Actual Bridge / Waterfall (PPT-003)
 # -----------------------------------------------------------------------------
-def build_slide_3(prs: Presentation, ctx: DeckContext) -> Any:
-    blank_layout = prs.slide_layouts[6]
-    slide = prs.slides.add_slide(blank_layout)
+def _bridge_plan(
+    ctx: DeckContext, max_drivers: int = 6
+) -> tuple[list[str], list[Decimal], list[Decimal], Decimal]:
+    """Categories plus the two stacked series that draw a bridge (docs/12 §5.2).
 
-    # Accent bar
-    _add_accent_bar(slide, "PPT-003_accent")
+    The pinned python-pptx has no waterfall chart type, so the template ships the
+    stacked-column fallback: an invisible ``base`` series lifts each step to its
+    cumulative height and the visible ``amount`` series carries the step itself. The
+    opening and closing bars start at zero and span the whole column.
 
-    # Title & kicker
-    tb_title = slide.shapes.add_textbox(
-        Inches(0.45), Inches(0.35), Inches(12.43), Inches(0.60)
-    )
-    tb_title.name = "PPT-003_title"
-    tf = tb_title.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = f"BvA bridge — {ctx.period}"
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(24)
-    p.font.bold = True
-    p.font.color.rgb = COLOR_BRAND_PRIMARY
+    A bridge must land on the closing total, so when the supplied drivers do not sum to
+    it the shortfall is shown as its own ``Other`` step rather than being absorbed
+    silently — §3.7's "the gap is visible and truthful, never interpolated".
 
-    tb_kicker = slide.shapes.add_textbox(
-        Inches(0.45), Inches(0.95), Inches(12.43), Inches(0.30)
-    )
-    tb_kicker.name = "PPT-003_kicker"
-    tf = tb_kicker.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = f"{ctx.window} · {ctx.scenario} · drivers ordered by materiality"
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(12)
-    p.font.color.rgb = COLOR_TEXT_SECONDARY
+    DEF-015: every step is money, so the arithmetic is Decimal end-to-end
+    (17 §5.1 — no ``float()``, no ``round()`` on money, no epsilon comparison).
+    python-pptx accepts Decimal series values, so no conversion is needed on the
+    way into the chart.
 
-    # Native Bridge / Waterfall Chart (§5.2)
-    # Using clustered / stacked column with embedded data
-    chart_data = CategoryChartData()
+    Returns ``(categories, base, amount, residual)`` where ``residual`` is the amount the
+    drivers failed to explain (``Decimal("0.00")`` when they tie out exactly).
+    """
+    ordered = sorted(ctx.bridge_drivers, key=lambda d: abs(d.amount), reverse=True)
+    drivers = ordered[:max_drivers]
+    opening = quantize_money(ctx.bridge_opening)
+    closing = quantize_money(ctx.bridge_closing)
+    residual = quantize_money(closing - opening - sum((d.amount for d in drivers), Decimal("0.00")))
+
+    steps = list(drivers)
+    if residual != 0:
+        steps.append(BridgeDriverItem("Other", residual, is_favourable=residual < 0))
+
     categories = ["Opening (Budget)"]
-    series_values = [ctx.bridge_opening]
+    base = [Decimal("0.00")]
+    amount = [opening]
 
-    for d in ctx.bridge_drivers:
-        categories.append(d.name[:12])
-        series_values.append(d.amount)
+    running = opening
+    for driver in steps:
+        categories.append(driver.name[:12])
+        base.append(quantize_money(running))
+        amount.append(quantize_money(driver.amount))
+        running = quantize_money(running + driver.amount)
 
     categories.append("Closing (Actual)")
-    series_values.append(ctx.bridge_closing)
+    base.append(Decimal("0.00"))
+    amount.append(closing)
+    return categories, base, amount, residual
 
-    chart_data.categories = categories
-    chart_data.add_series("Amount (₹)", tuple(series_values))
 
-    # Add native chart shape
-    chart_shape = slide.shapes.add_chart(
-        XL_CHART_TYPE.COLUMN_CLUSTERED,
-        Inches(0.45),
-        Inches(1.45),
-        Inches(8.60),
-        Inches(4.95),
-        chart_data,
-    )
-    chart_shape.name = "PPT-003_chart_bridge"
-    chart = chart_shape.chart
-    chart.has_legend = False
-    chart.has_title = True
-    chart.chart_title.text_frame.text = (
-        f"Bridge: {ctx.period} ({ctx.units} · {ctx.window})"
+def build_slide_3(prs: PresentationObject, ctx: DeckContext) -> Any:
+    slide = add_slide_from_layout(prs, SLIDE_LAYOUTS["PPT-003"])
+
+    set_text(_resolve_shape(slide, "PPT-003_title"), f"BvA bridge — {ctx.period}")
+    set_text(
+        _resolve_shape(slide, "PPT-003_kicker"),
+        f"{ctx.window} · {ctx.scenario} · drivers ordered by materiality",
     )
 
-    # Right-hand top drivers list
-    tb_drivers = slide.shapes.add_textbox(
-        Inches(9.30), Inches(1.45), Inches(3.58), Inches(4.95)
+    categories, base, amount, residual = _bridge_plan(ctx)
+    replace_chart_data(
+        _resolve_shape(slide, "PPT-003_chart_bridge"),
+        categories,
+        [("base", base), ("amount", amount)],
+        title=f"Bridge: {ctx.period} ({ctx.units} · {ctx.window})",
+        legend=False,
     )
-    tb_drivers.name = "PPT-003_drivers"
-    tf = tb_drivers.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = "TOP DRIVERS"
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(10)
-    p.font.bold = True
-    p.font.color.rgb = COLOR_TEXT_SECONDARY
 
-    for d in ctx.bridge_drivers[:6]:
-        p_d = tf.add_paragraph()
-        sig = "▲" if d.is_favourable else "▼"
-        sign_char = "+" if d.amount >= 0 else "−"
-        abs_amt = abs(d.amount)
-        p_d.text = f"{sig} {d.name}   {sign_char}₹ {abs_amt:,.2f}"
-        p_d.font.name = FONT_FAMILY
-        p_d.font.size = Pt(10)
-        p_d.font.color.rgb = (
-            COLOR_SEMANTIC_FAV_TEXT
-            if d.is_favourable
-            else COLOR_SEMANTIC_UNFAV_TEXT
+    ordered_drivers = sorted(ctx.bridge_drivers, key=lambda d: abs(d.amount), reverse=True)[:6]
+    driver_lines = [
+        f"{'▲' if d.is_favourable else '▼'} {d.name}   "
+        f"{'+' if d.amount >= 0 else '−'}₹ {abs(d.amount):,.2f}"
+        for d in ordered_drivers
+    ]
+    driver_styles: list[TextStyle | None] = [
+        TextStyle(bold=True, color=COLOR_TEXT_SECONDARY),
+        *(
+            TextStyle(
+                color=COLOR_SEMANTIC_FAV_TEXT if d.is_favourable else COLOR_SEMANTIC_UNFAV_TEXT
+            )
+            for d in ordered_drivers
+        ),
+    ]
+    if residual != 0:
+        driver_lines.append(
+            f"{'▼' if residual >= 0 else '▲'} Other (unexplained)   "
+            f"{'+' if residual >= 0 else '−'}₹ {abs(residual):,.2f}"
         )
-
-    # Tie-out line
-    tb_tie = slide.shapes.add_textbox(
-        Inches(0.45), Inches(6.54), Inches(12.43), Inches(0.28)
+        driver_styles.append(TextStyle(color=COLOR_TEXT_PRIMARY))
+    set_text(
+        _resolve_shape(slide, "PPT-003_drivers"),
+        ["TOP DRIVERS", *driver_lines],
+        styles=driver_styles,
     )
-    tb_tie.name = "PPT-003_tieout"
-    tf = tb_tie.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = f"Opening + Σ drivers = Closing — OK · {ctx.units} · month × account × cost centre"
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(9)
-    p.font.color.rgb = COLOR_TEXT_SECONDARY
 
-    # Footer band
-    _add_footer_band(slide, 3, ctx)
+    if residual == 0:
+        tie_text = "Opening + Σ drivers = Closing — OK"
+    else:
+        tie_text = (
+            f"Opening + Σ drivers + Other = Closing — OK "
+            f"(Other = {residual:+,.2f}, unexplained by the driver set)"
+        )
+    set_text(
+        _resolve_shape(slide, "PPT-003_tieout"),
+        f"{tie_text} · {ctx.units} · month × account × cost centre",
+    )
 
-    # Speaker notes
-    slide.notes_slide.notes_text_frame.text = (
+    _fill_footer(slide, 3, ctx)
+
+    set_notes(
+        slide,
         f"Slide 3: Budget vs Actual Bridge\n"
         f"Opening Budget: ₹ {ctx.bridge_opening:,.2f}\n"
         f"Closing Actual: ₹ {ctx.bridge_closing:,.2f}\n"
-        f"Tie-out verified: Opening + Drivers = Closing."
+        f"Tie-out verified: Opening + Drivers = Closing.",
     )
     return slide
 
@@ -903,178 +790,63 @@ def build_slide_3(prs: Presentation, ctx: DeckContext) -> Any:
 # -----------------------------------------------------------------------------
 # Slide 4: Top Variances with Drivers (PPT-004)
 # -----------------------------------------------------------------------------
-def build_slide_4(prs: Presentation, ctx: DeckContext) -> Any:
-    blank_layout = prs.slide_layouts[6]
-    slide = prs.slides.add_slide(blank_layout)
+def build_slide_4(prs: PresentationObject, ctx: DeckContext) -> Any:
+    slide = add_slide_from_layout(prs, SLIDE_LAYOUTS["PPT-004"])
 
-    # Accent bar
-    _add_accent_bar(slide, "PPT-004_accent")
-
-    # Title & kicker
-    tb_title = slide.shapes.add_textbox(
-        Inches(0.45), Inches(0.35), Inches(12.43), Inches(0.60)
-    )
-    tb_title.name = "PPT-004_title"
-    tf = tb_title.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = f"Top variances — {ctx.period}"
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(24)
-    p.font.bold = True
-    p.font.color.rgb = COLOR_BRAND_PRIMARY
-
-    tb_kicker = slide.shapes.add_textbox(
-        Inches(0.45), Inches(0.95), Inches(12.43), Inches(0.30)
-    )
-    tb_kicker.name = "PPT-004_kicker"
-    tf = tb_kicker.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = (
+    set_text(_resolve_shape(slide, "PPT-004_title"), f"Top variances — {ctx.period}")
+    set_text(
+        _resolve_shape(slide, "PPT-004_kicker"),
         f"{ctx.window} · {ctx.scenario} · "
-        f"5 largest absolute variances of {ctx.variance_lines_considered} lines"
+        f"5 largest absolute variances of {ctx.variance_lines_considered} lines",
     )
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(12)
-    p.font.color.rgb = COLOR_TEXT_SECONDARY
 
-    # Native Table (7 columns, 6 rows: 1 header + 5 data rows)
-    # Columns: Account (3.20"), Actual (1.50"), Budget (1.50"), Variance (1.65"), Var % (1.15"), Sig. (1.00"), Driver (2.43")
-    rows = min(len(ctx.top_variances), 5) + 1
-    table_shape = slide.shapes.add_table(
-        rows, 7, Inches(0.45), Inches(1.45), Inches(12.43), Inches(3.60)
-    )
-    table_shape.name = "PPT-004_table"
-    table = table_shape.table
-
-    col_widths = [3.20, 1.50, 1.50, 1.65, 1.15, 1.00, 2.43]
-    for i, w in enumerate(col_widths):
-        table.columns[i].width = Inches(w)
-
-    headers = [
-        "Account",
-        "Actual",
-        "Budget",
-        "Variance",
-        "Var %",
-        "Sig.",
-        "Driver",
+    # The template's table is 7 columns x 6 rows (header + top 5); widths and the
+    # header banding are authored in the template, so only values are written here.
+    headers = ["Account", "Actual", "Budget", "Variance", "Var %", "Sig.", "Driver"]
+    rows: list[list[str]] = [headers]
+    rows += [
+        [v.account, v.actual, v.budget, v.variance, v.var_pct, v.signal, v.driver]
+        for v in ctx.top_variances[:5]
     ]
-    for col_idx, h_text in enumerate(headers):
-        align = (
-            PP_ALIGN.RIGHT
-            if col_idx in (1, 2, 3, 4)
-            else (PP_ALIGN.CENTER if col_idx == 5 else PP_ALIGN.LEFT)
-        )
-        _set_cell_text(
-            table.cell(0, col_idx),
-            h_text,
-            font_size_pt=10,
-            bold=True,
-            color=COLOR_WHITE,
-            align=align,
-            fill_color=COLOR_BRAND_PRIMARY,
-        )
+    rows += [[""] * 7 for _ in range(max(0, 6 - len(rows)))]
 
-    for row_idx, var in enumerate(ctx.top_variances[:5], start=1):
-        bg_color = COLOR_SURFACE_CARD if row_idx % 2 == 1 else COLOR_WHITE
-        # Account
-        _set_cell_text(
-            table.cell(row_idx, 0),
-            var.account,
-            font_size_pt=10,
-            fill_color=bg_color,
-        )
-        # Actual
-        _set_cell_text(
-            table.cell(row_idx, 1),
-            var.actual,
-            font_size_pt=10,
-            align=PP_ALIGN.RIGHT,
-            fill_color=bg_color,
-        )
-        # Budget
-        _set_cell_text(
-            table.cell(row_idx, 2),
-            var.budget,
-            font_size_pt=10,
-            align=PP_ALIGN.RIGHT,
-            fill_color=bg_color,
-        )
-        # Variance
-        _set_cell_text(
-            table.cell(row_idx, 3),
-            var.variance,
-            font_size_pt=10,
-            align=PP_ALIGN.RIGHT,
-            fill_color=bg_color,
-        )
-        # Var %
-        _set_cell_text(
-            table.cell(row_idx, 4),
-            var.var_pct,
-            font_size_pt=10,
-            align=PP_ALIGN.RIGHT,
-            fill_color=bg_color,
-        )
-        # Sig.
-        sig_color = (
-            COLOR_SEMANTIC_FAV_TEXT
-            if "Fav" in var.signal
-            else COLOR_SEMANTIC_UNFAV_TEXT
-        )
-        _set_cell_text(
-            table.cell(row_idx, 5),
-            var.signal,
-            font_size_pt=10,
+    cell_styles: dict[tuple[int, int], TextStyle | None] = {}
+    row_fills: dict[int, Any] = {}
+    for row_index, var in enumerate(ctx.top_variances[:5], start=1):
+        row_fills[row_index] = COLOR_SURFACE_CARD if row_index % 2 == 1 else COLOR_WHITE
+        for column_index in (1, 2, 3, 4):
+            cell_styles[(row_index, column_index)] = TextStyle(align=PP_ALIGN.RIGHT)
+        cell_styles[(row_index, 5)] = TextStyle(
             bold=True,
-            color=sig_color,
             align=PP_ALIGN.CENTER,
-            fill_color=bg_color,
-        )
-        # Driver
-        _set_cell_text(
-            table.cell(row_idx, 6),
-            var.driver,
-            font_size_pt=10,
-            fill_color=bg_color,
+            color=COLOR_SEMANTIC_FAV_TEXT if "Fav" in var.signal else COLOR_SEMANTIC_UNFAV_TEXT,
         )
 
-    # Provenance line
-    tb_prov = slide.shapes.add_textbox(
-        Inches(0.45), Inches(5.20), Inches(12.43), Inches(0.30)
+    fill_table(
+        _resolve_shape(slide, "PPT-004_table"),
+        rows,
+        header=False,
+        cell_styles=cell_styles,
+        row_fills=row_fills,
     )
-    tb_prov.name = "PPT-004_provenance"
-    tf = tb_prov.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = f"Commentary: approved by {ctx.narrative_author}, {ctx.narrative_date} · Rule-based narrative baseline"
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(9)
-    p.font.color.rgb = COLOR_TEXT_SECONDARY
 
-    # Notes line
-    tb_notes = slide.shapes.add_textbox(
-        Inches(0.45), Inches(5.62), Inches(12.43), Inches(0.90)
+    set_text(
+        _resolve_shape(slide, "PPT-004_provenance"),
+        f"Commentary: approved by {ctx.narrative_author}, {ctx.narrative_date} · "
+        f"Rule-based narrative baseline",
     )
-    tb_notes.name = "PPT-004_notes_line"
-    tf = tb_notes.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = "Full commentary for the top 10 lines: speaker notes, the Excel pack and the commentary editor."
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(9)
-    p.font.color.rgb = COLOR_TEXT_SECONDARY
+    set_text(
+        _resolve_shape(slide, "PPT-004_notes_line"),
+        "Full commentary for the top 10 lines: speaker notes, the Excel pack and the commentary editor.",
+    )
 
-    # Footer band
-    _add_footer_band(slide, 4, ctx)
+    _fill_footer(slide, 4, ctx)
 
-    # Speaker notes
-    slide.notes_slide.notes_text_frame.text = (
+    set_notes(
+        slide,
         f"Slide 4: Top Variances\n"
         f"Total lines evaluated: {ctx.variance_lines_considered}\n"
-        f"Top 5 lines presented natively above."
+        f"Top 5 lines presented natively above.",
     )
     return slide
 
@@ -1082,223 +854,100 @@ def build_slide_4(prs: Presentation, ctx: DeckContext) -> Any:
 # -----------------------------------------------------------------------------
 # Slide 5: Exceptions & Risk Register (PPT-005)
 # -----------------------------------------------------------------------------
-def build_slide_5(prs: Presentation, ctx: DeckContext) -> Any:
-    blank_layout = prs.slide_layouts[6]
-    slide = prs.slides.add_slide(blank_layout)
+def build_slide_5(prs: PresentationObject, ctx: DeckContext) -> Any:
+    slide = add_slide_from_layout(prs, SLIDE_LAYOUTS["PPT-005"])
 
-    # Accent bar
-    _add_accent_bar(slide, "PPT-005_accent")
-
-    # Title & kicker
-    tb_title = slide.shapes.add_textbox(
-        Inches(0.45), Inches(0.35), Inches(12.43), Inches(0.60)
+    set_text(_resolve_shape(slide, "PPT-005_title"), f"Exceptions and control risks — {ctx.period}")
+    set_text(
+        _resolve_shape(slide, "PPT-005_kicker"),
+        f"Rule set {ctx.rule_set_version} · run 118 · {ctx.generated_at}",
     )
-    tb_title.name = "PPT-005_title"
-    tf = tb_title.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = f"Exceptions and control risks — {ctx.period}"
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(24)
-    p.font.bold = True
-    p.font.color.rgb = COLOR_BRAND_PRIMARY
 
-    tb_kicker = slide.shapes.add_textbox(
-        Inches(0.45), Inches(0.95), Inches(12.43), Inches(0.30)
-    )
-    tb_kicker.name = "PPT-005_kicker"
-    tf = tb_kicker.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = f"Rule set {ctx.rule_set_version} · run 118 · {ctx.generated_at}"
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(12)
-    p.font.color.rgb = COLOR_TEXT_SECONDARY
-
-    # 4 Status Chips across width: x = 0.45, 3.59, 6.73, 9.87; y = 1.35; w = 3.00, h = 0.75
-    chip_xs = [0.45, 3.59, 6.73, 9.87]
+    counts = ctx.exceptions_counts
     chip_labels = ["OPEN", "OVERDUE", "HIGH", "UNASSIGNED"]
     chip_vals = [
-        ctx.exceptions_counts.open_count,
-        ctx.exceptions_counts.overdue_count,
-        ctx.exceptions_counts.high_count,
-        ctx.exceptions_counts.unassigned_count,
+        counts.open_count,
+        counts.overdue_count,
+        counts.high_count,
+        counts.unassigned_count,
     ]
-
     for idx in range(4):
-        cx = chip_xs[idx]
         chip_num = idx + 1
         is_overdue = idx == 1
-
-        chip_rect = slide.shapes.add_shape(
-            MSO_SHAPE.RECTANGLE,
-            Inches(cx),
-            Inches(1.35),
-            Inches(3.00),
-            Inches(0.75),
+        chip = _resolve_shape(slide, f"PPT-005_chip{chip_num}")
+        chip.fill.solid()
+        chip.fill.fore_color.rgb = COLOR_SEMANTIC_WARNING_FILL if is_overdue else COLOR_SURFACE_CARD
+        label_style = TextStyle(
+            bold=True,
+            color=COLOR_SEMANTIC_WARNING_TEXT if is_overdue else None,
         )
-        chip_rect.name = f"PPT-005_chip{chip_num}"
-        chip_rect.fill.solid()
-        chip_rect.fill.fore_color.rgb = (
-            COLOR_SEMANTIC_WARNING_FILL if is_overdue else COLOR_SURFACE_CARD
+        value_style = TextStyle(
+            bold=True,
+            color=COLOR_SEMANTIC_WARNING_TEXT if is_overdue else COLOR_BRAND_PRIMARY,
         )
-        chip_rect.line.color.rgb = COLOR_CARD_BORDER
-
-        # Chip label
-        tb_clabel = slide.shapes.add_textbox(
-            Inches(cx + 0.16), Inches(1.40), Inches(2.68), Inches(0.28)
+        set_text(
+            _resolve_shape(slide, f"PPT-005_chip{chip_num}_label"),
+            chip_labels[idx],
+            style=label_style,
         )
-        tb_clabel.name = f"PPT-005_chip{chip_num}_label"
-        tf = tb_clabel.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = chip_labels[idx]
-        p.font.name = FONT_FAMILY
-        p.font.size = Pt(10)
-        p.font.bold = True
-        p.font.color.rgb = (
-            COLOR_SEMANTIC_WARNING_TEXT if is_overdue else COLOR_TEXT_SECONDARY
+        set_text(
+            _resolve_shape(slide, f"PPT-005_chip{chip_num}_value"),
+            str(chip_vals[idx]),
+            style=value_style,
         )
 
-        # Chip value
-        tb_cval = slide.shapes.add_textbox(
-            Inches(cx + 0.16), Inches(1.68), Inches(2.68), Inches(0.38)
-        )
-        tb_cval.name = f"PPT-005_chip{chip_num}_value"
-        tf = tb_cval.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = str(chip_vals[idx])
-        p.font.name = FONT_FAMILY
-        p.font.size = Pt(18)
-        p.font.bold = True
-        p.font.color.rgb = (
-            COLOR_SEMANTIC_WARNING_TEXT if is_overdue else COLOR_BRAND_PRIMARY
-        )
-
-    # Risk note
-    tb_risk = slide.shapes.add_textbox(
-        Inches(0.45), Inches(2.20), Inches(12.43), Inches(0.25)
-    )
-    tb_risk.name = "PPT-005_risknote"
-    tf = tb_risk.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = (
+    set_text(
+        _resolve_shape(slide, "PPT-005_risknote"),
         f"Potential exception — requires accounting review. These are leads, not verdicts. · "
-        f"Σ amount at risk ₹ {ctx.total_amount_at_risk} (indicator only)"
+        f"Σ amount at risk ₹ {ctx.total_amount_at_risk} (indicator only)",
     )
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(9)
-    p.font.color.rgb = COLOR_TEXT_SECONDARY
-
-    # Native Table (6 columns: Rule, Subject, At risk, Sev., Owner, Status/Age)
-    rows = min(len(ctx.exceptions_list), 5) + 1
-    table_shape = slide.shapes.add_table(
-        rows, 6, Inches(0.45), Inches(2.50), Inches(12.43), Inches(3.24)
-    )
-    table_shape.name = "PPT-005_table"
-    table = table_shape.table
-
-    col_widths = [2.30, 3.40, 1.50, 1.00, 1.40, 2.83]
-    for i, w in enumerate(col_widths):
-        table.columns[i].width = Inches(w)
 
     headers = ["Rule", "Subject", "At risk", "Sev.", "Owner", "Status / Age"]
-    for col_idx, h_text in enumerate(headers):
-        align = PP_ALIGN.RIGHT if col_idx == 2 else PP_ALIGN.LEFT
-        _set_cell_text(
-            table.cell(0, col_idx),
-            h_text,
-            font_size_pt=9,
+    rows: list[list[str]] = [headers]
+    rows += [
+        [e.rule, e.subject, e.at_risk, e.severity, e.owner, e.status_age]
+        for e in ctx.exceptions_list[:5]
+    ]
+    rows += [[""] * 6 for _ in range(max(0, 6 - len(rows)))]
+
+    cell_styles: dict[tuple[int, int], TextStyle | None] = {}
+    row_fills: dict[int, Any] = {}
+    for row_index, exc in enumerate(ctx.exceptions_list[:5], start=1):
+        row_fills[row_index] = COLOR_SURFACE_CARD if row_index % 2 == 1 else COLOR_WHITE
+        cell_styles[(row_index, 2)] = TextStyle(align=PP_ALIGN.RIGHT)
+        cell_styles[(row_index, 3)] = TextStyle(
             bold=True,
-            color=COLOR_WHITE,
-            align=align,
-            fill_color=COLOR_BRAND_PRIMARY,
+            color=COLOR_SEMANTIC_UNFAV_TEXT if exc.severity == "High" else COLOR_TEXT_PRIMARY,
         )
 
-    for row_idx, exc in enumerate(ctx.exceptions_list[:5], start=1):
-        bg_color = COLOR_SURFACE_CARD if row_idx % 2 == 1 else COLOR_WHITE
-        _set_cell_text(
-            table.cell(row_idx, 0),
-            exc.rule,
-            font_size_pt=9,
-            fill_color=bg_color,
-        )
-        _set_cell_text(
-            table.cell(row_idx, 1),
-            exc.subject,
-            font_size_pt=9,
-            fill_color=bg_color,
-        )
-        _set_cell_text(
-            table.cell(row_idx, 2),
-            exc.at_risk,
-            font_size_pt=9,
-            align=PP_ALIGN.RIGHT,
-            fill_color=bg_color,
-        )
-        sev_color = (
-            COLOR_SEMANTIC_UNFAV_TEXT
-            if exc.severity == "High"
-            else COLOR_TEXT_PRIMARY
-        )
-        _set_cell_text(
-            table.cell(row_idx, 3),
-            exc.severity,
-            font_size_pt=9,
-            bold=True,
-            color=sev_color,
-            fill_color=bg_color,
-        )
-        _set_cell_text(
-            table.cell(row_idx, 4),
-            exc.owner,
-            font_size_pt=9,
-            fill_color=bg_color,
-        )
-        _set_cell_text(
-            table.cell(row_idx, 5),
-            exc.status_age,
-            font_size_pt=9,
-            fill_color=bg_color,
-        )
-
-    # Exception summary narrative (budget 648 chars per §3.4)
-    budget = compute_character_budget(
-        box_width_inches=12.43,
-        box_height_inches=0.94,
-        font_size_pt=11.0,
-        configured_max_lines=4,
-    )
-    trimmed_summary, was_trimmed = trim_text_to_budget(
-        ctx.exception_summary, budget
+    fill_table(
+        _resolve_shape(slide, "PPT-005_table"),
+        rows,
+        header=False,
+        cell_styles=cell_styles,
+        row_fills=row_fills,
     )
 
-    tb_sum = slide.shapes.add_textbox(
-        Inches(0.45), Inches(5.90), Inches(12.43), Inches(0.95)
+    summary_shape = _resolve_shape(slide, "PPT-005_summary")
+    trimmed_summary, was_trimmed = _write_prose(
+        summary_shape,
+        f"Exception summary: {ctx.exception_summary}",
+        width_inches=summary_shape.width.inches,
+        height_inches=summary_shape.height.inches,
+        font_pt=11.0,
+        max_lines=4,
     )
-    tb_sum.name = "PPT-005_summary"
-    tf = tb_sum.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = (
-        f"Exception summary: {trimmed_summary}"
-        + (f" · {TRIMMED_FOOTNOTE}" if was_trimmed else "")
-    )
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(11)
-    p.font.color.rgb = COLOR_TEXT_PRIMARY
+    if was_trimmed:
+        set_text(summary_shape, f"{trimmed_summary} · {TRIMMED_FOOTNOTE}")
 
-    # Footer band
-    _add_footer_band(slide, 5, ctx)
+    _fill_footer(slide, 5, ctx)
 
-    # Speaker notes
-    slide.notes_slide.notes_text_frame.text = (
+    set_notes(
+        slide,
         f"Slide 5: Exceptions & Risk Register\n"
         f"Open Exceptions: {ctx.exceptions_counts.open_count}\n"
         f"Overdue: {ctx.exceptions_counts.overdue_count}\n"
-        f"Full Exception Summary:\n{ctx.exception_summary}"
+        f"Full Exception Summary:\n{ctx.exception_summary}",
     )
     return slide
 
@@ -1306,206 +955,88 @@ def build_slide_5(prs: Presentation, ctx: DeckContext) -> Any:
 # -----------------------------------------------------------------------------
 # Slide 6: Rolling Forecast & Outlook (PPT-006)
 # -----------------------------------------------------------------------------
-def build_slide_6(prs: Presentation, ctx: DeckContext) -> Any:
-    blank_layout = prs.slide_layouts[6]
-    slide = prs.slides.add_slide(blank_layout)
+def build_slide_6(prs: PresentationObject, ctx: DeckContext) -> Any:
+    slide = add_slide_from_layout(prs, SLIDE_LAYOUTS["PPT-006"])
 
-    # Accent bar
-    _add_accent_bar(slide, "PPT-006_accent")
-
-    # Title
-    tb_title = slide.shapes.add_textbox(
-        Inches(0.45), Inches(0.35), Inches(12.43), Inches(0.60)
-    )
-    tb_title.name = "PPT-006_title"
-    tf = tb_title.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = f"Forecast and outlook — {ctx.period}"
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(24)
-    p.font.bold = True
-    p.font.color.rgb = COLOR_BRAND_PRIMARY
-
-    # Scenario line
-    tb_scen = slide.shapes.add_textbox(
-        Inches(0.45), Inches(0.95), Inches(12.43), Inches(0.35)
-    )
-    tb_scen.name = "PPT-006_scenario"
-    tf = tb_scen.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
+    set_text(_resolve_shape(slide, "PPT-006_title"), f"Forecast and outlook — {ctx.period}")
     lock_status = (
-        f"locked {ctx.generated_at.split()[0]}"
-        if ctx.forecast_locked
-        else "draft NOT LOCKED"
+        f"locked {ctx.generated_at.split()[0]}" if ctx.forecast_locked else "draft NOT LOCKED"
     )
-    p.text = f"Scenario {ctx.scenario} · version {ctx.forecast_version} ({lock_status}) · method mix: remaining budget 62% / run rate 38%"
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(12)
-    p.font.color.rgb = COLOR_TEXT_SECONDARY
+    set_text(
+        _resolve_shape(slide, "PPT-006_scenario"),
+        f"Scenario {ctx.scenario} · version {ctx.forecast_version} ({lock_status}) · "
+        f"method mix: remaining budget 62% / run rate 38%",
+    )
 
-    # 3 Outlook cards: x = 0.45, 4.68, 8.91; y = 1.40; w = 3.97, h = 1.35
-    card_xs = [0.45, 4.68, 8.91]
     cards_data = [
         ForecastCardData(
             "LANDING ESTIMATE (FY)",
             ctx.forecast_landing_estimate,
             "YTD actual + forecast remaining",
         ),
-        ForecastCardData(
-            "VS ANNUAL BUDGET", ctx.forecast_vs_budget, f"as at {ctx.period}"
-        ),
+        ForecastCardData("VS ANNUAL BUDGET", ctx.forecast_vs_budget, f"as at {ctx.period}"),
         ForecastCardData(
             "ACCURACY (MAPE-lite)",
             ctx.forecast_accuracy_mape,
             ctx.forecast_accuracy_details,
         ),
     ]
+    for idx, cdata in enumerate(cards_data, start=1):
+        set_text(_resolve_shape(slide, f"PPT-006_card{idx}_label"), cdata.label)
+        set_text(_resolve_shape(slide, f"PPT-006_card{idx}_value"), cdata.value)
+        set_text(_resolve_shape(slide, f"PPT-006_card{idx}_compare"), cdata.comparison)
 
-    for idx, cdata in enumerate(cards_data):
-        cx = card_xs[idx]
-        card_num = idx + 1
-
-        card_rect = slide.shapes.add_shape(
-            MSO_SHAPE.ROUNDED_RECTANGLE,
-            Inches(cx),
-            Inches(1.40),
-            Inches(3.97),
-            Inches(1.35),
-        )
-        card_rect.name = f"PPT-006_card{card_num}"
-        card_rect.fill.solid()
-        card_rect.fill.fore_color.rgb = COLOR_SURFACE_CARD
-        card_rect.line.color.rgb = COLOR_CARD_BORDER
-
-        # Label
-        tb_clabel = slide.shapes.add_textbox(
-            Inches(cx + 0.16), Inches(1.45), Inches(3.75), Inches(0.22)
-        )
-        tb_clabel.name = f"PPT-006_card{card_num}_label"
-        tf = tb_clabel.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = cdata.label
-        p.font.name = FONT_FAMILY
-        p.font.size = Pt(10)
-        p.font.bold = True
-        p.font.color.rgb = COLOR_TEXT_SECONDARY
-
-        # Value
-        tb_cval = slide.shapes.add_textbox(
-            Inches(cx + 0.16), Inches(1.70), Inches(3.75), Inches(0.42)
-        )
-        tb_cval.name = f"PPT-006_card{card_num}_value"
-        tf = tb_cval.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = cdata.value
-        p.font.name = FONT_FAMILY
-        p.font.size = Pt(20)
-        p.font.bold = True
-        p.font.color.rgb = COLOR_BRAND_PRIMARY
-
-        # Compare
-        tb_ccomp = slide.shapes.add_textbox(
-            Inches(cx + 0.16), Inches(2.20), Inches(3.75), Inches(0.25)
-        )
-        tb_ccomp.name = f"PPT-006_card{card_num}_compare"
-        tf = tb_ccomp.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = cdata.comparison
-        p.font.name = FONT_FAMILY
-        p.font.size = Pt(10)
-        p.font.color.rgb = COLOR_TEXT_SECONDARY
-
-    # Native Forecast Line Chart (§5.3)
-    chart_data = CategoryChartData()
-    chart_data.categories = ctx.forecast_periods
-    chart_data.add_series("Actual", tuple(ctx.forecast_actuals))
-    chart_data.add_series("Forecast", tuple(ctx.forecast_projected))
-    chart_data.add_series("Budget", tuple(ctx.forecast_budget))
-
-    chart_shape = slide.shapes.add_chart(
-        XL_CHART_TYPE.LINE_MARKERS,
-        Inches(0.45),
-        Inches(2.85),
-        Inches(7.60),
-        Inches(3.30),
-        chart_data,
-    )
-    chart_shape.name = "PPT-006_chart_forecast"
-    chart = chart_shape.chart
-    chart.has_legend = True
-    chart.legend.position = XL_LEGEND_POSITION.BOTTOM
-    chart.legend.include_in_layout = False
-    chart.has_title = True
-    chart.chart_title.text_frame.text = (
-        f"Forecast vs Actual: {ctx.scenario} ({ctx.forecast_version}) · ₹ Lakhs"
+    # Native line chart with markers (§5.3). The gap between closed and forecast
+    # periods stays visible: actuals stop, the forecast series starts, nothing bridges.
+    replace_chart_data(
+        _resolve_shape(slide, "PPT-006_chart_forecast"),
+        ctx.forecast_periods,
+        [
+            ("Actual", ctx.forecast_actuals),
+            ("Forecast", ctx.forecast_projected),
+            ("Budget", ctx.forecast_budget),
+        ],
+        title=f"Forecast vs Actual: {ctx.scenario} ({ctx.forecast_version}) · ₹ Lakhs",
+        legend=True,
     )
 
-    # Right-hand Outlook narrative block
-    tb_out = slide.shapes.add_textbox(
-        Inches(8.30), Inches(2.85), Inches(4.58), Inches(3.30)
+    outlook_shape = _resolve_shape(slide, "PPT-006_outlook")
+    outlook_lines = [
+        ctx.outlook_method_mix,
+        f"Outlook narrative · approved by {ctx.narrative_author}, {ctx.narrative_date}",
+        _trim_prose(
+            ctx.outlook_narrative,
+            width_inches=outlook_shape.width.inches,
+            height_inches=outlook_shape.height.inches,
+            font_pt=11.0,
+            max_lines=12,
+        )[0],
+    ]
+    if outlook_lines[2] != ctx.outlook_narrative:
+        outlook_lines[2] += f"\n[{TRIMMED_FOOTNOTE}]"
+    set_text(
+        outlook_shape,
+        outlook_lines,
+        styles=[
+            TextStyle(size_pt=9, color=COLOR_TEXT_SECONDARY),
+            TextStyle(size_pt=9, color=COLOR_TEXT_SECONDARY),
+            None,
+        ],
     )
-    tb_out.name = "PPT-006_outlook"
-    tf = tb_out.text_frame
-    tf.word_wrap = True
+    # Flag-gated and off by default (ADR-013); runs against the final three lines.
+    handle_overflow(outlook_shape, max_lines=12)
 
-    p0 = tf.paragraphs[0]
-    p0.text = ctx.outlook_method_mix
-    p0.font.name = FONT_FAMILY
-    p0.font.size = Pt(9)
-    p0.font.color.rgb = COLOR_TEXT_SECONDARY
+    set_text(_resolve_shape(slide, "PPT-006_disclaimer"), CANONICAL_DISCLAIMER)
 
-    p_prov = tf.add_paragraph()
-    p_prov.text = f"Outlook narrative · approved by {ctx.narrative_author}, {ctx.narrative_date}"
-    p_prov.font.name = FONT_FAMILY
-    p_prov.font.size = Pt(9)
-    p_prov.font.color.rgb = COLOR_TEXT_SECONDARY
+    _fill_footer(slide, 6, ctx)
 
-    budget = compute_character_budget(
-        box_width_inches=4.58,
-        box_height_inches=2.50,
-        font_size_pt=11.0,
-        configured_max_lines=12,
-    )
-    trimmed_out, was_trimmed = trim_text_to_budget(
-        ctx.outlook_narrative, budget
-    )
-
-    p_body = tf.add_paragraph()
-    p_body.text = trimmed_out + (
-        f"\n[{TRIMMED_FOOTNOTE}]" if was_trimmed else ""
-    )
-    p_body.font.name = FONT_FAMILY
-    p_body.font.size = Pt(11)
-    p_body.font.color.rgb = COLOR_TEXT_PRIMARY
-
-    # Full Canonical Advisory Disclaimer Band (§3.7, §4.6)
-    tb_disc = slide.shapes.add_textbox(
-        Inches(0.45), Inches(6.26), Inches(12.43), Inches(0.62)
-    )
-    tb_disc.name = "PPT-006_disclaimer"
-    tf = tb_disc.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = CANONICAL_DISCLAIMER
-    p.font.name = FONT_FAMILY
-    p.font.size = Pt(8)
-    p.font.color.rgb = COLOR_TEXT_SECONDARY
-
-    # Footer band
-    _add_footer_band(slide, 6, ctx)
-
-    # Speaker notes
-    slide.notes_slide.notes_text_frame.text = (
+    set_notes(
+        slide,
         f"{CANONICAL_DISCLAIMER}\n\n"
         f"Slide 6: Rolling Forecast & Outlook\n"
         f"Forecast Version: {ctx.forecast_version} ({'Locked' if ctx.forecast_locked else 'Draft'})\n"
         f"Landing Estimate: {ctx.forecast_landing_estimate}\n"
-        f"Full Outlook Text:\n{ctx.outlook_narrative}"
+        f"Full Outlook Text:\n{ctx.outlook_narrative}",
     )
     return slide
 
@@ -1514,9 +1045,9 @@ def build_slide_6(prs: Presentation, ctx: DeckContext) -> Any:
 # Main Generation Entrypoint
 # -----------------------------------------------------------------------------
 def generate_powerpoint_deck(
-    context: Optional[DeckContext] = None,
-    output_path: Optional[Union[str, Path]] = None,
-) -> Presentation:
+    context: DeckContext | None = None,
+    output_path: str | Path | None = None,
+) -> PresentationObject:
     """Generate the complete 6-slide PowerPoint presentation pack.
 
     Parameters:
@@ -1524,24 +1055,15 @@ def generate_powerpoint_deck(
         output_path: Optional file path to write the .pptx presentation.
 
     Returns:
-        pptx.Presentation instance.
+        pptx.Presentation instance — a filled copy of the committed template.
     """
     ctx = context or DeckContext()
-    
-    # doc-12 §3.6: Load the template instead of building from scratch
-    template_dir = Path(__file__).resolve().parent.parent.parent.parent / "packaging" / "templates"
-    # DEF-018: Resolve board_pack_template.pptx first, with fallback to FPAMonthEndCopilot_v1.pptx
-    template_path = template_dir / "board_pack_template.pptx"
-    if not template_path.exists():
-        fallback_path = template_dir / "FPAMonthEndCopilot_v1.pptx"
-        if fallback_path.exists():
-            template_path = fallback_path
-        else:
-            raise ExportTemplateError(
-                f"ERR-EXP-014: The deck template is missing or damaged. Could not find {template_path} or {fallback_path}"
-            )
-        
-    prs = Presentation(str(template_path))
+
+    # docs/12 §3.6 + DEF-018: open the template and fill it — never build from scratch.
+    # The resolver prefers a client base deck and falls back to the shipped template.
+    # open_template() is annotated with pptx's factory-as-type in pptx_fill (out of
+    # lane here); the cast pins the real Presentation class for this module.
+    prs: PresentationObject = open_template()
 
     # Configure 16:9 widescreen dimensions (§3.1)
     prs.slide_width = Inches(SLIDE_WIDTH_INCHES)
@@ -1558,7 +1080,7 @@ def generate_powerpoint_deck(
     if output_path is not None:
         out_p = Path(output_path)
         out_p.parent.mkdir(parents=True, exist_ok=True)
-        tmp_p = out_p.with_suffix('.tmp')
+        tmp_p = out_p.with_suffix(".tmp")
         try:
             prs.save(str(tmp_p))
             tmp_p.replace(out_p)

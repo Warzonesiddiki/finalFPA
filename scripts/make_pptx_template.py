@@ -298,7 +298,13 @@ TABLES = {
         name="PPT-004_table", x=0.45, y=1.45, w=12.43, h=3.60, insert_at=2,
         header=("Account", "Actual", "Budget", "Variance", "Var %", "Sig.", "Driver"),
         widths=(3.20, 1.50, 1.50, 1.65, 1.15, 1.00, 2.43),  # L541, sums to 12.43
-        body_pt=10, header_pt=10, rows=7, source="L541 7 rows x 0.60in",
+        body_pt=10, header_pt=10, rows=6,
+        # L541 states "7 rows x 0.60in" against a declared frame of 3.60in, which
+        # cannot both hold (7 x 0.60 = 4.20). The content rule in the same row --
+        # "header + top 5, never blank rows" -- fixes the row count at 6, and 6 x 0.60
+        # equals the declared frame exactly. "7 rows" is a typo for "6 rows"; the
+        # interpretation is recorded in docs/18 (DEC-065).
+        source="L541 frame 3.60in = 6 rows x 0.60in (header + top 5, never blank rows)",
     ),
     "FPA-PPT-005": dict(
         name="PPT-005_table", x=0.45, y=2.58, w=12.43, h=3.24, insert_at=15,
@@ -311,7 +317,8 @@ TABLES = {
 #: Native charts. (name, x, y, w, h, chart_type, source)
 CHARTS = {
     "FPA-PPT-003": dict(name="PPT-003_chart_bridge", x=0.45, y=1.45, w=8.60, h=4.95,
-                       kind="bar", insert_at=2, source="L509 native bridge chart, doc 12 s5.2"),
+                       kind="column_stacked", insert_at=2,
+                       source="L509 native bridge chart, doc 12 s5.2 fallback (SPK-08: no WATERFALL in pinned python-pptx)"),
     "FPA-PPT-006": dict(name="PPT-006_chart_forecast", x=0.45, y=2.98, w=7.60, h=3.10,
                         kind="line", insert_at=14, source="L615 native line chart, doc 12 s5.3"),
 }
@@ -460,14 +467,67 @@ def _make_chart(slide, cfg: dict[str, Any]):
     from pptx.chart.data import CategoryChartData
     from pptx.enum.chart import XL_CHART_TYPE
 
+    kind = cfg["kind"]
     data = CategoryChartData()
-    data.categories = ["Template"]
-    data.add_series("Series 1", (0.0,))
-    ctype = XL_CHART_TYPE.BAR_CLUSTERED if cfg["kind"] == "bar" else XL_CHART_TYPE.LINE_MARKERS
+    if kind == "column_stacked":
+        # doc 12 section 5.2 -- SPK-08 outcome (recorded in 12 §5.2): the pinned
+        # python-pptx has no XL_CHART_TYPE.WATERFALL, so the documented fallback is
+        # the active variant: a stacked column with an invisible ``base`` series and
+        # a visible ``amount`` series. Both series are pre-created here so their
+        # formatting is template styling (§5.1); the engine only writes data.
+        data.categories = ["Template"]
+        data.add_series("base", (0.0,))
+        data.add_series("amount", (0.0,))
+        ctype = XL_CHART_TYPE.COLUMN_STACKED
+    else:
+        data.categories = ["Template"]
+        if kind == "line":
+            # doc 12 section 5.3: three series, pre-styled in the template so the
+            # engine only writes data (5.1). Actual solid brand.primary, Forecast
+            # solid brand.secondary, Budget dotted #9CA3AF -- in that order.
+            data.add_series("Actual", (0.0,))
+            data.add_series("Forecast", (0.0,))
+            data.add_series("Budget", (0.0,))
+            ctype = XL_CHART_TYPE.LINE_MARKERS
+        else:
+            data.add_series("Series 1", (0.0,))
+            ctype = XL_CHART_TYPE.BAR_CLUSTERED
     gf = slide.shapes.add_chart(
         ctype, Inches(cfg["x"]), Inches(cfg["y"]), Inches(cfg["w"]), Inches(cfg["h"]), data
     )
     gf.name = cfg["name"]
+    # doc 12 section 5.1: title and legend are template styling -- the engine writes
+    # only the title TEXT at runtime, never re-styles the chart. Bridge: title on,
+    # legend off (one visible series; the ``base`` never appears). Forecast: title
+    # on, legend at bottom (three series).
+    chart = gf.chart
+    chart.has_title = True
+    if kind == "column_stacked":
+        chart.has_legend = False
+        # §5.2: ``base`` carries no fill and no border; ``amount`` starts at
+        # brand.primary (the engine only re-colours driver points by favourability).
+        base = chart.series[0]
+        base.format.fill.background()
+        base.format.line.fill.background()
+        chart.series[1].format.fill.solid()
+        chart.series[1].format.fill.fore_color.rgb = BRAND_PRIMARY
+    elif kind == "bar":
+        chart.has_legend = False
+    else:
+        from pptx.enum.chart import XL_LEGEND_POSITION
+        from pptx.enum.dml import MSO_LINE_DASH_STYLE
+        chart.has_legend = True
+        chart.legend.position = XL_LEGEND_POSITION.BOTTOM
+        chart.legend.include_in_layout = False
+        budget_line = RGBColor(0x9C, 0xA3, 0xAF)
+        for series, (rgb, dash) in zip(
+            chart.series,
+            ((BRAND_PRIMARY, None), (BRAND_SECONDARY, None),
+             (budget_line, MSO_LINE_DASH_STYLE.ROUND_DOT)),
+        ):
+            series.format.line.color.rgb = rgb
+            if dash is not None:
+                series.format.line.dash_style = dash
     return gf
 
 

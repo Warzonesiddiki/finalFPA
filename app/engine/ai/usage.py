@@ -1,14 +1,17 @@
 import sqlite3
 import uuid
 from datetime import datetime
-from typing import Optional, Dict, Any, List
-from pathlib import Path
+from decimal import Decimal
+from typing import Any
+
+from app.engine.calc.math import quantize_ratio
 from app.engine.store.db import DatabaseManager
+
 
 class AIUsageStore:
     """Manages AI usage logging, estimated cost, and monthly token cap enforcement per doc 10 §8 & §9."""
 
-    def __init__(self, db_mgr: Optional[DatabaseManager] = None):
+    def __init__(self, db_mgr: DatabaseManager | None = None):
         self.db_mgr = db_mgr or DatabaseManager()
         self._ensure_table()
 
@@ -55,16 +58,20 @@ class AIUsageStore:
         input_row_count: int,
         tokens_in: int,
         tokens_out: int,
-        outcome: str = "ok"
-    ) -> Dict[str, Any]:
+        outcome: str = "ok",
+    ) -> dict[str, Any]:
         """Record an AI call telemetry and estimate cost (USD) per doc 10 §8."""
         call_id = f"aicall_{uuid.uuid4().hex[:12]}"
         timestamp = datetime.utcnow().isoformat()
 
-        # Cost estimation formula: e.g. $5.00 per 1M input tokens, $15.00 per 1M output tokens for GPT-4o
-        cost_in = (tokens_in / 1_000_000.0) * 5.00
-        cost_out = (tokens_out / 1_000_000.0) * 15.00
-        estimated_cost_usd = round(cost_in + cost_out, 6)
+        # Cost estimation formula: e.g. $5.00 per 1M input tokens, $15.00 per 1M output tokens for GPT-4o.
+        # DEF-015: computed in Decimal per 17 §5.1 (float is banned on money paths).
+        # AIUsageTracker.calculate_estimated_cost is the INR-priced sibling of this
+        # capability with its own per-1k rates, so this USD estimate keeps its rates
+        # and shares only the Decimal/quantize discipline (R12).
+        cost_in = (Decimal(tokens_in) / Decimal(1_000_000)) * Decimal("5.00")
+        cost_out = (Decimal(tokens_out) / Decimal(1_000_000)) * Decimal("15.00")
+        estimated_cost_usd = quantize_ratio(cost_in + cost_out)
 
         with self._get_conn() as conn:
             conn.execute(
@@ -75,9 +82,20 @@ class AIUsageStore:
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
-                    call_id, timestamp, prompt_id, prompt_version, model, provider,
-                    input_row_count, tokens_in, tokens_out, estimated_cost_usd, outcome
-                )
+                    call_id,
+                    timestamp,
+                    prompt_id,
+                    prompt_version,
+                    model,
+                    provider,
+                    input_row_count,
+                    tokens_in,
+                    tokens_out,
+                    # DEF-015: money is carried as Decimal/str end-to-end; the
+                    # REAL column coerces the numeric text on write.
+                    str(estimated_cost_usd),
+                    outcome,
+                ),
             )
             conn.commit()
 
@@ -91,7 +109,10 @@ class AIUsageStore:
             "inputRowCount": input_row_count,
             "tokensIn": tokens_in,
             "tokensOut": tokens_out,
-            "estimatedCostUsd": estimated_cost_usd,
+            # Serialization boundary: the UI consumes a JSON number (GAP-3 notes
+            # the frontend parses money as number); the stored/carried value
+            # above stays Decimal.
+            "estimatedCostUsd": float(estimated_cost_usd),
             "outcome": outcome,
         }
 
@@ -112,7 +133,7 @@ class AIUsageStore:
         with self._get_conn() as conn:
             conn.execute(
                 "INSERT OR REPLACE INTO AiSettings (key, value) VALUES ('monthly_token_cap', ?)",
-                (str(cap),)
+                (str(cap),),
             )
             conn.commit()
         return cap
@@ -122,15 +143,15 @@ class AIUsageStore:
         cap = self.get_monthly_token_cap()
         stats = self.get_usage_stats()
         total_tokens = stats["totalTokens"] + additional_tokens
-        return total_tokens > cap
+        return bool(total_tokens > cap)
 
-    def get_usage_stats(self, period_month: Optional[str] = None) -> Dict[str, Any]:
+    def get_usage_stats(self, period_month: str | None = None) -> dict[str, Any]:
         """Get aggregated usage stats, logs table, and cap utilization per doc 10 §8 & §10."""
         with self._get_conn() as conn:
             if period_month:
                 cur = conn.execute(
                     "SELECT * FROM AiUsageLog WHERE timestamp LIKE ? ORDER BY timestamp DESC",
-                    (f"{period_month}%",)
+                    (f"{period_month}%",),
                 )
             else:
                 cur = conn.execute("SELECT * FROM AiUsageLog ORDER BY timestamp DESC")
@@ -140,7 +161,14 @@ class AIUsageStore:
         tokens_in_sum = sum(r["tokens_in"] for r in rows)
         tokens_out_sum = sum(r["tokens_out"] for r in rows)
         total_tokens = tokens_in_sum + tokens_out_sum
-        total_cost = sum(r["estimated_cost_usd"] for r in rows)
+        # DEF-015: accumulate spend in Decimal (17 §5.1); each stored value
+        # round-trips through str so the REAL column's binary float never
+        # enters the arithmetic. No round(): 6 dp via quantize_ratio (§6.1).
+        total_cost = sum(
+            (Decimal(str(r["estimated_cost_usd"])) for r in rows),
+            Decimal("0.000000"),
+        )
+        total_cost = quantize_ratio(total_cost)
         monthly_cap = self.get_monthly_token_cap()
         cap_exceeded = total_tokens > monthly_cap
         utilization_pct = round((total_tokens / monthly_cap) * 100.0, 2) if monthly_cap > 0 else 0.0
@@ -168,7 +196,7 @@ class AIUsageStore:
             "tokensIn": tokens_in_sum,
             "tokensOut": tokens_out_sum,
             "totalTokens": total_tokens,
-            "totalEstimatedCostUsd": round(total_cost, 6),
+            "totalEstimatedCostUsd": float(total_cost),
             "monthlyTokenCap": monthly_cap,
             "capExceeded": cap_exceeded,
             "utilizationPct": utilization_pct,

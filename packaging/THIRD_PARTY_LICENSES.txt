@@ -79,3 +79,19 @@ AGPL, SSPL) are strictly absent from runtime bundles.
   https://github.com/vitejs/vite-plugin-react
 - openapi-typescript (Dev type generation) — MIT License
   https://github.com/openapi-ts/openapi-typescript
+
+
+--------------------------------------------------------------------------------
+4. Adopted Source (Copy-Edit) Notices
+--------------------------------------------------------------------------------
+Code copied or adapted from these upstream projects ships inside the binary.
+They are NOT Python/Node distribution dependencies, so no SBOM or pip freeze
+will list them - this section is where the licence obligation is discharged.
+Full licence texts are reproduced verbatim in the generated payload file
+THIRD_PARTY_LICENSES.txt (Part 3), mirrored from THIRD_PARTY_NOTICES.md at build
+time and enforced by license_gate.py CHECK 6 (doc 15 step 4a).
+
+  - ADP-001 / WS-02: m3dev/pptx-template - Apache-2.0 - upstream commit dc448cb1203443e503a558846dc1ce4c4b7ada3d
+  - ADP-002 / WS-10: keithmcnulty/ppt-generation - CC0-1.0 - upstream commit 062c4920da96c98574bad0c6cdfd4d10eaa21e02
+  - ADP-003 / WS-03: Whatsonyourmind/deckforge - MIT - upstream commit ae71696f763f85b79f7f94d85484234f57f93f63
+  - BD-001 (WC-1): built in-house, no third-party source, no notice required.

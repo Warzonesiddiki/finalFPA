@@ -420,14 +420,14 @@ will run against the FR.
 | FR | Requirement | P | Ph | Spec section(s) | Screen(s) | Endpoint(s) | Test ID(s) | Status |
 |---|---|---|---|---|---|---|---|---|
 | `FR-PPT-001` | Generate the six-slide deck | P0 | 5 | `02` §11; `12` §2/§4 | `SCR-029` | `POST /packs/deck` | `TST-PPT-01`, `TST-PPT-03`, `TST-WIN-10` | `Built` |
-| `FR-PPT-002` | Native, editable output | P0 | 5 | `02` §11; `12` §3.2 | `SCR-029` | `POST /packs/deck` | `TST-PPT-02`, `TST-PPT-04` | `Built` |
+| `FR-PPT-002` | Native, editable output | P0 | 5 | `02` §11; `12` §3.2 | `SCR-029` | `POST /packs/deck` | `TST-PPT-02`, `TST-PPT-04` | `Built` — **enforced as of 2026-10-05.** `DEF-018`/`WC-2`: the deck is now a filled copy of the template, so shapes are promoted onto the slide (not inherited layout content, which PowerPoint will not let an editor click). Asserted by `test_shape_whitelist_no_raster_screenshots`, which permits exactly one raster — the template's own `PPT-001_logo` — and fails on any other picture in the deck. |
 | `FR-PPT-003` | Generation performance and UX | P0 | 5 | `02` §11; `12` §7; `14` §3 | `SCR-029` | `POST /packs/deck` | `TST-PPT-17`, `TST-PPT-18`, `TST-PRF-04` | `Built` |
 | `FR-PPT-004` | Text fitting | P0 | 5 | `02` §11; `12` §3.4 | `SCR-029` | `POST /packs/deck` | `TST-PPT-05`, `TST-PPT-06` | `Built` |
 | `FR-PPT-005` | Client base deck and house style | P2 | 6 | `02` §11; `12` §3.5 | `SCR-029`, `SCR-037` | `POST /packs/deck` | `TST-PPT-19`, `TST-PPT-20` | `Built` |
 | `FR-PPT-006` | Branding | P1 | 5 | `02` §11; `12` §3.3; `08` §19 | `SCR-037` | `PUT /settings` | `TST-PPT-10` | `Built` |
-| `FR-PPT-007` | Deterministic element ordering | P1 | 5 | `02` §11; `12` §3.6 | `SCR-029` | `POST /packs/deck` | `TST-PPT-08` | `Built` |
+| `FR-PPT-007` | Deterministic element ordering | P1 | 5 | `02` §11; `12` §3.6 | `SCR-029` | `POST /packs/deck` | `TST-PPT-08` | `Built` — **first genuinely enforced on 2026-10-05.** `ppt_spec.SLIDE_SHAPE_ORDER` declares the canonical write order §3.6 requires (it did not exist before `DEF-018`/`WC-2`, so ordering could not be deterministic while shapes were manufactured at runtime). Asserted by `test_two_runs_from_the_same_context_produce_identical_slide_xml`. |
 | `FR-PPT-008` | AI commentary in the deck | P1 | 6 | `02` §11; `12` §3.4; `10` §5.1 | `SCR-029`, `SCR-031` | `POST /packs/deck` | `TST-PPT-11` | `Built` |
-| `FR-PPT-009` | Stamping and disclaimer | P0 | 5 | `02` §11; `12` §3.7; `01` §15.1 | `SCR-029` | `POST /packs/deck` | `TST-PPT-09`, `TST-PPT-21` | `Built` |
+| `FR-PPT-009` | Stamping and disclaimer | P0 | 5 | `02` §11; `12` §3.7; `01` §15.1 | `SCR-029` | `POST /packs/deck` | `TST-PPT-09`, `TST-PPT-21` | `Built` — **footer corrected 2026-10-05.** `DEF-018`/`WC-2`: the footer band created `PPT-00N_footer_disclaimer`/`_footer_page`, names the template does not carry (it ships `footer_left`/`footer_right`), so §3.7's footer could never have matched. Both §3.7 strings are now asserted on content, not merely presence. |
 
 ### 3.9 `FR-AI` — optional AI commentary and suggestions (14 FRs)
 

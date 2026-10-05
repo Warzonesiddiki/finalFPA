@@ -253,7 +253,31 @@ the answer key (`planting_id, rule_id, expected_verdict, subject_key, severity, 
    > copy) and records the `.xlsx` exclusion explicitly with its reason. Asserting a checksum over the
    > workbooks would be asserting something false. Closing this properly means normalising
    > `dcterms:created` in the generators, tracked as a follow-on rather than claimed here.
+   >
+   > **Amended 2026-10-04 — planted-residual balancing legs are part of the corpus.** `06` §7
+   > plants several anomalies as genuinely single-sided rows (P11's future-dated posting, P18's
+   > variance posting, P21's threshold vouchers, P23's deliberately truncated voucher, P24's
+   > suspense residual, …), while `04` §12 / `IMP-023` rejects any file whose debits and credits
+   > differ. Regenerating `d365_gl_actuals.csv` from the generator therefore leaves the file
+   > imbalanced by **exactly the planted residual** — measured 2026-10-04 at ₹8,944,299.00 for
+   > IN01, decomposed by period as P09 ₹8,304,299.00 · P10 ₹465,000.00 · P11 ₹175,000.00, with
+   > IN02 and US01 balanced — and `IMP-023` would reject it, committing 0 rows and blocking every
+   > rule. The generator now emits the balancing legs itself, **computed from the measured planted
+   > residual per entity and period** rather than hard-coded, so a single `generate_sample_data.py`
+   > run reproduces a loadable corpus. The balancing legs are data fixtures, not plants: they are
+   > single-line correction vouchers (`VCH-FIX-<yyyy-mm>`), they are not in the answer key, and the
+   > planted anomalies they offset stay visible at voucher level (P23's ₹5,000.00 imbalance survives).
+   > The underlying contradiction — `04` §12's file-level gate versus `06` §7's single-sided plants —
+   > remains open and is recorded in `18`; `PROP-001` proposes the mode-A/mode-B split
+   > (clean trial balance vs benchmark corpus) as the structural fix.
 2. **Full engine run** over the sample data with default thresholds, every rule enabled.
+
+   > **Amended 2026-10-05 — ordered history imports (`DEC-058`, `OQ-027`).** Before the main corpus run,
+   > the harness imports the import-history fixture files **in order** (earlier overlapping export →
+   > control-totals-supplied GL batch → the three main source files), so the cross-batch rules
+   > (`EXC-002`/`EXC-003`) have an earlier committed batch to detect against. The documented batch keys
+   > are unchanged — the fixture exists because the rules cannot fire without history, not to re-key the
+   > answer key.
 3. **Join** raised exceptions to the answer key on `(rule_id, subject_key)`.
 4. **Classify** every raise: *expected* (in the key), *control* (a `P25`…`P32` subject), or *extra*.
 5. **Report** to `acceptance_report.json` and a human-readable `acceptance_report.md`: counts by severity,
@@ -682,6 +706,15 @@ are only meaningful on an otherwise idle host.
 | Exclusions | Only generated migrations and `TYPE_CHECKING` blocks may be excluded, each listed in `pyproject.toml` with a comment; excluding an engine module is a spec change |
 | Trend | Coverage is reported at every gate; a drop of > 2 points must be explained in the gate evidence |
 | New code | Every new engine function arrives with its test in the same change |
+
+> **Amended 2026-10-05 — `WC-1` coverage evidence (`BD-001`, `DEC-066`, `ADR-014`).** The `R12` interface
+> extraction landed in `app/engine/dedupe/` (`normalize.py`, `blocking.py`, `__init__.py`; 45 statements,
+> 16 branches) with its tests in the same change (row above). Measured: `python -m pytest
+> tests/unit/test_dedupe.py --cov=app.engine.dedupe` → **41 passed, 100 % statements, 100 % branches**. The
+> touched rule modules were re-verified behaviour-preserving: `tests/rules/test_acceptance.py` re-measured
+> **identical to baseline** (recall 11/32, 1 control fired P30, High 6/18, 422 extras, the same 14
+> zero-coverage rules — all pre-existing `14` §5.3 items under `TB-020`), and the rule unit suites pass
+> (54 passed). No threshold or bar changed.
 
 ### 13.3 CI
 

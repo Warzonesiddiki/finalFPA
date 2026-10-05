@@ -15,6 +15,7 @@ import sys
 import threading
 import time
 import webbrowser
+from dataclasses import dataclass
 from typing import Optional, Tuple
 import uvicorn
 
@@ -26,10 +27,45 @@ ERROR_ALREADY_EXISTS = 183
 MUTEX_ALL_ACCESS = 0x1F0001
 SW_RESTORE = 9
 
-# Global reference to server instance for clean shutdown
+# Global reference to the server instance for clean shutdown from signal
+# handlers. Thread ownership lives in ServerHandle instances (TB-025 deleted
+# the ad-hoc _server_thread global); only the shutdown flag needs sharing.
 _server_instance: Optional[uvicorn.Server] = None
-_server_thread: Optional[threading.Thread] = None
 _mutex_handle: Optional[int] = None
+
+
+@dataclass
+class ServerHandle:
+    """Managed lifecycle for the background uvicorn thread.
+
+    Replaces the ad-hoc ``threading.Thread`` + module global + blind
+    ``time.sleep`` polling: readiness is proven by a loopback connect (not a
+    0.3 s hope), and exit-waiting is a single join (not two copy-pasted
+    ``while is_alive`` loops). ``server`` is filled in once ``start_server``
+    publishes the instance for the shutdown path.
+    """
+
+    thread: threading.Thread
+    port: int
+    server: Optional[uvicorn.Server] = None
+
+    def wait_until_serving(self, timeout: float = 10.0) -> bool:
+        """Poll the loopback socket until the server accepts (ADR-009 bind)."""
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if not self.thread.is_alive():
+                return False
+            try:
+                with socket.create_connection(("127.0.0.1", self.port), timeout=0.5):
+                    return True
+            except OSError:
+                time.sleep(0.1)
+        return False
+
+    def wait_for_exit(self) -> None:
+        """Block until the server thread exits (KeyboardInterrupt-safe)."""
+        while self.thread.is_alive():
+            self.thread.join(timeout=1.0)
 
 
 class SingleInstanceMutex:
@@ -187,7 +223,7 @@ def launch_app(
     
     Returns True if launched, False if blocked by an existing instance (ERR-ENG-008).
     """
-    global _mutex_handle, _server_thread
+    global _mutex_handle
 
     # 1. Enforce single-instance mutex per 09 §7.4 and 15 §6.3
     mutex_name = f"FPAndAMonthEndCopilot_Project_{project_id}"
@@ -206,13 +242,20 @@ def launch_app(
     port = find_free_port(start_port=start_port)
     token = get_session_token()
 
-    # 4. Start FastAPI backend in dedicated background thread
-    server_thread = threading.Thread(target=start_server, args=(port,), daemon=True)
-    _server_thread = server_thread
-    server_thread.start()
+    # 4. Start FastAPI backend in a managed background thread (ServerHandle).
+    handle = ServerHandle(
+        thread=threading.Thread(
+            target=start_server, args=(port,), daemon=True, name="fpa-api-server"
+        ),
+        port=port,
+    )
+    handle.thread.start()
+    while _server_instance is None and handle.thread.is_alive():
+        time.sleep(0.05)
+    handle.server = _server_instance
 
-    # Give server a brief moment to bind socket
-    time.sleep(0.3)
+    # Readiness is proven by a loopback connect, not a blind sleep.
+    handle.wait_until_serving()
 
     target_url = f"http://127.0.0.1:{port}/#token={token}"
 
@@ -221,10 +264,9 @@ def launch_app(
 
     if use_browser:
         launch_browser_fallback(target_url)
-        # Keep process alive until signal/keyboard interrupt if in browser mode
+        # Keep process alive until the server thread exits.
         try:
-            while server_thread.is_alive():
-                time.sleep(1.0)
+            handle.wait_for_exit()
         except KeyboardInterrupt:
             shutdown_process()
         return True
@@ -251,8 +293,7 @@ def launch_app(
         # Fallback to default browser if WebView2 or pywebview fails (ERR-ENG-001)
         launch_browser_fallback(target_url)
         try:
-            while server_thread.is_alive():
-                time.sleep(1.0)
+            handle.wait_for_exit()
         except KeyboardInterrupt:
             shutdown_process()
     finally:
