@@ -7,6 +7,7 @@ the 40 planted exceptions mapped to expected_exceptions.csv, and the 16 malforme
 import os
 import sys
 import csv
+import json
 import math
 import random
 import argparse
@@ -24,7 +25,7 @@ PROJECT_TYPE = "sample"
 ZERO = Decimal("0.00")
 WATERMARK_COMMENT = "# SAMPLE DATA — NOT FOR PRODUCTION USE"
 
-# Baseline posting window: FY26-P01 (2026-04-01) through FY26-P09 (2026-09-30).
+# Baseline posting window: calendar-month FY26-P04 (2026-04-01) through FY26-P09 (2026-09-30).
 #
 # Doc 06 §7 plants every expected raise against FY26-P09, and the only
 # post-September rows the answer key describes are planted anomalies: P9's nine
@@ -36,7 +37,7 @@ WATERMARK_COMMENT = "# SAMPLE DATA — NOT FOR PRODUCTION USE"
 # 182 days from 2026-04-01 is 2026-09-30.
 BASELINE_WINDOW_DAYS = 182
 
-# FY26 runs April 2026 -> March 2027, so P01 is April and P09 is September.
+# Seeded FY26 periods use calendar months: P01 is January and P09 is September.
 PERIODS = [f"FY26-P{p:02d}" for p in range(1, 13)]
 OPEN_PERIODS = PERIODS[:9]
 
@@ -113,7 +114,12 @@ RESERVED_KEYS = {
     ("IN01", "5200", "CC-100"): set(PERIODS),          # P2, P7, P18, P25, P32
     ("IN01", "5200", "CC-105"): set(PERIODS),          # P29 precision control
     ("IN01", "5200", "CC-110"): set(PERIODS),          # P30 precision control
-    ("IN01", "6100", "CC-120"): {"FY26-P09"},          # P16 accrual must be absent
+    ("IN01", "5600", "CC-140"): {"FY26-P06", "FY26-P07", "FY26-P08", "FY26-P09"},
+    # P13 owns the trailing baseline and current spikes on these keys.
+    ("IN01", "6300", "CC-120"): {"FY26-P06", "FY26-P07", "FY26-P08", "FY26-P09"},
+    # P16 owns the three pre-close accrual periods and the intentionally empty P09.
+    ("IN01", "6100", "CC-120"): {"FY26-P06", "FY26-P07", "FY26-P08", "FY26-P09"},
+    ("IN01", "6300", "CC-150"): set(PERIODS),          # P22 round journal has no routine history
     ("IN01", "5500", "CC-130"): set(OPEN_PERIODS),     # P19 cumulative overrun
     ("IN01", "5400", "CC-100"): set(PERIODS),          # P15 REC-001 must be absent
     ("IN01", "5500", "CC-150"): set(PERIODS),          # P15 REC-002 must be absent
@@ -157,7 +163,7 @@ BATCH_039_LOADED = Decimal("18399650.00")
 GL_HEADER = [
     "Voucher", "PostingDate", "CompanyCode", "MainAccount", "CostCenter",
     "ProjectCode", "VendorCode", "InvoiceNumber", "TransactionDescription",
-    "Debit", "Credit", "Currency", "Watermark", "ProjectType",
+    "Debit", "Credit", "Currency", "Watermark", "ProjectType", "DocumentDate",
 ]
 
 # A balancing or filler line must not manufacture findings of its own: EXC-021
@@ -323,27 +329,41 @@ def _write_import_history(history_dir):
         path = os.path.join(history_dir, name)
         with open(path, "w", newline="", encoding="utf-8") as handle:
             handle.write(WATERMARK_COMMENT + "\n")
-            csv.writer(handle).writerows([header] + rows)
+            csv.writer(handle, lineterminator="\n").writerows([header] + rows)
         written.append(name)
 
-    # --- 01: bank batch 037, the earlier export the September file overlaps --
-    csv_batch(
-        "01_bank_batch_037.csv",
-        ["Voucher", "PostingDate", "CompanyCode", "MainAccount", "CostCenter",
-         "ProjectCode", "VendorCode", "InvoiceNumber", "TransactionDescription",
-         "Debit", "Credit", "Currency", "Watermark", "ProjectType"],
-        [
-            ["VCH-2026-0915-001", "2026-09-15", "IN01", "5200", "CC-100", "PRJ-01",
-             "V-00931", "INV-88210", "Re-export overlap line 1", "45000.00", "0.00",
-             "INR", WATERMARK, PROJECT_TYPE],
-            ["VCH-2026-0915-001", "2026-09-15", "IN01", "5200", "CC-100", "PRJ-01",
-             "V-00931", "INV-88210", "Re-export overlap line 2", "32000.00", "0.00",
-             "INR", WATERMARK, PROJECT_TYPE],
-            ["VCH-2026-0915-002", "2026-09-15", "IN01", "5200", "CC-100", "PRJ-01",
-             "V-00931", "INV-88211", "Re-export overlap line 3", "18500.00", "0.00",
-             "INR", WATERMARK, PROJECT_TYPE],
-        ],
+    # --- 01: batch 037, the earlier GL export the September file overlaps ----
+    # Keep the three planted voucher lines byte-for-byte in sequence, then add a
+    # separate balancing voucher derived from their measured debit residual.
+    batch_037_header = [
+        "Voucher", "PostingDate", "CompanyCode", "MainAccount", "CostCenter",
+        "ProjectCode", "VendorCode", "InvoiceNumber", "TransactionDescription",
+        "Debit", "Credit", "Currency", "Watermark", "ProjectType",
+    ]
+    batch_037_rows = [
+        ["VCH-2026-0915-001", "2026-09-15", "IN01", "5200", "CC-100", "PRJ-01",
+         "V-00931", "INV-88210", "Re-export overlap line 1", "45000.00", "0.00",
+         "INR", WATERMARK, PROJECT_TYPE],
+        ["VCH-2026-0915-001", "2026-09-15", "IN01", "5200", "CC-100", "PRJ-01",
+         "V-00931", "INV-88210", "Re-export overlap line 2", "32000.00", "0.00",
+         "INR", WATERMARK, PROJECT_TYPE],
+        ["VCH-2026-0915-002", "2026-09-15", "IN01", "5200", "CC-100", "PRJ-01",
+         "V-00931", "INV-88211", "Re-export overlap line 3", "18500.00", "0.00",
+         "INR", WATERMARK, PROJECT_TYPE],
+    ]
+    batch_037_residual = sum(
+        (Decimal(row[9]) - Decimal(row[10]) for row in batch_037_rows), ZERO
     )
+    if batch_037_residual:
+        balancing_debit = -batch_037_residual if batch_037_residual < ZERO else ZERO
+        balancing_credit = batch_037_residual if batch_037_residual > ZERO else ZERO
+        batch_037_rows.append(
+            ["VCH-FIX-037", "2026-09-15", "IN01", "1010", "CC-100", "PRJ-01",
+             "V-00931", "FIX-037", "Batch 037 file-level balancing leg",
+             f"{balancing_debit:.2f}", f"{balancing_credit:.2f}", "INR",
+             WATERMARK, PROJECT_TYPE]
+        )
+    csv_batch("01_bank_batch_037.csv", batch_037_header, batch_037_rows)
 
     # --- 02: GL batch 039, the control-totals workbook behind P3 -------------
     if openpyxl is None:
@@ -354,8 +374,9 @@ def _write_import_history(history_dir):
     sheet.append(["Voucher", "PostingDate", "CompanyCode", "MainAccount", "CostCenter",
                   "ProjectCode", "VendorCode", "InvoiceNumber", "TransactionDescription",
                   "Debit", "Credit", "Currency"])
-    # The loaded GL net of this batch is exactly BATCH_039_LOADED; the workbook
-    # supplies BATCH_039_SUPPLIED, so the tie-out variance is -350.00.
+    # The loaded debit total is exactly BATCH_039_LOADED; the workbook supplies
+    # BATCH_039_SUPPLIED, leaving the recorded -350.00 P3 variance. The explicit
+    # acceptance record is a separate fixture and never comes from workbook cells.
     for index, amount in enumerate(
             split_amount(BATCH_039_LOADED, parts_needed(BATCH_039_LOADED)), 1
     ):
@@ -367,28 +388,63 @@ def _write_import_history(history_dir):
                       "Offset Operating Bank Account", 0.00, float(amount), "INR"])
     totals = workbook.create_sheet("ControlTotals")
     totals.append(["Scope", "Measure", "SuppliedTotal", "Tolerance"])
-    totals.append(["gl_control_total", "net", float(BATCH_039_SUPPLIED), 500.00])
-    save_deterministic(workbook, os.path.join(history_dir, "02_gl_batch_039.xlsx"))
+    totals.append(["gl_control_total", "debit", float(BATCH_039_SUPPLIED), 0.00])
+    workbook_path = os.path.join(history_dir, "02_gl_batch_039.xlsx")
+    save_deterministic(workbook, workbook_path)
     written.append("02_gl_batch_039.xlsx")
 
+    acceptance_path = os.path.join(
+        history_dir, "02_gl_batch_039.acceptance.json"
+    )
+    acceptance_record = {
+        "accepted_by": "sample-acceptance-fixture-owner",
+        "reason": (
+            "Accept the synthetic INR 350.00 debit control variance for the "
+            "documented P3 tie-out planting."
+        ),
+        "accepted_at": "2026-10-06T00:00:00+00:00",
+    }
+    with open(acceptance_path, "w", encoding="utf-8", newline="\n") as handle:
+        json.dump(acceptance_record, handle, ensure_ascii=False, indent=2)
+        handle.write("\n")
+    written.append("02_gl_batch_039.acceptance.json")
+
     # --- 03: bank batch 040, nine October-dated rows that declare P09 (P9) ---
+    batch_040_transactions = (
+        (1, Decimal("92000.00")),
+        (3, Decimal("41500.00")),
+        (6, Decimal("128300.00")),
+        (9, Decimal("77500.00")),
+        (12, Decimal("64300.00")),
+        (15, Decimal("151900.00")),
+        (18, Decimal("58200.00")),
+        (21, Decimal("96000.00")),
+        (24, Decimal("33700.00")),
+    )
+    batch_040_net = sum((amount for _day, amount in batch_040_transactions), ZERO)
+    batch_040_balance = Decimal("14200000.00")
+    batch_040_rows = []
+    for index, (day, amount) in enumerate(batch_040_transactions, 1):
+        batch_040_balance -= amount
+        batch_040_rows.append(
+            ["HDFC-0019283", f"{day:02d}/10/2026", f"BNK-40{index:03d}",
+             f"row_{881 + index:05d}", "IN01", "5200",
+             "October value date declared as FY26-P09", f"{amount:.2f}", "0.00",
+             f"{batch_040_balance:.2f}", "FY26-P09", WATERMARK, PROJECT_TYPE]
+        )
+    batch_040_balance += batch_040_net
+    batch_040_rows.append(
+        ["HDFC-0019283", "30/09/2026", "BNK-040-RECON", "row_00891", "IN01",
+         "1010", "Batch 040 file-level reconciliation leg", "0.00",
+         f"{batch_040_net:.2f}", f"{batch_040_balance:.2f}", "FY26-P09",
+         WATERMARK, PROJECT_TYPE]
+    )
     csv_batch(
         "03_bank_batch_040.csv",
-        ["BankAccountId", "ValueDate", "DocNumber", "EntityId", "AccountCode",
-         "Narration", "Withdrawal", "Deposit", "RunningBalance", "PeriodCode",
-         "Watermark", "ProjectType"],
-        [
-            ["HDFC-0019283", f"{day:02d}/10/2026", f"BNK-40{index:03d}", "IN01", "5200",
-             "October value date declared as FY26-P09", f"{amount:.2f}", "0.00",
-             f"{Decimal('14200000.00') - Decimal(amount) * index:.2f}", "FY26-P09",
-             WATERMARK, PROJECT_TYPE]
-            for index, (day, amount) in enumerate(
-                ((1, Decimal("92000.00")), (3, Decimal("41500.00")),
-                 (6, Decimal("128300.00")), (9, Decimal("77500.00")),
-                 (12, Decimal("64300.00")), (15, Decimal("151900.00")),
-                 (18, Decimal("58200.00")), (21, Decimal("96000.00")),
-                 (24, Decimal("33700.00"))), 1)
-        ],
+        ["BankAccountId", "ValueDate", "DocNumber", "SourceRowRef", "EntityId",
+         "AccountCode", "Narration", "Withdrawal", "Deposit", "RunningBalance",
+         "PeriodCode", "Watermark", "ProjectType"],
+        batch_040_rows,
     )
 
     # --- 04: bank batch 041, the ₹350.00 net imbalance behind P1 -------------
@@ -422,8 +478,8 @@ def _answer_key():
     (the period span).
     """
     return [
-        # P1 — key is the FactImportBatch subject key; needs engine support for
-        # `FactImportBatch.subject_key` (raised as a DEC proposal).
+        # P1 — the acceptance harness persists the source batch reference and
+        # bank_ledger namespace so this key is stable across fresh databases.
         ["P1", "EXC-001", "Raised", "batch_041|bank_ledger", "High", "350.00", "FY26-P09",
          "Unbalanced bank-ledger file loaded under a ₹500 tolerance (variance ₹350.00)"],
         # P2 (3 rows) — voucher line numbers are preserved because the balancing
@@ -434,7 +490,7 @@ def _answer_key():
          "Re-export overlaps batch 37 on voucher line 2"],
         ["P2", "EXC-002", "Raised", "IN01|VCH-2026-0915-002|1", "High", "18500.00", "FY26-P09",
          "Re-export overlaps batch 37 on voucher line 3"],
-        # P3 — key is the FactImportBatch subject key; same engine dependency.
+        # P3 — the stable source batch reference is combined with control-total scope.
         ["P3", "EXC-003", "Raised", "batch_039|gl_control_total", "High", "-350.00", "FY26-P09",
          "Control-total variance: supplied ₹18400000.00 vs loaded ₹18399650.00"],
         # P4 (2 rows)
@@ -552,11 +608,11 @@ def generate_dataset(base_dir, scale=250000, seed=42):
     print(f"Generating sample dataset in {base_dir} (scale target: {scale} rows, seed {seed})...")
 
     def gl(voucher, posted, entity, account, cost_centre, vendor, invoice, note,
-           debit=ZERO, credit=ZERO, project="PRJ-GEN"):
+           debit=ZERO, credit=ZERO, project="PRJ-GEN", document_date=None):
         """One GL row. Both money legs default to zero; never both non-zero."""
         return [voucher, posted, entity, account, cost_centre, project, vendor,
                 invoice, note, f"{debit:.2f}", f"{credit:.2f}", "INR",
-                WATERMARK, PROJECT_TYPE]
+                WATERMARK, PROJECT_TYPE, document_date or ""]
 
     # ------------------------------------------------------------------
     # 1. D365 General Ledger Actuals — the one coherent model
@@ -728,13 +784,13 @@ def generate_dataset(base_dir, scale=250000, seed=42):
         # remains and the balancing legs stay inside the run date.
         writer.writerow(gl("VCH-2026-1005-001", "2026-10-05", "IN01", "5200", "CC-100",
                            "V-00412", "INV-89101", "Cut-off doc 29-Sep posted 05-Oct",
-                           debit=Decimal("320000.00")))
+                           debit=Decimal("320000.00"), document_date="2026-09-29"))
         writer.writerow(gl("VCH-2026-1005-001", "2026-10-05", "IN01", ROUTINE_OFFSET_ACCOUNT, cost_centre,
                            "V-00412", "INV-89101", "Offset Trade Accounts Payable",
                            credit=Decimal("320000.00")))
         writer.writerow(gl("VCH-2026-1003-002", "2026-10-03", "IN01", "5100", "CC-110",
                            "V-00276", "INV-89045", "Cut-off doc 28-Sep posted 03-Oct",
-                           debit=Decimal("145000.00")))
+                           debit=Decimal("145000.00"), document_date="2026-09-28"))
         writer.writerow(gl("VCH-2026-1003-002", "2026-10-03", "IN01", ROUTINE_OFFSET_ACCOUNT, "CC-110",
                            "V-00276", "INV-89045", "Offset Trade Accounts Payable",
                            credit=Decimal("145000.00")))
@@ -749,10 +805,10 @@ def generate_dataset(base_dir, scale=250000, seed=42):
                            "V-00931", "INV-99011", "Offset Operating Bank Account",
                            credit=Decimal("175000.00")))
 
-        # P12: unusual negative expense credit. Both legs sit in one voucher so
-        # the voucher balances (EXC-023 stays quiet) while the account-level
-        # credit/debit ratio of 17.7% is still far under the 90% gate. The
-        # amount is deliberately not a whole multiple of 10,000 so the plant does
+        # P12: unusual negative expense credit. The two 5400 movements stay on
+        # the planted account key; separate 2000 counterlegs balance the voucher
+        # without changing the 17.7% account-level offset ratio. The amount is
+        # deliberately not a whole multiple of 10,000 so the plant does
         # not also answer EXC-022.
         writer.writerow(gl("VCH-2026-0925-001", "2026-09-25", "IN01", "5400", "CC-110",
                            "V-00118", "CRN-001", "Unusual rent credit",
@@ -760,12 +816,36 @@ def generate_dataset(base_dir, scale=250000, seed=42):
         writer.writerow(gl("VCH-2026-0925-001", "2026-09-25", "IN01", "5400", "CC-110",
                            "V-00118", "CRN-001", "Rent debit offset",
                            debit=Decimal("121309.00")))
+        writer.writerow(gl("VCH-2026-0925-001", "2026-09-25", "IN01", "2000", "CC-110",
+                           "V-00118", "CRN-001", "Offset rent credit",
+                           debit=Decimal("683417.00")))
+        writer.writerow(gl("VCH-2026-0925-001", "2026-09-25", "IN01", "2000", "CC-110",
+                           "V-00118", "CRN-001", "Offset rent debit",
+                           credit=Decimal("121309.00")))
 
         # P14: staffing vendor on a Marketing account. V-00276 never posts to
         # 5800 anywhere else, so this is genuinely the first time.
         writer.writerow(gl("VCH-2026-0926-001", "2026-09-26", "IN01", "5800", "CC-150",
                            "V-00276", "INV-MKT-01", "Staffing vendor to Marketing account",
                            debit=Decimal("260000.00")))
+
+        # P13: three controlled prior-period baselines on each reserved key,
+        # followed by the two September spikes. These rows are excluded from
+        # routine traffic so the measured trailing averages remain 45k and 75k.
+        for account, cost_centre, vendor, amount in (
+            ("5600", "CC-140", "V-00620", Decimal("45000.00")),
+            ("6300", "CC-120", "V-00550", Decimal("75000.00")),
+        ):
+            for month in (6, 7, 8):
+                posted = date(2026, month, 15).isoformat()
+                voucher = f"VCH-P13-BASE-{account}-{month:02d}"
+                invoice = f"INV-P13-BASE-{account}-{month:02d}"
+                writer.writerow(gl(voucher, posted, "IN01", account, cost_centre,
+                                   vendor, invoice, "Controlled P13 trailing baseline",
+                                   debit=amount))
+                writer.writerow(gl(voucher, posted, "IN01", ROUTINE_OFFSET_ACCOUNT,
+                                   cost_centre, vendor, invoice, "P13 baseline offset",
+                                   credit=amount))
 
         # P13: two spend spikes against the trailing three-month baseline.
         writer.writerow(gl("VCH-2026-0926-011", "2026-09-26", "IN01", "5600", "CC-140",
@@ -781,19 +861,24 @@ def generate_dataset(base_dir, scale=250000, seed=42):
                            "V-00550", "INV-SPK-02", "Offset Trade Accounts Payable",
                            credit=Decimal("240000.00"), project="PRJ-01"))
 
-        # P17: new cost centre with no budget line.
-        writer.writerow(gl("VCH-2026-0927-001", "2026-09-27", "IN01", "5450", "CC-160",
-                           "V-00276", "INV-RND-01", "Unbudgeted R&D contractor spend",
-                           debit=Decimal("843317.00")))
-        writer.writerow(gl("VCH-2026-0927-001", "2026-09-27", "IN01", ROUTINE_OFFSET_ACCOUNT, "CC-160",
-                           "V-00276", "INV-RND-01", "Offset Operating Bank Account",
-                           credit=Decimal("843317.00")))
+        # P17: new cost centre with no budget line. Split the event across
+        # sub-threshold balanced vouchers; EXC-017 measures the combined key.
+        for index, amount in enumerate(split_amount(Decimal("843317.00"), 3), 1):
+            voucher = f"VCH-2026-0927-00{index}"
+            invoice = f"INV-RND-0{index}"
+            writer.writerow(gl(voucher, "2026-09-27", "IN01", "5450", "CC-160",
+                               "V-00276", invoice, "Unbudgeted R&D contractor spend",
+                               debit=amount))
+            writer.writerow(gl(voucher, "2026-09-27", "IN01", ROUTINE_OFFSET_ACCOUNT, "CC-160",
+                               "V-00276", invoice, "Offset Operating Bank Account",
+                               credit=amount))
 
-        # P22: round top-side journal.
-        writer.writerow(gl("VCH-2026-0929-014", "2026-09-29", "IN01", "6300", "CC-120",
+        # P22: round top-side journal on a separate reserved cost centre, so it
+        # cannot inflate P13's controlled 6300/CC-120 spike measurement.
+        writer.writerow(gl("VCH-2026-0929-014", "2026-09-29", "IN01", "6300", "CC-150",
                            "V-00305", "JRN-MAN-01", "Top-side round manual journal",
                            debit=Decimal("1500000.00"), project="PRJ-01"))
-        writer.writerow(gl("VCH-2026-0929-014", "2026-09-29", "IN01", ROUTINE_OFFSET_ACCOUNT, "CC-120",
+        writer.writerow(gl("VCH-2026-0929-014", "2026-09-29", "IN01", ROUTINE_OFFSET_ACCOUNT, "CC-150",
                            "V-00305", "JRN-MAN-01", "Offset Trade Accounts Payable",
                            credit=Decimal("1500000.00"), project="PRJ-01"))
 
@@ -865,9 +950,17 @@ def generate_dataset(base_dir, scale=250000, seed=42):
         # P18 canonical variance, plus the measured filler that brings the
         # reserved key to exactly 10,540,000.00 against a 10,000,000.00 budget:
         # +540,000 (+5.4%) clears max(500,000, 2% x 10,000,000) AND the 5%.
-        writer.writerow(gl("VCH-2026-0928-001", "2026-09-28", "IN01", "5200", "CC-100",
-                           "V-00931", "INV-F13A", "F13a major repair posting",
-                           debit=Decimal("541317.00"), project="PRJ-01"))
+        # The 541,317.00 initiating amount is split below the per-voucher
+        # approval threshold; EXC-018 still measures the aggregate account key.
+        for index, amount in enumerate(split_amount(Decimal("541317.00"), 2), 1):
+            voucher = f"VCH-2026-0928-00{index}"
+            invoice = f"INV-F13A-{index}"
+            writer.writerow(gl(voucher, "2026-09-28", "IN01", "5200", "CC-100",
+                               "V-00931", invoice, "F13a major repair posting",
+                               debit=amount, project="PRJ-01"))
+            writer.writerow(gl(voucher, "2026-09-28", "IN01", ROUTINE_OFFSET_ACCOUNT, "CC-100",
+                               "V-00931", invoice, "F13a major repair offset",
+                               credit=amount, project="PRJ-01"))
         # The filler is sized from what is ALREADY on the key, measured rather
         # than hand-listed, so the reserved key lands on exactly 10,540,000.00.
         p18_target = Decimal("10540000.00")
@@ -918,10 +1011,10 @@ def generate_dataset(base_dir, scale=250000, seed=42):
         # `06` §7 plants anomalies that are genuinely single-sided, while `04`
         # §12 / `IMP-023` rejects a file whose debits and credits differ, so the
         # generator's raw output is unloadable by exactly the planted residual.
-        # These legs are data fixtures, not plants: one balancing voucher per
-        # (entity, month) that has a residual, with the amount MEASURED from the
-        # rows just written (never hard-coded) and split into sub-threshold,
-        # non-round lines so a structural leg cannot raise EXC-021 or EXC-022.
+        # These legs are data fixtures, not plants: the amount is MEASURED from
+        # the rows just written (never hard-coded) and split into sub-threshold,
+        # non-round lines. Give every leg its own voucher so a structural
+        # reconciliation row cannot create a false voucher-imbalance finding.
         # The planted anomalies stay visible at voucher level — P23's
         # ₹5,000.00 imbalance, P24's suspense residual, and every single-sided
         # plant survive.
@@ -933,8 +1026,8 @@ def generate_dataset(base_dir, scale=250000, seed=42):
             last_day = (date(year + (month_no == 12), (month_no % 12) + 1, 1)
                         - timedelta(days=1)).day  # noqa: E501 - month-end of the residual month
             posting_date = f"{month}-{last_day:02d}"
-            voucher = f"VCH-FIX-{month}"
             for i, amount in enumerate(split_amount(residual, parts_needed(residual)), 1):
+                voucher = f"VCH-FIX-{month}-{i:02d}"
                 # A positive residual is debits-over-credits, so the balancing
                 # leg is a credit; a negative residual needs a debit.
                 credit = amount if amount > ZERO else ZERO
@@ -953,10 +1046,9 @@ def generate_dataset(base_dir, scale=250000, seed=42):
     # ------------------------------------------------------------------
     #
     # A budget drawn independently of the actuals breaches EXC-018 and EXC-019
-    # by arithmetic alone. So the budget is MEASURED, not drawn: every period of
-    # a key carries that key's own year-to-date net, which is the figure the
-    # rules actually compare against, except where a plant deliberately sets a
-    # different number:
+    # by arithmetic alone. So the budget is MEASURED, not drawn: each period
+    # carries that period's net actual for its key, except where a planting
+    # deliberately sets a different number:
     #   5200/CC-100  10,000,000.00 against 10,540,000.00  -> P18 raises
     #   5200/CC-105   7,000,000.00 against  7,420,000.00  -> P29 below the floor
     #   5200/CC-110  40,000,000.00 against 40,900,000.00  -> P30 below the 5%
@@ -975,6 +1067,15 @@ def generate_dataset(base_dir, scale=250000, seed=42):
             "FY26-P12": Decimal("83333.34"),
         },
     }
+    # These keys also carry a full-year monthly allocation at the shown level.
+    # Their P09 override remains the period comparison amount; the other months
+    # keep EXC-019's annual-consumption denominator consistent with the control
+    # plant's intended monthly budget.
+    SPECIAL_MONTHLY_BUDGETS = {
+        ("IN01", "5200", "CC-100"): Decimal("10000000.00"),
+        ("IN01", "5200", "CC-105"): Decimal("7000000.00"),
+        ("IN01", "5200", "CC-110"): Decimal("40000000.00"),
+    }
     # An override REPLACES the derived figure. Appending both would double the
     # key in `annual_budgets`, which sums every FY26 budget row for the key.
     overridden = {
@@ -992,26 +1093,24 @@ def generate_dataset(base_dir, scale=250000, seed=42):
         budget_writer.writerow(["PeriodCode", "EntityCode", "CostCenterCode",
                                 "AccountCode", "BudgetAmount", "Watermark", "ProjectType"])
 
-        # Year-to-date net per key: the single measured figure every period of
-        # the budget is set from.
-        ytd = {}
-        for (entity, account, cost_centre, _period), amount in measured.items():
-            key = (entity, account, cost_centre)
-            ytd[key] = ytd.get(key, ZERO) + amount
-
-        for entity, account, cost_centre in sorted(ytd):
+        # Emit every known key across the fiscal periods so EXC-020 can
+        # distinguish a zero budget from a missing budget row. Values are the
+        # measured actual for that period, not a repeated YTD amount.
+        budget_keys = sorted({key[:3] for key in measured})
+        for entity, account, cost_centre in budget_keys:
             if entity == "IN02":
                 continue              # P6: no FY26 budget line for IN02
             if cost_centre == "CC-160":
                 continue              # P17: new cost centre, never budgeted
-            amount = ytd[(entity, account, cost_centre)]
-            if amount == ZERO:
-                continue
             for period in PERIODS:
                 if account == "5450" and period in {"FY26-P07", "FY26-P08", "FY26-P09"}:
                     continue          # P20: coverage gap P07-P09
-                if (entity, account, cost_centre, period) in overridden:
+                budget_key = (entity, account, cost_centre, period)
+                if budget_key in overridden:
                     continue
+                amount = SPECIAL_MONTHLY_BUDGETS.get(
+                    (entity, account, cost_centre), measured.get(budget_key, ZERO)
+                )
                 budget_writer.writerow([period, entity, cost_centre, account,
                                         f"{amount:.2f}", WATERMARK, PROJECT_TYPE])
                 budget_rows += 1

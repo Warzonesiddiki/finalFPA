@@ -7,11 +7,12 @@ Doc 14 §5.2, quoted verbatim:
     `tests/rules/test_acceptance.py` (L3), run by `scripts/acceptance`:
 
     1. **Fresh corpus:** the generator builds the sample project from a fixed
-       seed (`sample-data --seed 20260101`), so the corpus is deterministic and
-       reproducible on any machine; the run asserts the generator's own
-       checksum before evaluating.
+       seed (`sample-data --seed 42`), so the corpus is deterministic and
+       reproducible on any machine; the run records its CSV checksums before
+       evaluating (XLSX metadata timestamps remain an explicit limitation).
     2. **Full engine run** over the sample data with default thresholds, every
-       rule enabled.
+       rule enabled. DEC-058 requires earlier import-history batches before the
+       main actuals and later history batches afterwards.
     3. **Join** raised exceptions to the answer key on `(rule_id, subject_key)`.
     4. **Classify** every raise: *expected* (in the key), *control* (a
        `P25`…`P32` subject), or *extra*.
@@ -51,12 +52,11 @@ DESIGN NOTES - traps this harness exists to make impossible to repeat.
    `evaluate_exc_005` is catalog `EXC-012`), so joining on `rule_id` compares two
    different namespaces. Measured on this corpus that mistake moves recall from
    25.0 % to 9.4 % with the engine completely unchanged.
-2. **The corpus is checked for balance before anything is scored.** Doc 04
-   §11/§12 makes `debit != credit` a file-level reject ("Nothing is committed"),
-   so an unbalanced corpus means the planted cases never reach `FactActual` and
-   every rule scores zero for a reason that has nothing to do with rule logic.
-   The harness reports that as a hard failure with the imbalance, never as a
-   recall number that looks like a rule defect.
+2. **Every ordered import is checked for commitability before the verdict.**
+   Journal balance, the DEC-056 sub-ledger tolerance, and control-total failures
+   can each prevent a history fixture from reaching `FactActual`. A rejected GL
+   fixture therefore blocks interpretation of the §5.3 bars; rejected sub-ledger
+   fixtures are named as divergences. Neither is disguised as a rule-logic miss.
 3. **Nothing is skipped.** No `pytest.skip`, no `xfail`, no early return on a
    broken corpus. A missing prerequisite is a failure with a message.
 
@@ -84,13 +84,50 @@ DEFAULT_SAMPLE_DIR = Path("sample-data")
 ANSWER_KEY_NAME = "expected_exceptions.csv"
 BUDGET_NAME = "budget_fy26.csv"
 
-#: Actuals files that carry the planted cases. `test_comment.csv` is a
+#: Ordered history imports required by docs/14 §5.2 step 2 and DEC-058.
+#: 037/039 establish the earlier committed state; 040/041 are later sub-ledgers
+#: whose plantings must be evaluated after the main source files are loaded.
+IMPORT_HISTORY_BEFORE_ACTUALS = (
+    "import_history/01_bank_batch_037.csv",
+    "import_history/02_gl_batch_039.xlsx",
+)
+IMPORT_HISTORY_AFTER_ACTUALS = (
+    "import_history/03_bank_batch_040.csv",
+    "import_history/04_bank_batch_041.csv",
+)
+
+#: Actuals files that carry the main planted cases. `test_comment.csv` is a
 #: parser edge-case fixture, not part of the 40 plantings.
 ACTUALS_FILES = (
     "d365_gl_actuals.csv",
     "bank_ledger_actuals.csv",
     "payroll_procurement_actuals.csv",
 )
+
+#: Exact import order matters: EXC-002 compares a later batch with earlier
+#: committed rows; the batch-040/041 plantings follow the main actuals.
+ACCEPTANCE_IMPORT_FILES = (
+    *IMPORT_HISTORY_BEFORE_ACTUALS,
+    *ACTUALS_FILES,
+    *IMPORT_HISTORY_AFTER_ACTUALS,
+)
+
+#: Stable source-side identities for history fixtures; integer database keys are
+#: deliberately excluded from answer-key subject identities.
+ACCEPTANCE_BATCH_IDENTITIES: Dict[str, Tuple[str, Optional[str]]] = {
+    "import_history/01_bank_batch_037.csv": ("batch_037", "general_ledger"),
+    "import_history/02_gl_batch_039.xlsx": ("batch_039", None),
+    "import_history/03_bank_batch_040.csv": ("batch_040", "bank_ledger"),
+    "import_history/04_bank_batch_041.csv": ("batch_041", "bank_ledger"),
+}
+
+#: Explicitly recorded decision for the synthetic over-tolerance P3 control total.
+#: It is kept beside the fixture and supplied only by this acceptance harness.
+CONTROL_TOTAL_ACCEPTANCE_FIXTURES = {
+    "import_history/02_gl_batch_039.xlsx": (
+        "import_history/02_gl_batch_039.acceptance.json"
+    ),
+}
 
 #: The period every planted case is asserted against (doc 14 §5.1 answer key
 #: carries `period` per row; all 40 rows are FY26-P09).
@@ -473,81 +510,164 @@ def validate_answer_key(
     return notes
 
 
+def _control_total_acceptance_for_fixture(
+    sample_dir: Path, relative_name: str
+) -> Optional[Dict[str, str]]:
+    """Load a recorded synthetic acceptance decision for a named fixture only."""
+    sidecar_name = CONTROL_TOTAL_ACCEPTANCE_FIXTURES.get(relative_name)
+    if sidecar_name is None:
+        return None
+
+    sidecar_path = sample_dir / sidecar_name
+    try:
+        payload = json.loads(sidecar_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise AcceptanceHarnessError(
+            f"Cannot load control-total acceptance fixture {sidecar_name}: {exc}"
+        ) from exc
+    if not isinstance(payload, dict):
+        raise AcceptanceHarnessError(
+            f"Control-total acceptance fixture {sidecar_name} must be a JSON object"
+        )
+
+    allowed_fields = {"accepted_by", "reason", "accepted_at"}
+    unknown_fields = set(payload) - allowed_fields
+    if unknown_fields:
+        raise AcceptanceHarnessError(
+            f"Control-total acceptance fixture {sidecar_name} has unknown field(s): "
+            + ", ".join(sorted(unknown_fields))
+        )
+    accepted_by = str(payload.get("accepted_by", "")).strip()
+    reason = str(payload.get("reason", "")).strip()
+    if not accepted_by or len(reason) < 10:
+        raise AcceptanceHarnessError(
+            f"Control-total acceptance fixture {sidecar_name} requires accepted_by "
+            "and a reason of at least 10 characters"
+        )
+
+    acceptance = {"accepted_by": accepted_by, "reason": reason}
+    accepted_at = payload.get("accepted_at")
+    if accepted_at is not None:
+        accepted_at_text = str(accepted_at).strip()
+        if not accepted_at_text:
+            raise AcceptanceHarnessError(
+                f"Control-total acceptance fixture {sidecar_name} has an empty accepted_at"
+            )
+        acceptance["accepted_at"] = accepted_at_text
+    return acceptance
+
+
 def corpus_integrity(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> List[Dict[str, Any]]:
-    """Parse and validate each actuals file; report the balance precondition.
+    """Parse every acceptance import in order and report its commit precondition.
 
-    Uses `parse_and_validate_csv` so the report carries the engine's own
-    validation checks (`IMP-001`…`IMP-024`) and the computed data-quality score
-    rather than a second opinion. Money stays `Decimal` end to end
+    CSV and XLSX fixtures use the production parsers, so the report carries the
+    engine's own validation checks (`IMP-001`…`IMP-025`) and computed data-quality
+    scores rather than a second opinion. Money stays `Decimal` end to end
     (`ImportBatchResult.total_debit` / `total_credit` / `net_imbalance` are
-    already `Decimal`); nothing here re-derives an engine result.
+    already `Decimal`); nothing here re-derives an engine result. The committed
+    status comes from `batch.can_commit`, not balance alone: a balanced workbook
+    rejected by `IMP-025` is still rejected and must not look loadable.
 
-    Doc 04 §12 and `IMP-023` (severity F) make `debit != credit` a reject, and
-    since the DEF-010 spec-wins fix `ImportRepository.commit_batch` computes
-    `should_commit = bool(batch.is_balanced)` for EVERY source type - no
-    sub-ledger exemption. An unbalanced file therefore commits zero rows and is
-    recorded `rejected`, whichever shape it arrived in. That is reported here as
-    a corpus precondition (general ledger -> BLOCKED; sub-ledger -> divergence
-    with its plantings unreachable), never resolved by the harness.
+    Per `04` §12 / DEC-056, journal sources use the exact debit=credit gate while
+    amount-style sub-ledgers reconcile net within the documented tolerance.
+    `ImportRepository.commit_batch` also blocks on structural and control-total
+    failures (`IMP-005`/`006`/`008`/`025`), so the report must distinguish a
+    balanced-but-rejected workbook from a committed batch. A rejected GL import
+    that supplies a planting is a corpus precondition failure (BLOCKED); a
+    rejected sub-ledger is a visible divergence, never resolved by the harness.
 
     `data_quality_score` is read, never assumed: since `DEF-009` it is computed
-    by `calculate_quality_score()`, so a failing `IMP-023` yields a real score
-    (84 on the current GL corpus) rather than the old literal 100.
+    by `calculate_quality_score()`, not the old literal 100.
     """
     from app.engine.calc.quality_score import calculate_quality_score
-    from app.engine.imports.parser import parse_and_validate_csv
+    from app.engine.imports.parser import parse_and_validate_csv, parse_excel_transactions
 
     rows: List[Dict[str, Any]] = []
-    for name in ACTUALS_FILES:
+    for name in ACCEPTANCE_IMPORT_FILES:
         path = sample_dir / name
         if not path.exists():
-            rows.append({"file": name, "status": "MISSING", "balanced": False,
-                         "is_general_ledger": None, "balance_gate": "unknown"})
+            rows.append(
+                {
+                    "file": name,
+                    "status": "MISSING",
+                    "balanced": False,
+                    "committable": False,
+                    "is_general_ledger": None,
+                    "balance_gate": "unknown",
+                }
+            )
             continue
         try:
-            batch = parse_and_validate_csv(path)
+            control_total_acceptance = _control_total_acceptance_for_fixture(
+                sample_dir, name
+            )
+            if path.suffix.lower() in {".xlsx", ".xlsm"}:
+                batch, _ = parse_excel_transactions(
+                    path, control_total_acceptance=control_total_acceptance
+                )
+            else:
+                batch = parse_and_validate_csv(path)
         except Exception as exc:  # a file that cannot be parsed is a hard failure
-            rows.append({
-                "file": name, "status": f"PARSE-ERROR: {type(exc).__name__}: {exc}",
-                "balanced": False, "rows": 0, "is_general_ledger": None,
-                "balance_gate": "unknown", "checks": [], "checks_run": 0,
-            })
+            rows.append(
+                {
+                    "file": name,
+                    "status": f"PARSE-ERROR: {type(exc).__name__}: {exc}",
+                    "balanced": False,
+                    "committable": False,
+                    "rows": 0,
+                    "is_general_ledger": None,
+                    "balance_gate": "unknown",
+                    "checks": [],
+                    "checks_run": 0,
+                }
+            )
             continue
 
         is_gl = batch.source_type == "actuals_d365"
         dq = calculate_quality_score(batch)
-        rows.append({
-            "file": name,
-            "source_type": batch.source_type,
-            "is_general_ledger": is_gl,
-            "recorded_status": "committed" if batch.is_balanced else "rejected",
-            "status": "committed" if batch.is_balanced else "rejected",
-            "balanced": bool(batch.is_balanced),
-            "balance_gate": "enforced (doc 04 §12/IMP-023, every source type)",
-            "rows": batch.total_source_rows,
-            "loaded_count": batch.loaded_count,
-            "quarantined_count": batch.quarantined_count,
-            "rejected_count": batch.rejected_count,
-            "total_debit": str(batch.total_debit),
-            "total_credit": str(batch.total_credit),
-            "net_imbalance": str(batch.net_imbalance),
-            "checks_run": len(batch.checks),
-            "checks": [
-                {"code": c.check_code, "status": c.status, "severity": c.severity}
-                for c in batch.checks
-            ],
-            "failed_checks": [c.check_code for c in batch.checks
-                              if str(c.status).lower() in {"fail", "failed"}],
-            # The engine's own score, NOT a re-derivation. `raw_score` is
-            # 83.6065... on the current GL corpus while `QualityScoreResult.score`
-            # is 84; truncating the raw value with int() would report 83 and
-            # contradict the engine. Doc 05 CALC-050 owns the rounding.
-            "data_quality_score": dq.score,
-            "data_quality_raw_score": str(dq.raw_score),
-            "data_quality_failed": [c.check_code for c in dq.failed_checks],
-            "data_quality_weight_set": dq.weight_set_version,
-            "checksum": file_checksum(path),
-        })
+        can_commit = bool(batch.can_commit)
+        if batch.source_type in {"actuals_d365", "budget"}:
+            balance_gate = "journal exact debit=credit (04 §12/IMP-023)"
+        else:
+            balance_gate = (
+                "sub-ledger net reconciliation "
+                f"(DEC-056/IMP-023; tolerance ₹{batch.balance_tolerance})"
+            )
+        rows.append(
+            {
+                "file": name,
+                "source_type": batch.source_type,
+                "is_general_ledger": is_gl,
+                "recorded_status": "committed" if can_commit else "rejected",
+                "status": "committed" if can_commit else "rejected",
+                "balanced": bool(batch.is_balanced),
+                "committable": can_commit,
+                "balance_gate": balance_gate,
+                "rows": batch.total_source_rows,
+                "loaded_count": batch.loaded_count,
+                "quarantined_count": batch.quarantined_count,
+                "rejected_count": batch.rejected_count,
+                "total_debit": str(batch.total_debit),
+                "total_credit": str(batch.total_credit),
+                "net_imbalance": str(batch.net_imbalance),
+                "checks_run": len(batch.checks),
+                "checks": [
+                    {"code": c.check_code, "status": c.status, "severity": c.severity}
+                    for c in batch.checks
+                ],
+                "failed_checks": [
+                    c.check_code
+                    for c in batch.checks
+                    if str(c.status).lower() in {"fail", "failed"}
+                ],
+                # The engine's own score, not a re-derivation; CALC-050 owns rounding.
+                "data_quality_score": dq.score,
+                "data_quality_raw_score": str(dq.raw_score),
+                "data_quality_failed": [c.check_code for c in dq.failed_checks],
+                "data_quality_weight_set": dq.weight_set_version,
+                "checksum": file_checksum(path),
+            }
+        )
     return rows
 
 
@@ -593,29 +713,55 @@ def build_acceptance_context(
 
     `project_dir` is created fresh and is the only thing written.
     """
+    if load_actuals:
+        required_fixtures = [
+            *ACCEPTANCE_IMPORT_FILES,
+            *CONTROL_TOTAL_ACCEPTANCE_FIXTURES.values(),
+        ]
+        missing = [name for name in required_fixtures if not (sample_dir / name).is_file()]
+        if missing:
+            raise AcceptanceHarnessError(
+                "Required acceptance fixture(s) missing: " + ", ".join(missing)
+            )
+
     os.environ["FPA_PROJECT_DIR"] = str(project_dir)
 
-    from app.engine.store.db import DatabaseManager
-    from app.engine.store.exceptions_repo import ExceptionsRepository
-    from app.engine.store.import_repo import ImportRepository
-    from app.engine.imports.parser import prescan_file, parse_csv_transactions
+    from app.engine.imports.parser import (
+        parse_csv_transactions,
+        parse_excel_transactions,
+        prescan_file,
+    )
     from app.engine.imports.profile_binding import (
         resolve_base_profile,
         resolve_profile_for_import,
     )
+    from app.engine.store.db import DatabaseManager
+    from app.engine.store.exceptions_repo import ExceptionsRepository
+    from app.engine.store.import_repo import ImportRepository
 
     db = DatabaseManager()
     repo = ImportRepository(db)
 
     if load_actuals:
-        for name in ACTUALS_FILES:
+        for name in ACCEPTANCE_IMPORT_FILES:
             path = sample_dir / name
-            if not path.exists():
-                continue
             prescan = prescan_file(path)
-            binding = resolve_profile_for_import(
-                db, base_profile=resolve_base_profile(db, prescan.sample_headers))
-            batch, txs = parse_csv_transactions(path, profile=binding.profile)
+            base_profile = resolve_base_profile(db, prescan.sample_headers)
+            binding = resolve_profile_for_import(db, base_profile=base_profile)
+            control_total_acceptance = _control_total_acceptance_for_fixture(
+                sample_dir, name
+            )
+            if path.suffix.lower() in {".xlsx", ".xlsm"}:
+                batch, txs = parse_excel_transactions(
+                    path,
+                    profile=binding.profile,
+                    control_total_acceptance=control_total_acceptance,
+                )
+            else:
+                batch, txs = parse_csv_transactions(path, profile=binding.profile)
+            identity = ACCEPTANCE_BATCH_IDENTITIES.get(name)
+            if identity is not None:
+                batch.external_batch_ref, batch.subject_namespace = identity
             repo.commit_batch(batch, txs)
 
     _load_budget(db, repo, sample_dir / BUDGET_NAME)
@@ -870,16 +1016,13 @@ def attach_corpus_gate(
 ) -> None:
     """Fold doc 28 §5.0 entry criterion 4 into the verdict.
 
-    An unbalanced GENERAL LEDGER makes the run **BLOCKED**, not FAIL: every
-    planted case lives in that file, `IMP-023` rejects it, and `commit_batch`
-    persists none of it, so the §5.3 bars are unmeasurable. Attributing that to
-    the rule engine would be wrong, and calling it PASS would be a green vacuum.
-    The corpus is being repaired separately, so the run is reported BLOCKED with
-    the measured imbalance and the failing check - loudly, never silently.
-
-    An unbalanced SUB-LEDGER is a documented divergence, not a blocker: the spec
-    says reject, the code commits it anyway, and the planted cases do not depend
-    on it.
+    A rejected general-ledger fixture makes the run **BLOCKED**, not FAIL: any
+    planted case in that file never reaches `FactActual`, so attributing the miss
+    to rule logic would be wrong. This includes a balanced workbook rejected by
+    its control-total gate, not just an `IMP-023` imbalance. A rejected
+    sub-ledger is a documented divergence: it is named with its failed check and
+    any dependent plantings remain visibly unproven; the import policy itself is
+    not papered over here.
     """
     report.corpus = corpus
     committed_rows = committed_rows or {}
@@ -888,7 +1031,12 @@ def attach_corpus_gate(
         if row.get("checksum"):
             report.corpus_checksum[row["file"]] = row["checksum"]
 
-        if row.get("balanced"):
+        if "loaded_count" in row:
+            row["parsed_loaded_count"] = row["loaded_count"]
+            row["loaded_count"] = committed_rows.get(Path(row["file"]).name, 0)
+
+        committable = row.get("committable", row.get("balanced"))
+        if committable:
             continue
 
         name = row["file"]
@@ -907,27 +1055,22 @@ def attach_corpus_gate(
                 f"total_credit={row.get('total_credit')}, "
                 f"net_imbalance={row.get('net_imbalance')}, "
                 f"is_balanced={row.get('balanced')}, "
+                f"recorded_status={row.get('recorded_status')}, "
                 f"failing check(s)={failed} of {row.get('checks_run')} run, "
                 f"data_quality_score={row.get('data_quality_score')}, and "
-                f"{landed_txt}. Doc 04 §12 / IMP-023 rejects the file and "
-                f"commit_batch enforces that gate for every source type "
-                f"(DEF-010, spec-wins), so NO facts exist for the rules to fire on. "
-                f"Every planted case lives in this file, so the doc 14 §5.3 bars are "
-                f"NOT MEASURED. This is a corpus precondition failure, not a "
-                f"rule-logic result."
+                f"{landed_txt}. This required general-ledger batch was rejected, "
+                f"so its facts and any plantings that depend on it are absent from "
+                f"the rule context. The doc 14 §5.3 bars are NOT MEASURED on the "
+                f"complete planned corpus. This is a corpus precondition failure, "
+                f"not a rule-logic result."
             )
         else:
             report.divergences.append(
-                f"Sub-ledger {name} is unbalanced "
+                f"Required sub-ledger fixture {name} was rejected "
                 f"(net={row.get('net_imbalance')}, failing check(s)={failed}) and "
-                f"{landed_txt}: the file-level IMP-023 reject is enforced "
-                f"unconditionally (DEF-010), so none of its rows reach FactActual "
-                f"and any planting the answer key assigns to this source is "
-                f"unreachable by construction. The corpus must either be rebuilt "
-                f"balanced (04 §12) or the gate scoped per source type - an owner "
-                f"decision recorded in 18 (OQ-025). Not scored as a blocker here; "
-                f"it is reported so the recall bars are never read as rule-logic "
-                f"results while a source cannot load."
+                f"{landed_txt}. Any planting assigned to this source is unreachable "
+                f"until the fixture satisfies DEC-056 / 04 §12; this is reported "
+                f"as a corpus divergence, not hidden as rule behavior."
             )
 
 

@@ -63,6 +63,15 @@ class DatabaseManager:
                     "ALTER TABLE FactImportBatch ADD COLUMN balance_tolerance "
                     "TEXT NOT NULL DEFAULT '0.00';"
                 )
+            for column_name in ("external_batch_ref", "subject_namespace"):
+                if column_name not in batch_columns:
+                    conn.execute(
+                        f"ALTER TABLE FactImportBatch ADD COLUMN {column_name} TEXT;"
+                    )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_fact_import_batch_external_ref "
+                "ON FactImportBatch(external_batch_ref);"
+            )
 
             cursor = conn.execute("PRAGMA table_info(FactException);")
             existing_cols = {row[1] for row in cursor.fetchall()}

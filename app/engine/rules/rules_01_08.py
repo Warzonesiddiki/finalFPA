@@ -156,6 +156,85 @@ def _derive_period_from_date(d: Optional[date]) -> Optional[str]:
     return f"{fy_str}-{p_str}"
 
 
+_GL_SOURCE_TYPES = frozenset({
+    "actuals_d365",
+    "actuals_gl",
+    "actuals_general_ledger",
+    "general_ledger",
+})
+
+
+def _transaction_period(tx: Any) -> str:
+    """Resolve a transaction's fiscal period from its persisted code or posting date."""
+    raw_period = _get_val(tx, "period_code")
+    period = str(raw_period).strip() if raw_period is not None else ""
+    if period and period.lower() != "none":
+        return period
+    return _derive_period_from_date(_parse_date(_get_val(tx, "posting_date"))) or ""
+
+
+def _is_current_period_transaction(tx: Any, context: RuleContext) -> bool:
+    """Whether a row belongs to this rule run's period (missing dates stay in-scope)."""
+    period = _transaction_period(tx)
+    return not period or period == str(context.period_id).strip()
+
+
+def _import_batch_source_types(context: RuleContext) -> Dict[str, str]:
+    """Index persisted import metadata for source-appropriate GL rules."""
+    return {
+        str(_get_val(batch, "batch_id", "")): str(_get_val(batch, "source_type", "")).strip().lower()
+        for batch in context.import_batches
+        if _get_val(batch, "batch_id") is not None
+    }
+
+
+def _is_general_ledger_transaction(
+    tx: Any, context: RuleContext, source_types: Optional[Dict[str, str]] = None
+) -> bool:
+    """Exclude sub-ledger rows from controls whose thresholds are GL-budget scoped."""
+    batch_id = _get_val(tx, "import_batch_id")
+    if batch_id is None:
+        return True
+    source_types = source_types if source_types is not None else _import_batch_source_types(context)
+    source_type = source_types.get(str(batch_id))
+    if not source_type:
+        return True
+    configured = context.config.get("EXC_general_ledger_source_types", _GL_SOURCE_TYPES)
+    if isinstance(configured, str):
+        configured = (configured,)
+    allowed = {str(value).strip().lower() for value in configured}
+    return source_type in allowed
+
+
+def _is_expense_transaction(context: RuleContext, tx: Any) -> bool:
+    """Use DimAccount when available; direct rule contexts may omit the dimension."""
+    if not context.dim_accounts:
+        return True
+    account = str(_get_val(tx, "account_code", "")).strip()
+    metadata = context.dim_accounts.get(account)
+    return bool(
+        metadata
+        and str(metadata.get("account_type", "")).strip().lower() == "expense"
+    )
+
+
+def _positive_transaction_amount(tx: Any) -> Decimal:
+    """Debit-side amount for spend/approval controls; expense credits are not commitments."""
+    raw_net = _get_val(tx, "net_amount")
+    try:
+        net = Decimal(str(raw_net)) if raw_net is not None else ZERO
+    except Exception:
+        net = ZERO
+    if net == ZERO:
+        try:
+            net = Decimal(str(_get_val(tx, "debit", ZERO))) - Decimal(
+                str(_get_val(tx, "credit", ZERO))
+            )
+        except Exception:
+            net = ZERO
+    return quantize_money(max(net, ZERO))
+
+
 def period_end_from_id(period_id: Optional[str]) -> Optional[date]:
     """Resolve an `FYyy-Pmm` period id to its calendar period-end date.
 
@@ -544,6 +623,11 @@ def evaluate_exc_004(context: RuleContext) -> List[Finding]:
     findings: List[Finding] = []
     min_rows = int(context.config.get("EXC-004_min_rows", 1))
     min_amount = Decimal(str(context.config.get("EXC-004_min_amount", "0.00")))
+    batches_by_id = {
+        str(_get_val(batch, "batch_id")): batch
+        for batch in context.import_batches
+        if _get_val(batch, "batch_id") is not None
+    }
 
     # Group by (company_code, declared_period, derived_period)
     groups: Dict[Tuple[str, str, str], List[Any]] = {}
@@ -580,8 +664,19 @@ def evaluate_exc_004(context: RuleContext) -> List[Finding]:
         if total_amount < min_amount:
             continue
 
-        batch_id = str(_get_val(tx_list[0], "batch_id", "batch_040"))
-        first_row_ref = str(_get_val(tx_list[0], "source_row_ref", "row_00882"))
+        first_transaction = tx_list[0]
+        internal_batch_id = _get_val(first_transaction, "import_batch_id")
+        batch_record = batches_by_id.get(str(internal_batch_id))
+        batch_reference = (
+            _get_val(batch_record, "external_batch_ref")
+            or _get_val(first_transaction, "batch_id")
+            or internal_batch_id
+            or "batch_040"
+        )
+        batch_id = str(batch_reference)
+        first_row_ref = str(
+            _get_val(first_transaction, "source_row_ref") or "row_00882"
+        )
         subject_key = f"{batch_id}|{first_row_ref}"
         evidence_refs = [str(_get_val(tx, "source_row_ref", f"row_{i}")) for i, tx in enumerate(tx_list, 1)]
 
@@ -813,10 +908,17 @@ def evaluate_exc_007(context: RuleContext) -> List[Finding]:
     findings: List[Finding] = []
     materiality_amount = Decimal(str(context.config.get("EXC-007_materiality_amount", "500000.00")))
 
-    # Group period actuals by (company_code, account_code, cost_center_code)
+    # Group current-period GL expense rows by (company_code, account_code, cost_center_code).
     groups: Dict[Tuple[str, str, str], List[Any]] = {}
+    source_types = _import_batch_source_types(context)
 
     for tx in context.transactions:
+        if (
+            not _is_current_period_transaction(tx, context)
+            or not _is_general_ledger_transaction(tx, context, source_types)
+            or not _is_expense_transaction(context, tx)
+        ):
+            continue
         comp = str(_get_val(tx, "company_code", "IN01")).strip()
         acc = str(_get_val(tx, "account_code", "")).strip()
         cc = str(_get_val(tx, "cost_center_code", "")).strip()
@@ -825,10 +927,7 @@ def evaluate_exc_007(context: RuleContext) -> List[Finding]:
         groups.setdefault((comp, acc, cc), []).append(tx)
 
     for (comp, acc, cc), tx_list in sorted(groups.items(), key=lambda x: (x[0][0], x[0][1], x[0][2])):
-        actual = sum(
-            quantize_money(abs(_get_val(tx, "net_amount", ZERO) or _get_val(tx, "debit", ZERO)))
-            for tx in tx_list
-        )
+        actual = sum(_positive_transaction_amount(tx) for tx in tx_list)
         actual = quantize_money(actual)
 
         # Check annual budget: if key has annual budget > 0 or period budget > 0, it's not unbudgeted
@@ -891,7 +990,14 @@ def evaluate_exc_008(context: RuleContext) -> List[Finding]:
     actuals: Dict[Tuple[str, str, str], Decimal] = {}
     actual_txs: Dict[Tuple[str, str, str], List[Any]] = {}
 
+    source_types = _import_batch_source_types(context)
     for tx in context.transactions:
+        if (
+            not _is_current_period_transaction(tx, context)
+            or not _is_general_ledger_transaction(tx, context, source_types)
+            or not _is_expense_transaction(context, tx)
+        ):
+            continue
         comp = str(_get_val(tx, "company_code", "IN01")).strip()
         acc = str(_get_val(tx, "account_code", "")).strip()
         cc = str(_get_val(tx, "cost_center_code", "")).strip()
@@ -902,10 +1008,18 @@ def evaluate_exc_008(context: RuleContext) -> List[Finding]:
         actuals[key] = quantize_money(actuals.get(key, ZERO) + amt)
         actual_txs.setdefault(key, []).append(tx)
 
-    # Check against budgets for current period
+    # Check expense-account budgets for the current period. Balance-sheet and
+    # revenue budgets are outside this expense-variance rule's scope.
     checked_keys: Set[Tuple[str, str, str]] = set(actuals.keys())
     for (comp, acc, cc, p) in context.budgets.keys():
-        if p == context.period_id:
+        metadata = context.dim_accounts.get(acc) if context.dim_accounts else None
+        if (
+            p == context.period_id
+            and (
+                not context.dim_accounts
+                or (metadata and str(metadata.get("account_type", "")).strip().lower() == "expense")
+            )
+        ):
             checked_keys.add((comp, acc, cc))
 
     for key in sorted(checked_keys, key=lambda x: (x[0], x[1], x[2])):

@@ -152,8 +152,8 @@ class ImportRepository:
                         profile_id, profile_version, total_source_rows, loaded_count,
                         quarantined_count, rejected_count, status, is_balanced,
                         total_debit, total_credit, net_imbalance, balance_tolerance,
-                        data_quality_score
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        data_quality_score, external_batch_ref, subject_namespace
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         batch.source_type,
@@ -174,6 +174,8 @@ class ImportRepository:
                         str(batch.net_imbalance),
                         str(batch.balance_tolerance),
                         str(dq_score),
+                        batch.external_batch_ref,
+                        batch.subject_namespace,
                     ),
                 )
                 raw_batch_id = cur.lastrowid

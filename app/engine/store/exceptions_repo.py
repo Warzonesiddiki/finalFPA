@@ -159,6 +159,7 @@ class ExceptionsRepository:
                 LEFT JOIN DimCostCenter cc ON a.cost_center_id = cc.cost_center_id
                 LEFT JOIN DimVendor v ON a.vendor_id = v.vendor_id
                 LEFT JOIN DimPeriod p ON a.period_id = p.period_id
+                ORDER BY a.import_batch_id, a.actual_id
             """
             rows = duck_conn.execute(query_tx).fetchall()
 
@@ -251,9 +252,9 @@ class ExceptionsRepository:
                 dict(row)
                 for row in sqlite_conn.execute(
                     """
-                    SELECT batch_id, file_name, source_type, status, is_balanced,
-                           total_debit, total_credit, net_imbalance, balance_tolerance,
-                           created_at
+                    SELECT batch_id, external_batch_ref, subject_namespace, file_name,
+                           source_type, status, is_balanced, total_debit, total_credit,
+                           net_imbalance, balance_tolerance, created_at
                     FROM FactImportBatch
                     ORDER BY created_at, batch_id
                     """

@@ -732,7 +732,7 @@ def parse_csv_transactions(
 
             source_row_index = total_source_rows
             total_source_rows += 1
-            source_row_ref = (
+            fallback_source_row_ref = (
                 source_row_refs[source_row_index]
                 if source_row_refs is not None and source_row_index < len(source_row_refs)
                 else f"line {current_row_idx}"
@@ -747,8 +747,10 @@ def parse_csv_transactions(
                         return val if val else None
                 return None
 
+            source_row_ref = get_col("source_row_ref") or fallback_source_row_ref
             voucher = get_col("voucher_no") or f"VCH-AUTO-{total_source_rows}"
             posting_date_raw = get_col("posting_date")
+            document_date_raw = get_col("document_date")
             period_code_raw = get_col("period_code")
             company_code = get_col("company_code") or "IN01"
             account_code = get_col("account_code") or "5000"
@@ -797,7 +799,13 @@ def parse_csv_transactions(
                     continue
                 resolved_period = resolve_fiscal_period(period_code_raw)
 
-            # Date parsing & IMP-019
+            # Date parsing & IMP-019. Document date is optional business context;
+            # unlike posting_date it does not determine fiscal-period membership.
+            document_date = (
+                parse_date_value(document_date_raw, rule=profile.date_rule)
+                if document_date_raw
+                else None
+            )
             if posting_date_raw:
                 posting_date = parse_date_value(posting_date_raw, rule=profile.date_rule)
                 if posting_date is None:
@@ -909,6 +917,7 @@ def parse_csv_transactions(
                 credit=credit,
                 net_amount=net_amount,
                 currency_code=currency,
+                document_date=document_date,
                 line_no=line_no,
                 is_zero_amount=is_zero,
                 period_code=resolved_period,

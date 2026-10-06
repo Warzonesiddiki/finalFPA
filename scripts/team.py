@@ -382,7 +382,7 @@ def cmd_task_add(args: argparse.Namespace) -> int:
         nums = [int(m.group(1)) for t in ts if (m := re.fullmatch(r"T-(\d{3})", t))]
         tid = f"T-{max(nums, default=0) + 1:03d}"
         while (TASKS / f"{tid}.json").exists():
-            tid = f"T-{int(tid.split("-")[1]) + 1:03d}"
+            tid = f"T-{int(tid.split('-')[1]) + 1:03d}"
     if args.tb and tid in tasks():
         print(f"task {tid} already present")
         return 0
