@@ -74,17 +74,17 @@ at the same time, with evidence attached.
 | `WS-5` | Phase-gate evidence | packs for `GATE-07`…`12` | `16` §5–§6 |
 | `WS-6` | Pilot, UAT, go-live | real-data tie-out, sign-offs, checklist | `GATE-13`…`15` |
 
-## 3. Gap inventory — dated, measured (2026-10-05)
+## 3. Gap inventory — latest evidence reconciled 2026-10-06
 
-Every row is a *verified* shortfall, not a suspicion; each carries its evidence and its target state.
+Rows identify open work. Each measurement names its artifact and whether it predates the current code; an old green or red is not silently carried forward as a current result.
 
-| # | Gap (measured today) | Evidence | Target | Ref |
+| # | Gap / latest measured result | Evidence | Target | Ref |
 |---|---|---|---|---|
-| `G-01` | Acceptance verdict **FAIL**: recall **11/32** | `evidence/acceptance_report.json` | ≥ 29/32 twice | `14` §5.3 |
-| `G-02` | High-severity recall **6/18** (12 High plantings missed) | same | 18/18 | `14` §5.3 |
-| `G-03` | Control precision **1 fired** (P30 `EXC-018` `IN01\|5200\|CC-110`) | same | 0 of 8 | `14` §5.3 |
-| `G-04` | **422 extras** across 10 rules; 6 rules over the > 3 threshold (`EXC-017` 205, `EXC-018` 94, `EXC-019` 71, `EXC-006` 34, `EXC-021` 8, `EXC-022` 5) | same + `evidence/acceptance_remediation_2026-10-04.md` | ≤ 3 per rule, all justified | `14` §5.3 |
-| `G-05` | **14 zero-coverage rules** (`EXC-001/002/003/006/008/009/010/012/013/014/016/020/021/024`) | `evidence/acceptance_report.json` | 0 | `14` §5.3 |
+| `G-01` | Last persisted official result: acceptance **FAIL**, recall **27/32**; result predates task 011, so current-code recall is unmeasured | `evidence/acceptance_report.json` | ≥ 29/32 twice on current code | `14` §5.3 |
+| `G-02` | Last persisted official result: High recall **16/18**; result predates task 011, so current-code High recall is unmeasured | same | 18/18 on current code | `14` §5.3 |
+| `G-03` | Last persisted official result: **0/8 controls fired** (supersedes an earlier P30 report); repeat after task 011 remains unverified | same | 0 of 8 on current code | `14` §5.3 |
+| `G-04` | Last persisted official result: **33 extras** across 9 rules; four exceed >3 (`EXC-017` 6, `EXC-021` 9, `EXC-022` 4, `EXC-023` 5). Current-code extra count is unmeasured | `evidence/acceptance_report.json` | ≤ 3 unexplained per rule, all justified | `14` §5.3 |
+| `G-05` | Last persisted official result: **3 zero-coverage rules** (`EXC-010/013/016`); task-011 smoke is not official evidence and current-code status is unmeasured | `evidence/acceptance_report.json` | 0 on current code | `14` §5.3 |
 | `G-06` | `scripts/check` **exits 1**: 5 perf failures — the §5.3 bar tests, which now *measure* instead of skipping as BLOCKED | `scratch/check_run.log` | exit 0 | `14` §13.1 |
 | `G-07` | `ruff`/`mypy` not installed; `pyproject.toml` has **no** `[tool.ruff]`/`[tool.mypy]` sections | `pyproject.toml` (only pytest/coverage sections) | ADR-002 steps running in the gate | `ADR-002` |
 | `G-08` | ADR-002 pins missing: no `.python-version`, no `.nvmrc`, no `uv.lock`/`requirements.txt` | repo root listing | pins exist and bootstrap uses them | `ADR-002`, `09` §15.2 |
@@ -99,7 +99,7 @@ Every row is a *verified* shortfall, not a suspicion; each carries its evidence 
 | `G-17` | **`OQ-025`/`OQ-026`/`OQ-027` unanswered** — each caps the recall bar by construction (sub-ledger rejection makes P1/P9 unreachable; key divergences sink P2/P3/P6/P8; missing batch-37 fixture sinks P2) | `18` §4 | ✅ **closed 2026-10-05** — `DEC-056`…`DEC-058` | `18`, Addon 2 §H.3 |
 | `G-18` | `PROP-001` (coherent corpus rebuild) proposed but not approved/run; 370 of 422 extras trace to actuals/budget drawn independently | `18_PROPOSAL_FOR_GENERATOR_REBUILD.md`, remediation evidence | ✅ **approved 2026-10-05** (`DEC-059`); execution pending (`TB-006`) | `18` |
 | `G-19` | `NFR-002` ≤ 60 s end-to-end **not yet demonstrated** (commit alone measured 72.6 s for 250,040 rows) | `evidence/acceptance_remediation_2026-10-04.md`, bench | measured ≤ 60 s incl. validation report | `14` §8.2 |
-| `G-20` | `.xlsx` corpus checksums nondeterministic (`openpyxl` stamps wall-clock `dcterms:created`), so the checksum scope had to exclude them | `DEC-055`, `14` §5.2 step 1 | normalised → checksums cover all 16+ files | `14` §5.2 |
+| `G-20` | Acceptance checksum scope lagged the deterministic writer: 17/33 checked-in `.xlsx` archives still carried pre-fix metadata; on 2026-10-06 the 17 archives were normalized without changing workbook payloads, and all 33 now have fixed core/ZIP timestamps. Harness fingerprints `.csv`/`.xlsx`/`.json` by relative path; the production checksum-scope smoke covered all 56 files; repeat-generation and official acceptance evidence remain pending in the pinned runtime | `DEC-055`, `14` §5.2 step 1, `evidence/acceptance_report.md` | retain full SHA-256 scope; run same-seed and official acceptance under project Python | `14` §5.2 |
 | `G-21` | Phase-gate evidence packs for `GATE-07`…`12` not assembled; `GATE-13` unsigned (`28` §4.6.5; `00` line 386 shows Pending) | `16` §5.2, `28` §4.6 | packs attached + approvals recorded | `16`, `28` |
 | `G-22` | Real-Windows-11 gate evidence (`ADR-005` checklist: install, launch, golden path, DPI, SmartScreen, offline) not yet attached to a gate | `09` §3.6 | checklist run + screenshots per gate | `ADR-005`, `15` |
 
@@ -158,7 +158,7 @@ the same commit as its evidence.**
 | `TB-018` | Create the ADR-002 pins: `.python-version`, `.nvmrc`, `uv.lock` (or pinned `requirements.txt`) and use them in bootstrap | `ADR-002`, `09` §15.2 (`G-08`) | ⬜ | — |
 | `TB-019` | Create `scripts/dev` and `scripts/release` exactly as specified; clean-checkout test | `09` §15.4 (`G-15`) | ⬜ | `TB-018` |
 | `TB-020` | Perf suite green: the 5 failing bar tests pass because the bars do (never because they were skipped or weakened) | `scratch/check_run.log` (`G-06`) | ⬜ | `TB-012` |
-| `TB-021` | Normalise `dcterms:created` in the `.xlsx` generators so all corpus checksums are deterministic | `DEC-055` (`G-20`) | ⬜ | — |
+| `TB-021` | Normalize `dcterms:created` and ZIP metadata in `.xlsx` corpus writers; include `.xlsx`/JSON sidecars in the acceptance fingerprint | `DEC-055` (`G-20`) | 🚧 Implementation and targeted archive audit complete; same-seed generator test and official acceptance run still need the pinned Python runtime | `.python-version` 3.14.7; no `.venv`; system Python 3.11.2 |
 | `TB-022` | Full `scripts/check` transcript green (every step, exit 0) attached as gate evidence | `14` §13.1 | ⬜ | `TB-014`–`021` |
 | `TB-023` | Measure `NFR-002` end-to-end (250k rows incl. validation report) ≤ 60 s; record in the `14` §8.2 baseline; optimise honestly if still over | `14` §8.2 (`G-19`) | ⬜ | `TB-022` |
 | `TB-024` | Record remaining NFR measurements (cold start, interaction, PPT, Excel, memory, installer size) in `14` §8.2 with numbers, not adjectives | `14` §3/§8 | ⬜ | — |

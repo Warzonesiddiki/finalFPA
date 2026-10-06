@@ -18,6 +18,7 @@ export function StaleBanner({ sessionToken, onRerunComplete }: StaleBannerProps)
   const [isStale, setIsStale] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [staleReason, setStaleReason] = useState<string | null>(null)
 
   const checkStaleness = () => {
     fetch('/api/v1/staleness', {
@@ -27,6 +28,7 @@ export function StaleBanner({ sessionToken, onRerunComplete }: StaleBannerProps)
       .then(data => {
         if (data.status === 'ok') {
           setIsStale(data.data?.isStale || false)
+          setStaleReason(data.data?.reason || null)
         }
       })
       .catch(() => {})
@@ -50,10 +52,10 @@ export function StaleBanner({ sessionToken, onRerunComplete }: StaleBannerProps)
         setLoading(false)
         if (data.status === 'ok') {
           setIsStale(false)
-          setMessage('Re-run completed successfully. Derived results updated.')
+          setMessage(null)
           if (onRerunComplete) onRerunComplete()
         } else {
-          setMessage('Re-run failed: ' + (data.message || 'Unknown error'))
+          setMessage('Re-run failed: ' + (data.detail || data.message || 'Unknown error'))
         }
       })
       .catch(err => {
@@ -68,7 +70,7 @@ export function StaleBanner({ sessionToken, onRerunComplete }: StaleBannerProps)
     <div style={{ backgroundColor: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '6px', padding: '12px 16px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
       <div style={{ fontSize: '13px', color: '#92400e' }}>
         <strong>⚠ Re-run Required — Configuration Changed:</strong>{' '}
-        {message || 'Mappings, thresholds, or master data have been modified. Derived analytics, exceptions, and forecasts are stale. You are not viewing live numbers.'}
+        {message || staleReason || 'Mappings, thresholds, or master data have been modified. Derived analytics, exceptions, and forecasts are stale. You are not viewing live numbers.'}
       </div>
       {isStale && (
         <button

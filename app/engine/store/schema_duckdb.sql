@@ -48,6 +48,40 @@ CREATE TABLE IF NOT EXISTS DimCostCenter (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS MasterApprovalThreshold (
+    threshold_id VARCHAR(80) NOT NULL,
+    scope VARCHAR(20) NOT NULL CHECK (scope IN ('company', 'account', 'cost_center')),
+    company_id INTEGER,
+    account_id INTEGER,
+    cost_center_id INTEGER,
+    amount_threshold DECIMAL(18,2) NOT NULL CHECK (amount_threshold > 0),
+    requires_dual_approval BOOLEAN NOT NULL DEFAULT FALSE,
+    effective_from DATE NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(120) NOT NULL DEFAULT 'system',
+    change_note VARCHAR(500) NOT NULL DEFAULT '',
+    updated_at TIMESTAMP,
+    updated_by VARCHAR(120),
+    CHECK (
+        (scope = 'company' AND company_id IS NOT NULL AND account_id IS NULL AND cost_center_id IS NULL)
+        OR (scope = 'account' AND company_id IS NULL AND account_id IS NOT NULL AND cost_center_id IS NULL)
+        OR (scope = 'cost_center' AND company_id IS NULL AND account_id IS NULL AND cost_center_id IS NOT NULL)
+    ),
+    PRIMARY KEY (threshold_id, effective_from)
+);
+
+CREATE INDEX IF NOT EXISTS idx_master_approval_threshold_scope_effective
+    ON MasterApprovalThreshold(scope, effective_from, is_active);
+
+CREATE TABLE IF NOT EXISTS DerivedDataState (
+    state_id INTEGER PRIMARY KEY CHECK (state_id = 1),
+    is_stale BOOLEAN NOT NULL DEFAULT FALSE,
+    reason VARCHAR(500),
+    generation BIGINT NOT NULL DEFAULT 0,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS DimVendor (
     vendor_id INTEGER PRIMARY KEY,
     vendor_code VARCHAR(40) NOT NULL UNIQUE,

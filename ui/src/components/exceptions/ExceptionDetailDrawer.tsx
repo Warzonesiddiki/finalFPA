@@ -28,17 +28,34 @@ export const ExceptionDetailDrawer: React.FC<ExceptionDetailDrawerProps> = ({
   const [targetStatus, setTargetStatus] = useState<ExceptionStatus>(exception.status);
   const [targetOwner, setTargetOwner] = useState(exception.owner_name);
 
-  const statusWorkflow: ExceptionStatus[] = [
+  const statusTransitions: Record<ExceptionStatus, ExceptionStatus[]> = {
+    open: ['in_review', 'not_applicable'],
+    in_review: ['explained', 'not_applicable'],
+    explained: ['corrected', 'not_applicable'],
+    corrected: ['closed'],
+    closed: ['reopened'],
+    reopened: ['in_review', 'not_applicable'],
+    not_applicable: ['reopened'],
+  };
+  const availableStatuses = new Set<ExceptionStatus>([
+    exception.status,
+    ...statusTransitions[exception.status],
+  ]);
+  const standardStatuses: ExceptionStatus[] = [
     'open',
     'in_review',
     'explained',
     'corrected',
     'closed',
   ];
+  const statusWorkflow = Array.from(new Set<ExceptionStatus>([
+    ...standardStatuses.filter((status) => availableStatuses.has(status)),
+    exception.status,
+  ]));
 
   const handleStatusSubmit = (status: ExceptionStatus) => {
-    if (status === 'corrected' && !statusNote.trim()) {
-      alert('Per FR-EXC-006: "Corrected" requires an explanation note detailing what was modified.');
+    if (['corrected', 'reopened', 'not_applicable'].includes(status) && !statusNote.trim()) {
+      alert(`Per FR-EXC-006: "${status.replace('_', ' ')}" requires a non-empty reason or note.`);
       return;
     }
     onUpdateStatus(status, statusNote.trim() || undefined);
@@ -307,36 +324,40 @@ export const ExceptionDetailDrawer: React.FC<ExceptionDetailDrawerProps> = ({
                   );
                 })}
 
-                <button
-                  onClick={() => setTargetStatus('reopened')}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    border: exception.status === 'reopened' ? '2px solid #ea580c' : '1px solid #fed7aa',
-                    backgroundColor: exception.status === 'reopened' ? '#fff7ed' : '#ffffff',
-                    color: '#c2410c',
-                    fontWeight: 600,
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Reopen
-                </button>
-                <button
-                  onClick={() => setTargetStatus('not_applicable')}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    border: exception.status === 'not_applicable' ? '2px solid #9333ea' : '1px solid #e9d5ff',
-                    backgroundColor: exception.status === 'not_applicable' ? '#faf5ff' : '#ffffff',
-                    color: '#7e22ce',
-                    fontWeight: 600,
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Not Applicable
-                </button>
+                {availableStatuses.has('reopened') && (
+                  <button
+                    onClick={() => setTargetStatus('reopened')}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      border: exception.status === 'reopened' ? '2px solid #ea580c' : '1px solid #fed7aa',
+                      backgroundColor: exception.status === 'reopened' ? '#fff7ed' : '#ffffff',
+                      color: '#c2410c',
+                      fontWeight: 600,
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Reopen
+                  </button>
+                )}
+                {availableStatuses.has('not_applicable') && (
+                  <button
+                    onClick={() => setTargetStatus('not_applicable')}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      border: exception.status === 'not_applicable' ? '2px solid #9333ea' : '1px solid #e9d5ff',
+                      backgroundColor: exception.status === 'not_applicable' ? '#faf5ff' : '#ffffff',
+                      color: '#7e22ce',
+                      fontWeight: 600,
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Not Applicable
+                  </button>
+                )}
               </div>
 
               {targetStatus !== exception.status && (

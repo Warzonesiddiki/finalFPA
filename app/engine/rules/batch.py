@@ -200,12 +200,23 @@ class RuleBatchResult:
 def _missing_required_dependency(evaluator: Callable, context: RuleContext) -> Optional[str]:
     """Return the name of an unmet required input for `evaluator`, else None.
 
-    Evaluators may declare `REQUIRED_INPUTS` (a tuple of attribute names on the
-    context). Anything declared and absent means the rule is disabled per doc-06
-    §2.9 -- it is NEVER approximated, and the caller receives a notice naming the
-    missing input. Evaluators that declare nothing are assumed self-contained and
-    are simply run.
+    Evaluators may declare `REQUIRED_INPUTS`, `REQUIRED_INPUT_COUNTS`, or a
+    `REQUIRED_INPUT_CHECK(context)` callback. An unmet dependency disables the
+    rule per doc-06 §2.9 -- it is NEVER approximated, and the caller receives a
+    notice naming the missing input. Evaluators that declare no dependencies are
+    assumed self-contained and are simply run.
     """
+    dependency_check = getattr(evaluator, "REQUIRED_INPUT_CHECK", None)
+    if callable(dependency_check):
+        try:
+            missing = dependency_check(context)
+        except Exception:
+            # Let the evaluator path record malformed configuration as an error
+            # instead of misreporting a dependency as merely unavailable.
+            missing = None
+        if missing:
+            return str(missing)
+
     for attr in getattr(evaluator, "REQUIRED_INPUTS", ()) or ():
         if getattr(context, attr, None) in (None, (), [], {}, ""):
             return attr

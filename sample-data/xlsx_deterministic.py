@@ -7,13 +7,14 @@ repo-root `generate_tieout_template.py` — and while the second one still used 
 bare `Workbook.save()`, its template changed SHA-256 on every run. A manifest
 cannot fingerprint a file that moves, so the rule has to have one owner.
 
-openpyxl stamps a wall-clock `dcterms:created` into `docProps/core.xml` on every
-save, so the SAME logical workbook produces a different SHA-256 on every run.
-That made every `.xlsx` in the corpus impossible to fingerprint, which is why the
-acceptance harness excluded 32 xlsx files from its checksum manifest and recorded
-the exclusion instead of closing it (acceptance.py `NON_REPRODUCIBLE`). Pinning
-the document properties to a fixed epoch makes the bytes a function of the
-content alone.
+Before this helper was introduced, openpyxl stamped a wall-clock
+`dcterms:created` into `docProps/core.xml` on every save, so the SAME logical
+workbook produced a different SHA-256 on each generation. That is why the
+acceptance harness originally excluded the `.xlsx` files and recorded the
+limitation (`acceptance.py` `NON_REPRODUCIBLE`). This helper pins document
+properties, ZIP timestamps, member order and file attributes; current generated
+workbooks can therefore be fingerprinted. The checked-in `test_scale/` copies
+are also included in the acceptance checksum scope as separate file paths.
 """
 
 from __future__ import annotations

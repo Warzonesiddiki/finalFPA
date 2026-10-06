@@ -97,10 +97,25 @@ export const ExceptionsScreen: React.FC<ExceptionsScreenProps> = ({ sessionToken
         asOfDate: '2026-11-12',
       }),
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.userMessage || data.error?.userMessage || data.detail || `HTTP ${res.status}`);
+        }
+        return data;
+      })
       .then((data) => {
         if (data.status === 'ok') {
+          const failed: Array<{ rule: string; message?: string }> = data.data?.failedRules ?? [];
+          const disabled: Array<{ rule: string; notice?: string }> = data.data?.disabledRules ?? [];
+          const notices = [
+            ...failed.map((entry) => `${entry.rule} failed${entry.message ? `: ${entry.message}` : ''}`),
+            ...disabled.map((entry) => `${entry.rule} disabled${entry.notice ? `: ${entry.notice}` : ''}`),
+          ];
           fetchExceptions();
+          if (notices.length) {
+            setErrorMessage(`Rule run completed with ${failed.length} failed and ${disabled.length} disabled rule(s): ${notices.join('; ')}`);
+          }
         } else {
           setErrorMessage('Rule evaluation returned unexpected status: ' + JSON.stringify(data));
         }
@@ -143,7 +158,13 @@ export const ExceptionsScreen: React.FC<ExceptionsScreenProps> = ({ sessionToken
         note: note,
       }),
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.userMessage || data.error?.userMessage || data.detail || `HTTP ${res.status}`);
+        }
+        return data;
+      })
       .then((data) => {
         if (data.status === 'ok' && data.data) {
           setActiveDetail(data.data);
@@ -233,11 +254,24 @@ export const ExceptionsScreen: React.FC<ExceptionsScreenProps> = ({ sessionToken
         note: note,
       }),
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.userMessage || data.error?.userMessage || data.detail || `HTTP ${res.status}`);
+        }
+        return data;
+      })
       .then((data) => {
         if (data.status === 'ok') {
+          const skipped = data.data?.skipped ?? [];
           setSelectedIds([]);
           fetchExceptions();
+          if (skipped.length) {
+            const affected = skipped
+              .map((item: { exceptionId: number; reason: string }) => `${item.exceptionId}: ${item.reason}`)
+              .join('; ');
+            setErrorMessage(`${data.data.updated} updated; ${skipped.length} skipped (${affected}).`);
+          }
         }
       })
       .catch((err) => {

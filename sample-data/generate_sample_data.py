@@ -164,6 +164,7 @@ GL_HEADER = [
     "Voucher", "PostingDate", "CompanyCode", "MainAccount", "CostCenter",
     "ProjectCode", "VendorCode", "InvoiceNumber", "TransactionDescription",
     "Debit", "Credit", "Currency", "Watermark", "ProjectType", "DocumentDate",
+    "JournalCategory",
 ]
 
 # A balancing or filler line must not manufacture findings of its own: EXC-021
@@ -608,11 +609,12 @@ def generate_dataset(base_dir, scale=250000, seed=42):
     print(f"Generating sample dataset in {base_dir} (scale target: {scale} rows, seed {seed})...")
 
     def gl(voucher, posted, entity, account, cost_centre, vendor, invoice, note,
-           debit=ZERO, credit=ZERO, project="PRJ-GEN", document_date=None):
+           debit=ZERO, credit=ZERO, project="PRJ-GEN", document_date=None,
+           journal_category="auto"):
         """One GL row. Both money legs default to zero; never both non-zero."""
         return [voucher, posted, entity, account, cost_centre, project, vendor,
                 invoice, note, f"{debit:.2f}", f"{credit:.2f}", "INR",
-                WATERMARK, PROJECT_TYPE, document_date or ""]
+                WATERMARK, PROJECT_TYPE, document_date or "", journal_category]
 
     # ------------------------------------------------------------------
     # 1. D365 General Ledger Actuals — the one coherent model
@@ -873,14 +875,32 @@ def generate_dataset(base_dir, scale=250000, seed=42):
                                "V-00276", invoice, "Offset Operating Bank Account",
                                credit=amount))
 
-        # P22: round top-side journal on a separate reserved cost centre, so it
-        # cannot inflate P13's controlled 6300/CC-120 spike measurement.
+        # EXC-022 entity-level history: three complete 420,000 manual journals
+        # establish the prior-period round-journal baseline without crossing the
+        # 500,000 approval floor. Each voucher balances within its own period.
+        for month in (6, 7, 8):
+            posted = date(2026, month, 25).isoformat()
+            voucher = f"VCH-EXC022-BASE-{month:02d}"
+            invoice = f"JRN-BASE-{month:02d}"
+            writer.writerow(gl(voucher, posted, "IN01", "6300", "CC-150",
+                               "V-00305", invoice, "Historical manual round-journal baseline",
+                               debit=Decimal("420000.00"), project="PRJ-01",
+                               journal_category="manual"))
+            writer.writerow(gl(voucher, posted, "IN01", ROUTINE_OFFSET_ACCOUNT, "CC-150",
+                               "V-00305", invoice, "Historical manual journal offset",
+                               credit=Decimal("420000.00"), project="PRJ-01",
+                               journal_category="manual"))
+
+        # P22: round top-side manual journal on a separate reserved cost centre,
+        # 3.6x the three-period entity baseline and above the materiality floor.
         writer.writerow(gl("VCH-2026-0929-014", "2026-09-29", "IN01", "6300", "CC-150",
                            "V-00305", "JRN-MAN-01", "Top-side round manual journal",
-                           debit=Decimal("1500000.00"), project="PRJ-01"))
+                           debit=Decimal("1500000.00"), project="PRJ-01",
+                           journal_category="manual"))
         writer.writerow(gl("VCH-2026-0929-014", "2026-09-29", "IN01", ROUTINE_OFFSET_ACCOUNT, "CC-150",
                            "V-00305", "JRN-MAN-01", "Offset Trade Accounts Payable",
-                           credit=Decimal("1500000.00"), project="PRJ-01"))
+                           credit=Decimal("1500000.00"), project="PRJ-01",
+                           journal_category="manual"))
 
         # P23: the pinned unbalanced voucher. Deliberately left single-sided so
         # EXC-023 has something to find; the FIX leg restores file balance.
