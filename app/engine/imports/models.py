@@ -100,6 +100,28 @@ class ImportBatchResult:
     quarantined_rows: List[Dict[str, Any]] = field(default_factory=list)
     balance_tolerance: Decimal = Decimal("0.00")
     sheet_name: str = "Data"
+    external_batch_ref: Optional[str] = None
+    subject_namespace: Optional[str] = None
+
+    def __post_init__(self) -> None:
+        for field_name, maximum_length in (
+            ("external_batch_ref", 128),
+            ("subject_namespace", 64),
+        ):
+            value = getattr(self, field_name)
+            if value is None:
+                continue
+            normalized = str(value).strip()
+            if not normalized:
+                setattr(self, field_name, None)
+                continue
+            if len(normalized) > maximum_length:
+                raise ValueError(f"{field_name} exceeds {maximum_length} characters")
+            if "|" in normalized or any(ord(character) < 32 for character in normalized):
+                raise ValueError(f"{field_name} contains a reserved delimiter or control character")
+            setattr(self, field_name, normalized)
+        if self.subject_namespace and not self.external_batch_ref:
+            raise ValueError("subject_namespace requires external_batch_ref")
 
     @property
     def can_commit(self) -> bool:

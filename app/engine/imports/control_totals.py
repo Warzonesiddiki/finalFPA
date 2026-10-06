@@ -176,7 +176,25 @@ def read_control_totals_report(
             raise ValueError(
                 "Control-total acceptance requires accepted_by and a reason of at least 10 characters"
             )
-        accepted_at = datetime.now(UTC).isoformat() if acceptance else None
+        accepted_at = None
+        if acceptance:
+            provided_accepted_at = str(acceptance.get("accepted_at", "")).strip()
+            if provided_accepted_at:
+                try:
+                    parsed_accepted_at = datetime.fromisoformat(
+                        provided_accepted_at.replace("Z", "+00:00")
+                    )
+                except ValueError as exc:
+                    raise ValueError(
+                        "Control-total accepted_at must be an ISO-8601 timestamp"
+                    ) from exc
+                if parsed_accepted_at.tzinfo is None:
+                    raise ValueError(
+                        "Control-total accepted_at must include a timezone"
+                    )
+                accepted_at = parsed_accepted_at.astimezone(UTC).isoformat()
+            else:
+                accepted_at = datetime.now(UTC).isoformat()
 
         for worksheet_row, row in enumerate(row_iter, start=2):
             if not row or all(value is None or str(value).strip() == "" for value in row):

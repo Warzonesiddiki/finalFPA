@@ -4,6 +4,9 @@ __pycache__/
 *.pyo
 *.pyd
 
+# Local virtual environments
+.venv/
+
 # PyInstaller / Build artifacts
 build/
 dist/

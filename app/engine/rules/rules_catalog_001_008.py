@@ -124,8 +124,16 @@ def _period_budget_keys(context: RuleContext, fiscal_year: int) -> set[tuple[str
 
 
 def _batch_subject(batch: Any, batch_id: str) -> str:
-    """Use the catalog's stable batch-ID identity; honor an explicit external key."""
-    return _text(batch, "subject_key") or batch_id
+    """Build a stable batch identity when the source supplies one."""
+    explicit_subject = _text(batch, "subject_key")
+    if explicit_subject:
+        return explicit_subject
+
+    external_ref = _text(batch, "external_batch_ref")
+    namespace = _text(batch, "subject_namespace")
+    if external_ref and namespace:
+        return f"{external_ref}|{namespace}"
+    return external_ref or batch_id
 
 
 # ---------------------------------------------------------------------------
@@ -464,7 +472,13 @@ def evaluate_catalog_exc_003(context: RuleContext) -> list[Finding]:
             continue
 
         scope = _text(total, "scope", _text(total, "control_total_scope", "file"))
-        subject_key = _text(total, "subject_key") or f"{batch_id}|{scope}"
+        batch_record = batch_by_id.get(batch_id)
+        stable_batch_ref = (
+            _text(total, "external_batch_ref")
+            or _text(batch_record, "external_batch_ref")
+            or batch_id
+        )
+        subject_key = _text(total, "subject_key") or f"{stable_batch_ref}|{scope}"
         findings.append(
             Finding(
                 rule_id="EXC-003",

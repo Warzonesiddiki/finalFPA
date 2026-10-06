@@ -27,7 +27,12 @@ from app.engine.rules.rules_01_08 import (
     RuleContext,
     _derive_period_from_date,
     _get_val,
+    _import_batch_source_types,
+    _is_current_period_transaction,
+    _is_expense_transaction,
+    _is_general_ledger_transaction,
     _parse_date,
+    _positive_transaction_amount,
 )
 
 
@@ -124,6 +129,12 @@ def evaluate_exc_019(context: RuleContext) -> List[Finding]:
     for key in sorted(checked):
         comp, acc, cc = key
         actual = ytd_actual.get(key, ZERO)
+
+        # This rule is for an overrun against an active budget, not a missing or
+        # zero current-period allocation (EXC-017/020 own those conditions).
+        current_period_budget = context.budgets.get((comp, acc, cc, context.period_id))
+        if current_period_budget is None or quantize_money(current_period_budget) <= ZERO:
+            continue
 
         # YTD budget = sum of the budget lines for the open periods.
         ytd_budget = quantize_money(
@@ -311,9 +322,16 @@ def evaluate_exc_021(context: RuleContext) -> List[Finding]:
     single_threshold = Decimal(str(context.config.get("EXC-021_single_threshold", "500000.00")))
 
     groups: Dict[Tuple[str, str, str], List[Any]] = {}
+    source_types = _import_batch_source_types(context)
 
     for tx in context.transactions:
-        amt = quantize_money(abs(_get_val(tx, "net_amount", ZERO) or _get_val(tx, "debit", ZERO)))
+        if (
+            not _is_current_period_transaction(tx, context)
+            or not _is_general_ledger_transaction(tx, context, source_types)
+            or not _is_expense_transaction(context, tx)
+        ):
+            continue
+        amt = _positive_transaction_amount(tx)
         if amt >= single_threshold:
             comp = str(_get_val(tx, "company_code", "IN01")).strip()
             vch = str(_get_val(tx, "voucher_no", "")).strip()
@@ -321,10 +339,7 @@ def evaluate_exc_021(context: RuleContext) -> List[Finding]:
             groups.setdefault((comp, vch, thresh_type), []).append(tx)
 
     for (comp, vch, thresh_type), tx_list in sorted(groups.items(), key=lambda x: (x[0][0], x[0][1])):
-        total_amt = sum(
-            quantize_money(abs(_get_val(tx, "net_amount", ZERO) or _get_val(tx, "debit", ZERO)))
-            for tx in tx_list
-        )
+        total_amt = sum(_positive_transaction_amount(tx) for tx in tx_list)
         req_approval = "dual approval required" if thresh_type == "dual" else "single approval required"
         target_amt = dual_threshold if thresh_type == "dual" else single_threshold
         subject_key = f"{comp}|{vch}|{thresh_type}"
@@ -361,18 +376,24 @@ def evaluate_exc_022(context: RuleContext) -> List[Finding]:
     round_unit = Decimal(str(context.config.get("EXC-022_round_unit", "10000.00")))
     round_floor = Decimal(str(context.config.get("EXC-022_round_floor", "500000.00")))
 
-    # Group by voucher
+    # Use current-period GL expense debits as the voucher amount; balancing
+    # credits and sub-ledger rows are not additional journal exposure.
     vouchers: Dict[Tuple[str, str], List[Any]] = {}
+    source_types = _import_batch_source_types(context)
     for tx in context.transactions:
+        if (
+            not _is_current_period_transaction(tx, context)
+            or not _is_general_ledger_transaction(tx, context, source_types)
+            or not _is_expense_transaction(context, tx)
+        ):
+            continue
         comp = str(_get_val(tx, "company_code", "IN01")).strip()
         vch = str(_get_val(tx, "voucher_no", "")).strip()
-        vouchers.setdefault((comp, vch), []).append(tx)
+        if vch:
+            vouchers.setdefault((comp, vch), []).append(tx)
 
     for (comp, vch), tx_list in sorted(vouchers.items(), key=lambda x: (x[0][0], x[0][1])):
-        total_amt = sum(
-            quantize_money(abs(_get_val(tx, "net_amount", ZERO) or _get_val(tx, "debit", ZERO)))
-            for tx in tx_list
-        )
+        total_amt = sum(_positive_transaction_amount(tx) for tx in tx_list)
         if total_amt >= round_floor and (total_amt % round_unit) == ZERO:
             multiple = int(total_amt / round_unit)
             subject_key = f"{comp}|{vch}"
@@ -410,10 +431,17 @@ def evaluate_exc_023(context: RuleContext) -> List[Finding]:
     min_lines = int(context.config.get("EXC-023_min_lines", 2))
 
     vouchers: Dict[Tuple[str, str], List[Any]] = {}
+    source_types = _import_batch_source_types(context)
     for tx in context.transactions:
+        if (
+            not _is_current_period_transaction(tx, context)
+            or not _is_general_ledger_transaction(tx, context, source_types)
+        ):
+            continue
         comp = str(_get_val(tx, "company_code", "IN01")).strip()
         vch = str(_get_val(tx, "voucher_no", "")).strip()
-        vouchers.setdefault((comp, vch), []).append(tx)
+        if vch:
+            vouchers.setdefault((comp, vch), []).append(tx)
 
     for (comp, vch), tx_list in sorted(vouchers.items(), key=lambda x: (x[0][0], x[0][1])):
         if len(tx_list) < min_lines:

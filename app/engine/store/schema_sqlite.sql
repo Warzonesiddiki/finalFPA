@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS SchemaMetadata (
 
 CREATE TABLE IF NOT EXISTS FactImportBatch (
     batch_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    external_batch_ref TEXT,
+    subject_namespace TEXT,
     source_type TEXT NOT NULL,
     file_name TEXT NOT NULL,
     file_checksum TEXT NOT NULL,

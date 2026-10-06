@@ -5,11 +5,15 @@
   "blocked_reasons": [],
   "as_of": "2026-11-12",
   "period": "FY26-P09",
-  "elapsed_seconds": 92.0,
+  "elapsed_seconds": 28.7,
   "corpus_checksum": {
-    "d365_gl_actuals.csv": "88efa5bbb6704ef95680bd59181502636836bb99e42ecfb0f462e7a9d8ca822d",
-    "bank_ledger_actuals.csv": "18236a432c2bc4d859cec14b0b454da420db17e4451f08058fcda05c4baaacca",
-    "payroll_procurement_actuals.csv": "37f462a146bb78b3b20863a832d848345e8305f7c8e62c9fe1b75819211fde82"
+    "import_history/01_bank_batch_037.csv": "9bd938aff4dcb5f7d41cd5211c1fc6eb0c745a3b652de1e9c89b5866b09b6b88",
+    "import_history/02_gl_batch_039.xlsx": "d8739ecd1dc2c36d4a7b061283c2c56c91da745d03af0205ff82d329b9b679ce",
+    "d365_gl_actuals.csv": "2ce854fa28fc9bc24903090b301d50efbd5e9d2e211668f2dfffa2b718a77c06",
+    "bank_ledger_actuals.csv": "d64e26698ed07a16681d098a5edcbd34c291a2024af7114877c79084b1bc7599",
+    "payroll_procurement_actuals.csv": "1cd8993029befad7c3a0a657fe2561dc4b0ca9bc84291e573955a4e7342a17e1",
+    "import_history/03_bank_batch_040.csv": "2ef1314edc64b5787aebb13225acc2c695be8aeaaa2053b8f66e604e0e885427",
+    "import_history/04_bank_batch_041.csv": "33c24b3deaaa4895a55e0b5ea44f891e032d984843c8a66c3ed90c6f7c598f83"
   },
   "checksum_scope": {
     "fingerprinted_count": 22,
@@ -83,13 +87,168 @@
   },
   "corpus": [
     {
+      "file": "import_history/01_bank_batch_037.csv",
+      "source_type": "actuals_d365",
+      "is_general_ledger": true,
+      "recorded_status": "committed",
+      "status": "committed",
+      "balanced": true,
+      "committable": true,
+      "balance_gate": "journal exact debit=credit (04 \u00a712/IMP-023)",
+      "rows": 4,
+      "loaded_count": 4,
+      "quarantined_count": 0,
+      "rejected_count": 0,
+      "total_debit": "95500.00",
+      "total_credit": "95500.00",
+      "net_imbalance": "0.00",
+      "checks_run": 10,
+      "checks": [
+        {
+          "code": "IMP-001",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-017",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-018",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-019",
+          "status": "pass",
+          "severity": "medium"
+        },
+        {
+          "code": "IMP-020",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-021",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-022",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-023",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-024",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-025",
+          "status": "skipped",
+          "severity": "high"
+        }
+      ],
+      "failed_checks": [],
+      "data_quality_score": 100,
+      "data_quality_raw_score": "100.0",
+      "data_quality_failed": [],
+      "data_quality_weight_set": "1.0",
+      "checksum": "9bd938aff4dcb5f7d41cd5211c1fc6eb0c745a3b652de1e9c89b5866b09b6b88",
+      "parsed_loaded_count": 4
+    },
+    {
+      "file": "import_history/02_gl_batch_039.xlsx",
+      "source_type": "actuals_d365",
+      "is_general_ledger": true,
+      "recorded_status": "committed",
+      "status": "committed",
+      "balanced": true,
+      "committable": true,
+      "balance_gate": "journal exact debit=credit (04 \u00a712/IMP-023)",
+      "rows": 110,
+      "loaded_count": 110,
+      "quarantined_count": 0,
+      "rejected_count": 0,
+      "total_debit": "18399650.00",
+      "total_credit": "18399650.00",
+      "net_imbalance": "0.00",
+      "checks_run": 10,
+      "checks": [
+        {
+          "code": "IMP-001",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-017",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-018",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-019",
+          "status": "pass",
+          "severity": "medium"
+        },
+        {
+          "code": "IMP-020",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-021",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-022",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-023",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-024",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-025",
+          "status": "warn",
+          "severity": "high"
+        }
+      ],
+      "failed_checks": [],
+      "data_quality_score": 93,
+      "data_quality_raw_score": "92.95774647887323943661971831",
+      "data_quality_failed": [],
+      "data_quality_weight_set": "1.0",
+      "checksum": "d8739ecd1dc2c36d4a7b061283c2c56c91da745d03af0205ff82d329b9b679ce",
+      "parsed_loaded_count": 110
+    },
+    {
       "file": "d365_gl_actuals.csv",
       "source_type": "actuals_d365",
       "is_general_ledger": true,
       "recorded_status": "committed",
       "status": "committed",
       "balanced": true,
-      "balance_gate": "enforced (doc 04 \u00a712/IMP-023, every source type)",
+      "committable": true,
+      "balance_gate": "journal exact debit=credit (04 \u00a712/IMP-023)",
       "rows": 250482,
       "loaded_count": 250482,
       "quarantined_count": 0,
@@ -155,7 +314,8 @@
       "data_quality_raw_score": "100.0",
       "data_quality_failed": [],
       "data_quality_weight_set": "1.0",
-      "checksum": "88efa5bbb6704ef95680bd59181502636836bb99e42ecfb0f462e7a9d8ca822d"
+      "checksum": "2ce854fa28fc9bc24903090b301d50efbd5e9d2e211668f2dfffa2b718a77c06",
+      "parsed_loaded_count": 250482
     },
     {
       "file": "bank_ledger_actuals.csv",
@@ -164,7 +324,8 @@
       "recorded_status": "committed",
       "status": "committed",
       "balanced": true,
-      "balance_gate": "enforced (doc 04 \u00a712/IMP-023, every source type)",
+      "committable": true,
+      "balance_gate": "sub-ledger net reconciliation (DEC-056/IMP-023; tolerance \u20b9500.00)",
       "rows": 498,
       "loaded_count": 498,
       "quarantined_count": 0,
@@ -230,7 +391,8 @@
       "data_quality_raw_score": "100.0",
       "data_quality_failed": [],
       "data_quality_weight_set": "1.0",
-      "checksum": "18236a432c2bc4d859cec14b0b454da420db17e4451f08058fcda05c4baaacca"
+      "checksum": "d64e26698ed07a16681d098a5edcbd34c291a2024af7114877c79084b1bc7599",
+      "parsed_loaded_count": 498
     },
     {
       "file": "payroll_procurement_actuals.csv",
@@ -239,7 +401,8 @@
       "recorded_status": "committed",
       "status": "committed",
       "balanced": true,
-      "balance_gate": "enforced (doc 04 \u00a712/IMP-023, every source type)",
+      "committable": true,
+      "balance_gate": "sub-ledger net reconciliation (DEC-056/IMP-023; tolerance \u20b9500.00)",
       "rows": 398,
       "loaded_count": 398,
       "quarantined_count": 0,
@@ -305,7 +468,162 @@
       "data_quality_raw_score": "100.0",
       "data_quality_failed": [],
       "data_quality_weight_set": "1.0",
-      "checksum": "37f462a146bb78b3b20863a832d848345e8305f7c8e62c9fe1b75819211fde82"
+      "checksum": "1cd8993029befad7c3a0a657fe2561dc4b0ca9bc84291e573955a4e7342a17e1",
+      "parsed_loaded_count": 398
+    },
+    {
+      "file": "import_history/03_bank_batch_040.csv",
+      "source_type": "actuals_procurement",
+      "is_general_ledger": false,
+      "recorded_status": "committed",
+      "status": "committed",
+      "balanced": true,
+      "committable": true,
+      "balance_gate": "sub-ledger net reconciliation (DEC-056/IMP-023; tolerance \u20b9500.00)",
+      "rows": 10,
+      "loaded_count": 10,
+      "quarantined_count": 0,
+      "rejected_count": 0,
+      "total_debit": "743400.00",
+      "total_credit": "743400.00",
+      "net_imbalance": "0.00",
+      "checks_run": 10,
+      "checks": [
+        {
+          "code": "IMP-001",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-017",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-018",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-019",
+          "status": "pass",
+          "severity": "medium"
+        },
+        {
+          "code": "IMP-020",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-021",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-022",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-023",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-024",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-025",
+          "status": "skipped",
+          "severity": "high"
+        }
+      ],
+      "failed_checks": [],
+      "data_quality_score": 100,
+      "data_quality_raw_score": "100.0",
+      "data_quality_failed": [],
+      "data_quality_weight_set": "1.0",
+      "checksum": "2ef1314edc64b5787aebb13225acc2c695be8aeaaa2053b8f66e604e0e885427",
+      "parsed_loaded_count": 10
+    },
+    {
+      "file": "import_history/04_bank_batch_041.csv",
+      "source_type": "actuals_procurement",
+      "is_general_ledger": false,
+      "recorded_status": "committed",
+      "status": "committed",
+      "balanced": true,
+      "committable": true,
+      "balance_gate": "sub-ledger net reconciliation (DEC-056/IMP-023; tolerance \u20b9500.00)",
+      "rows": 2,
+      "loaded_count": 2,
+      "quarantined_count": 0,
+      "rejected_count": 0,
+      "total_debit": "1000000.00",
+      "total_credit": "999650.00",
+      "net_imbalance": "350.00",
+      "checks_run": 10,
+      "checks": [
+        {
+          "code": "IMP-001",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-017",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-018",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-019",
+          "status": "pass",
+          "severity": "medium"
+        },
+        {
+          "code": "IMP-020",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-021",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-022",
+          "status": "pass",
+          "severity": "low"
+        },
+        {
+          "code": "IMP-023",
+          "status": "warn",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-024",
+          "status": "pass",
+          "severity": "high"
+        },
+        {
+          "code": "IMP-025",
+          "status": "skipped",
+          "severity": "high"
+        }
+      ],
+      "failed_checks": [],
+      "data_quality_score": 92,
+      "data_quality_raw_score": "91.80327868852459016393442623",
+      "data_quality_failed": [],
+      "data_quality_weight_set": "1.0",
+      "checksum": "33c24b3deaaa4895a55e0b5ea44f891e032d984843c8a66c3ed90c6f7c598f83",
+      "parsed_loaded_count": 2
     }
   ],
   "divergences": [
@@ -316,10 +634,10 @@
     {
       "name": "Planted-exception recall",
       "requirement": ">= 29 of 32 (>= 90 % of the 32 raises)",
-      "measured": "21/32 = 65.6 %",
+      "measured": "27/32 = 84.4 %",
       "passed": false,
       "measurable": true,
-      "detail": "11 planted case(s) not detected"
+      "detail": "5 planted case(s) not detected"
     },
     {
       "name": "Control precision",
@@ -332,7 +650,7 @@
     {
       "name": "High-severity recall",
       "requirement": "18 of 18 High plantings found",
-      "measured": "10/18",
+      "measured": "16/18",
       "passed": false,
       "measurable": true,
       "detail": "a missed High is a control failure, not a statistic"
@@ -340,7 +658,7 @@
     {
       "name": "Extra findings",
       "requirement": "a rule with > 3 unexplained findings is tuned or documented before the gate",
-      "measured": "24 extra across 7 rule(s); over threshold: ['EXC-017', 'EXC-021', 'EXC-022']",
+      "measured": "33 extra across 9 rule(s); over threshold: ['EXC-017', 'EXC-021', 'EXC-022', 'EXC-023']",
       "passed": false,
       "measurable": true,
       "detail": "no false-positive log reference is committed in this repository; extras are therefore UNEXPLAINED, not justified"
@@ -364,10 +682,10 @@
     {
       "name": "Zero-coverage rules",
       "requirement": "every rule with a planted case raises at least one finding",
-      "measured": "7 rule(s) with zero coverage",
+      "measured": "3 rule(s) with zero coverage",
       "passed": false,
       "measurable": true,
-      "detail": "zero coverage: ['EXC-001', 'EXC-002', 'EXC-003', 'EXC-009', 'EXC-010', 'EXC-013', 'EXC-016']"
+      "detail": "zero coverage: ['EXC-010', 'EXC-013', 'EXC-016']"
     }
   ],
   "per_rule": [
@@ -377,17 +695,17 @@
       "plantings": [
         "P1"
       ],
-      "detected": [],
-      "missed": [
+      "detected": [
         "P1"
       ],
+      "missed": [],
       "controls": [],
       "controls_fired": [],
-      "findings_raised": 0,
+      "findings_raised": 1,
       "extras": 0,
       "wired": true,
-      "recall_pct": 0.0,
-      "zero_coverage": true
+      "recall_pct": 100.0,
+      "zero_coverage": false
     },
     {
       "rule_id": "EXC-002",
@@ -397,19 +715,19 @@
         "P2",
         "P2"
       ],
-      "detected": [],
-      "missed": [
+      "detected": [
         "P2",
         "P2",
         "P2"
       ],
+      "missed": [],
       "controls": [],
       "controls_fired": [],
-      "findings_raised": 0,
-      "extras": 0,
+      "findings_raised": 4,
+      "extras": 1,
       "wired": true,
-      "recall_pct": 0.0,
-      "zero_coverage": true
+      "recall_pct": 100.0,
+      "zero_coverage": false
     },
     {
       "rule_id": "EXC-003",
@@ -417,17 +735,17 @@
       "plantings": [
         "P3"
       ],
-      "detected": [],
-      "missed": [
+      "detected": [
         "P3"
       ],
+      "missed": [],
       "controls": [],
       "controls_fired": [],
-      "findings_raised": 0,
+      "findings_raised": 1,
       "extras": 0,
       "wired": true,
-      "recall_pct": 0.0,
-      "zero_coverage": true
+      "recall_pct": 100.0,
+      "zero_coverage": false
     },
     {
       "rule_id": "EXC-004",
@@ -501,8 +819,8 @@
         "P25"
       ],
       "controls_fired": [],
-      "findings_raised": 2,
-      "extras": 0,
+      "findings_raised": 5,
+      "extras": 2,
       "wired": true,
       "recall_pct": 100.0,
       "zero_coverage": false
@@ -533,17 +851,17 @@
       "plantings": [
         "P9"
       ],
-      "detected": [],
-      "missed": [
+      "detected": [
         "P9"
       ],
+      "missed": [],
       "controls": [],
       "controls_fired": [],
-      "findings_raised": 0,
+      "findings_raised": 1,
       "extras": 0,
       "wired": true,
-      "recall_pct": 0.0,
-      "zero_coverage": true
+      "recall_pct": 100.0,
+      "zero_coverage": false
     },
     {
       "rule_id": "EXC-010",
@@ -637,8 +955,8 @@
       "missed": [],
       "controls": [],
       "controls_fired": [],
-      "findings_raised": 2,
-      "extras": 1,
+      "findings_raised": 3,
+      "extras": 2,
       "wired": true,
       "recall_pct": 100.0,
       "zero_coverage": false
@@ -774,8 +1092,8 @@
         "P31"
       ],
       "controls_fired": [],
-      "findings_raised": 9,
-      "extras": 7,
+      "findings_raised": 11,
+      "extras": 9,
       "wired": true,
       "recall_pct": 100.0,
       "zero_coverage": false
@@ -810,8 +1128,8 @@
       "missed": [],
       "controls": [],
       "controls_fired": [],
-      "findings_raised": 3,
-      "extras": 2,
+      "findings_raised": 6,
+      "extras": 5,
       "wired": true,
       "recall_pct": 100.0,
       "zero_coverage": false
@@ -835,60 +1153,20 @@
       "zero_coverage": false
     }
   ],
-  "findings_total": 45,
-  "extras_total": 24,
+  "findings_total": 61,
+  "extras_total": 33,
   "extras_by_rule": {
     "EXC-017": 6,
     "EXC-022": 4,
-    "EXC-021": 7,
-    "EXC-018": 3,
+    "EXC-023": 5,
+    "EXC-021": 9,
     "EXC-006": 1,
-    "EXC-023": 2,
-    "EXC-014": 1
+    "EXC-018": 3,
+    "EXC-014": 2,
+    "EXC-007": 2,
+    "EXC-002": 1
   },
   "miss_list": [
-    {
-      "planting_id": "P1",
-      "rule_id": "EXC-001",
-      "severity": "High",
-      "subject_key": "batch_041|bank_ledger",
-      "notes": "Unbalanced bank-ledger file loaded under a \u20b9500 tolerance (variance \u20b9350.00)"
-    },
-    {
-      "planting_id": "P2",
-      "rule_id": "EXC-002",
-      "severity": "High",
-      "subject_key": "IN01|VCH-2026-0915-001|1",
-      "notes": "Re-export overlaps batch 37 on voucher line 1"
-    },
-    {
-      "planting_id": "P2",
-      "rule_id": "EXC-002",
-      "severity": "High",
-      "subject_key": "IN01|VCH-2026-0915-001|2",
-      "notes": "Re-export overlaps batch 37 on voucher line 2"
-    },
-    {
-      "planting_id": "P2",
-      "rule_id": "EXC-002",
-      "severity": "High",
-      "subject_key": "IN01|VCH-2026-0915-002|1",
-      "notes": "Re-export overlaps batch 37 on voucher line 3"
-    },
-    {
-      "planting_id": "P3",
-      "rule_id": "EXC-003",
-      "severity": "High",
-      "subject_key": "batch_039|gl_control_total",
-      "notes": "Control-total variance: supplied \u20b918400000.00 vs loaded \u20b918399650.00"
-    },
-    {
-      "planting_id": "P9",
-      "rule_id": "EXC-009",
-      "severity": "High",
-      "subject_key": "batch_040|row_00882",
-      "notes": "9 October-dated rows declare source period FY26-P09"
-    },
     {
       "planting_id": "P10",
       "rule_id": "EXC-010",
@@ -933,12 +1211,12 @@
       "Medium": 12
     },
     "detected": {
-      "High": 10,
+      "High": 16,
       "Low": 2,
       "Medium": 9
     },
     "missed": {
-      "High": 8,
+      "High": 2,
       "Medium": 3
     }
   }
