@@ -308,7 +308,7 @@ export function App() {
 
         {/* Tab 9: Settings & Master Data (SCR-033..SCR-038, FR-SET family) */}
         {activeTab === 'settings' && (
-          <SettingsScreen />
+          <SettingsScreen sessionToken={sessionToken} />
         )}
 
         {/* Tab 10: Backup & Restore (SCR-039, FR-PRJ-008/009/011) */}

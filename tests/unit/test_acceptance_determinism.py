@@ -6,12 +6,10 @@ produce a different set of findings, or the same findings in a different order,
 if any evaluator iterates a `set`. A hash-seed-dependent ordering is invisible in
 a count and obvious in a diff, which is why it is asserted on the ordered list.
 
-Known, reported, NOT fixed here: `AcceptanceReport.extras_by_rule` is built from
-`dict(Counter(...))` in `app/engine/rules/acceptance.py`, so the KEY ORDER of
-that one mapping varies with `PYTHONHASHSEED` between runs even though its
-contents do not. That file belongs to another agent's claim, so this test
-compares that mapping by content and leaves the ordering defect on the record for
-its owner.
+The acceptance report now sorts `extras_by_rule` before serialization, so its
+JSON key order is stable across `PYTHONHASHSEED` values. This test continues to
+assert the count mapping's content; the implementation owns the presentation
+order. No acceptance thresholds or finding classifications are changed here.
 """
 
 from __future__ import annotations

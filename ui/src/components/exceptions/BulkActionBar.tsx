@@ -25,6 +25,10 @@ export const BulkActionBar: React.FC<BulkActionBarProps> = ({
       alert('Please select a target status or target owner for bulk update.');
       return;
     }
+    if (['corrected', 'reopened', 'not_applicable'].includes(targetStatus) && !note.trim()) {
+      alert(`A reason or correction note is required for bulk status "${targetStatus.replace('_', ' ')}".`);
+      return;
+    }
     const statusVal = targetStatus ? (targetStatus as ExceptionStatus) : undefined;
     const ownerVal = targetOwner ? targetOwner : undefined;
     onBulkUpdate(statusVal, ownerVal, note.trim() || undefined);
@@ -90,6 +94,7 @@ export const BulkActionBar: React.FC<BulkActionBarProps> = ({
           <option value="explained">Explained</option>
           <option value="corrected">Corrected</option>
           <option value="closed">Closed</option>
+          <option value="reopened">Reopened</option>
           <option value="not_applicable">Not Applicable</option>
         </select>
 
@@ -115,7 +120,9 @@ export const BulkActionBar: React.FC<BulkActionBarProps> = ({
 
         <input
           type="text"
-          placeholder="Optional bulk note..."
+          placeholder={['corrected', 'reopened', 'not_applicable'].includes(targetStatus)
+            ? 'Required reason or correction note...'
+            : 'Optional bulk note...'}
           value={note}
           onChange={(e) => setNote(e.target.value)}
           style={{

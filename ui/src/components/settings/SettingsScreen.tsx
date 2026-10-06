@@ -14,7 +14,7 @@
  * - FR-SET-010 (Audit Log): All configuration changes record user, timestamp, prior value, and new value.
  */
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { PeriodLifecycleScreen } from './PeriodLifecycleScreen'
 
 interface VendorCategory {
@@ -47,7 +47,47 @@ interface VersionRecord {
   summary: string
 }
 
-export function SettingsScreen() {
+type ApprovalThresholdScope = 'company' | 'account' | 'cost_center'
+
+interface ApprovalThreshold {
+  thresholdId: string
+  scope: ApprovalThresholdScope
+  amountThreshold: string
+  requiresDualApproval: boolean
+  effectiveFrom: string
+  changeNote: string
+  createdAt: string
+  createdBy: string
+  isActive: boolean
+  companyCode: string | null
+  accountCode: string | null
+  costCenterCode: string | null
+}
+
+interface ApprovalThresholdResponse {
+  status?: string
+  data?: { items?: ApprovalThreshold[]; [key: string]: unknown }
+  userMessage?: string
+  detail?: string
+  error?: { userMessage?: string }
+}
+
+async function fetchApprovalThresholds(sessionToken: string): Promise<ApprovalThreshold[]> {
+  const response = await fetch('/api/v1/master-data/approval-thresholds', {
+    headers: { 'X-Session-Token': sessionToken },
+  })
+  const payload = await response.json() as ApprovalThresholdResponse
+  if (!response.ok || payload.status !== 'ok') {
+    throw new Error(payload.userMessage || payload.error?.userMessage || payload.detail || `HTTP ${response.status}`)
+  }
+  return payload.data?.items ?? []
+}
+
+interface SettingsScreenProps {
+  sessionToken: string
+}
+
+export function SettingsScreen({ sessionToken }: SettingsScreenProps) {
   const [activeSubTab, setActiveSubTab] = useState<'branding' | 'mappings' | 'masterdata' | 'rules' | 'ai_storage' | 'versions' | 'periods'>('branding')
 
   // Branding State
@@ -65,6 +105,40 @@ export function SettingsScreen() {
   const [coaProfile, setCoaProfile] = useState('Standard D365 GL Mapping v2.1')
   const [costCenterMapping, setCostCenterMapping] = useState('Default Department Cost Center Map')
   const [mappingStatus, setMappingStatus] = useState<string | null>(null)
+
+  // Effective-dated EXC-021 approval-threshold master data
+  const [approvalThresholds, setApprovalThresholds] = useState<ApprovalThreshold[]>([])
+  const [isLoadingApprovalThresholds, setIsLoadingApprovalThresholds] = useState(true)
+  const [isSavingApprovalThreshold, setIsSavingApprovalThreshold] = useState(false)
+  const [approvalThresholdError, setApprovalThresholdError] = useState<string | null>(null)
+  const [thresholdId, setThresholdId] = useState('')
+  const [thresholdScope, setThresholdScope] = useState<ApprovalThresholdScope>('company')
+  const [thresholdTarget, setThresholdTarget] = useState('')
+  const [thresholdAmount, setThresholdAmount] = useState('')
+  const [thresholdRequiresDual, setThresholdRequiresDual] = useState(false)
+  const [thresholdEffectiveFrom, setThresholdEffectiveFrom] = useState('')
+  const [thresholdChangeNote, setThresholdChangeNote] = useState('')
+  const [thresholdIsActive, setThresholdIsActive] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    fetchApprovalThresholds(sessionToken)
+      .then((items) => {
+        if (!cancelled) {
+          setApprovalThresholds(items)
+          setApprovalThresholdError(null)
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setApprovalThresholdError(error instanceof Error ? error.message : String(error))
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingApprovalThresholds(false)
+      })
+    return () => { cancelled = true }
+  }, [sessionToken])
 
   // Master Data State
   const [vendorCategories, setVendorCategories] = useState<VendorCategory[]>([
@@ -125,6 +199,51 @@ export function SettingsScreen() {
     setMappingStatus('Mapping profiles validated and published successfully.')
     setTimeout(() => setMappingStatus(null), 4000)
     showToast('Chart of accounts mapping updated.')
+  }
+
+  const handleAddApprovalThreshold = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setApprovalThresholdError(null)
+    setIsSavingApprovalThreshold(true)
+    try {
+      const payload = {
+        thresholdId: thresholdId.trim(),
+        scope: thresholdScope,
+        amountThreshold: thresholdAmount,
+        requiresDualApproval: thresholdRequiresDual,
+        effectiveFrom: thresholdEffectiveFrom,
+        changeNote: thresholdChangeNote.trim(),
+        isActive: thresholdIsActive,
+        companyCode: thresholdScope === 'company' ? thresholdTarget.trim() : undefined,
+        accountCode: thresholdScope === 'account' ? thresholdTarget.trim() : undefined,
+        costCenterCode: thresholdScope === 'cost_center' ? thresholdTarget.trim() : undefined,
+      }
+      const response = await fetch('/api/v1/master-data/approval-thresholds', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Session-Token': sessionToken,
+        },
+        body: JSON.stringify(payload),
+      })
+      const result = await response.json() as ApprovalThresholdResponse
+      if (!response.ok || result.status !== 'ok') {
+        throw new Error(result.userMessage || result.error?.userMessage || result.detail || `HTTP ${response.status}`)
+      }
+      const createdThreshold = result.data as unknown as ApprovalThreshold
+      setApprovalThresholds((current) => [...current, createdThreshold])
+      setThresholdId('')
+      setThresholdTarget('')
+      setThresholdAmount('')
+      setThresholdEffectiveFrom('')
+      setThresholdChangeNote('')
+      setThresholdRequiresDual(false)
+      showToast('Threshold version added. Rerun dependent rules; existing effective-dated rows were preserved.')
+    } catch (error) {
+      setApprovalThresholdError(error instanceof Error ? error.message : String(error))
+    } finally {
+      setIsSavingApprovalThreshold(false)
+    }
   }
 
   const handleAddVendorCategory = (e: React.FormEvent) => {
@@ -386,6 +505,99 @@ export function SettingsScreen() {
       {/* Sub-tab 3: Master Data */}
       {activeSubTab === 'masterdata' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <section style={{ backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '24px' }}>
+            <h2 style={{ margin: '0 0 8px', fontSize: '18px', color: '#0f172a' }}>Effective-Dated Approval Thresholds (EXC-021)</h2>
+            <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#64748b' }}>
+              Add immutable effective-dated threshold rows. Keep the Threshold ID stable across versions. Backdated effective dates can change resolution for earlier transactions, so record the reason. An inactive, more-specific row falls back to the next broader scope.
+            </p>
+            {approvalThresholdError && (
+              <div role="alert" style={{ padding: '10px 12px', marginBottom: '12px', borderRadius: '6px', backgroundColor: '#fee2e2', color: '#991b1b', fontSize: '13px' }}>
+                {approvalThresholdError}
+              </div>
+            )}
+            {isLoadingApprovalThresholds ? (
+              <p style={{ color: '#64748b', fontSize: '13px' }}>Loading approval thresholds…</p>
+            ) : (
+              <div style={{ overflowX: 'auto', marginBottom: '20px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #e2e8f0', textAlign: 'left', color: '#64748b' }}>
+                      <th style={{ padding: '8px' }}>Threshold ID</th>
+                      <th style={{ padding: '8px' }}>Scope / Target</th>
+                      <th style={{ padding: '8px' }}>Amount</th>
+                      <th style={{ padding: '8px' }}>Approval</th>
+                      <th style={{ padding: '8px' }}>Effective From</th>
+                      <th style={{ padding: '8px' }}>Change Note</th>
+                      <th style={{ padding: '8px' }}>Recorded by / at</th>
+                      <th style={{ padding: '8px' }}>State</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {approvalThresholds.map((item) => (
+                      <tr key={`${item.thresholdId}|${item.effectiveFrom}`} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '9px 8px', fontFamily: 'monospace', color: '#0369a1' }}>{item.thresholdId}</td>
+                        <td style={{ padding: '9px 8px' }}>
+                          <strong>{item.scope.replace('_', ' ')}</strong>
+                          {' · '}{item.companyCode || item.accountCode || item.costCenterCode || 'Unresolved target'}
+                        </td>
+                        <td style={{ padding: '9px 8px', fontFamily: 'monospace' }}>₹{item.amountThreshold}</td>
+                        <td style={{ padding: '9px 8px' }}>{item.requiresDualApproval ? 'Dual' : 'Single'}</td>
+                        <td style={{ padding: '9px 8px' }}>{item.effectiveFrom}</td>
+                        <td title={item.changeNote} style={{ padding: '9px 8px', maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.changeNote || '—'}</td>
+                        <td style={{ padding: '9px 8px', whiteSpace: 'nowrap' }}>{item.createdBy} · {item.createdAt}</td>
+                        <td style={{ padding: '9px 8px', color: item.isActive ? '#166534' : '#64748b' }}>{item.isActive ? 'Active' : 'Inactive'}</td>
+                      </tr>
+                    ))}
+                    {approvalThresholds.length === 0 && (
+                      <tr><td colSpan={8} style={{ padding: '18px 8px', color: '#64748b', textAlign: 'center' }}>No threshold versions are configured.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <form onSubmit={handleAddApprovalThreshold} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '12px', alignItems: 'end', backgroundColor: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <div>
+                <label htmlFor="approval-threshold-id" style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Stable Threshold ID</label>
+                <input id="approval-threshold-id" type="text" required maxLength={80} pattern="[^|]+" value={thresholdId} onChange={(event) => setThresholdId(event.target.value)} placeholder="single or ACC5450-single" style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
+              </div>
+              <div>
+                <label htmlFor="approval-threshold-scope" style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Scope</label>
+                <select id="approval-threshold-scope" value={thresholdScope} onChange={(event) => { setThresholdScope(event.target.value as ApprovalThresholdScope); setThresholdTarget('') }} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#fff' }}>
+                  <option value="company">Company</option>
+                  <option value="account">Account</option>
+                  <option value="cost_center">Cost centre</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="approval-threshold-target" style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>{thresholdScope === 'company' ? 'Company code' : thresholdScope === 'account' ? 'Account code' : 'Cost-centre code'}</label>
+                <input id="approval-threshold-target" type="text" required value={thresholdTarget} onChange={(event) => setThresholdTarget(event.target.value)} placeholder={thresholdScope === 'company' ? 'IN01' : thresholdScope === 'account' ? '5450' : 'CC-150'} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
+              </div>
+              <div>
+                <label htmlFor="approval-threshold-amount" style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Amount (INR)</label>
+                <input id="approval-threshold-amount" type="number" required min="0.01" step="0.01" value={thresholdAmount} onChange={(event) => setThresholdAmount(event.target.value)} placeholder="500000.00" style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
+              </div>
+              <div>
+                <label htmlFor="approval-threshold-effective" style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Effective from</label>
+                <input id="approval-threshold-effective" type="date" required value={thresholdEffectiveFrom} onChange={(event) => setThresholdEffectiveFrom(event.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
+              </div>
+              <div>
+                <label htmlFor="approval-threshold-change-note" style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Change reason (required)</label>
+                <input id="approval-threshold-change-note" type="text" required maxLength={500} value={thresholdChangeNote} onChange={(event) => setThresholdChangeNote(event.target.value)} placeholder="Policy update / approval basis" style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
+              </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '7px', minHeight: '36px', fontSize: '13px', color: '#334155' }}>
+                <input type="checkbox" checked={thresholdRequiresDual} onChange={(event) => setThresholdRequiresDual(event.target.checked)} />
+                Requires dual approval
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '7px', minHeight: '36px', fontSize: '13px', color: '#334155' }}>
+                <input type="checkbox" checked={thresholdIsActive} onChange={(event) => setThresholdIsActive(event.target.checked)} />
+                Active version
+              </label>
+              <button type="submit" disabled={isSavingApprovalThreshold} style={{ backgroundColor: '#0369a1', color: '#fff', border: 'none', padding: '9px 16px', borderRadius: '6px', fontWeight: 600, fontSize: '13px', cursor: isSavingApprovalThreshold ? 'wait' : 'pointer' }}>
+                {isSavingApprovalThreshold ? 'Saving…' : 'Add threshold version'}
+              </button>
+            </form>
+          </section>
+
           {/* Vendor Categories */}
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '24px' }}>
             <h2 style={{ margin: '0 0 8px', fontSize: '18px', color: '#0f172a' }}>Vendor Categories & Risk Tiers (FR-SET-003)</h2>

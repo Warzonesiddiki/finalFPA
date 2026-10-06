@@ -30,8 +30,10 @@ from app.engine.rules import (
     catalog_rule_coverage,
     Finding,
     RecurringCostRuleItem,
+    ApprovalThresholdRuleItem,
     RuleContext,
 )
+from app.engine.rules.batch import evaluate_all_rules_detailed
 from app.engine.store.db import DatabaseManager
 
 
@@ -44,6 +46,68 @@ SEVERITY_SLA_DAYS = {
     "Low": 45,
     "low": 45,
 }
+
+EXCEPTION_STATUSES = frozenset({
+    "open", "in_review", "explained", "corrected", "closed", "reopened", "not_applicable",
+})
+
+# Human workflow from doc 06 §2.3. Reopening is an explicit state, not a direct
+# jump back to `open`, so every re-entry into review remains visible in history.
+EXCEPTION_STATUS_TRANSITIONS = {
+    "open": frozenset({"in_review", "not_applicable"}),
+    "in_review": frozenset({"explained", "not_applicable"}),
+    "explained": frozenset({"corrected", "not_applicable"}),
+    "corrected": frozenset({"closed"}),
+    "closed": frozenset({"reopened"}),
+    "reopened": frozenset({"in_review", "not_applicable"}),
+    "not_applicable": frozenset({"reopened"}),
+}
+
+STATUS_EVIDENCE_REQUIRED = frozenset({"corrected", "reopened", "not_applicable"})
+
+
+class ExceptionWorkflowError(ValueError):
+    """Base error for a rejected exception-workflow operation."""
+
+
+class InvalidExceptionStatus(ExceptionWorkflowError):
+    """Raised when a caller requests a status outside the persisted state set."""
+
+
+class InvalidExceptionTransition(ExceptionWorkflowError):
+    """Raised when a status change violates the human workflow."""
+
+
+class ExceptionStatusEvidenceRequired(ExceptionWorkflowError):
+    """Raised when a status requiring a reason or correction note lacks one."""
+
+
+def _normalize_exception_status(status: Optional[str]) -> Optional[str]:
+    if status is None:
+        return None
+    normalized = str(status).strip().lower()
+    if normalized not in EXCEPTION_STATUSES:
+        raise InvalidExceptionStatus(f"Unsupported exception status: {status!r}")
+    return normalized
+
+
+def _validate_exception_transition(current: str, target: str, note: Optional[str]) -> None:
+    """Enforce legal, evidence-backed human status transitions."""
+    if current not in EXCEPTION_STATUSES:
+        raise InvalidExceptionStatus(f"Stored exception status is invalid: {current!r}")
+    if target == current:
+        return
+    allowed = EXCEPTION_STATUS_TRANSITIONS[current]
+    if target not in allowed:
+        raise InvalidExceptionTransition(
+            f"Cannot change exception status from {current!r} to {target!r}; "
+            f"allowed transitions: {', '.join(sorted(allowed)) or 'none'}"
+        )
+    if target in STATUS_EVIDENCE_REQUIRED and not str(note or "").strip():
+        evidence = "correction note" if target == "corrected" else "reason"
+        raise ExceptionStatusEvidenceRequired(
+            f"A non-empty {evidence} is required when changing status to {target!r}"
+        )
 
 # Standard recurring cost seeds for rule evaluation
 DEFAULT_RECURRING_COSTS = [
@@ -152,7 +216,8 @@ class ExceptionsRepository:
                     c.company_code, ac.account_code, cc.cost_center_code,
                     v.vendor_code, a.invoice_no, a.description,
                     a.debit, a.credit, a.net_amount, a.currency_code,
-                    a.source_row_ref, p.period_code, a.import_batch_id, a.line_no
+                    a.source_row_ref, p.period_code, a.import_batch_id, a.line_no,
+                    a.journal_category
                 FROM FactActual a
                 LEFT JOIN DimCompany c ON a.company_id = c.company_id
                 LEFT JOIN DimAccount ac ON a.account_id = ac.account_id
@@ -183,6 +248,7 @@ class ExceptionsRepository:
                     currency_code=r[13] or "INR",
                     period_code=r[15] or period_code,
                     line_no=int(r[17] or 1),
+                    journal_category=str(r[18]).strip().lower() if r[18] else None,
                     import_batch_id=int(r[16]) if r[16] is not None else None,
                     raw_values={},
                 )
@@ -243,6 +309,32 @@ class ExceptionsRepository:
                 if not is_act:
                     inactive_cost_centers.add(cc_code)
 
+            approval_thresholds = [
+                ApprovalThresholdRuleItem(
+                    threshold_id=str(row[0]),
+                    scope=str(row[1]).strip().lower(),
+                    amount_threshold=Decimal(str(row[2])),
+                    requires_dual_approval=bool(row[3]),
+                    effective_from=str(row[4]),
+                    is_active=bool(row[5]),
+                    company_code=str(row[6]) if row[6] is not None else None,
+                    account_code=str(row[7]) if row[7] is not None else None,
+                    cost_center_code=str(row[8]) if row[8] is not None else None,
+                )
+                for row in duck_conn.execute(
+                    """
+                    SELECT t.threshold_id, t.scope, CAST(t.amount_threshold AS VARCHAR),
+                           t.requires_dual_approval, CAST(t.effective_from AS VARCHAR),
+                           t.is_active, c.company_code, a.account_code, cc.cost_center_code
+                    FROM MasterApprovalThreshold t
+                    LEFT JOIN DimCompany c ON t.company_id = c.company_id
+                    LEFT JOIN DimAccount a ON t.account_id = a.account_id
+                    LEFT JOIN DimCostCenter cc ON t.cost_center_id = cc.cost_center_id
+                    ORDER BY t.scope, t.threshold_id
+                    """
+                ).fetchall()
+            ]
+
         finally:
             duck_conn.close()
 
@@ -299,6 +391,7 @@ class ExceptionsRepository:
             dim_cost_centers=dim_cost_centers,
             inactive_cost_centers=inactive_cost_centers,
             master_recurring_costs=DEFAULT_RECURRING_COSTS,
+            master_approval_thresholds=approval_thresholds,
             period_id=period_code,
             as_of_date=as_of_date,
             dim_period_end_dates=self._dim_period_end_dates(),
@@ -341,14 +434,9 @@ class ExceptionsRepository:
         run_corr_id = correlation_id or f"run-{uuid.uuid4().hex[:12]}"
         run_claim_id = claim_id or "claim-unspecified"
         context = self.build_rule_context(period_code=period_code, as_of_date=as_of_date)
-        findings: List[Finding] = []
-
         evaluators = build_full_rule_batch()
-        for evaluator in evaluators:
-            try:
-                findings.extend(evaluator(context))
-            except Exception as e:
-                print(f"Error running evaluator {evaluator.__name__}: {e}")
+        batch_result = evaluate_all_rules_detailed(context, evaluators)
+        findings = batch_result.findings
 
         now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
         today_date = date.today().isoformat()
@@ -484,13 +572,28 @@ class ExceptionsRepository:
         finally:
             sqlite_conn.close()
 
+        failed_rules = [
+            {
+                "rule": execution.rule_name,
+                "errorType": execution.error_type,
+                "message": execution.error_message,
+            }
+            for execution in batch_result.failed_rules
+        ]
+        disabled_rules = [
+            {"rule": execution.rule_name, "notice": execution.notice}
+            for execution in batch_result.disabled_rules
+        ]
         return {
             "rulesRun": len(evaluators),
+            "rulesSucceeded": len(batch_result.ran_rules),
             "catalogRulesCovered": len(catalog_rule_coverage()),
             "totalFindings": len(findings),
             "raised": raised_count,
             "updated": updated_count,
             "flaggedAgain": flagged_again_count,
+            "failedRules": failed_rules,
+            "disabledRules": disabled_rules,
             "period": period_code,
             "timestamp": now_str,
         }
@@ -782,6 +885,8 @@ class ExceptionsRepository:
         actor: str = "session_user",
     ) -> Optional[ExceptionDetailView]:
         """Update exception status, owner, or add note per FR-EXC-006/007/008."""
+        requested_status = _normalize_exception_status(status)
+        clean_note = str(note).strip() if note is not None else None
         sqlite_conn = self.db.get_sqlite_connection()
         try:
             with sqlite_conn:
@@ -793,21 +898,35 @@ class ExceptionsRepository:
                 if not row:
                     return None
 
+                current_status = str(row["status"] or "").strip().lower()
+                if requested_status is not None:
+                    _validate_exception_transition(current_status, requested_status, clean_note)
+
                 now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
-                # Handle status change
-                if status and status != row["status"]:
+                # Handle only validated human transitions. Reopening gets its own
+                # event type so downstream effectiveness views can distinguish it.
+                if requested_status and requested_status != current_status:
                     sqlite_conn.execute(
                         "UPDATE FactException SET status = ?, updated_at = ? WHERE exception_id = ?",
-                        (status, now_str, exception_id),
+                        (requested_status, now_str, exception_id),
                     )
+                    event_type = "reopened" if requested_status == "reopened" else "status_changed"
                     sqlite_conn.execute(
                         """
                         INSERT INTO FactExceptionEvent (
                             exception_id, event_type, from_value, to_value, note_text, actor, occurred_at
-                        ) VALUES (?, 'status_changed', ?, ?, ?, ?, ?)
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?)
                         """,
-                        (exception_id, row["status"], status, note or "Status changed", actor, now_str),
+                        (
+                            exception_id,
+                            event_type,
+                            current_status,
+                            requested_status,
+                            clean_note or "Status changed",
+                            actor,
+                            now_str,
+                        ),
                     )
 
                 # Handle owner change
@@ -826,13 +945,13 @@ class ExceptionsRepository:
                     )
 
                 # Handle note addition (FR-EXC-008: append-only)
-                if note:
+                if clean_note:
                     sqlite_conn.execute(
                         """
                         INSERT INTO ExceptionNote (exception_id, author, note_text, created_at)
                         VALUES (?, ?, ?, ?)
                         """,
-                        (exception_id, actor, note, now_str),
+                        (exception_id, actor, clean_note, now_str),
                     )
                     sqlite_conn.execute(
                         """
@@ -840,7 +959,7 @@ class ExceptionsRepository:
                             exception_id, event_type, from_value, to_value, note_text, actor, occurred_at
                         ) VALUES (?, 'note_added', NULL, NULL, ?, ?, ?)
                         """,
-                        (exception_id, note, actor, now_str),
+                        (exception_id, clean_note, actor, now_str),
                     )
 
         finally:
@@ -856,43 +975,71 @@ class ExceptionsRepository:
         note: Optional[str] = None,
         actor: str = "session_user",
     ) -> Dict[str, Any]:
-        """Bulk update multiple exceptions writing one audit entry per affected item per FR-EXC-010."""
+        """Bulk update exceptions, reporting missing rows and illegal transitions."""
+        requested_status = _normalize_exception_status(status)
+        clean_owner = str(owner).strip() if owner is not None else None
+        if clean_owner == "":
+            clean_owner = "Unassigned"
+        clean_note = str(note).strip() if note is not None else None
         updated = 0
+        skipped: List[Dict[str, Any]] = []
         audit_ids: List[int] = []
 
         sqlite_conn = self.db.get_sqlite_connection()
         try:
             with sqlite_conn:
                 now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-                for exc_id in ids:
+                # Duplicate IDs in a request must not create repeated notes/events.
+                for exc_id in dict.fromkeys(ids):
                     row = sqlite_conn.execute(
                         "SELECT exception_id, status, owner_name FROM FactException WHERE exception_id = ?",
                         (exc_id,),
                     ).fetchone()
                     if not row:
+                        skipped.append({"exceptionId": exc_id, "reason": "not_found"})
                         continue
 
-                    # Status change
-                    if status and status != row["status"]:
+                    current_status = str(row["status"] or "").strip().lower()
+                    if requested_status is not None:
+                        try:
+                            _validate_exception_transition(
+                                current_status, requested_status, clean_note
+                            )
+                        except ExceptionWorkflowError as exc:
+                            skipped.append({"exceptionId": exc_id, "reason": str(exc)})
+                            continue
+
+                    changed = False
+                    if requested_status and requested_status != current_status:
                         sqlite_conn.execute(
                             "UPDATE FactException SET status = ?, updated_at = ? WHERE exception_id = ?",
-                            (status, now_str, exc_id),
+                            (requested_status, now_str, exc_id),
                         )
+                        event_type = "reopened" if requested_status == "reopened" else "status_changed"
                         cur = sqlite_conn.execute(
                             """
                             INSERT INTO FactExceptionEvent (
                                 exception_id, event_type, from_value, to_value, note_text, actor, occurred_at
-                            ) VALUES (?, 'status_changed', ?, ?, ?, ?, ?)
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?)
                             """,
-                            (exc_id, row["status"], status, note or "Bulk status change", actor, now_str),
+                            (
+                                exc_id,
+                                event_type,
+                                current_status,
+                                requested_status,
+                                clean_note or "Bulk status change",
+                                actor,
+                                now_str,
+                            ),
                         )
                         audit_ids.append(cur.lastrowid)
+                        changed = True
 
                     # Owner change
-                    if owner is not None and owner != row["owner_name"]:
+                    if clean_owner is not None and clean_owner != row["owner_name"]:
                         sqlite_conn.execute(
                             "UPDATE FactException SET owner_name = ?, updated_at = ? WHERE exception_id = ?",
-                            (owner, now_str, exc_id),
+                            (clean_owner, now_str, exc_id),
                         )
                         cur = sqlite_conn.execute(
                             """
@@ -900,23 +1047,44 @@ class ExceptionsRepository:
                                 exception_id, event_type, from_value, to_value, note_text, actor, occurred_at
                             ) VALUES (?, 'owner_changed', ?, ?, ?, ?, ?)
                             """,
-                            (exc_id, row["owner_name"], owner, f"Bulk owner change to {owner}", actor, now_str),
+                            (
+                                exc_id,
+                                row["owner_name"],
+                                clean_owner,
+                                f"Bulk owner change to {clean_owner}",
+                                actor,
+                                now_str,
+                            ),
                         )
                         audit_ids.append(cur.lastrowid)
+                        changed = True
 
-                    if note:
+                    if clean_note:
                         sqlite_conn.execute(
                             "INSERT INTO ExceptionNote (exception_id, author, note_text, created_at) VALUES (?, ?, ?, ?)",
-                            (exc_id, actor, note, now_str),
+                            (exc_id, actor, clean_note, now_str),
                         )
+                        cur = sqlite_conn.execute(
+                            """
+                            INSERT INTO FactExceptionEvent (
+                                exception_id, event_type, from_value, to_value, note_text, actor, occurred_at
+                            ) VALUES (?, 'note_added', NULL, NULL, ?, ?, ?)
+                            """,
+                            (exc_id, clean_note, actor, now_str),
+                        )
+                        audit_ids.append(cur.lastrowid)
+                        changed = True
 
-                    updated += 1
+                    if changed:
+                        updated += 1
+                    else:
+                        skipped.append({"exceptionId": exc_id, "reason": "no_change"})
         finally:
             sqlite_conn.close()
 
         return {
             "updated": updated,
-            "skipped": [],
+            "skipped": skipped,
             "auditIds": audit_ids,
         }
 

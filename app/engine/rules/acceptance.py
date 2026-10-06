@@ -1,15 +1,20 @@
 """Planted-exception acceptance harness (doc 14 §5.2).
 
-Doc 14 §5.2, quoted verbatim:
+Doc 14 §5.2 contract, summarized here (the earlier XLSX exclusion was superseded
+on 2026-10-06):
 
     ### 5.2 The harness
 
     `tests/rules/test_acceptance.py` (L3), run by `scripts/acceptance`:
 
-    1. **Fresh corpus:** the generator builds the sample project from a fixed
-       seed (`sample-data --seed 42`), so the corpus is deterministic and
-       reproducible on any machine; the run records its CSV checksums before
-       evaluating (XLSX metadata timestamps remain an explicit limitation).
+    1. **Corpus fingerprint:** the checked-in sample project was generated from
+       the canonical seed (`sample-data --seed 42`). `run_acceptance` fingerprints
+       it; it does not regenerate the corpus or assert against a golden digest.
+       The generator's two-run reproducibility check lives separately in
+       `tests/unit/test_corpus_determinism.py`. Before evaluating, the harness
+       records SHA-256 digests for every `.csv`, `.xlsx`, and `.json` data artefact
+       under `sample-data/`, keyed by relative path. Generated workbooks use the
+       deterministic saver; the report makes the exact scope and exclusions visible.
     2. **Full engine run** over the sample data with default thresholds, every
        rule enabled. DEC-058 requires earlier import-history batches before the
        main actuals and later history batches afterwards.
@@ -343,19 +348,12 @@ class AcceptanceReport:
 # --------------------------------------------------------------------------
 
 def file_checksum(path: Path) -> str:
-    """SHA-256 of a corpus CSV file.
+    """Return a SHA-256 fingerprint for a corpus data artefact.
 
-    Doc 14 §5.2 step 1 says the run "asserts the generator's own checksum before
-    evaluating". Amended 2026-10-03: the committed corpus is seed **42** (byte-exactly
-    reproducible, audit New-06), and only the **9 CSV files** are fingerprinted.
-    The generator also emits 15 `.xlsx` files whose hashes are NOT reproducible,
-    because `openpyxl` stamps a wall-clock `dcterms:created` into
-    `docProps/core.xml`. Fingerprinting them would fail by construction, so they
-    are excluded and the exclusion is recorded rather than asserted around.
-
-    No canonical checksum is committed in the repository, so this RECORDS a
-    fingerprint for run-to-run comparison rather than asserting against a
-    constant. Recorded as a known limitation, not a pass/fail bar.
+    The digest is streamed in bounded chunks so the 250k-row GL fixture does not
+    need to be held in memory. This records a reproducible per-run manifest; no
+    committed golden checksum exists, so the report does not pretend to assert
+    against a trusted constant.
     """
     h = hashlib.sha256()
     with path.open("rb") as fh:
@@ -364,24 +362,25 @@ def file_checksum(path: Path) -> str:
     return h.hexdigest()
 
 
-#: Corpus files whose bytes ARE reproducible and are therefore fingerprinted.
-CHECKSUMMED_SUFFIXES = (".csv",)
+#: Every data artifact format emitted or used by the acceptance corpus.
+#: Excel writers pin document and ZIP timestamps in xlsx_deterministic.py; the
+#: JSON import-acceptance sidecar is part of the history fixture's provenance.
+CHECKSUMMED_SUFFIXES = (".csv", ".json", ".xlsx")
 
-#: Files excluded from the fingerprint, with the reason. Doc 14 §5.2 step 1
-#: (amended 2026-10-03) forbids asserting a checksum that cannot hold.
-NON_REPRODUCIBLE = (
-    (".xlsx", "openpyxl embeds a wall-clock dcterms:created in docProps/core.xml, "
-              "so the hash changes on every generation"),
-)
+#: Retained as an explicit, reportable list. The supported corpus formats above
+#: are currently fingerprinted in full, so this must remain empty unless a
+#: format is deliberately excluded with a documented and measured reason.
+NON_REPRODUCIBLE: Tuple[Tuple[str, str], ...] = ()
 
 
 def checksum_scope(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> Dict[str, Any]:
-    """Report what is fingerprinted and what is deliberately excluded.
+    """Return an auditable SHA-256 manifest for recognized corpus data files.
 
     Paths are recorded RELATIVE to `sample_dir` and de-duplicated by path, not by
     bare filename: `sample-data/test_scale/` holds a second copy of the malformed
     and template fixtures, so keying on `p.name` would double-count every one of
-    them and misreport the scope.
+    them and misreport the scope. The acceptance JSON sidecar is included because
+    its recorded decision permits the history workbook to commit.
     """
     def _rel_paths(suffixes) -> list[str]:
         seen = set()
@@ -391,17 +390,23 @@ def checksum_scope(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> Dict[str, Any]:
         return sorted(seen)
 
     fingerprinted = _rel_paths(CHECKSUMMED_SUFFIXES)
-    excluded = _rel_paths({s for s, _ in NON_REPRODUCIBLE})
+    checksums = {
+        relative_path: file_checksum(sample_dir / relative_path)
+        for relative_path in fingerprinted
+    }
+    excluded = _rel_paths({suffix for suffix, _ in NON_REPRODUCIBLE})
     return {
         "fingerprinted_count": len(fingerprinted),
+        "fingerprinted_suffixes": sorted(CHECKSUMMED_SUFFIXES),
         "fingerprinted": fingerprinted,
+        "sha256": checksums,
         "excluded_count": len(excluded),
-        "excluded_suffixes": [s for s, _ in NON_REPRODUCIBLE],
-        "exclusion_reason": {s: why for s, why in NON_REPRODUCIBLE},
+        "excluded_suffixes": [suffix for suffix, _ in NON_REPRODUCIBLE],
+        "exclusion_reason": {suffix: why for suffix, why in NON_REPRODUCIBLE},
         "excluded": excluded,
-        "note": "paths are relative to the sample dir; test_scale/ holds a second "
-                "copy of the template and malformed fixtures and is counted once "
-                "per distinct path",
+        "note": "paths are relative to the sample dir; test_scale/ holds second "
+                "copies of templates and malformed fixtures, counted as separate "
+                "paths; the history acceptance sidecar is included",
     }
 
 
@@ -892,7 +897,7 @@ def measure(
     ]
 
     from collections import Counter
-    report.extras_by_rule = dict(Counter(r for r, _ in extras))
+    report.extras_by_rule = dict(sorted(Counter(r for r, _ in extras).items()))
     report.extras_total = len(extras)
 
     report.severity_counts = {
@@ -1280,21 +1285,24 @@ def render_markdown(report: AcceptanceReport) -> str:
             A(f"- {d}")
         A("")
 
-    A("## Checksum scope (doc 14 §5.2 step 1, amended 2026-10-03)")
+    A("## Checksum scope (doc 14 §5.2 step 1, amended 2026-10-06)")
     A("")
     if report.checksum_scope:
-        A(f"- Fingerprinted (byte-reproducible): "
-          f"**{report.checksum_scope.get('fingerprinted_count', 0)} CSV file(s)**.")
-        A(f"- Excluded from the fingerprint: "
-          f"**{report.checksum_scope.get('excluded_count', 0)} `.xlsx` file(s)**.")
+        formats = ", ".join(
+            f"`{suffix}`" for suffix in report.checksum_scope.get("fingerprinted_suffixes", [])
+        )
+        A(f"- Fingerprinted: **{report.checksum_scope.get('fingerprinted_count', 0)} "
+          f"data artefact(s)** across {formats}.")
+        A("  SHA-256 values, keyed by relative path, are included in "
+          "`acceptance_report.json` under `checksum_scope.sha256`.")
+        A(f"- Excluded: **{report.checksum_scope.get('excluded_count', 0)} "
+          "recognized data artefact(s)**.")
         A(f"  - {report.checksum_scope.get('note', '')}")
         for suffix, why in (report.checksum_scope.get("exclusion_reason") or {}).items():
             A(f"  - `{suffix}`: {why}.")
-        A("")
-        A("  A SHA-256 manifest covering the excluded files would fail by "
-          "construction, so they are excluded and the exclusion is recorded "
-          "rather than asserted around. Known limitation; closing it means "
-          "normalising `dcterms:created` in the generator.")
+        if report.checksum_scope.get("excluded_count", 0):
+            A("  Exclusions are listed and justified; they are not silently "
+              "treated as checksummed.")
     A("")
 
     A("## Stated assumptions")
@@ -1303,12 +1311,11 @@ def render_markdown(report: AcceptanceReport) -> str:
       f"every rule enabled\" and names no run date. The answer key's P11 note "
       f"(\"Posting on 30-Nov-2026 is 18 days ahead of run date\") implies "
       f"`as_of={DEFAULT_AS_OF}`, which is used. No clock is read (doc 06 line 195).")
-    A("- **Generator checksum.** Doc 14 §5.2 step 1 says the run \"asserts the "
-      "generator's own checksum\". `generate_sample_data.py` emits none and none "
-      "is committed, so checksums are computed and RECORDED as a run-to-run "
-      "fingerprint, not asserted against a constant. Scope is the CSV corpus "
-      "only - see the Checksum scope section above for why the 15 `.xlsx` files "
-      "are excluded.")
+    A("- **Generator checksum.** The report records the actual SHA-256 of each "
+      "recognized corpus data artifact and does not assert against a committed "
+      "golden digest, because no canonical manifest is committed. The generator "
+      "reproducibility test is separate; a recorded fingerprint is not a claim "
+      "that this acceptance run regenerated the data.")
     A("- **Seed.** Doc 14 §5.2 step 1 was amended 2026-10-03 from `--seed "
       "20260101` to `--seed 42`. The committed corpus was generated at seed 42 "
       "and audit New-06 reproduced it byte-exactly; the previously documented "

@@ -278,6 +278,23 @@ the answer key (`planting_id, rule_id, expected_verdict, subject_key, severity, 
    > (`EXC-002`/`EXC-003`) have an earlier committed batch to detect against. The documented batch keys
    > are unchanged — the fixture exists because the rules cannot fire without history, not to re-key the
    > answer key.
+
+   > **Amended 2026-10-06 — full data-artifact fingerprint.** The 2026-10-03 `.xlsx` exclusion was
+   > accurate when recorded but is superseded by the deterministic writer at
+   > `sample-data/xlsx_deterministic.py`. Both workbook generators use it; the existing
+   > `tests/unit/test_corpus_determinism.py` checks same-seed output byte identity. A targeted
+   > standard-library audit on 2026-10-06 found 17 of the 33 checked-in `.xlsx` archives still had
+   > pre-fix metadata. Their core-property and ZIP timestamps were normalized without changing any
+   > workbook member payload; CRC, fixed timestamps and idempotence were checked for each rewritten
+   > archive. The acceptance report now fingerprints `.csv`, `.xlsx` and `.json` data artefacts by
+   > relative path, including the history-acceptance JSON sidecar and `test_scale/` copies, and records
+   > per-file SHA-256 values. No recognized data artifact is excluded. There is still no committed
+   > golden corpus checksum, so this is an auditable run fingerprint, not an assertion against a
+   > trusted constant. This does **not** satisfy §5.2 step 1's literal fresh-generation/checksum
+   > assertion: `run_acceptance` reads the checked-in corpus and does not regenerate or compare it to
+   > a golden manifest. That remains an explicit compliance gap; no acceptance bar has been changed.
+   > The committed acceptance report is not refreshed by this documentation change and remains a
+   > historical FAIL until the official harness is run on the current code.
 3. **Join** raised exceptions to the answer key on `(rule_id, subject_key)`.
 4. **Classify** every raise: *expected* (in the key), *control* (a `P25`…`P32` subject), or *extra*.
 5. **Report** to `acceptance_report.json` and a human-readable `acceptance_report.md`: counts by severity,

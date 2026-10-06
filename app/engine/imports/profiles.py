@@ -115,6 +115,8 @@ BUILTIN_PROFILES = [
             "transactiondescription": "description",
             "transaction description": "description",
             "description": "description",
+            "journalcategory": "journal_category",
+            "journal category": "journal_category",
             "debit": "debit",
             "credit": "credit",
             "currency": "currency_code",

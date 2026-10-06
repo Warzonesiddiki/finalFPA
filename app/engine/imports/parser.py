@@ -759,6 +759,12 @@ def parse_csv_transactions(
             vendor_code = get_col("vendor_code")
             invoice_no = get_col("invoice_no")
             description = get_col("description")
+            journal_category_raw = get_col("journal_category")
+            journal_category = (
+                journal_category_raw.strip().lower()
+                if journal_category_raw and journal_category_raw.strip()
+                else None
+            )
             currency_raw = get_col("currency_code")
 
             # Cross-batch duplicate keys use the voucher's line number, not the
@@ -919,6 +925,7 @@ def parse_csv_transactions(
                 currency_code=currency,
                 document_date=document_date,
                 line_no=line_no,
+                journal_category=journal_category,
                 is_zero_amount=is_zero,
                 period_code=resolved_period,
                 raw_values=raw_row_dict,

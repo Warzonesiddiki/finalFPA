@@ -9,7 +9,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 from pathlib import Path
 from decimal import Decimal
-from typing import Optional, Dict, Any, List
+from functools import lru_cache
+from typing import Optional, Dict, Any, List, Literal
 import secrets
 import os
 import logging
@@ -25,7 +26,17 @@ from app.engine.imports.parser import (
 from app.engine.store.db import DatabaseManager
 from app.engine.store.import_repo import ImportRepository
 from app.engine.store.analytics_repo import AnalyticsRepository
-from app.engine.store.exceptions_repo import ExceptionsRepository
+from app.engine.store.exceptions_repo import (
+    ExceptionsRepository,
+    ExceptionStatusEvidenceRequired,
+    ExceptionWorkflowError,
+    InvalidExceptionStatus,
+)
+from app.engine.store.master_data_repo import (
+    ApprovalThresholdConflict,
+    ApprovalThresholdError,
+    ApprovalThresholdRepository,
+)
 from app.engine.store.forecast_repo import ForecastRepository
 from app.engine.store.reports_repo import ReportsRepository
 from app.engine.store.period_repo import PeriodRepository
@@ -39,6 +50,12 @@ logger = logging.getLogger(__name__)
 
 # Session token for loopback security per ADR-009
 SESSION_TOKEN = secrets.token_hex(16)
+
+
+@lru_cache(maxsize=1)
+def _staleness_db_manager() -> DatabaseManager:
+    """Reuse one lazy manager so periodic staleness polls do not re-run DDL."""
+    return DatabaseManager()
 
 
 class RunForecastRequest(BaseModel):
@@ -111,17 +128,35 @@ class RunRulesRequest(BaseModel):
     claimId: Optional[str] = None
 
 
+ExceptionStatusInput = Literal[
+    "open", "in_review", "explained", "corrected", "closed", "reopened", "not_applicable"
+]
+
+
 class PatchExceptionRequest(BaseModel):
-    status: Optional[str] = None
+    status: Optional[ExceptionStatusInput] = None
     owner: Optional[str] = None
     note: Optional[str] = None
 
 
 class BulkExceptionRequest(BaseModel):
     ids: List[int]
-    status: Optional[str] = None
+    status: Optional[ExceptionStatusInput] = None
     owner: Optional[str] = None
     note: Optional[str] = None
+
+
+class ApprovalThresholdCreateRequest(BaseModel):
+    thresholdId: str
+    scope: Literal["company", "account", "cost_center"]
+    amountThreshold: str
+    requiresDualApproval: bool
+    effectiveFrom: str
+    changeNote: str
+    isActive: bool = True
+    companyCode: Optional[str] = None
+    accountCode: Optional[str] = None
+    costCenterCode: Optional[str] = None
 
 
 class BudgetReplaceRequest(BaseModel):
@@ -241,6 +276,107 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    def _get_staleness_state() -> Dict[str, Any]:
+        conn = _staleness_db_manager().get_duckdb_connection()
+        try:
+            row = conn.execute(
+                "SELECT is_stale, reason, generation FROM DerivedDataState WHERE state_id = 1"
+            ).fetchone()
+            if not row:
+                return {"isStale": False, "reason": None, "generation": 0}
+            return {
+                "isStale": bool(row[0]),
+                "reason": row[1],
+                "generation": int(row[2] or 0),
+            }
+        finally:
+            conn.close()
+
+    def _set_staleness_state(is_stale: bool, reason: Optional[str]) -> Dict[str, Any]:
+        conn = _staleness_db_manager().get_duckdb_connection()
+        try:
+            conn.execute("BEGIN TRANSACTION")
+            existing = conn.execute(
+                "SELECT 1 FROM DerivedDataState WHERE state_id = 1"
+            ).fetchone()
+            if existing:
+                conn.execute(
+                    """
+                    UPDATE DerivedDataState
+                    SET is_stale = ?,
+                        reason = ?,
+                        generation = COALESCE(generation, 0) + CASE WHEN ? THEN 1 ELSE 0 END,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE state_id = 1
+                    """,
+                    [bool(is_stale), reason, bool(is_stale)],
+                )
+            else:
+                conn.execute(
+                    """
+                    INSERT INTO DerivedDataState (state_id, is_stale, reason, generation)
+                    VALUES (1, ?, ?, CASE WHEN ? THEN 1 ELSE 0 END)
+                    """,
+                    [bool(is_stale), reason, bool(is_stale)],
+                )
+            generation_row = conn.execute(
+                "SELECT generation FROM DerivedDataState WHERE state_id = 1"
+            ).fetchone()
+            conn.execute("COMMIT")
+            return {
+                "isStale": bool(is_stale),
+                "reason": reason,
+                "generation": int(generation_row[0] or 0) if generation_row else 0,
+            }
+        except Exception:
+            try:
+                conn.execute("ROLLBACK")
+            except Exception:
+                pass
+            raise
+        finally:
+            conn.close()
+
+    def _clear_staleness_state_if_unchanged(expected_generation: int) -> Optional[Dict[str, Any]]:
+        conn = _staleness_db_manager().get_duckdb_connection()
+        try:
+            conn.execute("BEGIN TRANSACTION")
+            row = conn.execute(
+                "SELECT is_stale, reason, generation FROM DerivedDataState WHERE state_id = 1"
+            ).fetchone()
+            if not row:
+                conn.execute("COMMIT")
+                return None
+            generation = int(row[2] or 0)
+            if generation != expected_generation:
+                conn.execute("COMMIT")
+                return None
+            conn.execute(
+                """
+                UPDATE DerivedDataState
+                SET is_stale = FALSE, reason = NULL, updated_at = CURRENT_TIMESTAMP
+                WHERE state_id = 1 AND COALESCE(generation, 0) = ?
+                """,
+                [expected_generation],
+            )
+            current = conn.execute(
+                "SELECT is_stale, reason, generation FROM DerivedDataState WHERE state_id = 1"
+            ).fetchone()
+            conn.execute("COMMIT")
+            return {
+                "isStale": bool(current[0]),
+                "reason": current[1],
+                "generation": int(current[2] or 0),
+            }
+        except Exception:
+            try:
+                conn.execute("ROLLBACK")
+            except Exception:
+                pass
+            raise
+        finally:
+            conn.close()
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -852,6 +988,47 @@ def create_app() -> FastAPI:
         }
 
     # =========================================================================
+    # Effective-dated approval-threshold master data (EXC-021 / FR-SET-003)
+    # =========================================================================
+
+    @app.get(
+        "/api/v1/master-data/approval-thresholds",
+        dependencies=[Depends(verify_session_token)],
+    )
+    def api_list_approval_thresholds() -> Dict[str, Any]:
+        repo = ApprovalThresholdRepository(DatabaseManager())
+        return {"status": "ok", "data": {"items": repo.list_approval_thresholds()}}
+
+    @app.post(
+        "/api/v1/master-data/approval-thresholds",
+        dependencies=[Depends(verify_session_token)],
+        responses={409: {"description": "Approval threshold version conflict"}},
+    )
+    def api_create_approval_threshold_version(
+        payload: ApprovalThresholdCreateRequest,
+    ) -> Dict[str, Any]:
+        repo = ApprovalThresholdRepository(DatabaseManager())
+        try:
+            item = repo.create_approval_threshold_version(
+                threshold_id=payload.thresholdId,
+                scope=payload.scope,
+                amount_threshold=payload.amountThreshold,
+                requires_dual_approval=payload.requiresDualApproval,
+                effective_from=payload.effectiveFrom,
+                change_note=payload.changeNote,
+                is_active=payload.isActive,
+                company_code=payload.companyCode,
+                account_code=payload.accountCode,
+                cost_center_code=payload.costCenterCode,
+                actor="session_user",
+            )
+        except ApprovalThresholdConflict as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        except ApprovalThresholdError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        return {"status": "ok", "data": item}
+
+    # =========================================================================
     # Exceptions Register & Rules Workflow Endpoints (SCR-023..SCR-026, FR-EXC)
     # =========================================================================
 
@@ -1186,12 +1363,17 @@ def create_app() -> FastAPI:
         """Update status, owner, or add note per FR-EXC-006/007/008."""
         db_mgr = DatabaseManager()
         repo = ExceptionsRepository(db_mgr)
-        updated = repo.update_exception(
-            exception_id=exception_id,
-            status=payload.status,
-            owner=payload.owner,
-            note=payload.note,
-        )
+        try:
+            updated = repo.update_exception(
+                exception_id=exception_id,
+                status=payload.status,
+                owner=payload.owner,
+                note=payload.note,
+            )
+        except (ExceptionStatusEvidenceRequired, InvalidExceptionStatus) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except ExceptionWorkflowError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
         if not updated:
             raise HTTPException(status_code=404, detail="Exception not found")
         return {
@@ -1213,12 +1395,17 @@ def create_app() -> FastAPI:
         """Bulk update status or owner with 1:1 audit event logging per FR-EXC-010."""
         db_mgr = DatabaseManager()
         repo = ExceptionsRepository(db_mgr)
-        res = repo.bulk_update(
-            ids=payload.ids,
-            status=payload.status,
-            owner=payload.owner,
-            note=payload.note,
-        )
+        try:
+            res = repo.bulk_update(
+                ids=payload.ids,
+                status=payload.status,
+                owner=payload.owner,
+                note=payload.note,
+            )
+        except (ExceptionStatusEvidenceRequired, InvalidExceptionStatus) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except ExceptionWorkflowError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
         return {"status": "ok", "data": res}
 
     @app.get(
@@ -1958,37 +2145,74 @@ def create_app() -> FastAPI:
         }
 
     # Staleness state per Addon 2 B.7 / docs 08/09
-    STALENESS_STATE = {
-        "is_stale": False,
-        "reason": None,
-    }
-
     @app.get("/api/v1/staleness", dependencies=[Depends(verify_session_token)])
     def api_get_staleness() -> Dict[str, Any]:
-        """Get derived data staleness status per Addon 2 B.7."""
-        return {
-            "status": "ok",
-            "data": STALENESS_STATE,
-        }
+        """Get persisted derived-data staleness status per Addon 2 B.7."""
+        return {"status": "ok", "data": _get_staleness_state()}
 
     @app.post("/api/v1/staleness/trigger", dependencies=[Depends(verify_session_token)])
     def api_trigger_staleness(payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Mark derived data as STALE when configuration/mappings/thresholds change."""
-        STALENESS_STATE["is_stale"] = True
-        STALENESS_STATE["reason"] = payload.get("reason", "Configuration or mapping updated") if payload else "Configuration updated"
-        return {
-            "status": "ok",
-            "data": STALENESS_STATE,
-        }
+        """Persist STALE state when configuration, mappings, or thresholds change."""
+        reason = str(
+            (payload or {}).get("reason") or "Configuration or mapping updated"
+        ).strip()[:500]
+        if not reason:
+            reason = "Configuration or mapping updated"
+        return {"status": "ok", "data": _set_staleness_state(True, reason)}
 
-    @app.post("/api/v1/staleness/rerun", dependencies=[Depends(verify_session_token)])
+    @app.post(
+        "/api/v1/staleness/rerun",
+        dependencies=[Depends(verify_session_token)],
+        responses={
+            409: {"description": "Configuration changed during recomputation; stale state retained"},
+            503: {"description": "Derived-data recomputation failed; stale state retained"},
+        },
+    )
     def api_rerun_staleness() -> Dict[str, Any]:
-        """Explicit re-run action clears staleness and re-computes analytics/rules/forecasts."""
-        STALENESS_STATE["is_stale"] = False
-        STALENESS_STATE["reason"] = None
+        """Recompute rule findings and the base forecast before clearing staleness."""
+        rerun_generation = int(_get_staleness_state()["generation"])
+        db_mgr = DatabaseManager()
+        try:
+            rule_summary = ExceptionsRepository(db_mgr).run_rules(period_code="FY26-P09")
+            if rule_summary.get("failedRules"):
+                raise HTTPException(
+                    status_code=503,
+                    detail="Rule recomputation failed; stale state was retained",
+                )
+            forecast = ForecastRepository(db_mgr).generate_forecast(
+                scenario_id="base",
+                default_method="run_rate",
+                run_rate_n=3,
+            )
+        except HTTPException:
+            raise
+        except Exception as exc:
+            logger.exception("Derived-data rerun failed; stale state was retained")
+            raise HTTPException(
+                status_code=503,
+                detail="Derived-data recomputation failed; stale state was retained",
+            ) from exc
+
+        try:
+            state = _clear_staleness_state_if_unchanged(rerun_generation)
+        except Exception as exc:
+            logger.exception("Could not clear derived-data stale state after recomputation")
+            raise HTTPException(
+                status_code=503,
+                detail="Configuration changed during recomputation; stale state was retained",
+            ) from exc
+        if state is None or state["isStale"]:
+            raise HTTPException(
+                status_code=409,
+                detail="Configuration changed during recomputation; stale state was retained",
+            )
         return {
             "status": "ok",
-            "message": "Re-run completed successfully. Staleness flag cleared.",
+            "data": {
+                **state,
+                "rules": rule_summary,
+                "forecastVersionId": forecast.version_id,
+            },
         }
 
     # Mount static assets if built UI exists in app/static

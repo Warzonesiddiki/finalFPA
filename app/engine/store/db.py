@@ -112,8 +112,37 @@ class DatabaseManager:
                 return
 
         try:
+            approval_thresholds_existed = bool(
+                conn.execute(
+                    """
+                    SELECT COUNT(*)
+                    FROM information_schema.tables
+                    WHERE table_schema = 'main' AND table_name = 'MasterApprovalThreshold'
+                    """
+                ).fetchone()[0]
+            )
             if ddl_path.exists():
                 conn.execute(ddl_path.read_text(encoding="utf-8"))
+            threshold_columns = {
+                row[1]
+                for row in conn.execute("PRAGMA table_info('MasterApprovalThreshold')").fetchall()
+            }
+            if "change_note" not in threshold_columns:
+                conn.execute(
+                    "ALTER TABLE MasterApprovalThreshold "
+                    "ADD COLUMN change_note VARCHAR(500) DEFAULT '';"
+                )
+            staleness_columns = {
+                row[1]
+                for row in conn.execute("PRAGMA table_info('DerivedDataState')").fetchall()
+            }
+            if "generation" not in staleness_columns:
+                conn.execute(
+                    "ALTER TABLE DerivedDataState ADD COLUMN generation BIGINT DEFAULT 0;"
+                )
+            conn.execute(
+                "INSERT OR IGNORE INTO DerivedDataState (state_id, is_stale, reason) VALUES (1, FALSE, NULL)"
+            )
             # Seed default fiscal calendar for FY26
             conn.execute("""
                 INSERT OR IGNORE INTO DimPeriod (period_id, fiscal_year, period_number, period_code, period_label, start_date, end_date)
@@ -136,6 +165,18 @@ class DatabaseManager:
                 INSERT OR IGNORE INTO DimCompany (company_id, company_code, company_name)
                 VALUES (1, 'IN01', 'Alpha Industries Pvt Ltd');
             """)
+            # Seed the documented company-level defaults only when this master
+            # table is first created. A deliberately emptied table must remain
+            # empty on subsequent starts so EXC-021 can report its dependency.
+            if not approval_thresholds_existed:
+                conn.execute("""
+                    INSERT INTO MasterApprovalThreshold (
+                        threshold_id, scope, company_id, amount_threshold,
+                        requires_dual_approval, effective_from, is_active, created_by, change_note
+                    ) VALUES
+                        ('single', 'company', 1, 500000.00, FALSE, '2026-01-01', TRUE, 'system-seed', 'Documented FY26 default single-approval limit'),
+                        ('dual', 'company', 1, 2500000.00, TRUE, '2026-01-01', TRUE, 'system-seed', 'Documented FY26 default dual-approval limit');
+                """)
             # Seed default accounts per 03_DATA_DICTIONARY and sample-data master
             conn.execute("""
                 INSERT OR IGNORE INTO DimAccount (account_id, account_code, account_name, account_type, statement_line, favourability_direction)

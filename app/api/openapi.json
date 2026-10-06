@@ -4843,7 +4843,7 @@
     "/api/v1/staleness/rerun": {
       "post": {
         "summary": "Api Rerun Staleness",
-        "description": "Explicit re-run action clears staleness and re-computes analytics/rules/forecasts.",
+        "description": "Recompute rule findings and the base forecast before clearing staleness.",
         "operationId": "api_rerun_staleness_api_v1_staleness_rerun_post",
         "parameters": [
           {
@@ -4878,6 +4878,105 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "Derived-data recomputation failed; stale state retained"
+          },
+          "409": {
+            "description": "Configuration changed during recomputation; stale state retained"
+          }
+        }
+      }
+    },
+    "/api/v1/master-data/approval-thresholds": {
+      "get": {
+        "summary": "Api List Approval Thresholds",
+        "operationId": "api_list_approval_thresholds_api_v1_master_data_approval_thresholds_get",
+        "parameters": [
+          {
+            "name": "X-Session-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "X-Session-Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Api List Approval Thresholds Api V1 Master Data Approval Thresholds Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Api Create Approval Threshold Version",
+        "operationId": "api_create_approval_threshold_version_api_v1_master_data_approval_thresholds_post",
+        "parameters": [
+          {
+            "name": "X-Session-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "X-Session-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalThresholdCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Api Create Approval Threshold Version Api V1 Master Data Approval Thresholds Post"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "409": {
+            "description": "Approval threshold version conflict"
           }
         }
       }
@@ -5148,6 +5247,15 @@
           "status": {
             "anyOf": [
               {
+                "enum": [
+                  "open",
+                  "in_review",
+                  "explained",
+                  "corrected",
+                  "closed",
+                  "reopened",
+                  "not_applicable"
+                ],
                 "type": "string"
               },
               {
@@ -5672,6 +5780,15 @@
           "status": {
             "anyOf": [
               {
+                "enum": [
+                  "open",
+                  "in_review",
+                  "explained",
+                  "corrected",
+                  "closed",
+                  "reopened",
+                  "not_applicable"
+                ],
                 "type": "string"
               },
               {
@@ -5983,6 +6100,87 @@
           "reason"
         ],
         "title": "VoidBatchRequest"
+      },
+      "ApprovalThresholdCreateRequest": {
+        "properties": {
+          "thresholdId": {
+            "type": "string",
+            "title": "Thresholdid"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "company",
+              "account",
+              "cost_center"
+            ],
+            "title": "Scope"
+          },
+          "amountThreshold": {
+            "type": "string",
+            "title": "Amountthreshold"
+          },
+          "requiresDualApproval": {
+            "type": "boolean",
+            "title": "Requiresdualapproval"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "title": "Effectivefrom"
+          },
+          "isActive": {
+            "type": "boolean",
+            "title": "Isactive",
+            "default": true
+          },
+          "companyCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Companycode"
+          },
+          "accountCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accountcode"
+          },
+          "costCenterCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Costcentercode"
+          },
+          "changeNote": {
+            "type": "string",
+            "title": "Changenote"
+          }
+        },
+        "type": "object",
+        "required": [
+          "thresholdId",
+          "scope",
+          "amountThreshold",
+          "requiresDualApproval",
+          "effectiveFrom",
+          "changeNote"
+        ],
+        "title": "ApprovalThresholdCreateRequest"
       }
     }
   }

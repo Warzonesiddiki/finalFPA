@@ -42,6 +42,21 @@ class RecurringCostRuleItem:
 
 
 @dataclass
+class ApprovalThresholdRuleItem:
+    """Effective-dated approval threshold master record for EXC-021."""
+
+    threshold_id: str
+    scope: str
+    amount_threshold: Decimal
+    requires_dual_approval: bool
+    effective_from: str
+    is_active: bool = True
+    company_code: Optional[str] = None
+    account_code: Optional[str] = None
+    cost_center_code: Optional[str] = None
+
+
+@dataclass
 class Finding:
     """Exception finding raised by a rule per 06_EXCEPTION_RULES_CATALOG §2 and 03_DATA_DICTIONARY §5.2."""
 
@@ -84,7 +99,7 @@ class RuleContext:
     dim_cost_centers: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     # Inactive cost centres set
     inactive_cost_centers: Set[str] = field(default_factory=set)
-    # Recurring costs list
+    # Recurring costs from master data.
     master_recurring_costs: List[RecurringCostRuleItem] = field(default_factory=list)
     # Persisted import-batch metadata; used by catalog EXC-001 / EXC-002.
     import_batches: List[Dict[str, Any]] = field(default_factory=list)
@@ -104,6 +119,8 @@ class RuleContext:
     # from the real calendar rather than an assumption.
     dim_period_end_dates: Dict[str, str] = field(default_factory=dict)
     config: Dict[str, Any] = field(default_factory=dict)
+    # Effective-dated approval thresholds from MasterApprovalThreshold (EXC-021).
+    master_approval_thresholds: List[ApprovalThresholdRuleItem] = field(default_factory=list)
 
     @property
     def committed_import_batches(self) -> List[Dict[str, Any]]:
