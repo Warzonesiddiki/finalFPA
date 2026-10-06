@@ -1,0 +1,222 @@
+{
+  "version": 1,
+  "leader": "hermes",
+  "agents": [
+    "opencode",
+    "hermes"
+  ],
+  "wip_limit": 2,
+  "default_ttl_minutes": 120,
+  "agent_idle_minutes": 30,
+  "leader_only_paths": [
+    "docs/18_GLOSSARY_ASSUMPTIONS_OPEN_QUESTIONS.md",
+    "docs/SESSION_LOG.md",
+    "docs/33_EXECUTION_BLUEPRINT_AND_TASKBOARD.md",
+    "docs/00_INDEX.md",
+    "CHANGELOG.md",
+    "STATE.md",
+    "team/",
+    "project prompt/"
+  ],
+  "do_not_claim": [
+    "app/api/openapi.json"
+  ],
+  "prefer": {
+    "buffy": [
+      "rules",
+      "engine",
+      "corpus",
+      "docs",
+      "gate-tooling",
+      "pptx",
+      "verification"
+    ],
+    "antigravity": [
+      "verification",
+      "tests",
+      "research",
+      "rules",
+      "perf",
+      "gate-evidence"
+    ],
+    "opencode": [
+      "gate-tooling",
+      "engine",
+      "rules",
+      "infra",
+      "tests",
+      "cli"
+    ],
+    "freebuff2": [
+      "corpus",
+      "perf",
+      "packaging",
+      "pilot",
+      "gate-evidence"
+    ],
+    "hermes": [
+      "product",
+      "research",
+      "docs",
+      "a11y",
+      "verification",
+      "cli",
+      "ui"
+    ],
+    "opencode2": [
+      "engine",
+      "rules",
+      "gate-tooling",
+      "cli",
+      "pptx",
+      "infra",
+      "tests"
+    ]
+  },
+  "orphan_ignore": [
+    ".coverage",
+    "coverage.xml",
+    "evidence/acceptance_report.json",
+    "evidence/acceptance_report.md",
+    "scratch/",
+    "*.pyc",
+    "__pycache__/",
+    ".pytest_cache/",
+    "*.log"
+  ],
+  "lanes": {
+    "buffy": [
+      "app/engine/**",
+      "app/api/**",
+      "scripts/**",
+      "docs/**",
+      "team/**"
+    ],
+    "antigravity": [
+      "tests/**",
+      "evidence/**",
+      "app/**"
+    ],
+    "opencode": [
+      "app/**",
+      "tests/**",
+      "ui/**"
+    ],
+    "freebuff2": [
+      "sample-data/**",
+      "scripts/**",
+      "packaging/**",
+      "app/engine/store/**"
+    ],
+    "hermes": [
+      "ui/**",
+      "app/api/**",
+      "docs/01_*.md",
+      "docs/05_*.md",
+      "docs/08_*.md",
+      "evidence/ux/**"
+    ],
+    "opencode2": [
+      "app/engine/**",
+      "app/cli/**",
+      "scripts/**",
+      "tests/**"
+    ]
+  },
+  "notes": "WIP limit and TTL are enforced/warned by scripts/team.py check. leader_only_paths exist because four writers on the integration surface (registers, changelog, state) cannot be merged truthfully; their content travels in handoffs instead. do_not_claim is the owner's own uncommitted work-in-progress (app/api/openapi.json) \u2014 no agent may claim it, including the leader.",
+  "streams": {
+    "buffy": [
+      "LEAD-03",
+      "LEAD-01",
+      "LEAD-02",
+      "DOC-03",
+      "DOC-08",
+      "DOC-05",
+      "RV-05",
+      "DOC-04",
+      "DOC-07",
+      "DOC-06",
+      "INT-01",
+      "DOC-02"
+    ],
+    "antigravity": [
+      "RV-11",
+      "RV-10",
+      "RV-09",
+      "RV-07",
+      "RV-08",
+      "SPEC-03",
+      "TB-009",
+      "RV-05"
+    ],
+    "opencode": [
+      "GATE-FAST",
+      "FMT-01",
+      "CONST-01",
+      "ENG-09",
+      "ENG-10",
+      "QUAL-03",
+      "TB-022"
+    ],
+    "freebuff2": [
+      "CORPUS-05",
+      "CORPUS-03",
+      "QUAL-05",
+      "CORPUS-02",
+      "PERF-02",
+      "QUAL-06",
+      "PERF-03",
+      "QUAL-07",
+      "CORPUS-04",
+      "PILOT-01",
+      "PILOT-02",
+      "TB-021",
+      "PILOT-03"
+    ],
+    "hermes": [
+      "UX-22",
+      "UX-08",
+      "UX-09",
+      "UX-10",
+      "UX-14",
+      "UX-19",
+      "UX-15",
+      "SPEC-08",
+      "UX-20",
+      "SPEC-09",
+      "UX-21",
+      "UX-16",
+      "UX-18",
+      "SPEC-07",
+      "UX-17",
+      "SPEC-05"
+    ],
+    "opencode2": [
+      "ENG-12",
+      "QUAL-01",
+      "ENG-05",
+      "QUAL-02",
+      "ENG-07",
+      "ENG-06",
+      "ENG-10",
+      "ENG-02",
+      "QUAL-03",
+      "ENG-08",
+      "ENG-09",
+      "ENG-11",
+      "QUAL-04",
+      "ENG-03"
+    ]
+  },
+  "watchdog": {
+    "interval_minutes": 20,
+    "stale_verification_minutes": 30,
+    "nudge_cooldown_minutes": 40,
+    "idle_minutes": 25,
+    "max_ticks": 0,
+    "autostart_board": true
+  },
+  "away": {
+    "antigravity": "quota ended for 2026-10-05; stream parked, verification lane reassigned to hermes/buffy"
+  }
+}

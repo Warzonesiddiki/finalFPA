@@ -1,0 +1,32 @@
+{
+  "id": "UX-16",
+  "title": "The analyst's month, not the analyst's day. A controller-level journey across the whole close: opening the period, who touches what, the hand-off to the systems team, the audit trail an auditor asks for, and what happens when the close is reopened. Output evidence/ux/controller-journey.md",
+  "priority": "P1",
+  "lane": "product",
+  "status": "review",
+  "owner": "hermes",
+  "claim_id": "hermes-20261005T2101Z-6029",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:03:12Z",
+  "updated_utc": "2026-10-05T21:02:33Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:03:12Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T21:01:32Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T21:02:33Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-058"
+}

@@ -1,0 +1,15 @@
+C:\Users\Tahir\Documents\GitHub\finalFPA\tests\integration\test_portable_mode.py:25: SyntaxWarning: "\d" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\d"? A raw string is also an option.
+  """With portable.flag beside the execution directory, data relocates to <app>\data\default."""
+=== FinalFPA Test Catalogue Traceability Checker (DEF-012) ===
+Loaded 309 valid TST identifiers from documentation.
+Harvested 41 marker references covering 34 distinct TST IDs.
+[PASS] No unknown TST identifiers found in test suite.
+[PASS] 100% coverage for Exception Rules TST-RUL-01 through TST-RUL-24.
+[PASS] Core Import tests verified (3 verified).
+[PASS] Core Security tests verified (3 verified).
+[PASS] Core Export tests verified (2 verified).
+
+Summary:
+  Total mapped TST IDs: 34
+  Total test marker tags: 41
+ALL TRACEABILITY CHECKS PASSED.

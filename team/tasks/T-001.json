@@ -1,0 +1,25 @@
+{
+  "id": "T-001",
+  "title": "Install uv and generate uv.lock (ADR-002 requires exact pins in a Python lockfile; `uv` is not installed and installing it is a network + machine change that needs the owner's go-ahead)",
+  "source": "buffy",
+  "priority": "P1",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "gate-tooling",
+  "created_utc": "2026-10-05T11:02:41Z",
+  "updated_utc": "2026-10-05T11:02:41Z",
+  "history": [
+    {
+      "utc": "2026-10-05T11:02:41Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T11:02:41Z",
+      "agent": "buffy",
+      "event": "the uv.lock artefact owed by TB-018 (2 of 3 pins delivered)"
+    }
+  ]
+}

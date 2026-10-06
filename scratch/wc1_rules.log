@@ -1,0 +1,59 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\Tahir\Documents\GitHub\finalFPA
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collected 85 items
+
+tests\unit\test_rules_01_08.py ...................                       [ 22%]
+tests\unit\test_rules_catalog_001_008.py .................F.....         [ 49%]
+tests\unit\test_rules_batch.py ...                                       [ 52%]
+tests\rules\test_acceptance.py ......................FFFF.F...           [ 89%]
+tests\rules\test_acceptance_blocked_regression.py .........              [100%]
+
+================================== FAILURES ===================================
+__ test_exc_008_raises_same_line_amount_on_different_vouchers_when_material ___
+tests\unit\test_rules_catalog_001_008.py:417: in test_exc_008_raises_same_line_amount_on_different_vouchers_when_material
+    findings = evaluate_catalog_exc_008(ctx)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app\engine\rules\rules_catalog_001_008.py:783: in evaluate_catalog_exc_008
+    f"{posting_date} / \u20b9{amount} across vouchers {', '.join(vouchers)}"
+                                                            ^^^^^^^^
+E   NameError: name 'vouchers' is not defined
+______________________ test_planted_exception_recall_bar ______________________
+tests\rules\test_acceptance.py:519: in test_planted_exception_recall_bar
+    assert bar.passed, (
+E   AssertionError: >= 29 of 32 (>= 90 % of the 32 raises) - measured 11/32 = 34.4 %. Missed: ['P1', 'P2', 'P2', 'P2', 'P3', 'P4', 'P6', 'P8', 'P9', 'P10', 'P10', 'P12', 'P13', 'P13', 'P14', 'P15', 'P16', 'P20', 'P21', 'P21', 'P24']
+E   assert False
+E    +  where False = BarResult(name='Planted-exception recall', requirement='>= 29 of 32 (>= 90 % of the 32 raises)', measured='11/32 = 34.4 %', passed=False, detail='21 planted case(s) not detected', measurable=True).passed
+_________________________ test_control_precision_bar __________________________
+tests\rules\test_acceptance.py:530: in test_control_precision_bar
+    assert bar.passed, (
+E   AssertionError: 0 of 8 controls may raise - measured 1 fired. Fired: ['P30']
+E   assert False
+E    +  where False = BarResult(name='Control precision', requirement='0 of 8 controls may raise', measured='1 fired', passed=False, detail='P30 EXC-018', measurable=True).passed
+________________________ test_high_severity_recall_bar ________________________
+tests\rules\test_acceptance.py:544: in test_high_severity_recall_bar
+    assert bar.passed, f"{bar.requirement} - measured {bar.measured}"
+E   AssertionError: 18 of 18 High plantings found - measured 6/18
+E   assert False
+E    +  where False = BarResult(name='High-severity recall', requirement='18 of 18 High plantings found', measured='6/18', passed=False, detail='a missed High is a control failure, not a statistic', measurable=True).passed
+___________________________ test_extra_findings_bar ___________________________
+tests\rules\test_acceptance.py:552: in test_extra_findings_bar
+    assert bar.passed, f"{bar.requirement} - measured {bar.measured}"
+E   AssertionError: a rule with > 3 unexplained findings is tuned or documented before the gate - measured 422 extra across 10 rule(s); over threshold: ['EXC-006', 'EXC-017', 'EXC-018', 'EXC-019', 'EXC-021', 'EXC-022']
+E   assert False
+E    +  where False = BarResult(name='Extra findings', requirement='a rule with > 3 unexplained findings is tuned or documented before the g...itive log reference is committed in this repository; extras are therefore UNEXPLAINED, not justified', measurable=True).passed
+_______________________ test_no_rule_has_zero_coverage ________________________
+tests\rules\test_acceptance.py:575: in test_no_rule_has_zero_coverage
+    assert not zero, f"rules with zero coverage (planted but raised nothing): {zero}"
+E   AssertionError: rules with zero coverage (planted but raised nothing): ['EXC-001', 'EXC-002', 'EXC-003', 'EXC-006', 'EXC-008', 'EXC-009', 'EXC-010', 'EXC-012', 'EXC-013', 'EXC-014', 'EXC-016', 'EXC-020', 'EXC-021', 'EXC-024']
+E   assert not ['EXC-001', 'EXC-002', 'EXC-003', 'EXC-006', 'EXC-008', 'EXC-009', ...]
+=========================== short test summary info ===========================
+FAILED tests/unit/test_rules_catalog_001_008.py::test_exc_008_raises_same_line_amount_on_different_vouchers_when_material
+FAILED tests/rules/test_acceptance.py::test_planted_exception_recall_bar - As...
+FAILED tests/rules/test_acceptance.py::test_control_precision_bar - Assertion...
+FAILED tests/rules/test_acceptance.py::test_high_severity_recall_bar - Assert...
+FAILED tests/rules/test_acceptance.py::test_extra_findings_bar - AssertionErr...
+FAILED tests/rules/test_acceptance.py::test_no_rule_has_zero_coverage - Asser...
+================== 6 failed, 79 passed in 526.94s (0:08:46) ===================

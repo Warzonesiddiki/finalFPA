@@ -1,0 +1,42 @@
+{
+  "id": "CORPUS-02",
+  "title": "Corpus manifest and one-command regeneration: sample-data/ gets a manifest (file, role, planting it serves, checksum) plus a single generator entry point, so the corpus is reproducible rather than hand-maintained. This is the substrate DEC-058 and TB-021 both depend on",
+  "priority": "P1",
+  "lane": "corpus",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T14:36:06Z",
+  "updated_utc": "2026-10-05T21:16:09Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T14:36:06Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T21:08:05Z",
+      "agent": "freebuff2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T21:10:15Z",
+      "agent": "freebuff2",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-05T21:10:16Z",
+      "agent": "freebuff2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T21:16:09Z",
+      "agent": "freebuff2",
+      "event": "release (todo)"
+    }
+  ],
+  "handoff": null
+}

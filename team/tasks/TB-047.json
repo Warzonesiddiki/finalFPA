@@ -1,0 +1,27 @@
+{
+  "id": "TB-047",
+  "title": "Finalise `22` end-user guide + `29` client pack against the shipped build; training session delivered",
+  "source": "docs/33",
+  "priority": "P2",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [
+    "TB-044"
+  ],
+  "lane": "docs",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T10:14:20Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:20Z",
+      "agent": "buffy",
+      "event": "triaged P2 / lane docs by leader"
+    }
+  ]
+}

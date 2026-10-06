@@ -1,0 +1,21 @@
+{
+  "id": "UX-20",
+  "title": "The very first run: a clean install with no data at all. What the analyst sees in the first sixty seconds, and what the tool must not assume. Output evidence/ux/first-run-empty.md with the states, and the errors that can happen before any data exists",
+  "priority": "P1",
+  "lane": "product",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:22:06Z",
+  "updated_utc": "2026-10-05T15:22:06Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:22:06Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

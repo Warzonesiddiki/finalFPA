@@ -10,9 +10,7 @@ import csv
 import math
 import random
 import argparse
-import re
-import zipfile
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 try:
@@ -215,68 +213,29 @@ def split_amount(total: Decimal, count: int) -> list:
 
 
 # ---------------------------------------------------------------------------
-# Deterministic .xlsx (QUAL-05 / TB-021)
+# Deterministic .xlsx (QUAL-05 / TB-021, moved to xlsx_deterministic.py in
+# CORPUS-02 so the repo-root tieout generator obeys the same rule)
 # ---------------------------------------------------------------------------
 #
-# openpyxl stamps a wall-clock `dcterms:created` into `docProps/core.xml` on
-# every save, so the SAME logical workbook produces a different SHA-256 on every
-# run. That makes every `.xlsx` in the corpus impossible to fingerprint, which
-# is why the acceptance harness had to exclude 32 xlsx files from its checksum
-# manifest and record the exclusion instead of closing it. Pinning the document
-# properties to a fixed epoch makes the bytes a function of the content alone.
-XLSX_FIXED_TIMESTAMP = datetime(2026, 1, 1, 0, 0, 0)
-
-
-def save_deterministic(workbook, path):
-    """Save `workbook` so the FILE BYTES are a function of its content alone.
-
-    Two independent clocks have to be pinned, and pinning only the first one
-    still leaves the corpus non-reproducible:
-
-    1. `docProps/core.xml` carries a wall-clock `dcterms:created`, written by
-       openpyxl on every save.
-    2. Every zip entry's local header carries the time the entry was written.
-
-    Fixing (1) and not (2) is the trap: `core.xml` looks reproducible and the
-    SHA-256 still moves. So the archive is rebuilt with fixed entry timestamps.
-    """
-    properties = workbook.properties
-    properties.created = XLSX_FIXED_TIMESTAMP
-    properties.modified = XLSX_FIXED_TIMESTAMP
-    properties.lastModifiedBy = "generate_sample_data.py"
-    properties.creator = "generate_sample_data.py"
-    workbook.save(path)
-    _normalise_zip_timestamps(path)
-
-
-def _normalise_zip_timestamps(path) -> None:
-    """Rewrite the xlsx archive: fixed entry timestamps, fixed order, fixed core.
-
-    openpyxl re-stamps `dcterms:modified` with the wall clock inside `save()`
-    itself, so setting `workbook.properties.modified` beforehand has no effect -
-    the file still changes on every run even though `created` is pinned. The
-    archive is therefore rebuilt after the fact with both stamps rewritten.
-    """
-    fixed = (XLSX_FIXED_TIMESTAMP.year, XLSX_FIXED_TIMESTAMP.month,
-             XLSX_FIXED_TIMESTAMP.day, 0, 0, 0)
-    stamp = XLSX_FIXED_TIMESTAMP.strftime("%Y-%m-%dT%H:%M:%SZ")
-    with zipfile.ZipFile(path) as source:
-        entries = []
-        for info in sorted(source.infolist(), key=lambda i: i.filename):
-            payload = source.read(info.filename)
-            if info.filename == "docProps/core.xml":
-                payload = re.sub(
-                    rb"(<dcterms:(?:created|modified)[^>]*>)[^<]*(</dcterms:)",
-                    rb"\g<1>" + stamp.encode("ascii") + rb"\g<2>",
-                    payload,
-                )
-            entries.append((info.filename, payload))
-    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as target:
-        for filename, payload in entries:
-            info = zipfile.ZipInfo(filename, date_time=fixed)
-            info.compress_type = zipfile.ZIP_DEFLATED
-            info.external_attr = 0o600 << 16
-            target.writestr(info, payload)
+# `save_deterministic` and `_normalise_zip_timestamps` used to live here. They are
+# imported rather than re-implemented so there is one owner for "the file bytes
+# are a function of the content alone": CORPUS-02's manifest found a second
+# generator writing into this directory with a bare `Workbook.save()`, whose
+# template moved SHA-256 on every run. The three names are re-exported here
+# because the corpus and its tests address them through this module.
+try:
+    from xlsx_deterministic import (
+        XLSX_FIXED_TIMESTAMP,
+        save_deterministic,
+        _normalise_zip_timestamps,
+    )
+except ImportError:  # loaded via importlib from another cwd (tests, tooling)
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from xlsx_deterministic import (
+        XLSX_FIXED_TIMESTAMP,
+        save_deterministic,
+        _normalise_zip_timestamps,
+    )
 
 
 def parts_needed(total: Decimal) -> int:

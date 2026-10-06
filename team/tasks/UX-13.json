@@ -1,0 +1,21 @@
+{
+  "id": "UX-13",
+  "title": "Scenario modelling journey: what-if flows for the forecast (assumption, horizon, override, compare to plan, approve) with the assumption ledger that makes a scenario defensible in a board review. Output evidence/ux/scenario-journey.md",
+  "priority": "P2",
+  "lane": "product",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T14:36:06Z",
+  "updated_utc": "2026-10-05T14:36:06Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T14:36:06Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

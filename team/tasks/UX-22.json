@@ -1,0 +1,32 @@
+{
+  "id": "UX-22",
+  "title": "Make the citation checker resolve a file:line code citation, because the only\nthing that stopped UX-08 was a checker that greps docs/ and calls that verified.\n\nThe acceptance condition is written to be falsifiable by construction: ship\nscripts/verify_audit_citations.py v2 that, for every `file:line` citation it\nsees, opens that file and checks the claim is on that line, plus a test that\nbreaks one citation and asserts the checker reports it. Acceptance: a broken\ncitation turns the gate red, proven by before/after output, and the test is\nthe falsification. If UX-08 re-does the a11y audit while this exists, the new\naudit cannot be green until this checker passes on its citations",
+  "priority": "P0",
+  "lane": "product",
+  "status": "review",
+  "owner": "hermes",
+  "claim_id": "hermes-20261005T1840Z-883f",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T17:01:58Z",
+  "updated_utc": "2026-10-05T19:04:43Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T17:01:58Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T18:40:20Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T19:04:43Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-039"
+}

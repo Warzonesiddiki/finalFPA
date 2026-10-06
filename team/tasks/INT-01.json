@@ -1,0 +1,31 @@
+{
+  "id": "INT-01",
+  "title": "Reconcile the two boards: every TB row in docs/33 with a live team card, and every team card with a docs/33 row. Report drift both ways (a row nobody owns, a card with no spec anchor) and fix the team side; propose the docs/33 wording for the rest. This is the leader integration job: the spec of record must not drift from the board that runs the work",
+  "source": "docs/33",
+  "priority": "P1",
+  "status": "review",
+  "owner": "buffy",
+  "claim_id": "buffy-20261005T1312Z-da7a",
+  "deps": [],
+  "lane": "docs",
+  "created_utc": "2026-10-05T13:11:46Z",
+  "updated_utc": "2026-10-05T13:13:23Z",
+  "history": [
+    {
+      "utc": "2026-10-05T13:11:46Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T13:12:16Z",
+      "agent": "buffy",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T13:13:23Z",
+      "agent": "buffy",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-018"
+}

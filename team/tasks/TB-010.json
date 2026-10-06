@@ -1,0 +1,25 @@
+{
+  "id": "TB-010",
+  "title": "Build the import-history fixture (overlapping batch 37 + control totals) for P2/P3",
+  "source": "docs/33",
+  "priority": "P0",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "corpus",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T10:14:18Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:18Z",
+      "agent": "buffy",
+      "event": "triaged P0 / lane corpus by leader"
+    }
+  ]
+}

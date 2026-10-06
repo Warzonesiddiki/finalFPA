@@ -1,0 +1,32 @@
+{
+  "id": "QUAL-01",
+  "title": "DEF-015, and it is the last S1 that can reach a client number: money must be Decimal end to end. Find every place an amount crosses a boundary (parse, persist, compute, serialise) while still being a float, fix it, and add a test that fails if a float ever touches an amount again. Acceptance: the count before and after, the fixed sites listed by file:line, and a test that is proven to fail on an injected float",
+  "priority": "P0",
+  "lane": "engine",
+  "status": "review",
+  "owner": "opencode2",
+  "claim_id": "opencode2-20261005T1901Z-30e5",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:22:06Z",
+  "updated_utc": "2026-10-05T19:15:38Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:22:06Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T19:01:40Z",
+      "agent": "opencode2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T19:15:38Z",
+      "agent": "opencode2",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-044"
+}

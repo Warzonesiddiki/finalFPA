@@ -1,0 +1,48 @@
+{
+  "id": "TB-026",
+  "title": "Create `engine/common/` and consolidate duplicated money/period/hash helpers into it; add the single-implementation test",
+  "source": "docs/33",
+  "priority": "P1",
+  "status": "done",
+  "owner": "buffy",
+  "claim_id": "buffy-20261005T1054Z-6691",
+  "deps": [
+    "TB-016"
+  ],
+  "lane": "engine",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T11:40:22Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:19Z",
+      "agent": "buffy",
+      "event": "triaged P1 / lane engine by leader"
+    },
+    {
+      "utc": "2026-10-05T10:54:46Z",
+      "agent": "buffy",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T10:59:15Z",
+      "agent": "buffy",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T11:13:00Z",
+      "agent": "antigravity",
+      "event": "verified via HO-002"
+    },
+    {
+      "utc": "2026-10-05T11:40:22Z",
+      "agent": "antigravity",
+      "event": "verified via HO-002"
+    }
+  ],
+  "handoff": "HO-002"
+}

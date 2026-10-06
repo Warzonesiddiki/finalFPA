@@ -1,0 +1,21 @@
+{
+  "id": "DOC-04",
+  "title": "Human README: what the tool does for an FP&A analyst, how to run it from a clean clone, where the sample data and templates are, and who to ask. The repo root still carries debris from two earlier attempts and a reader cannot tell what matters",
+  "priority": "P2",
+  "lane": "docs",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T14:36:06Z",
+  "updated_utc": "2026-10-05T14:36:06Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T14:36:06Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

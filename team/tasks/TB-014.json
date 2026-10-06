@@ -1,0 +1,51 @@
+{
+  "id": "TB-014",
+  "title": "Configure the **import-linter** engine-boundary rule (`app/engine/**` may not import fastapi/pywebview/app.api/app.desktop/app.jobs) and run it from `scripts/check`",
+  "source": "docs/33",
+  "priority": "P1",
+  "status": "done",
+  "owner": "opencode",
+  "claim_id": "opencode-20261005T1115Z-c3dc",
+  "deps": [],
+  "lane": "gate-tooling",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T11:39:51Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:19Z",
+      "agent": "buffy",
+      "event": "triaged P1 / lane gate-tooling by leader"
+    },
+    {
+      "utc": "2026-10-05T11:13:42Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T11:15:33Z",
+      "agent": "opencode",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-05T11:15:37Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T11:18:27Z",
+      "agent": "opencode",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T11:39:51Z",
+      "agent": "antigravity",
+      "event": "verified via HO-008"
+    }
+  ],
+  "handoff": "HO-008"
+}

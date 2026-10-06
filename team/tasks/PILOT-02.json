@@ -1,0 +1,21 @@
+{
+  "id": "PILOT-02",
+  "title": "The analyst's first day as a script someone can follow without being told anything: import, open the period, first variance, first board pack, with the expected output at each step and what to do when a step fails. Acceptance: a second analyst follows it cold and every step's output matches",
+  "priority": "P1",
+  "lane": "pilot",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:03:12Z",
+  "updated_utc": "2026-10-05T15:03:12Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:03:12Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

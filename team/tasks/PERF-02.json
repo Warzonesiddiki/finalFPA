@@ -1,0 +1,21 @@
+{
+  "id": "PERF-02",
+  "title": "Optimise the two slowest rules identified by PERF-01, with before/after timings on the same fixture and the same findings asserted - identical finding set is the acceptance condition, speed is the goal",
+  "priority": "P1",
+  "lane": "perf",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T14:36:06Z",
+  "updated_utc": "2026-10-05T14:36:06Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T14:36:06Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

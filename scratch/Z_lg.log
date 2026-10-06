@@ -1,0 +1,16 @@
+=== Addon 6 v2 §11 — License & Provenance Gate ===
+CHECK 1 — Provenance completeness
+  files carrying an 'Adapted from' header: 5
+CHECK 2 — Forbidden licenses in shipped code
+  forbidden-license hits in shipped code: 0
+CHECK 3 — Upstream hygiene
+  gitignored: True; tracked upstream files: 0
+CHECK 4 — Dependency split
+  DT tool 'pip-licenses': absent
+  DT tool 'faker': absent
+  DT tool 'hypothesis': absent
+  runtime deps checked: 9 (GO-list), dev extras: 5; license metadata unavailable: 0
+CHECK 5 — Header format
+  'Adapted from' lines examined: 5
+
+PASSED: all five checks clean (Addon 6 v2 §11).

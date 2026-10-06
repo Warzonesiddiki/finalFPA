@@ -1,0 +1,41 @@
+{
+  "id": "ENG-01",
+  "title": "Burn the mypy debt in the three worst files reported by TB-016 (guardrails, acceptance, pptx_fill core): fix types without behaviour change, keep 0 new errors in the rest of app/engine, and prove no behaviour change with the existing tests for each file touched",
+  "source": "team",
+  "priority": "P1",
+  "status": "review",
+  "owner": "opencode",
+  "claim_id": "opencode-20261005T1237Z-2837",
+  "deps": [],
+  "lane": "gate-tooling",
+  "created_utc": "2026-10-05T12:04:32Z",
+  "updated_utc": "2026-10-05T12:54:35Z",
+  "history": [
+    {
+      "utc": "2026-10-05T12:04:32Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T12:33:15Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T12:37:16Z",
+      "agent": "opencode",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-05T12:37:34Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T12:54:35Z",
+      "agent": "opencode",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-021"
+}

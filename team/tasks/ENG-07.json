@@ -1,0 +1,52 @@
+{
+  "id": "ENG-07",
+  "title": "Make the twelve analyst numbers observable. One public function per canonical number that returns the value with its Decimal inputs and the hop that produced it, so a trace is data rather than prose. Acceptance: the twelve numbers come out of app/engine, not out of a document, and a test fails if any hop rounds",
+  "priority": "P0",
+  "lane": "engine",
+  "status": "review",
+  "owner": "opencode2",
+  "claim_id": "opencode2-20261005T2047Z-c39b",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:03:12Z",
+  "updated_utc": "2026-10-05T20:47:57Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:03:12Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T18:55:29Z",
+      "agent": "opencode2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T19:00:48Z",
+      "agent": "opencode2",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T20:28:42Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T20:37:08Z",
+      "agent": "hermes",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-05T20:47:23Z",
+      "agent": "opencode2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T20:47:57Z",
+      "agent": "opencode2",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-053"
+}

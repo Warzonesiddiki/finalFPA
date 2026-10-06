@@ -1,0 +1,31 @@
+{
+  "id": "T-005",
+  "title": "UX-25: Integrate 'System Tie-Out Health' KPI card into SCR-001 Home screen: implement a live-dash cross-check between GL Actuals (D365) and sub-ledger totals from ancillary software (Bank/Payroll) and display an explicit pass/fail health indicator.",
+  "source": "team",
+  "priority": "P1",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "product",
+  "created_utc": "2026-10-05T21:27:41Z",
+  "updated_utc": "2026-10-05T21:52:43Z",
+  "history": [
+    {
+      "utc": "2026-10-05T21:27:41Z",
+      "agent": "?",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T21:45:41Z",
+      "agent": "opencode2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T21:52:43Z",
+      "agent": "opencode2",
+      "event": "release (todo)"
+    }
+  ],
+  "handoff": null
+}

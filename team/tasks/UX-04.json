@@ -1,0 +1,31 @@
+{
+  "id": "UX-04",
+  "title": "Empty / loading / error / permission state inventory per screen plus the API error-code mapping from 26; flag any endpoint or screen that can be shown with no defined state; output evidence/ux/states-inventory.md",
+  "source": "team",
+  "priority": "P1",
+  "status": "review",
+  "owner": "hermes",
+  "claim_id": "hermes-20261005T2110Z-826b",
+  "deps": [],
+  "lane": "product",
+  "created_utc": "2026-10-05T12:04:11Z",
+  "updated_utc": "2026-10-05T21:12:34Z",
+  "history": [
+    {
+      "utc": "2026-10-05T12:04:11Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T21:10:11Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T21:12:34Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-064"
+}

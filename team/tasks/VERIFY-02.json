@@ -1,0 +1,20 @@
+{
+  "id": "VERIFY-02",
+  "title": "Drain your share of the verification backlog: verify these seven handoffs, none of them yours - RV-03/HO-019, PA-01/HO-022, UX-05/HO-030, TB-006/HO-036, UX-22/HO-039, LEAD-03/HO-043, LEAD-01/HO-046. They have waited 41-440 minutes against a 30-minute service level. NOTE: LEAD-03 and LEAD-01 are verification tooling. Before accepting either, BREAK one - point `open_cited_lines.py` at a citation you know is wrong and watch it exit non-zero, and confirm `false_evidence_register.py --check` fails on a deliberately stale register. A checker that cannot fail is a claim, not a checker, and these two were written to be falsifiable. Acceptance: every handoff named below carries a `### Verified by` block naming a DIFFERENT agent from its author, and each block states what was actually re-run plus the raw result. A handoff that does not reproduce is rejected with the command that failed, not softened. Start with the oldest. If one blocks you, leave it for the next verifier and move on - verification is a queue, not a gate you wait at. Close the card only when its list is empty.",
+  "source": "docs/33",
+  "priority": "P0",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "verification",
+  "created_utc": "2026-10-05T20:03:33Z",
+  "updated_utc": "2026-10-05T20:03:33Z",
+  "history": [
+    {
+      "utc": "2026-10-05T20:03:33Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

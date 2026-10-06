@@ -1,0 +1,23 @@
+citation audit of evidence/ops/lead-03-citation-audit.md
+2 citation(s) sampled
+
+[1] scripts/memory.py:83
+    report line 22: The one claim this document makes in prose is the fixture constant: `LOCK_TIMEOUT=60.0` is at `scripts/memory.py:83`, and `RENDER_LIMIT=40` is at `scripts/memory.py:87`. Both are true, so the run bel...
+    status: MISMATCH
+    why:    claimed on report line 22 but not on scripts/memory.py:83: RENDER_LIMIT=40
+    opened: scripts/memory.py
+    >> scripts/memory.py:83 | LOCK_TIMEOUT = 60.0
+    claims: LOCK_TIMEOUT=60.0, RENDER_LIMIT=40
+    absent: RENDER_LIMIT=40
+
+[2] scripts/memory.py:87
+    report line 22: The one claim this document makes in prose is the fixture constant: `LOCK_TIMEOUT=60.0` is at `scripts/memory.py:83`, and `RENDER_LIMIT=40` is at `scripts/memory.py:87`. Both are true, so the run bel...
+    status: MISMATCH
+    why:    claimed on report line 22 but not on scripts/memory.py:87: LOCK_TIMEOUT=60.0
+    opened: scripts/memory.py
+    >> scripts/memory.py:87 | RENDER_LIMIT = 40
+    claims: LOCK_TIMEOUT=60.0, RENDER_LIMIT=40
+    absent: LOCK_TIMEOUT=60.0
+
+2 citation(s), 4 claim token(s) checked, 2 failure(s)
+VERDICT: FAIL — a cited line does not say what the report says it says.

@@ -1,0 +1,25 @@
+{
+  "id": "T-008",
+  "title": "ENG-14: Durable memory attribution: authorize journal migration so memory.py _check_journal accepts union of config.json agents and historical memory/agents/*.md files, resolving the inconsistent ownership failure.",
+  "source": "team",
+  "priority": "P0",
+  "status": "in-progress",
+  "owner": "opencode",
+  "claim_id": "opencode-20261006T0907Z-a8e3",
+  "deps": [],
+  "lane": "engine",
+  "created_utc": "2026-10-05T21:54:39Z",
+  "updated_utc": "2026-10-06T09:07:51Z",
+  "history": [
+    {
+      "utc": "2026-10-05T21:54:39Z",
+      "agent": "?",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-06T09:07:51Z",
+      "agent": "opencode",
+      "event": "claimed"
+    }
+  ]
+}

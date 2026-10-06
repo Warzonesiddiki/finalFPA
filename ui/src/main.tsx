@@ -44,6 +44,7 @@ export function App() {
   const [batches, setBatches] = useState<BatchItem[]>([])
   const [error, setError] = useState<string | null>(null)
   const [showHelp, setShowHelp] = useState(false)
+  const [isNavCollapsed, setIsNavCollapsed] = useState(false)
 
   useEffect(() => {
     const hash = window.location.hash
@@ -86,33 +87,37 @@ export function App() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', backgroundColor: '#f8fafc', color: '#0f172a' }}>
       {/* Left Guided Navigation per 08_UI_UX_SPEC.md §3 */}
-      <aside style={{ width: '240px', backgroundColor: '#0f172a', color: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '20px 16px', borderBottom: '1px solid #1e293b' }}>
-          <div style={{ fontWeight: 'bold', fontSize: '15px', color: '#38bdf8' }}>FP&amp;A Month-End Copilot</div>
-          <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>v{health?.version || '0.1.0'} &bull; Windows 11 Native</div>
+      <aside style={{ width: isNavCollapsed ? '60px' : '240px', backgroundColor: '#0f172a', color: '#f8fafc', display: 'flex', flexDirection: 'column', transition: 'width 0.3s' }}>
+        <div style={{ padding: '20px 16px', borderBottom: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {!isNavCollapsed && <div style={{ fontWeight: 'bold', fontSize: '15px', color: '#38bdf8' }}>FP&A Month-End Copilot</div>}
+          <button onClick={() => setIsNavCollapsed(!isNavCollapsed)} style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', fontSize: '18px' }}>
+            {isNavCollapsed ? '▶' : '◀'}
+          </button>
         </div>
 
         <nav style={{ flex: 1, padding: '16px 8px' }}>
           {[
-            { id: 'home', label: '🏠  Home' },
-            { id: 'search', label: '🔍  Global Search (SCR-022)' },
-            { id: 'import', label: '⬇  Import & Wizard' },
-            { id: 'importhistory', label: '📜  Import History & Void' },
-            { id: 'check', label: '✓  Check & Quality' },
-            { id: 'analyze', label: '▤  Analyze & Variance' },
-            { id: 'exceptions', label: '⚠  Exceptions & Review' },
-            { id: 'forecast', label: '📈  Forecast & Scenarios' },
-            { id: 'reports', label: '📦  Reports & Issuance' },
-            { id: 'ai', label: '🤖  AI & Commentary' },
-            { id: 'settings', label: '⚙  Settings & Master Data' },
-            { id: 'backup', label: '🔄  Backup & Restore (SCR-039)' },
-            { id: 'about', label: 'ℹ  About & Diagnostics (SCR-040)' },
+            { id: 'home', label: '🏠  ' },
+            { id: 'search', label: '🔍  ' },
+            { id: 'import', label: '⬇  ' },
+            { id: 'importhistory', label: '📜  ' },
+            { id: 'check', label: '✓  ' },
+            { id: 'analyze', label: '▤  ' },
+            { id: 'exceptions', label: '⚠  ' },
+            { id: 'forecast', label: '📈  ' },
+            { id: 'reports', label: '📦  ' },
+            { id: 'ai', label: '🤖  ' },
+            { id: 'settings', label: '⚙  ' },
+            { id: 'backup', label: '🔄  ' },
+            { id: 'about', label: 'ℹ  ' },
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
+              title={!isNavCollapsed ? '' : tab.id.charAt(0).toUpperCase() + tab.id.slice(1)}
               style={{
-                display: 'block',
+                display: 'flex',
+                alignItems: 'center',
                 width: '100%',
                 textAlign: 'left',
                 padding: '10px 14px',
@@ -126,15 +131,17 @@ export function App() {
                 cursor: 'pointer',
               }}
             >
-              {tab.label}
+              {tab.label} {!isNavCollapsed && tab.id.charAt(0).toUpperCase() + tab.id.slice(1)}
             </button>
           ))}
         </nav>
 
-        <div style={{ padding: '16px', borderTop: '1px solid #1e293b', fontSize: '12px', color: '#94a3b8' }}>
-          <div>Period: <strong style={{ color: '#f8fafc' }}>FY26-P09</strong> <span style={{ padding: '2px 6px', backgroundColor: '#16a34a', color: '#fff', borderRadius: '4px', fontSize: '10px' }}>OPEN</span></div>
-          <div style={{ marginTop: '4px' }}>Batches: {batches.length} committed</div>
-        </div>
+        {!isNavCollapsed && (
+          <div style={{ padding: '16px', borderTop: '1px solid #1e293b', fontSize: '12px', color: '#94a3b8' }}>
+            <div>Period: <strong style={{ color: '#f8fafc' }}>FY26-P09</strong> <span style={{ padding: '2px 6px', backgroundColor: '#16a34a', color: '#fff', borderRadius: '4px', fontSize: '10px' }}>OPEN</span></div>
+            <div style={{ marginTop: '4px' }}>Batches: {batches.length} committed</div>
+          </div>
+        )}
       </aside>
 
       {/* Main Content Area */}

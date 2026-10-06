@@ -1,0 +1,21 @@
+{
+  "id": "DOC-06",
+  "title": "A written answer to 'why should anyone believe this?': the audit trail from a number on a board pack back to the row of GL that produced it, in the order a client auditor would walk it",
+  "priority": "P2",
+  "lane": "docs",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:03:12Z",
+  "updated_utc": "2026-10-05T15:03:12Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:03:12Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

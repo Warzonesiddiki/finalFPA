@@ -1,0 +1,36 @@
+{
+  "id": "OPS-01",
+  "title": "Non-stop supervision loop: a watchdog that every 20 minutes regenerates the taskboard, runs team.py check, and acts on what it finds (nudge an idle seat whose stream has claimable work, flag a stale claim for takeover, escalate a handoff that has waited too long for a verifier, and draft a new card when a stream runs dry). It must never auto-verify, auto-accept or commit; every action is logged and lands in the agents inboxes. Output scripts/team_watchdog.py + tests/unit/test_team_watchdog.py",
+  "source": "team",
+  "priority": "P0",
+  "status": "done",
+  "owner": "buffy",
+  "claim_id": "buffy-20261005T1230Z-d3c0",
+  "deps": [],
+  "lane": "gate-tooling",
+  "created_utc": "2026-10-05T12:30:24Z",
+  "updated_utc": "2026-10-05T12:39:05Z",
+  "history": [
+    {
+      "utc": "2026-10-05T12:30:24Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T12:30:24Z",
+      "agent": "buffy",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T12:33:33Z",
+      "agent": "buffy",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T12:39:05Z",
+      "agent": "antigravity",
+      "event": "verified via HO-017"
+    }
+  ],
+  "handoff": "HO-015"
+}

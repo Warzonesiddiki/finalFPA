@@ -1,0 +1,56 @@
+{
+  "id": "TB-017",
+  "title": "Wire `eslint` + `tsc --noEmit` into the gate (confirm they actually run today)",
+  "source": "docs/33",
+  "priority": "P1",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "gate-tooling",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T12:27:41Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:19Z",
+      "agent": "buffy",
+      "event": "triaged P1 / lane gate-tooling by leader"
+    },
+    {
+      "utc": "2026-10-05T11:50:34Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T11:51:23Z",
+      "agent": "opencode",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-05T11:51:30Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T12:00:19Z",
+      "agent": "opencode",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T12:09:50Z",
+      "agent": "buffy",
+      "event": "rejected via HO-012"
+    },
+    {
+      "utc": "2026-10-05T12:27:41Z",
+      "agent": "opencode",
+      "event": "release (todo)"
+    }
+  ],
+  "handoff": null
+}

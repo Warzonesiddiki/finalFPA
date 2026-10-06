@@ -1,0 +1,32 @@
+{
+  "id": "UX-15",
+  "title": "Ground the 43-screen matrix in code. For every SCR-nnn in docs/08, find the component that implements it and the test that exercises it; emit SCR -> component file:line -> test file::name. Any SCR with no component is a spec defect, not a blank to fill. Acceptance: three numbers - screens implemented, screens with no component, screens with no test - and the list behind each",
+  "priority": "P1",
+  "lane": "product",
+  "status": "review",
+  "owner": "hermes",
+  "claim_id": "hermes-20261005T2050Z-50c6",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:03:12Z",
+  "updated_utc": "2026-10-05T20:54:25Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:03:12Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T20:50:42Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T20:54:25Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-055"
+}

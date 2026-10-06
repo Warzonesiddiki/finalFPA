@@ -1,0 +1,21 @@
+{
+  "id": "SPEC-06",
+  "title": "FR-to-endpoint reconciliation: every FR in docs/02 that needs a machine surface must map to a route in docs/26 and to a shipped endpoint in app/api, or be explicitly manual-by-design with the reason. Report every FR with none of those three. Output evidence/spec/fr-endpoint-map.md",
+  "priority": "P1",
+  "lane": "docs",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T14:36:06Z",
+  "updated_utc": "2026-10-05T14:36:06Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T14:36:06Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

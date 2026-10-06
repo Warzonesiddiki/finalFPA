@@ -1,0 +1,20 @@
+{
+  "id": "SPEC-02",
+  "title": "Glossary sweep: every defined term in 00-08 and 18 cross-checked for (a) terms used in the spec but never defined, (b) defined terms used nowhere. Output evidence/spec/glossary-sweep.md with proposed rows for 18 (proposals only - 18 is leader-only)",
+  "source": "team",
+  "priority": "P2",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "docs",
+  "created_utc": "2026-10-05T12:04:28Z",
+  "updated_utc": "2026-10-05T12:04:28Z",
+  "history": [
+    {
+      "utc": "2026-10-05T12:04:28Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

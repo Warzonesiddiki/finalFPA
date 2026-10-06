@@ -1,0 +1,77 @@
+# MEMORY — what is true about this project, right now
+
+> **The answer to "what happened and what is the state of play?"**
+> Answers live in [KNOWLEDGE.md](KNOWLEDGE.md) ("what did we learn?") and
+> [RESUME.md](RESUME.md) ("how do I resume?"). This file is the third leg: the record.
+
+**This is not a scratchpad.** Entries are appended to
+`memory/journal/memory.jsonl` — an append-only journal, so a concurrent writer can
+never clobber yours — and the list below is rendered from it, newest first. The
+hand-written prose in the middle is the leader's; the generated block at the bottom is
+everyone's.
+
+```bash
+python scripts/memory.py add --kind <state|decision|blocker|handoff|note> --text "..."
+python scripts/memory.py render
+```
+
+## What belongs here, and what does not
+
+**A memory entry is a claim about the state of the world** that a future agent would
+otherwise have to re-derive. Kinds:
+
+| Kind | Means | Example |
+|---|---|---|
+| `state` | a fact about the project as it now stands | "corpus regeneration is now one command: `python scripts/generate_sample_data.py`" |
+| `decision` | a choice *and its reason* — a DEC/ADR/§ reference | "engine ids kept for `Finding.identity_hash`; catalog ids would churn hashes and invalidate filed tie-out evidence" |
+| `blocker` | something that stops work, and what would unblock it | "`scripts/check.py` red on 5 of 14 §5.3 bars; unblocked by the TB-006/TB-011 corpus rebuild" |
+| `handoff` | work passed to a peer, with the id | "HO-025 carries hermes' 43-screen matrix; rejected on form, re-handoff awaited" |
+| `note` | anything above that does not fit, kept because it is true today | |
+
+**Not here:** status lines that `python scripts/team.py status` already gives you
+better and fresher; test results (they belong in the handoff and `docs/SESSION_LOG.md`);
+anything already written in `docs/00`–`docs/33`; anything you have not observed.
+
+**Write it when you stop, not when you remember.** A daily limit can end a session in
+the middle of anything. The one-minute habit of writing the entry while the number is
+still on screen is the entire difference between a project that resumes and one that
+restarts.
+
+## Where the last few sessions are recorded
+
+The long-form session history is [docs/SESSION_LOG.md](../docs/SESSION_LOG.md) — one
+section per session, with the measurements and the rejections. This journal is the
+short, high-churn layer on top: what changed since, in one line each.
+
+<!-- BEGIN GENERATED:memory.py -->
+- **M-0030** `2026-10-05T21:43:50Z` — opencode — *state*: REGRESSION on the shared tree, found 2026-10-05 ~21:45Z: the Excel export is entirely broken. app/engine/exports/excel_pack.py - def build_sheet_accounting_action_log is defined at line 2521 INSIDE generate_month_end_pack (defined line 2482), cutting off its return, so generate_month_end_pack returns None and export_excel_pack dies at line 2585 with AttributeError NoneType.save. Also build_sheet_import_reconciliation (line 2274) has zero call sites so Sheet 7 is never built, the orphaned 'return wb' sits at 2572 inside a function annotated -> None, and the action-log builder is called twice at 2558/2562. Measured: pytest tests/unit/test_excel_pack.py -> 11 failed in 0.81s. Broken: app/cli/main.py:163 export-xlsx, reports_repo.py:111, scripts/run_uat_dry_run.py:113. Landed inside opencode2's T-003 window (claims 21:27Z/21:36Z); the 21:04Z full gate run predates it, so any green-suite claim from before ~21:27Z is void. (see `app/engine/exports/excel_pack.py`)
+- **M-0029** `2026-10-05T21:35:31Z` — opencode — *state* — task `FMT-01`: FMT-01 delivered as HO-067 (partial by design). Measured on this tree: 184 format-dirty files (ruff format --diff classifies them 16 EOF-newline-only / 14 one-or-two-line / 154 real layout), 1857 lint findings (1511 ruff-autofixable, 346 judgement) across 34 rule codes. tests/perf/ subtree left fully clean (format 0-dirty, lint 0 findings, 4 tests collected). Repo-wide sweep NOT done: R13 caps a change at ~10 files and team.py scope overlap is base-prefix, so it is decomposed into ~18 batches in evidence/fmt01/triage.md section 7. Also caught and corrected my own bad triage table mid-card (7 rule codes missing, 40 findings unaccounted) - second independent parser required. (see `evidence/fmt01/triage.md`)
+- **M-0028** `2026-10-05T21:15:10Z` — buffy — *state*: Real defect found during FMT-01 triage, NOT fixed (needs an R1 decision): app/api/main.py registers GET /api/v1/exceptions twice - line 1037 handler takes (period, severity, status, owner, rule_id, aging_bucket, q) and line 1224 handler takes (period_code, rule_id, status, severity, owner, page, pageSize). FastAPI matches the first, so one of the two docs/26 query contracts is unreachable; check_contract_drift.py cannot see a duplicate path. (see `app/api/main.py`)
+- **M-0027** `2026-10-05T21:14:50Z` — buffy — *state* — task `FMT-01`: FMT-01 measurement on this tree: ruff format --check app scripts tests reports 180 format-dirty files (app 43, scripts 35, tests 102) and ruff check reports 1857 findings in 174 files (1511 auto-fixable by ruff's [*] marker, 346 needing judgement). The card's quoted 173/1850 no longer reproduces - re-measure before acting. (see `evidence/fmt01/triage.md`)
+- **M-0026** `2026-10-05T20:34:37Z` — buffy — *decision*: Three gap cards created because the board had no owner for them: GATE-FAST [P0] (scripts/check.py sys.exit()s on the first failed bar, hiding the five docs/14 section 5.3 bars), FMT-01 (173 unformatted files, 1850 lint errors, triaged not blanket-fixed), CONST-01 (the HO-006 pattern - code shipping ahead of its catalogue row - which is the only false-evidence pattern with no tool behind it). All given to opencode's gate-tooling lane.
+- **M-0025** `2026-10-05T20:34:36Z` — buffy — *state*: opencode's quota returned mid-session. Removed from team/config.json away map, given a FRESH stream (GATE-FAST, FMT-01, CONST-01, ENG-09, ENG-10, QUAL-03, TB-022) rather than its spent one, and sent a return briefing at team/kickoff/opencode.md. opencode2 keeps its lane - the two seats are not merged. (see `team/kickoff/opencode.md`)
+- **M-0024** `2026-10-05T20:31:48Z` — buffy — *state*: DOC-03 done: release-readiness dossier, generated from live gate runs. 3 of 9 gates red (RUFF-LINT, RUFF-FORMAT, ACCEPTANCE); full unit suite green. Handoff HO-050, record TB-108. (see `evidence/release-readiness-dossier.md`)
+- **M-0023** `2026-10-05T20:10:25Z` — buffy — *decision*: Speed lever chosen: verification, not new feature work. 29 cards were stuck in review (27 over the 30-min SLA) which is why the board looked busy while nothing completed. Created VERIFY-01 (hermes) and VERIFY-02 (opencode2) with DISJOINT handoff sets drawn from scripts/verification_queue.py so nobody verifies the same thing twice. opencode2 was NOT idle - it had a live ENG-12 claim - so its duty was queued behind it rather than assigned. (see `team/taskboard.md`)
+- **M-0022** `2026-10-05T19:34:52Z` — buffy — *state*: LEAD-03/LEAD-01/LEAD-02 all landed this session (HO-043, HO-046, HO-048). LEAD-02 made verification a rotating duty: measured 26 handoffs waiting, median 317 min, 92% of verifications on two seats, one of them AWAY. Root cause was one sentence in team/README.md naming a default reviewer. Records TB-105, TB-106, TB-107. (see `evidence/ops/verification-bottleneck.md`)
+- **M-0021** `2026-10-05T19:22:49Z` — buffy — *state*: LEAD-01 done: the false-evidence register, generated not written. 10 rejected handoffs, 5 patterns. The largest pattern is hidden blast radius (4), not the literal generators (3) the card was written about. Handoff HO-046, records TB-106 and docs/33 section 5.13. (see `evidence/ops/false-evidence-register.md`)
+- **M-0020** `2026-10-05T19:14:56Z` — buffy — *state*: LEAD-03 done: scripts/open_cited_lines.py opens the file:line citations a report makes, prints the real line, and fails when a report claims something absent from the line it cites. 34 tests; exit 0 only when every sampled citation resolved and every claim token was present. Handoff HO-043. (see `evidence/ops/lead-03-citation-audit.md`)
+- **M-0019** `2026-10-05T15:44:53Z` — buffy — *state*: New gate rule: team.py check FAILs a card in review whose handoff carries a rejection block and has no successor handoff. Found because UX-08 was released straight back into review with no new handoff, pointing at HO-031 which I had rejected - green over work nobody can accept. UX-08 and UX-03 returned to todo; the rule is covered by a test in tests/unit/test_team_changed_paths.py
+- **M-0018** `2026-10-05T15:04:17Z` — buffy — *state*: Verification is the measured bottleneck, not card supply: 20 handoffs were waiting for a verifier while seats had claimable work. LEAD-02 exists to fix it and LEAD-01 records the rejection patterns so the false-evidence pattern stops recurring
+- **M-0017** `2026-10-05T15:04:17Z` — buffy — *state*: Board wave 2: 23 new cards across all six seats - UX-14/15/16/17/18, SPEC-07/08, ENG-05/06/07/08/09, CORPUS-03/04, PERF-03, PILOT-02, RV-09/10, LEAD-01/02, DOC-05/06. Every seat stream refreshed; todo 46 to 78 across the two waves
+- **M-0016** `2026-10-05T15:04:16Z` — buffy — *state*: Verified and rejected hermes UX-08, UX-09 and UX-10 (HO-031/033/035). All three artefacts were generated, not measured: audit_accessibility_matrix.py is 109 lines whose audit table is a string literal from line 37, and it never opens a .tsx file. Spot-checks of four cited lines all pointed at real files and wrong lines - main.tsx:145 is an h1, PreScanModal.tsx:1 is an import, CheckScreen.tsx:2 is a docstring, BulkActionBar.tsx:15 is a useState. Claims re-armed; WIP held at 2 by releasing UX-09 and UX-10
+- **M-0015** `2026-10-05T14:48:33Z` — buffy — *note*: Last full-suite measurement was 940 passed / 16 deselected, exit 0 in 623 s. Teammates have edited since, so treat that number as a timestamp, not a current guarantee
+- **M-0014** `2026-10-05T14:48:33Z` — buffy — *note*: Nothing is committed. HEAD is cca75f6 with roughly 200 uncommitted working-tree edits; the owner commits. Do not run git commit or push unless asked in the session
+- **M-0013** `2026-10-05T14:48:32Z` — buffy — *state*: Gates measured this session: python scripts/team.py check exit 0 (PASS, 0 fail, 21 warn) and python scripts/check_doc_integrity.py exit 0 over 105 markdown files
+- **M-0012** `2026-10-05T14:48:32Z` — buffy — *blocker*: TB-048 (waterfall chart both variants) is owed until python-pptx exposes a WATERFALL chart type; until then only the variant it supports can be generated
+- **M-0011** `2026-10-05T14:48:32Z` — buffy — *blocker*: scripts/check.py is exit 1 on the five docs/14 section 5.3 bars (recall 11 of 32, control 1 fired, High 6 of 18, 422 extras, 14 zero-coverage rules). Unblocked by freebuff2 corpus rebuild TB-006 and TB-011; CORPUS-02 is the substrate both depend on
+- **M-0010** `2026-10-05T14:48:32Z` — buffy — *blocker*: DOC-02 (EULA and disclaimer text) is blocked on an owner ruling: no source for the text exists in the repo and scripts/build.py reports a blocker rather than inventing legal wording
+- **M-0009** `2026-10-05T14:48:31Z` — buffy — *decision*: memory.py is a separate module from team.py - continuity is a different capability from coordination - but it imports team.py for live state instead of re-reading tasks and claims, so there is one implementation of what the team state is (R12) (see `scripts/memory.py`)
+- **M-0008** `2026-10-05T14:48:31Z` — buffy — *decision*: Lock staleness is decided by lock mtime age, never by a pid probe, because os.kill(pid, 0) terminates the process on Windows (see `scripts/memory.py`)
+- **M-0007** `2026-10-05T14:48:31Z` — buffy — *decision*: The JSONL journals are the source of truth and the markdown files are a rendered view, so a concurrent append can never clobber another agents entry. Hand-written prose is preserved by splicing only between the BEGIN/END GENERATED sentinels (see `memory/README.md`)
+- **M-0006** `2026-10-05T14:48:30Z` — buffy — *decision*: memory/ is excluded from the team.py claim-window scan, alongside team/, scratch/ and vendor/: every agent writes it by design, and flagging it would teach agents to ignore the flag. Integrity of this layer is enforced instead by scripts/memory.py verify (see `scripts/team.py`)
+- **M-0005** `2026-10-05T14:48:30Z` — buffy — *state*: About 199 working-tree edits are not covered by an active claim. That is normal here: nothing is committed by design and team.py check reports it as a warning, not a failure
+- **M-0004** `2026-10-05T14:48:30Z` — buffy — *state*: The throughput bottleneck is the review queue, not the card supply: 13 handoffs sat in review with no verifier. Adding cards raises throughput only if a verifier picks them up
+- **M-0003** `2026-10-05T14:48:30Z` — buffy — *state*: Six seats. Active: buffy (leader), hermes (product/spec/a11y), opencode2 (implementation), freebuff2 (corpus/perf/pilot). Away: antigravity and opencode, quota ended 2026-10-05; their cards stay on the board and the watchdog never nudges them
+- **M-0002** `2026-10-05T14:48:29Z` — buffy — *state*: Board wave landed: 13 new cards (UX-12, UX-13, SPEC-06, ENG-02, ENG-03, ENG-04, CORPUS-02, PERF-02, PILOT-01, RV-07, RV-08, DOC-03, DOC-04). Card counts moved from 46 todo to 58 todo; every seat has a refreshed stream in team/config.json
+- **M-0001** `2026-10-05T14:48:29Z` — buffy — *state*: Continuity layer created under memory/: RESUME.md (cold-start brief), MEMORY.md (state), KNOWLEDGE.md (lessons), agents/<seat>.md (per seat), with memory.jsonl and knowledge.jsonl as append-only source of truth. Any seat resumes with: python scripts/memory.py resume --agent <seat>
+<!-- END GENERATED:memory.py -->

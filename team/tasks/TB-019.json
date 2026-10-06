@@ -1,0 +1,22 @@
+{
+  "id": "TB-019",
+  "title": "Create `scripts/dev` and `scripts/release` exactly as specified; clean-checkout test",
+  "source": "docs/33",
+  "priority": "P3",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [
+    "TB-018"
+  ],
+  "lane": "",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T10:12:06Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    }
+  ]
+}

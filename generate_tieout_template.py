@@ -1,12 +1,34 @@
 """
 Generate Pilot Tie-Out Worksheet & Difference Classification Log Template (GATE-13 / Doc 28)
+
+This template is part of the `sample-data/` corpus, so it is saved with
+`xlsx_deterministic.save_deterministic` like every other workbook written there
+(CORPUS-02). A bare `Workbook.save()` stamps the wall clock into
+`docProps/core.xml` and the file's SHA-256 moves on every run, which makes the
+corpus manifest unfingerprintable. It also takes an explicit output path so the
+corpus can be regenerated into a scratch directory rather than only in place.
 """
+
+import argparse
+import os
+import sys
 
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
-def create_tieout_template():
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "sample-data"))
+from xlsx_deterministic import save_deterministic  # noqa: E402
+
+#: Producer string stamped into `docProps/core.xml`. Named by the file, not the
+#: shared default, so the manifest can say which script wrote each workbook.
+PRODUCER = "generate_tieout_template.py"
+
+DEFAULT_OUTPUT = os.path.join("sample-data", "templates",
+                              "pilot_tieout_worksheet_template.xlsx")
+
+
+def create_tieout_template(output_path: str = DEFAULT_OUTPUT):
     wb = openpyxl.Workbook()
     
     # Setup styles
@@ -173,9 +195,17 @@ def create_tieout_template():
             col_letter = get_column_letter(col[0].column)
             sheet.column_dimensions[col_letter].width = max(max_len + 4, 12)
 
-    output_path = "sample-data/templates/pilot_tieout_worksheet_template.xlsx"
-    wb.save(output_path)
+    parent = os.path.dirname(os.path.abspath(output_path))
+    os.makedirs(parent, exist_ok=True)
+    save_deterministic(wb, output_path, producer=PRODUCER)
     print(f"Successfully generated {output_path}")
+    return output_path
+
 
 if __name__ == "__main__":
-    create_tieout_template()
+    parser = argparse.ArgumentParser(
+        description="Generate the pilot tie-out worksheet template.")
+    parser.add_argument("--output", default=DEFAULT_OUTPUT,
+                        help="Output path (default: %(default)s)")
+    cli_args = parser.parse_args()
+    create_tieout_template(cli_args.output)

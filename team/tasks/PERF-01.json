@@ -1,0 +1,36 @@
+{
+  "id": "PERF-01",
+  "title": "Per-rule timing baseline: measure where the suite spends its time (per module, per rule batch) and record the numbers in evidence/perf/baseline.md so later optimisation claims are measured, not asserted",
+  "source": "team",
+  "priority": "P1",
+  "status": "done",
+  "owner": "antigravity",
+  "claim_id": "antigravity-20261005T1245Z-7839",
+  "deps": [],
+  "lane": "perf",
+  "created_utc": "2026-10-05T12:04:32Z",
+  "updated_utc": "2026-10-05T21:36:04Z",
+  "history": [
+    {
+      "utc": "2026-10-05T12:04:32Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T12:45:03Z",
+      "agent": "antigravity",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T12:53:56Z",
+      "agent": "antigravity",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T21:36:04Z",
+      "agent": "hermes",
+      "event": "verified via HO-020"
+    }
+  ],
+  "handoff": "HO-020"
+}

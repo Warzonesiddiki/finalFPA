@@ -1,0 +1,42 @@
+{
+  "id": "LEAD-02",
+  "title": "Verification is the bottleneck: 20 handoffs were waiting for a verifier while seats had claimable work. Design and land the fix - a verifier rotation, a verification queue with a service level, or splitting large cards so review is a small job. Acceptance: the mechanism in team/README.md plus the measured before/after wait time",
+  "priority": "P0",
+  "lane": "process",
+  "status": "review",
+  "owner": "buffy",
+  "claim_id": "buffy-20261005T1932Z-e0ce",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:03:12Z",
+  "updated_utc": "2026-10-05T19:34:12Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:03:12Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T19:26:39Z",
+      "agent": "buffy",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T19:32:58Z",
+      "agent": "buffy",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-05T19:32:59Z",
+      "agent": "buffy",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T19:34:12Z",
+      "agent": "buffy",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-048"
+}

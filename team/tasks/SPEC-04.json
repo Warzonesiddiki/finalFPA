@@ -1,0 +1,20 @@
+{
+  "id": "SPEC-04",
+  "title": "Open-decision sweep: one row per still-open OQ in docs/18 - the question, the decision it needs, who decides, and the blast radius of leaving it open. Output evidence/spec/open-decisions.md; proposals only, docs/18 is leader-only",
+  "source": "team",
+  "priority": "P1",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "docs",
+  "created_utc": "2026-10-05T13:03:36Z",
+  "updated_utc": "2026-10-05T13:03:36Z",
+  "history": [
+    {
+      "utc": "2026-10-05T13:03:36Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

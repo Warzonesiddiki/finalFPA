@@ -1,0 +1,31 @@
+{
+  "id": "T-004",
+  "title": "UX-24: Implement 'Exec Presentation Mode' in UI/UX layer: create a collapsible navigation toggle for all Analyze and Report screens (SCR-015/SCR-029) that maximizes space for drill-through data presentation in live board meetings.",
+  "source": "team",
+  "priority": "P1",
+  "status": "review",
+  "owner": "opencode2",
+  "claim_id": "opencode2-20261005T2128Z-72b9",
+  "deps": [],
+  "lane": "ui",
+  "created_utc": "2026-10-05T21:26:43Z",
+  "updated_utc": "2026-10-05T21:36:41Z",
+  "history": [
+    {
+      "utc": "2026-10-05T21:26:43Z",
+      "agent": "?",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T21:28:49Z",
+      "agent": "opencode2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T21:36:41Z",
+      "agent": "opencode2",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-068"
+}

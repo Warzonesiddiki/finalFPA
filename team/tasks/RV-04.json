@@ -1,0 +1,31 @@
+{
+  "id": "RV-04",
+  "title": "Acceptance-gate pre-flight: run the acceptance harness and produce a per-bar before/after table (recall, High severity, control precision, extras, zero-coverage rules), attributing each bar's movement to the specific teammate change that moved it. Output evidence/acceptance/bar-attribution.md",
+  "source": "team",
+  "priority": "P0",
+  "status": "review",
+  "owner": "hermes",
+  "claim_id": "hermes-20261005T2040Z-79d6",
+  "deps": [],
+  "lane": "verification",
+  "created_utc": "2026-10-05T13:03:32Z",
+  "updated_utc": "2026-10-05T20:48:19Z",
+  "history": [
+    {
+      "utc": "2026-10-05T13:03:32Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T20:40:46Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T20:48:19Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-054"
+}

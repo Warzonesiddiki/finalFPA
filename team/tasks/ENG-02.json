@@ -1,0 +1,32 @@
+{
+  "id": "ENG-02",
+  "title": "Make the UI gate honest: run tsc and eslint over the tree, record the real counts as a dated baseline, and wire the step as advisory-with-budget so a pre-existing debt never turns the gate silently red and never hides behind a suppression. No --force, no inline disables, no new runtime dependency",
+  "priority": "P1",
+  "lane": "gate-tooling",
+  "status": "review",
+  "owner": "opencode2",
+  "claim_id": "opencode2-20261005T1437Z-6b9f",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T14:36:06Z",
+  "updated_utc": "2026-10-05T14:46:22Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T14:36:06Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T14:37:30Z",
+      "agent": "opencode2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T14:46:22Z",
+      "agent": "opencode2",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-032"
+}

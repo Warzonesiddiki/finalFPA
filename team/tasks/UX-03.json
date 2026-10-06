@@ -1,0 +1,61 @@
+{
+  "id": "UX-03",
+  "title": "Screen-by-screen spec conformance for every SCR-nnn in 08: one row per screen (spec behaviour / implemented today with file:line / gap / severity / FRs affected); fan out to subagents by screen group and merge; output evidence/ux/screen-conformance.md",
+  "source": "team",
+  "priority": "P1",
+  "status": "review",
+  "owner": "hermes",
+  "claim_id": "hermes-20261005T2106Z-6ab5",
+  "deps": [],
+  "lane": "product",
+  "created_utc": "2026-10-05T12:04:10Z",
+  "updated_utc": "2026-10-05T21:06:55Z",
+  "history": [
+    {
+      "utc": "2026-10-05T12:04:10Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T13:20:46Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T13:26:36Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T14:10:13Z",
+      "agent": "buffy",
+      "event": "rejected via HO-025"
+    },
+    {
+      "utc": "2026-10-05T14:37:09Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T15:44:35Z",
+      "agent": "buffy",
+      "event": "returned to todo: still sitting in review on HO-025, which was rejected and has no successor handoff"
+    },
+    {
+      "utc": "2026-10-05T21:06:07Z",
+      "agent": "hermes",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-05T21:06:17Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T21:06:55Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-062"
+}

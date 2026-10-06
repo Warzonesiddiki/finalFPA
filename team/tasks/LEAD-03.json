@@ -1,0 +1,32 @@
+{
+  "id": "LEAD-03",
+  "title": "The audit that caught the three fabricated audits was *reading four cited lines\nby hand*, not any machine check. Turn that into the one command the team can\nrun on any deliverable: pick four `file:line` citations from a report's\nevidence section and open each one, printing what is actually on that line, so\nthe human difference between 'cited' and 'measured' is visible on demand. If\nthe report cites something that is not on the line, the command shows it.\nAcceptance: run the command on the three rejected handoffs' evidence and show\nthe four lines each, and on one fabricated line and show it is wrong",
+  "priority": "P1",
+  "lane": "verification",
+  "status": "review",
+  "owner": "buffy",
+  "claim_id": "buffy-20261005T1841Z-f219",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T17:01:58Z",
+  "updated_utc": "2026-10-05T19:14:39Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T17:01:58Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T18:41:39Z",
+      "agent": "buffy",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T19:14:39Z",
+      "agent": "buffy",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-043"
+}

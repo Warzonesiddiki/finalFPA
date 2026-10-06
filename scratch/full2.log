@@ -1,0 +1,100 @@
+........................................................................ [  7%]
+........................................................................ [ 15%]
+........................................................................ [ 23%]
+........................................................................ [ 31%]
+........................................................................ [ 38%]
+........................................................................ [ 46%]
+........................................................................ [ 54%]
+....F................................................................... [ 62%]
+........................................................................ [ 69%]
+........................................................................ [ 77%]
+........................................................................ [ 85%]
+........................................................................ [ 93%]
+..............................................................           [100%]
+================================== FAILURES ===================================
+_____________________ test_no_capability_is_defined_twice _____________________
+
+    def test_no_capability_is_defined_twice():
+        """The `R12` rule, mechanically: one implementation per capability in the engine."""
+        dups = unexpected_duplicates(definitions())
+>       assert not dups, "duplicate implementations (R12) - consolidate, or document on ALLOWED_DUPLICATES:\n" + (
+            "\n".join(f"  {name}: {', '.join(sites)}" for name, sites in sorted(dups.items()))
+        )
+E       AssertionError: duplicate implementations (R12) - consolidate, or document on ALLOWED_DUPLICATES:
+E           _coerce_money: app/engine/exports/excel_pack.py:40, app/engine/exports/excel_pack.py:42, app/engine/exports/excel_pack.py:43
+E       assert not {'_coerce_money': ['app/engine/exports/excel_pack.py:40', 'app/engine/exports/excel_pack.py:42', 'app/engine/exports/excel_pack.py:43']}
+
+tests\unit\test_engine_common.py:88: AssertionError
+============================== warnings summary ===============================
+..\..\..\AppData\Roaming\Python\Python314\site-packages\fastapi\testclient.py:1
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests/integration/test_ai_journey_e2e.py::test_ai_journey_e2e_complete_workflow
+tests/integration/test_ai_journey_e2e.py::test_ai_journey_e2e_complete_workflow
+tests/unit/test_ai_eval_fixtures.py::test_tst_ai_04_06_draft_versioning_and_provenance
+tests/unit/test_ai_eval_fixtures.py::test_tst_ai_04_06_draft_versioning_and_provenance
+tests/unit/test_ai_provenance.py::test_ai_provenance_version_retention_and_approval
+tests/unit/test_ai_provenance.py::test_ai_provenance_version_retention_and_approval
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\ai\provenance.py:51: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp = datetime.utcnow().isoformat()
+
+tests/integration/test_ai_journey_e2e.py::test_ai_journey_e2e_complete_workflow
+tests/unit/test_ai_eval_fixtures.py::test_tst_ai_10_12_token_cap_and_keyless_fallback
+tests/unit/test_ai_usage.py::test_ai_usage_store_and_cap_enforcement
+tests/unit/test_def015_decimal_money.py::test_def015_usage_cost_is_decimal_exact[1-0]
+tests/unit/test_def015_decimal_money.py::test_def015_usage_cost_is_decimal_exact[0-1]
+tests/unit/test_def015_decimal_money.py::test_def015_usage_cost_is_decimal_exact[3000-1500]
+tests/unit/test_def015_decimal_money.py::test_def015_usage_cost_is_decimal_exact[800-400]
+tests/unit/test_def015_decimal_money.py::test_def015_usage_cost_is_decimal_exact[1234567-7654321]
+tests/unit/test_def015_decimal_money.py::test_def015_usage_cost_is_decimal_exact[999999999-1]
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\ai\usage.py:65: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp = datetime.utcnow().isoformat()
+
+tests/integration/test_api.py::test_exceptions_endpoints_workflow
+tests/integration/test_cli_exceptions.py::test_cli_exceptions_run_smoke
+tests/integration/test_cli_exceptions.py::test_cli_exceptions_run_uses_default_as_of_from_period
+tests/integration/test_cli_exceptions.py::test_cli_exceptions_run_accepts_explicit_as_of
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\store\exceptions_repo.py:341: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
+tests/integration/test_api.py::test_exceptions_endpoints_workflow
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\store\exceptions_repo.py:777: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
+tests/integration/test_api.py::test_exceptions_endpoints_workflow
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\store\exceptions_repo.py:847: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
+tests/unit/test_ai_prompts.py::test_edit_prompt_creates_new_version_without_mutating_baseline
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\ai\prompts.py:131: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp = datetime.utcnow().isoformat()
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  <unknown>:25: SyntaxWarning: "\d" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\d"? A raw string is also an option.
+
+tests/unit/test_forecast_scenarios.py::test_scenario_adjustment_math
+  <string>:20: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+
+tests/unit/test_forecast_scenarios.py::test_scenario_adjustment_math
+tests/unit/test_forecast_scenarios.py::test_scenario_adjustment_math
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\forecast\scenarios.py:364: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    generated_at=datetime.utcnow(),
+
+tests/unit/test_forecast_scenarios.py::test_scenario_adjustment_math
+tests/unit/test_forecast_scenarios.py::test_scenario_adjustment_math
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\forecast\scenarios.py:377: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    generated_at=datetime.utcnow(),
+
+tests/unit/test_forecast_scenarios.py::test_forecast_version_lifecycle
+  <string>:10: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+
+tests/unit/test_forecast_scenarios.py::test_forecast_version_lifecycle
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\forecast\scenarios.py:241: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self.locked_at = locked_at or datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/unit/test_engine_common.py::test_no_capability_is_defined_twice
+1 failed, 925 passed, 16 deselected, 31 warnings in 567.49s (0:09:27)
+FULL_EXIT=1

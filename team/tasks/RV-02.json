@@ -1,0 +1,31 @@
+{
+  "id": "RV-02",
+  "title": "Clear the review backlog: for every task in review, re-run the handoff's own commands yourself, paste the raw result, and verify or reject. A verification that only runs team.py check is not a verification - verify the deliverable's content instead",
+  "source": "team",
+  "priority": "P0",
+  "status": "review",
+  "owner": "antigravity",
+  "claim_id": "antigravity-20261005T1232Z-9cfc",
+  "deps": [],
+  "lane": "verification",
+  "created_utc": "2026-10-05T12:04:30Z",
+  "updated_utc": "2026-10-05T12:40:05Z",
+  "history": [
+    {
+      "utc": "2026-10-05T12:04:30Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T12:32:43Z",
+      "agent": "antigravity",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T12:40:05Z",
+      "agent": "antigravity",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-018"
+}

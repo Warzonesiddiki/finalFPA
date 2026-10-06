@@ -1,0 +1,31 @@
+{
+  "id": "T-007",
+  "title": "ENG-13: Encoding-robust reporting for scripts/check.py and scripts/check_ui_gate.py. Replace emoji prints with plain ASCII labels and ensure UTF-8 output is encoded/decoded safely without triggering UnicodeEncodeError on Windows command environments.",
+  "source": "team",
+  "priority": "P0",
+  "status": "review",
+  "owner": "hermes",
+  "claim_id": "hermes-20261006T1131Z-99a2",
+  "deps": [],
+  "lane": "gate-tooling",
+  "created_utc": "2026-10-05T21:54:31Z",
+  "updated_utc": "2026-10-06T11:33:12Z",
+  "history": [
+    {
+      "utc": "2026-10-05T21:54:31Z",
+      "agent": "?",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-06T11:31:02Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-06T11:33:12Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-072"
+}

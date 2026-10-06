@@ -1,0 +1,20 @@
+{
+  "id": "TB-033",
+  "title": "Fix `DEF-018` — read the client's `.pptx` template (asset now exists at `packaging/templates/FPAMonthEndCopilot_v1.pptx`)",
+  "source": "docs/33",
+  "priority": "P3",
+  "status": "done",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T10:12:06Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    }
+  ]
+}

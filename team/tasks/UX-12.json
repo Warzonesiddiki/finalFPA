@@ -1,0 +1,21 @@
+{
+  "id": "UX-12",
+  "title": "Exception-workflow spec: the analyst's whole day with a finding - triage, assign, comment, attach evidence, request change, sign-off, ageing. This is the one screen the 43-screen matrix found non-conforming (SCR-023, bulk owner assignment), so the workflow is the spec that closes it. Output evidence/ux/exception-workflow.md plus the FR rows the catalogue still lacks",
+  "priority": "P1",
+  "lane": "product",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T14:36:06Z",
+  "updated_utc": "2026-10-05T14:36:06Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T14:36:06Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

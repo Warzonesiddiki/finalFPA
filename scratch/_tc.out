@@ -1,0 +1,5 @@
+team check — PASS (2 active claims, 49 tasks, 0 fail, 4 warn)
+  WARN TB-026 is done while dep TB-016 is review
+  WARN TB-030 is done while dep TB-022 is todo
+  WARN TB-045 is in-progress while dep TB-043 is todo
+  WARN 147 working-tree edit(s) not covered by an active claim: .gitignore, CHANGELOG.md, README.md, STATE.md, app/api/openapi.json, app/engine/ai/usage.py, app/engine/calc/math.py, app/engine/exports/excel_pack.py

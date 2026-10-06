@@ -1,0 +1,20 @@
+{
+  "id": "UX-11",
+  "title": "Onboarding and first-run: the path from a fresh install to a first trusted variance number in under ten minutes, with the two or three decisions a new analyst must make and the defaults the tool must choose for them. Output evidence/ux/first-run.md",
+  "source": "docs/33",
+  "priority": "P1",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "product",
+  "created_utc": "2026-10-05T14:10:00Z",
+  "updated_utc": "2026-10-05T14:10:00Z",
+  "history": [
+    {
+      "utc": "2026-10-05T14:10:00Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

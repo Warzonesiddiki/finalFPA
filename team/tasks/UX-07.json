@@ -1,0 +1,20 @@
+{
+  "id": "UX-07",
+  "title": "Prior-art analyst workflow comparison: for github.com/Warzonesiddiki/fpa and .../fp-A-betterversion, document the month-end steps those attempts asked the analyst to do, and diff them against our journey audit. Spec deltas only, no code; licence gate 4A before reading any file. Output evidence/ux/prior-art-workflow.md",
+  "source": "team",
+  "priority": "P1",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "product",
+  "created_utc": "2026-10-05T13:03:35Z",
+  "updated_utc": "2026-10-05T13:03:35Z",
+  "history": [
+    {
+      "utc": "2026-10-05T13:03:35Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

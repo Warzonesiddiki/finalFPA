@@ -1,0 +1,1901 @@
+C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\fastapi\openapi\utils.py:303: UserWarning: Duplicate Operation ID api_list_exceptions_api_v1_exceptions_get for function api_list_exceptions at C:\Users\Tahir\Documents\GitHub\finalFPA\app\api\main.py
+  warnings.warn(message, stacklevel=1)
+OpenAPI contract drift check PASSED: No schema drift detected.
+--> [DOC-INTEGRITY] Checking docs/ and evidence/ under C:\Users\Tahir\Documents\GitHub\finalFPA...
+    Discovered 88 markdown files.
+    PASSED: All markdown links valid and cross-project IDs consistent!
+
+C:\Users\Tahir\Documents\GitHub\finalFPA\tests\integration\test_portable_mode.py:25: SyntaxWarning: "\d" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\d"? A raw string is also an option.
+  """With portable.flag beside the execution directory, data relocates to <app>\data\default."""
+=== FinalFPA Test Catalogue Traceability Checker (DEF-012) ===
+Loaded 309 valid TST identifiers from documentation.
+Harvested 41 marker references covering 34 distinct TST IDs.
+[PASS] No unknown TST identifiers found in test suite.
+[PASS] 100% coverage for Exception Rules TST-RUL-01 through TST-RUL-24.
+[PASS] Core Import tests verified (3 verified).
+[PASS] Core Security tests verified (3 verified).
+[PASS] Core Export tests verified (2 verified).
+
+Summary:
+  Total mapped TST IDs: 34
+  Total test marker tags: 41
+ALL TRACEABILITY CHECKS PASSED.
+........................................................................ [  8%]
+........................................................................ [ 17%]
+........................................................................ [ 25%]
+........................................................................ [ 34%]
+........................................................................ [ 42%]
+........................................................................ [ 51%]
+........................................................................ [ 59%]
+........................................................................ [ 68%]
+........................................................................ [ 77%]
+........................................................................ [ 85%]
+........................................................................ [ 94%]
+.................................................C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\coverage\sqlitedb.py:122: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94747C40>
+  return self.con.execute(sql, parameters)  # type: ignore[arg-type]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\coverage\sqlitedb.py:122: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94747880>
+  return self.con.execute(sql, parameters)  # type: ignore[arg-type]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\coverage\sqlitedb.py:122: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C947476A0>
+  return self.con.execute(sql, parameters)  # type: ignore[arg-type]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\coverage\sqlitedb.py:122: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94747D30>
+  return self.con.execute(sql, parameters)  # type: ignore[arg-type]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\coverage\sqlitedb.py:122: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94747A60>
+  return self.con.execute(sql, parameters)  # type: ignore[arg-type]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\coverage\sqlitedb.py:122: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94746D40>
+  return self.con.execute(sql, parameters)  # type: ignore[arg-type]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\coverage\sqlitedb.py:122: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94747B50>
+  return self.con.execute(sql, parameters)  # type: ignore[arg-type]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\coverage\sqlitedb.py:122: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C947462F0>
+  return self.con.execute(sql, parameters)  # type: ignore[arg-type]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\coverage\sqlitedb.py:122: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C947466B0>
+  return self.con.execute(sql, parameters)  # type: ignore[arg-type]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\coverage\sqlitedb.py:122: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94747970>
+  return self.con.execute(sql, parameters)  # type: ignore[arg-type]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+                        [100%]
+============================== warnings summary ===============================
+..\..\..\AppData\Roaming\Python\Python314\site-packages\fastapi\testclient.py:1
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests/integration/test_ai_journey_e2e.py::test_ai_journey_e2e_complete_workflow
+tests/integration/test_ai_journey_e2e.py::test_ai_journey_e2e_complete_workflow
+tests/unit/test_ai_eval_fixtures.py::test_tst_ai_04_06_draft_versioning_and_provenance
+tests/unit/test_ai_eval_fixtures.py::test_tst_ai_04_06_draft_versioning_and_provenance
+tests/unit/test_ai_provenance.py::test_ai_provenance_version_retention_and_approval
+tests/unit/test_ai_provenance.py::test_ai_provenance_version_retention_and_approval
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\ai\provenance.py:51: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp = datetime.utcnow().isoformat()
+
+tests/integration/test_ai_journey_e2e.py::test_ai_journey_e2e_complete_workflow
+tests/unit/test_ai_eval_fixtures.py::test_tst_ai_10_12_token_cap_and_keyless_fallback
+tests/unit/test_ai_usage.py::test_ai_usage_store_and_cap_enforcement
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\ai\usage.py:62: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp = datetime.utcnow().isoformat()
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF2036F20>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF2037D30>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF20371F0>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF20354E0>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF2037010>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF2037100>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF20373D0>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF20355D0>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF2034220>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF2037A60>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF2037880>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF2037790>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF20376A0>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF2037B50>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF2037970>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF2037C40>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF2037F10>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\starlette\_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF2036E30>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_import_xlsx_control_totals_acceptance_endpoint
+  <frozen importlib._bootstrap_external>:511: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF1F1A4D0>
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_variance_demo_unauthorized
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\anyio\abc\_tasks.py:63: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF2035030>
+    coro = func(*args, **kwargs)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_bva_live_with_budget_file
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:645: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF238C310>
+    if not row or all(c.strip() == "" for c in row):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_bva_live_with_budget_file
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:645: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF238C9A0>
+    if not row or all(c.strip() == "" for c in row):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_bva_live_with_budget_file
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:645: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F7C40>
+    if not row or all(c.strip() == "" for c in row):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_bva_live_with_budget_file
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:645: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF238C130>
+    if not row or all(c.strip() == "" for c in row):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_bva_live_with_budget_file
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:645: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F7010>
+    if not row or all(c.strip() == "" for c in row):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_bva_live_with_budget_file
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:645: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF238C040>
+    if not row or all(c.strip() == "" for c in row):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_bva_live_with_budget_file
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:645: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F7790>
+    if not row or all(c.strip() == "" for c in row):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_bva_live_with_budget_file
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:645: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F6F20>
+    if not row or all(c.strip() == "" for c in row):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_bva_live_with_budget_file
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:645: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F67A0>
+    if not row or all(c.strip() == "" for c in row):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_bva_live_with_budget_file
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:645: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF1F1BB50>
+    if not row or all(c.strip() == "" for c in row):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_bva_live_with_budget_file
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:645: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E8130>
+    if not row or all(c.strip() == "" for c in row):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_exceptions_endpoints_workflow
+tests/integration/test_cli_exceptions.py::test_cli_exceptions_run_smoke
+tests/integration/test_cli_exceptions.py::test_cli_exceptions_run_uses_default_as_of_from_period
+tests/integration/test_cli_exceptions.py::test_cli_exceptions_run_accepts_explicit_as_of
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\store\exceptions_repo.py:341: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
+tests/integration/test_api.py::test_exceptions_endpoints_workflow
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\store\exceptions_repo.py:777: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
+tests/integration/test_api.py::test_exceptions_endpoints_workflow
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\store\exceptions_repo.py:847: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
+tests/integration/test_api.py::test_reports_and_issuance_workflow
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:160: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F7D30>
+    def __iter__(self):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_reports_and_issuance_workflow
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:160: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F62F0>
+    def __iter__(self):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_reports_and_issuance_workflow
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:160: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F63E0>
+    def __iter__(self):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_reports_and_issuance_workflow
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:160: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F71F0>
+    def __iter__(self):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_reports_and_issuance_workflow
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:160: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF1F1A2F0>
+    def __iter__(self):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_reports_and_issuance_workflow
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:160: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF1F186D0>
+    def __iter__(self):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_reports_and_issuance_workflow
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:160: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF1F19300>
+    def __iter__(self):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_reports_and_issuance_workflow
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:160: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F66B0>
+    def __iter__(self):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_reports_and_issuance_workflow
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:160: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF1F1BD30>
+    def __iter__(self):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_reports_and_issuance_workflow
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:160: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F74C0>
+    def __iter__(self):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_reports_and_issuance_workflow
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:160: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E86D0>
+    def __iter__(self):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_reports_and_issuance_workflow
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:160: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E8E50>
+    def __iter__(self):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_reports_and_issuance_workflow
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:160: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E9120>
+    def __iter__(self):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_reports_and_issuance_workflow
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:160: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E93F0>
+    def __iter__(self):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_reports_and_issuance_workflow
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:160: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E96C0>
+    def __iter__(self):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_reports_and_issuance_workflow
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:160: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF1F1BC40>
+    def __iter__(self):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api.py::test_reports_and_issuance_workflow
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:160: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E8040>
+    def __iter__(self):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_bootstrap_and_health
+  C:\Python314\Lib\typing.py:1352: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E88B0>
+    self.__args__ = tuple(... if a is _TypingEllipsis else
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_bootstrap_and_health
+  C:\Python314\Lib\typing.py:1352: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E89A0>
+    self.__args__ = tuple(... if a is _TypingEllipsis else
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_bootstrap_and_health
+  C:\Python314\Lib\typing.py:1352: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E8F40>
+    self.__args__ = tuple(... if a is _TypingEllipsis else
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_bootstrap_and_health
+  C:\Python314\Lib\typing.py:1352: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E8B80>
+    self.__args__ = tuple(... if a is _TypingEllipsis else
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_bootstrap_and_health
+  C:\Python314\Lib\typing.py:1352: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EA5C0>
+    self.__args__ = tuple(... if a is _TypingEllipsis else
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_bootstrap_and_health
+  C:\Python314\Lib\typing.py:1352: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EA7A0>
+    self.__args__ = tuple(... if a is _TypingEllipsis else
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_bootstrap_and_health
+  C:\Python314\Lib\typing.py:1352: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EAC50>
+    self.__args__ = tuple(... if a is _TypingEllipsis else
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_bootstrap_and_health
+  C:\Python314\Lib\typing.py:1352: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6C220>
+    self.__args__ = tuple(... if a is _TypingEllipsis else
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_bootstrap_and_health
+  C:\Python314\Lib\typing.py:1352: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EBD30>
+    self.__args__ = tuple(... if a is _TypingEllipsis else
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_bootstrap_and_health
+  C:\Python314\Lib\typing.py:1352: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF1F18400>
+    self.__args__ = tuple(... if a is _TypingEllipsis else
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_periods
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\pydantic\_internal\_generate_schema.py:2412: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF2034E50>
+    def _get_wrapped_inner_schema(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_bva_and_three_way
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\pydantic\fields.py:257: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E85E0>
+    alias_is_set = any(alias is not None for alias in (self.alias, self.validation_alias, self.serialization_alias))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_bva_and_three_way
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\pydantic\fields.py:257: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F7A60>
+    alias_is_set = any(alias is not None for alias in (self.alias, self.validation_alias, self.serialization_alias))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_exceptions
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\fastapi\routing.py:385: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E9D50>
+    def get_request_handler(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_exceptions
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\fastapi\routing.py:385: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EA2F0>
+    def get_request_handler(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_exceptions
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\fastapi\routing.py:385: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F6E30>
+    def get_request_handler(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_forecast_versions
+  C:\Python314\Lib\copy.py:251: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E9B70>
+    for key, value in slotstate.items():
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_forecast_versions
+  C:\Python314\Lib\copy.py:251: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F6980>
+    for key, value in slotstate.items():
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_packs
+  C:\Python314\Lib\inspect.py:1688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F6A70>
+    return dict.get(instance_dict, attr, _sentinel)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_ai_usage
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\pydantic\fields.py:257: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EA200>
+    alias_is_set = any(alias is not None for alias in (self.alias, self.validation_alias, self.serialization_alias))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_ai_usage
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\pydantic\fields.py:257: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF2036D40>
+    alias_is_set = any(alias is not None for alias in (self.alias, self.validation_alias, self.serialization_alias))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_search
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\pydantic\fields.py:687: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E9C60>
+    continue
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_search
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\pydantic\fields.py:687: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EAE30>
+    continue
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_search
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\pydantic\fields.py:687: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EAA70>
+    continue
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_search
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\pydantic\fields.py:687: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EB2E0>
+    continue
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_api_contract.py::test_api_contract_search
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\pydantic\fields.py:687: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F6890>
+    continue
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_cli_exceptions.py::test_deduplicated_run_does_not_duplicate_rule_findings
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\rules\rules_17_24.py:90: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E9E40>
+    annual_consumption_pct = Decimal(str(cfg.get("EXC-019_annual_consumption_pct", "0.80")))  # 80%
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_cli_exceptions.py::test_deduplicated_run_does_not_duplicate_rule_findings
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\rules\rules_17_24.py:90: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F5F30>
+    annual_consumption_pct = Decimal(str(cfg.get("EXC-019_annual_consumption_pct", "0.80")))  # 80%
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_cli_exceptions.py::test_deduplicated_run_does_not_duplicate_rule_findings
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\rules\rules_17_24.py:90: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EA980>
+    annual_consumption_pct = Decimal(str(cfg.get("EXC-019_annual_consumption_pct", "0.80")))  # 80%
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_cli_exceptions.py::test_deduplicated_run_does_not_duplicate_rule_findings
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\rules\rules_17_24.py:90: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EB3D0>
+    annual_consumption_pct = Decimal(str(cfg.get("EXC-019_annual_consumption_pct", "0.80")))  # 80%
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_import_api.py::test_api_import_valid_file
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:639: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F65C0>
+    reader = csv.reader(f)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_import_api.py::test_api_import_valid_file
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:639: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F6B60>
+    reader = csv.reader(f)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_import_api.py::test_api_import_valid_file
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:639: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F7100>
+    reader = csv.reader(f)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_import_api.py::test_api_import_valid_file
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:639: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6D6C0>
+    reader = csv.reader(f)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EB880>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EAB60>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EB010>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E8C70>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E9F30>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E98A0>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EBC40>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E9990>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E9030>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E8400>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EBA60>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EBF10>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E8A90>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EB1F0>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EA4D0>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EA890>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6D120>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EB6A0>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_seam_api.py::test_committed_facts_carry_the_applied_cost_center
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EA020>
+    return Decimal(str(raw_weight))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EA3E0>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F7970>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F7F10>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F73D0>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E9A80>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EAF20>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E94E0>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EB100>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E9300>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E8D60>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E8220>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EB5B0>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EBE20>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6E020>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6CD60>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6C7C0>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6E6B0>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6CB80>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6C130>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6E890>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6D4E0>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6CE50>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_mapping_suggestions_api.py::test_deciding_a_decided_suggestion_returns_409
+  C:\Python314\Lib\asyncio\events.py:41: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6C6D0>
+    def __init__(self, callback, args, loop, context=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6C4F0>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6CC70>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6E4D0>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6D5D0>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6FC40>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6DB70>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6F1F0>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6FF10>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3F84040>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3F84F40>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3F84D60>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3F85030>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E9210>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EBB50>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E95D0>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EB790>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EB4C0>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EB970>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EAD40>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6FB50>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6D030>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6F3D0>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6FE20>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F76A0>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3F84400>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3F845E0>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Python314\Lib\inspect.py:336: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3F844F0>
+    def isasyncgenfunction(obj):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/integration/test_store.py::test_atomic_import_commit
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:645: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6D7B0>
+    if not row or all(c.strip() == "" for c in row):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/rules/test_acceptance.py::test_live_run_is_blocked_or_measurable_never_a_vacuous_pass
+  C:\Python314\Lib\_strptime.py:521: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EA110>
+    for index, arg in enumerate([data_string, format]):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/rules/test_acceptance.py::test_live_run_is_blocked_or_measurable_never_a_vacuous_pass
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\math.py:133: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E84F0>
+    def quantize_money(amount: Decimal | str | int | float) -> Decimal:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/uat/test_uat_dry_run.py::test_staging_packasm_02_synthetic_fixture_tie_out_and_ppt_parity
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\cell\cell.py:164: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6F5B0>
+    if next(ILLEGAL_CHARACTERS_RE.finditer(value), None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/uat/test_uat_dry_run.py::test_staging_packasm_02_synthetic_fixture_tie_out_and_ppt_parity
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\cell\cell.py:164: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6F100>
+    if next(ILLEGAL_CHARACTERS_RE.finditer(value), None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/uat/test_uat_dry_run.py::test_staging_packasm_02_synthetic_fixture_tie_out_and_ppt_parity
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\cell\cell.py:164: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39EA6B0>
+    if next(ILLEGAL_CHARACTERS_RE.finditer(value), None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/uat/test_uat_dry_run.py::test_staging_packasm_02_synthetic_fixture_tie_out_and_ppt_parity
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\cell\cell.py:164: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF38F7880>
+    if next(ILLEGAL_CHARACTERS_RE.finditer(value), None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/uat/test_uat_dry_run.py::test_staging_packasm_02_synthetic_fixture_tie_out_and_ppt_parity
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\cell\cell.py:164: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF39E8310>
+    if next(ILLEGAL_CHARACTERS_RE.finditer(value), None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/uat/test_uat_dry_run.py::test_def016_behavioural_guard_no_tautological_uat_literals
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6D990>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/uat/test_uat_dry_run.py::test_def016_behavioural_guard_no_tautological_uat_literals
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6F4C0>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_ai_guardrails.py::test_prompt_01_schema_validation_valid
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\jsonschema\_keywords.py:282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE86D0>
+    def type(validator, types, instance, schema):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_ai_guardrails.py::test_prompt_01_schema_validation_valid
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\jsonschema\_keywords.py:282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE87C0>
+    def type(validator, types, instance, schema):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_ai_guardrails.py::test_prompt_01_schema_validation_valid
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\jsonschema\_keywords.py:282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE89A0>
+    def type(validator, types, instance, schema):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_ai_guardrails.py::test_prompt_01_schema_validation_valid
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\jsonschema\_keywords.py:282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE88B0>
+    def type(validator, types, instance, schema):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_ai_guardrails.py::test_prompt_01_schema_validation_valid
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\jsonschema\_keywords.py:282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE8A90>
+    def type(validator, types, instance, schema):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_ai_guardrails.py::test_prompt_01_schema_validation_valid
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\jsonschema\_keywords.py:282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE8B80>
+    def type(validator, types, instance, schema):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_ai_guardrails.py::test_prompt_01_schema_validation_valid
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\jsonschema\_keywords.py:282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE8C70>
+    def type(validator, types, instance, schema):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_ai_guardrails.py::test_prompt_01_schema_validation_valid
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\jsonschema\_keywords.py:282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE8D60>
+    def type(validator, types, instance, schema):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_ai_guardrails.py::test_prompt_01_schema_validation_valid
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\jsonschema\_keywords.py:282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE8E50>
+    def type(validator, types, instance, schema):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_ai_guardrails.py::test_prompt_01_schema_validation_valid
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\jsonschema\_keywords.py:282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE8F40>
+    def type(validator, types, instance, schema):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_ai_guardrails.py::test_prompt_01_schema_validation_valid
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\jsonschema\_keywords.py:282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE9030>
+    def type(validator, types, instance, schema):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_ai_guardrails.py::test_prompt_01_schema_validation_valid
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\jsonschema\_keywords.py:282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE9120>
+    def type(validator, types, instance, schema):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_ai_prompts.py::test_edit_prompt_creates_new_version_without_mutating_baseline
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\ai\prompts.py:131: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp = datetime.utcnow().isoformat()
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BF790>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BF100>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BEC50>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BE4D0>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BF010>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BF6A0>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BE5C0>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BE890>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BF970>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BEB60>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BEF20>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BEA70>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BF1F0>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BE6B0>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BFC40>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BF3D0>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BE3E0>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BF5B0>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BEE30>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BF2E0>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BE980>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BED40>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6D8A0>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6D3F0>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6DE40>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6E7A0>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6E110>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6EB60>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6DA80>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6EA70>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6CF40>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_calc_foundation.py::TestFormattingAndDisplayHelpers::test_parentheses_for_negatives
+  C:\Python314\Lib\typing.py:2308: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3B6D300>
+    def cast(typ, val):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_control_totals_import.py::test_unaccepted_control_total_variance_rejects_without_committing_facts
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:59: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE84F0>
+    for key in list(attrib):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_control_totals_import.py::test_accepted_control_total_is_persisted_and_raises_exc_003
+  C:\Python314\Lib\xml\etree\ElementTree.py:1315: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE85E0>
+    self._parser.feed(data)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_control_totals_import.py::test_excel_missing_voucher_column_is_reported_as_imp005
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\styles\colors.py:143: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE9300>
+    def __init__(self,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_control_totals_import.py::test_excel_duplicate_headers_are_blocked
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:52: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE8130>
+    attrib = dict(node.attrib)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE94E0>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE9210>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE93F0>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE95D0>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE96C0>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE97B0>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE98A0>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE9990>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE9A80>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE9B70>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE9C60>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE9D50>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE9E40>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FE9F30>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FEA020>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FEA110>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FEA200>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FEA2F0>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FEA3E0>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FEA4D0>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  C:\Python314\Lib\ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021CF3FEA5C0>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_def013_guard_vacuous_asserts.py::test_def013_guard_no_swallowed_assertions
+  <unknown>:25: SyntaxWarning: "\d" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\d"? A raw string is also an option.
+
+tests/unit/test_desktop_shell.py::test_launch_app_blocked_by_mutex
+  C:\Python314\Lib\unittest\mock.py:2259: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94745030>
+    def __init__(self, name, parent):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_desktop_shell.py::test_launch_app_blocked_by_mutex
+  C:\Python314\Lib\unittest\mock.py:2259: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94744F40>
+    def __init__(self, name, parent):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_desktop_shell.py::test_launch_app_blocked_by_mutex
+  C:\Python314\Lib\unittest\mock.py:2259: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94745120>
+    def __init__(self, name, parent):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_desktop_shell.py::test_launch_app_blocked_by_mutex
+  C:\Python314\Lib\unittest\mock.py:2259: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94745210>
+    def __init__(self, name, parent):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_desktop_shell.py::test_launch_app_blocked_by_mutex
+  C:\Python314\Lib\unittest\mock.py:2259: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94745300>
+    def __init__(self, name, parent):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_desktop_shell.py::test_launch_app_blocked_by_mutex
+  C:\Python314\Lib\unittest\mock.py:2259: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C947453F0>
+    def __init__(self, name, parent):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_excel_pack.py::test_sheet_names_and_order
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\worksheet\properties.py:20: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94746200>
+    def __init__(self,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_forecast_scenarios.py::test_scenario_adjustment_math
+  <string>:20: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+
+tests/unit/test_forecast_scenarios.py::test_scenario_adjustment_math
+tests/unit/test_forecast_scenarios.py::test_scenario_adjustment_math
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\forecast\scenarios.py:364: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    generated_at=datetime.utcnow(),
+
+tests/unit/test_forecast_scenarios.py::test_scenario_adjustment_math
+tests/unit/test_forecast_scenarios.py::test_scenario_adjustment_math
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\forecast\scenarios.py:377: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    generated_at=datetime.utcnow(),
+
+tests/unit/test_forecast_scenarios.py::test_forecast_version_lifecycle
+  <string>:10: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+
+tests/unit/test_forecast_scenarios.py::test_forecast_version_lifecycle
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\forecast\scenarios.py:241: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self.locked_at = locked_at or datetime.utcnow()
+
+tests/unit/test_formula_error_cell_handling.py::test_formula_and_error_cell_handling
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\descriptors\serialisable.py:106: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94745B70>
+    def to_tree(self, tagname=None, idx=None, namespace=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_imports.py::test_parse_and_validate_bank_ledger
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:645: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C947458A0>
+    if not row or all(c.strip() == "" for c in row):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_imports.py::test_parse_and_validate_bank_ledger
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:645: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C947463E0>
+    if not row or all(c.strip() == "" for c in row):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_imports.py::test_parse_and_validate_bank_ledger
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:645: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C947455D0>
+    if not row or all(c.strip() == "" for c in row):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_imports.py::test_parse_and_validate_bank_ledger
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:645: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C947456C0>
+    if not row or all(c.strip() == "" for c in row):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_imports.py::test_parse_and_validate_bank_ledger
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\imports\parser.py:645: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94745E40>
+    if not row or all(c.strip() == "" for c in row):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_math_floor_d15.py::TestNumberFormattingEdges::test_float_input
+  C:\Python314\Lib\inspect.py:688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94745A80>
+    recursion_limit = sys.getrecursionlimit()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_math_floor_d15.py::TestNumberFormattingEdges::test_float_input
+  C:\Python314\Lib\inspect.py:688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BFE20>
+    recursion_limit = sys.getrecursionlimit()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_math_floor_d15.py::TestNumberFormattingEdges::test_float_input
+  C:\Python314\Lib\inspect.py:688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BFB50>
+    recursion_limit = sys.getrecursionlimit()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_math_floor_d15.py::TestNumberFormattingEdges::test_float_input
+  C:\Python314\Lib\inspect.py:688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C946BFA60>
+    recursion_limit = sys.getrecursionlimit()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_math_floor_d15.py::TestNumberFormattingEdges::test_float_input
+  C:\Python314\Lib\inspect.py:688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C947465C0>
+    recursion_limit = sys.getrecursionlimit()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_math_floor_d15.py::TestNumberFormattingEdges::test_float_input
+  C:\Python314\Lib\inspect.py:688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94745990>
+    recursion_limit = sys.getrecursionlimit()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_math_floor_d15.py::TestNumberFormattingEdges::test_float_input
+  C:\Python314\Lib\inspect.py:688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94746020>
+    recursion_limit = sys.getrecursionlimit()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_math_floor_d15.py::TestNumberFormattingEdges::test_float_input
+  C:\Python314\Lib\inspect.py:688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94745C60>
+    recursion_limit = sys.getrecursionlimit()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_math_floor_d15.py::TestNumberFormattingEdges::test_float_input
+  C:\Python314\Lib\inspect.py:688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94746E30>
+    recursion_limit = sys.getrecursionlimit()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_math_floor_d15.py::TestNumberFormattingEdges::test_float_input
+  C:\Python314\Lib\inspect.py:688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94747010>
+    recursion_limit = sys.getrecursionlimit()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_math_floor_d15.py::TestNumberFormattingEdges::test_float_input
+  C:\Python314\Lib\inspect.py:688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94746F20>
+    recursion_limit = sys.getrecursionlimit()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_math_floor_d15.py::TestNumberFormattingEdges::test_float_input
+  C:\Python314\Lib\inspect.py:688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94747100>
+    recursion_limit = sys.getrecursionlimit()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_math_floor_d15.py::TestNumberFormattingEdges::test_float_input
+  C:\Python314\Lib\inspect.py:688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C947471F0>
+    recursion_limit = sys.getrecursionlimit()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_math_floor_d15.py::TestNumberFormattingEdges::test_float_input
+  C:\Python314\Lib\inspect.py:688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C947472E0>
+    recursion_limit = sys.getrecursionlimit()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_math_floor_d15.py::TestNumberFormattingEdges::test_float_input
+  C:\Python314\Lib\inspect.py:688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C947473D0>
+    recursion_limit = sys.getrecursionlimit()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_math_floor_d15.py::TestNumberFormattingEdges::test_float_input
+  C:\Python314\Lib\inspect.py:688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C947474C0>
+    recursion_limit = sys.getrecursionlimit()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_math_floor_d15.py::TestNumberFormattingEdges::test_float_input
+  C:\Python314\Lib\inspect.py:688: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C947475B0>
+    recursion_limit = sys.getrecursionlimit()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_ppt_pack.py::test_deck_generation_slide_count_and_dimensions
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\pptx\opc\package.py:676: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C947467A0>
+    D[rel.reltype].append(rel)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_quality_score.py::test_guarantee_single_high_failure_cannot_score_above_96
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\calc\quality_score.py:393: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94746C50>
+    has_high_failure = any(c.severity == "high" for c in failed_checks)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/unit/test_reports_repo.py::test_reports_repo_comprehensive
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\openpyxl\cell\cell.py:108: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000021C94746980>
+    def __init__(self, worksheet, row=None, column=None, value=None, style_array=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.14.7-final-0 _______________
+
+Name                                          Stmts   Miss Branch BrPart  Cover   Missing
+-----------------------------------------------------------------------------------------
+app\__init__.py                                   2      0      0      0   100%
+app\api\__init__.py                               2      0      0      0   100%
+app\api\main.py                                 661    140     60     17    76%   202, 210, 245, 296-298, 422, 450, 484, 490, 505, 550-555, 563-584, 722-725, 762-765, 986-987, 1069, 1120-1136, 1144-1151, 1159-1170, 1187, 1229-1240, 1248-1251, 1259-1264, 1314-1321, 1348-1349, 1432->1436, 1436->1440, 1545-1548, 1567->1569, 1569->1571, 1571->1573, 1574, 1583-1593, 1609-1617, 1652-1654, 1671-1673, 1681-1691, 1699-1703, 1714-1715, 1723-1724, 1738-1740, 1748-1758, 1766-1769, 1780-1787, 1863, 1878, 1890, 1898, 1906, 1929, 1941, 1987->1990
+app\api\openapi.py                               10     10      0      0     0%   9-27
+app\desktop\__init__.py                           2      0      0      0   100%
+app\desktop\shell.py                            155     49     34      8    67%   50, 60->62, 68-70, 79-80, 88->98, 106-116, 122->125, 125->exit, 128-129, 135-136, 141-143, 149, 162-164, 168-170, 227-229, 233-261, 266-277
+app\engine\__init__.py                            0      0      0      0   100%
+app\engine\ai\__init__.py                         0      0      0      0   100%
+app\engine\ai\client.py                         664     48    258     25    91%   189->191, 252, 253->257, 258, 262, 277->283, 361-362, 370->366, 380-381, 385->exit, 450, 452, 466-469, 579->578, 686, 765-772, 775->783, 778-781, 811-812, 816-826, 885-892, 899, 910, 1306->1313, 1310->1309, 1317->1316, 1322->1321, 1343->1352
+app\engine\ai\guardrails.py                     495     16    170      8    96%   246->253, 250->253, 334->338, 428-429, 435-436, 449->447, 481->480, 497, 791->788, 1070-1081
+app\engine\ai\pinning.py                         12      0      4      0   100%
+app\engine\ai\prompts.py                         45      0      8      0   100%
+app\engine\ai\provenance.py                      42      1      2      1    95%   116
+app\engine\ai\usage.py                           65      3      4      1    94%   106-107, 131
+app\engine\calc\__init__.py                       3      0      0      0   100%
+app\engine\calc\math.py                         424      1    166      5    99%   365->363, 380->378, 656->658, 666->668, 742
+app\engine\calc\quality_score.py                157     11     50      8    90%   175, 180-182, 222-223, 256, 282, 315, 374->301, 386, 388
+app\engine\errors.py                              5      0      0      0   100%
+app\engine\exceptions\__init__.py                 0      0      0      0   100%
+app\engine\exceptions\owner_resolver.py          29      4     18      3    81%   55-56, 84, 88
+app\engine\exports\__init__.py                    0      0      0      0   100%
+app\engine\exports\excel_pack.py                796      7    168      8    98%   496, 701->704, 712->692, 1240-1241, 1377->1360, 1503-1504, 1589, 1675
+app\engine\exports\formats.py                    30      0      0      0   100%
+app\engine\exports\ppt_fit.py                    43     13     18      4    62%   50, 71, 76, 84-95
+app\engine\exports\ppt_pack.py                  320      9     30      6    95%   456, 503, 610, 651->654, 701->707, 714, 892, 1033-1036
+app\engine\exports\stamps.py                      5      0      0      0   100%
+app\engine\forecast\__init__.py                   2      0      0      0   100%
+app\engine\forecast\methods.py                  202     19     70     13    86%   34, 64, 85, 120, 132->159, 203-204, 290, 463, 490, 515-519, 528, 531-534, 573
+app\engine\forecast\scenarios.py                296     95     68     13    60%   124-125, 128, 130, 151, 155, 163, 167, 171-172, 178-181, 184-185, 196-227, 232, 234, 237, 291, 329->336, 331-332, 336->341, 397-411, 431-435, 438-441, 445-451, 454, 457-461, 473-493, 500-510, 514-524, 591, 619, 647->651
+app\engine\imports\__init__.py                    8      0      0      0   100%
+app\engine\imports\control_totals.py            113     17     44     14    80%   68->67, 82, 85-86, 137, 151, 176, 183, 194, 196, 204, 213, 229->243, 240-242, 246, 261, 269
+app\engine\imports\hardening.py                 376     30    186     26    90%   124-136, 158-159, 162-163, 172-174, 186-187, 238, 254, 285-286, 348->347, 390->382, 420->425, 428, 433->443, 458, 468-469, 527-528, 556, 559, 614, 677->676, 710->709, 713, 714->709, 717, 753->752, 769->768, 770->769, 772->769
+app\engine\imports\mapping_suggestions.py       129     10     36      6    90%   141-142, 174, 176, 178, 203, 230, 324, 339-341
+app\engine\imports\models.py                     53      1     10      1    97%   56
+app\engine\imports\parser.py                    497     63    192     38    84%   58, 83, 128->139, 133->128, 143->146, 167, 196, 223->229, 231-233, 265, 273-276, 280->283, 284-297, 304, 311, 340, 343, 354, 376, 386, 390-400, 406, 588, 646, 702-703, 717-724, 742-749, 783, 785, 791, 796-797, 977, 979, 981, 1012, 1031, 1087-1088, 1090, 1099-1108, 1113->1124
+app\engine\imports\profile_binding.py            94      6     28      6    90%   189, 192, 251, 269, 277, 334
+app\engine\imports\profiles.py                   63      1      8      1    97%   251
+app\engine\imports\vendor_budget_loader.py      294     38     66     10    86%   111, 143-149, 229-234, 238-239, 317-321, 340->338, 352-355, 500-501, 510-512, 517->521, 520, 523, 525, 560-568, 572-573, 610-611, 709
+app\engine\pptx_fill\__init__.py                  4      0      0      0   100%
+app\engine\pptx_fill\core.py                    107      4     48      6    94%   66, 119, 121, 165, 217->219, 219->exit
+app\engine\pptx_fill\layout.py                   85      2     34      7    92%   124->121, 146->150, 160, 164->171, 167, 175->exit, 176->175
+app\engine\pptx_fill\patterns.py                 91      1     38      1    98%   130
+app\engine\pptx_fill\ppt_spec.py                 21      0      0      0   100%
+app\engine\rules\__init__.py                      5      0      0      0   100%
+app\engine\rules\acceptance.py                  450     56    124     26    84%   191, 383, 391, 410, 415, 437, 452, 462, 469, 509-515, 570-571, 610->621, 660, 671, 966-967, 987->991, 1003, 1019->1026, 1032->1039, 1040-1044, 1048->1051, 1057, 1069-1070, 1086-1089, 1097-1100, 1109-1112, 1134-1138, 1143-1151, 1182-1187
+app\engine\rules\batch.py                        97      9     24      4    89%   123-124, 130-131, 137, 140, 144, 217-218, 219->213
+app\engine\rules\rules_01_08.py                 396     18    148     21    93%   64->68, 139, 143-144, 150, 176, 211->216, 213->216, 223, 257, 269->276, 278, 344, 350, 357, 365, 427, 428->417, 438, 489, 508, 516, 653
+app\engine\rules\rules_09_16.py                 249     18    104     24    88%   62, 68->54, 70->54, 141, 172, 176->169, 281->273, 284->273, 328->319, 459, 462-463, 478, 487, 490, 493, 496, 502, 506, 509, 513, 532, 537->541, 560, 572, 576->569
+app\engine\rules\rules_17_24.py                 202     13     84     12    91%   41, 48, 51-52, 107, 110, 152, 162, 165, 244, 247, 259, 263, 469->466
+app\engine\rules\rules_catalog_001_008.py       345     30    150     25    88%   36, 64->66, 76, 79-80, 85-88, 90, 98, 110, 113->108, 119->118, 145, 156, 231, 254, 280, 283, 318, 395, 512, 516, 522, 536, 554, 557-562, 606-607, 673
+app\engine\security\sanitizer.py                 44     12     16      4    63%   14, 18, 28-34, 45, 49, 59
+app\engine\store\__init__.py                      4      0      0      0   100%
+app\engine\store\analytics_repo.py              191     50     32      2    75%   346-355, 403-524, 584-712, 944-945
+app\engine\store\db.py                           85     20     22      6    74%   38, 54->58, 62, 84-87, 94-101, 104->107, 180-184, 194, 198
+app\engine\store\exceptions_repo.py             383    113    104     29    66%   141->147, 144-145, 212->203, 241, 272-273, 275, 277, 280, 318-319, 338-339, 365->371, 368-369, 419-468, 506-507, 510-511, 514-518, 521-522, 525-527, 552-553, 558-561, 565, 644, 650-651, 655-658, 696->702, 699-700, 703->710, 706-707, 775, 780->795, 795->810, 810->828, 854, 857->873, 873->888, 888->894, 911-914, 921-936, 954-1022
+app\engine\store\forecast_repo.py               235     24     68      8    86%   156-157, 169, 238-240, 246-254, 258-262, 281-283, 331->356, 389->395, 392-393, 462->472
+app\engine\store\import_repo.py                 221     53     46      3    76%   57-58, 204, 257-263, 344-350, 441-459, 463-509, 626-628
+app\engine\store\mapping_repo.py                192      7     48     10    93%   30->exit, 59, 173->189, 220, 354->366, 392, 431, 458-467, 504, 540->538, 644->651
+app\engine\store\mapping_suggestion_repo.py     145      6     32      4    94%   113, 118, 272, 301, 405-406
+app\engine\store\period_repo.py                  79      1     12      1    98%   214
+app\engine\store\reports_repo.py                178      8     20      4    94%   353, 383, 488-490, 502-507
+-----------------------------------------------------------------------------------------
+TOTAL                                          9903   1037   2852    419    87%
+Coverage XML written to file coverage.xml
+Required test coverage of 75.0% reached. Total coverage: 87.22%
+841 passed, 16 deselected, 288 warnings in 331.56s (0:05:31)
+......FFFF.F....                                                         [100%]
+================================== FAILURES ===================================
+______________________ test_planted_exception_recall_bar ______________________
+
+live_acceptance_report = AcceptanceReport(verdict='FAIL', bars=[BarResult(name='Planted-exception recall', requirement='>= 29 of 32 (>= 90 % of...ures and is counted once per distinct path'}, as_of='2026-11-12', period='FY26-P09', elapsed_seconds=33.53741679999803)
+
+    @pytest.mark.perf
+    def test_planted_exception_recall_bar(live_acceptance_report):
+        """Doc 14 §5.3: "Planted-exception recall | >= 90 % of the 32 raises (>= 29)"."""
+        _require_measurable(live_acceptance_report)
+        bar = next(b for b in live_acceptance_report.bars
+                   if b.name == "Planted-exception recall")
+>       assert bar.passed, (
+            f"{bar.requirement} - measured {bar.measured}. "
+            f"Missed: {[m['planting_id'] for m in live_acceptance_report.miss_list]}"
+        )
+E       AssertionError: >= 29 of 32 (>= 90 % of the 32 raises) - measured 11/32 = 34.4 %. Missed: ['P1', 'P2', 'P2', 'P2', 'P3', 'P4', 'P6', 'P8', 'P9', 'P10', 'P10', 'P12', 'P13', 'P13', 'P14', 'P15', 'P16', 'P20', 'P21', 'P21', 'P24']
+E       assert False
+E        +  where False = BarResult(name='Planted-exception recall', requirement='>= 29 of 32 (>= 90 % of the 32 raises)', measured='11/32 = 34.4 %', passed=False, detail='21 planted case(s) not detected', measurable=True).passed
+
+tests\rules\test_acceptance.py:519: AssertionError
+_________________________ test_control_precision_bar __________________________
+
+live_acceptance_report = AcceptanceReport(verdict='FAIL', bars=[BarResult(name='Planted-exception recall', requirement='>= 29 of 32 (>= 90 % of...ures and is counted once per distinct path'}, as_of='2026-11-12', period='FY26-P09', elapsed_seconds=33.53741679999803)
+
+    @pytest.mark.perf
+    def test_control_precision_bar(live_acceptance_report):
+        """Doc 14 §5.3: "0 of 8 controls may raise"; §5.3 calls any raise a P0 defect."""
+        _require_measurable(live_acceptance_report)
+        bar = next(b for b in live_acceptance_report.bars if b.name == "Control precision")
+>       assert bar.passed, (
+            f"{bar.requirement} - measured {bar.measured}. "
+            f"Fired: {[c['planting_id'] for c in live_acceptance_report.controls_fired]}"
+        )
+E       AssertionError: 0 of 8 controls may raise - measured 1 fired. Fired: ['P30']
+E       assert False
+E        +  where False = BarResult(name='Control precision', requirement='0 of 8 controls may raise', measured='1 fired', passed=False, detail='P30 EXC-018', measurable=True).passed
+
+tests\rules\test_acceptance.py:530: AssertionError
+________________________ test_high_severity_recall_bar ________________________
+
+live_acceptance_report = AcceptanceReport(verdict='FAIL', bars=[BarResult(name='Planted-exception recall', requirement='>= 29 of 32 (>= 90 % of...ures and is counted once per distinct path'}, as_of='2026-11-12', period='FY26-P09', elapsed_seconds=33.53741679999803)
+
+    @pytest.mark.perf
+    def test_high_severity_recall_bar(live_acceptance_report):
+        """Doc 14 §5.3: "18 of 18 High plantings found".
+    
+        Quoted note: "a missed High is a control failure, not a statistic".
+        """
+        _require_measurable(live_acceptance_report)
+        bar = next(b for b in live_acceptance_report.bars if b.name == "High-severity recall")
+>       assert bar.passed, f"{bar.requirement} - measured {bar.measured}"
+E       AssertionError: 18 of 18 High plantings found - measured 6/18
+E       assert False
+E        +  where False = BarResult(name='High-severity recall', requirement='18 of 18 High plantings found', measured='6/18', passed=False, detail='a missed High is a control failure, not a statistic', measurable=True).passed
+
+tests\rules\test_acceptance.py:544: AssertionError
+___________________________ test_extra_findings_bar ___________________________
+
+live_acceptance_report = AcceptanceReport(verdict='FAIL', bars=[BarResult(name='Planted-exception recall', requirement='>= 29 of 32 (>= 90 % of...ures and is counted once per distinct path'}, as_of='2026-11-12', period='FY26-P09', elapsed_seconds=33.53741679999803)
+
+    @pytest.mark.perf
+    def test_extra_findings_bar(live_acceptance_report):
+        """Doc 14 §5.3: "a rule with > 3 unexplained findings is tuned or documented"."""
+        _require_measurable(live_acceptance_report)
+        bar = next(b for b in live_acceptance_report.bars if b.name == "Extra findings")
+>       assert bar.passed, f"{bar.requirement} - measured {bar.measured}"
+E       AssertionError: a rule with > 3 unexplained findings is tuned or documented before the gate - measured 422 extra across 10 rule(s); over threshold: ['EXC-006', 'EXC-017', 'EXC-018', 'EXC-019', 'EXC-021', 'EXC-022']
+E       assert False
+E        +  where False = BarResult(name='Extra findings', requirement='a rule with > 3 unexplained findings is tuned or documented before the g...itive log reference is committed in this repository; extras are therefore UNEXPLAINED, not justified', measurable=True).passed
+
+tests\rules\test_acceptance.py:552: AssertionError
+_______________________ test_no_rule_has_zero_coverage ________________________
+
+live_acceptance_report = AcceptanceReport(verdict='FAIL', bars=[BarResult(name='Planted-exception recall', requirement='>= 29 of 32 (>= 90 % of...ures and is counted once per distinct path'}, as_of='2026-11-12', period='FY26-P09', elapsed_seconds=33.53741679999803)
+
+    @pytest.mark.perf
+    def test_no_rule_has_zero_coverage(live_acceptance_report):
+        """No rule with a planted case may raise nothing at all.
+    
+        Doc 14 §5.3 states no numeric per-rule bar, so this is a completeness gate
+        rather than an invented threshold - but a rule that produced nothing makes
+        the whole measurement untrustworthy, so on a MEASURABLE corpus it fails
+        loudly. On a blocked corpus it is meaningless (nothing loaded at all), so it
+        is skipped with the blocked reason.
+        """
+        _require_measurable(live_acceptance_report)
+        zero = [r.rule_id for r in live_acceptance_report.rules if r.zero_coverage]
+>       assert not zero, f"rules with zero coverage (planted but raised nothing): {zero}"
+E       AssertionError: rules with zero coverage (planted but raised nothing): ['EXC-001', 'EXC-002', 'EXC-003', 'EXC-006', 'EXC-008', 'EXC-009', 'EXC-010', 'EXC-012', 'EXC-013', 'EXC-014', 'EXC-016', 'EXC-020', 'EXC-021', 'EXC-024']
+E       assert not ['EXC-001', 'EXC-002', 'EXC-003', 'EXC-006', 'EXC-008', 'EXC-009', ...]
+
+tests\rules\test_acceptance.py:575: AssertionError
+============================== warnings summary ===============================
+..\..\..\AppData\Roaming\Python\Python314\site-packages\fastapi\testclient.py:1
+  C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests/integration/test_e2e_golden_path.py::test_e2e_golden_path_smoke_journey
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\store\exceptions_repo.py:341: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
+tests/integration/test_e2e_golden_path.py::test_e2e_golden_path_smoke_journey
+  C:\Users\Tahir\Documents\GitHub\finalFPA\app\engine\store\exceptions_repo.py:777: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/rules/test_acceptance.py::test_planted_exception_recall_bar - As...
+FAILED tests/rules/test_acceptance.py::test_control_precision_bar - Assertion...
+FAILED tests/rules/test_acceptance.py::test_high_severity_recall_bar - Assert...
+FAILED tests/rules/test_acceptance.py::test_extra_findings_bar - AssertionErr...
+FAILED tests/rules/test_acceptance.py::test_no_rule_has_zero_coverage - Asser...
+5 failed, 11 passed, 841 deselected, 3 warnings in 530.88s (0:08:50)
+=== Running FP&A Month-End Copilot Validation Gate ===
+--> [CHECK] OpenAPI Contract Drift Check: python scripts/check_contract_drift.py
+--> [CHECK] Doc Integrity and Link Check: python scripts/check_doc_integrity.py
+--> [CHECK] Test Catalogue Traceability Check: python scripts/check_tst_catalogue.py
+--> [CHECK] Pytest Fast Suite with Coverage: python -m pytest tests -m "not perf" --cov=app --cov-report=term --cov-report=xml:coverage.xml
+--> [CHECK] Enforcing NFR-014 Split Coverage Bars...
+    Backend Statement Coverage: 8866/9903 (89.53%) [Threshold: >=75.0%]
+    Domain Engines Statement Coverage: 3610/3853 (93.69%) [Threshold: >=90.0%]
+    PASSED: NFR-014 Split Coverage Gates Met Cleanly!
+
+--> [CHECK] Pytest Performance Suite: python -m pytest tests -m "perf"
+FAILED: Pytest Performance Suite exited with code 1

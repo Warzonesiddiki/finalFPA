@@ -1,0 +1,46 @@
+{
+  "id": "GATE-FAST",
+  "title": "Make the acceptance gate stop hiding bars. scripts/check.py line 12 calls sys.exit(res.returncode) on the FIRST failed bar, so it is fail-fast: measured today it exits 1 at Ruff Format Check and reports nothing after it, which makes the five docs/14 section 5.3 bars (recall 11/32, control 1 fired, High 6/18, 422 extras, 14 zero-coverage rules) INVISIBLE. They are not passing - nobody can tell, because the gate stopped. Change it so every bar runs, every bar reports its own exit code, and the process exits non-zero if ANY bar failed. Keep the per-bar numbers exactly as they are today; change only the control flow and the reporting. Acceptance: (1) `python scripts/check.py` reports all nine bars with an exit status each, not just the first failure; (2) its exit code is non-zero when any bar is red; (3) a test that provokes a single red bar shows every OTHER bar still reported; (4) the before/after bar table is pasted into the handoff, so the five currently-invisible bars are on the record with their real numbers. Do not fix any bar while doing this - a gate that reports honestly and is still red is worth more than one that reports less and is green.",
+  "source": "docs/33",
+  "priority": "P0",
+  "status": "in-progress",
+  "owner": "opencode",
+  "claim_id": "opencode-20261006T0906Z-6a72",
+  "deps": [],
+  "lane": "gate-tooling",
+  "created_utc": "2026-10-05T20:33:08Z",
+  "updated_utc": "2026-10-06T09:06:50Z",
+  "history": [
+    {
+      "utc": "2026-10-05T20:33:08Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T20:49:06Z",
+      "agent": "opencode2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T20:57:32Z",
+      "agent": "opencode2",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T21:40:04Z",
+      "agent": "opencode",
+      "event": "rejected via HO-056"
+    },
+    {
+      "utc": "2026-10-05T21:45:31Z",
+      "agent": "opencode2",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-06T09:06:50Z",
+      "agent": "opencode",
+      "event": "claimed"
+    }
+  ],
+  "handoff": null
+}

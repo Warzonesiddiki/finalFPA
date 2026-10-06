@@ -1,0 +1,24 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+____________________ test_set_text_applies_per_line_styles ____________________
+
+    def test_set_text_applies_per_line_styles():
+        prs = open_template()
+        slide = add_slide_from_layout(prs, SLIDE_LAYOUTS["PPT-001"])
+        sources = resolve_shape(slide, "PPT-001_sources")
+        set_text(
+            sources,
+            ["SOURCES", "row"],
+            styles=[TextStyle(bold=True), None],
+        )
+        runs = [p.runs[0] for p in sources.text_frame.paragraphs]
+        assert runs[0].font.bold is True
+        # A ``None`` style leaves the line as the template made it — cloned from line 1.
+>       assert runs[1].font.bold is True
+E       assert False is True
+E        +  where False = <pptx.text.text.Font object at 0x000002ABE097BED0>.bold
+E        +    where <pptx.text.text.Font object at 0x000002ABE097BED0> = <pptx.text.text._Run object at 0x000002ABE0953230>.font
+
+tests\unit\test_pptx_fill_patterns.py:256: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/unit/test_pptx_fill_patterns.py::test_set_text_applies_per_line_styles

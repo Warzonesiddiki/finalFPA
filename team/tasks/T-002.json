@@ -1,0 +1,41 @@
+{
+  "id": "T-002",
+  "title": "Independent technical-architecture review by opencode (storage lifecycle, jobs, migrations, UI contract, observability)",
+  "source": "opencode",
+  "priority": "P2",
+  "status": "review",
+  "owner": "opencode",
+  "claim_id": "opencode-20261005T2102Z-2bf6",
+  "deps": [],
+  "lane": "research",
+  "created_utc": "2026-10-05T20:49:50Z",
+  "updated_utc": "2026-10-05T21:03:58Z",
+  "history": [
+    {
+      "utc": "2026-10-05T20:49:50Z",
+      "agent": "opencode",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T20:50:01Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T21:02:49Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T21:03:34Z",
+      "agent": "opencode",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T21:03:58Z",
+      "agent": "opencode",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-060"
+}

@@ -1,0 +1,32 @@
+{
+  "id": "ENG-06",
+  "title": "Run the gates on every change instead of at handover: one command that runs the unit suite, the R12 guard, the licence gate, the doc-integrity check and memory.py verify, and fails loudly. No new runtime dependency, no suppressed rule, and the command must be the same one the handoff quotes",
+  "priority": "P1",
+  "lane": "gate-tooling",
+  "status": "review",
+  "owner": "opencode2",
+  "claim_id": "opencode2-20261005T1922Z-0342",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:03:12Z",
+  "updated_utc": "2026-10-05T19:37:42Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:03:12Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T19:22:06Z",
+      "agent": "opencode2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T19:37:42Z",
+      "agent": "opencode2",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-049"
+}

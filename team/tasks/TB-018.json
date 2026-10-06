@@ -1,0 +1,51 @@
+{
+  "id": "TB-018",
+  "title": "Create the ADR-002 pins: `.python-version`, `.nvmrc`, `uv.lock` (or pinned `requirements.txt`) and use them in bootstrap",
+  "source": "docs/33",
+  "priority": "P1",
+  "status": "done",
+  "owner": "buffy",
+  "claim_id": "buffy-20261005T1100Z-af65",
+  "deps": [],
+  "lane": "gate-tooling",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T11:40:26Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:19Z",
+      "agent": "buffy",
+      "event": "triaged P1 / lane gate-tooling by leader"
+    },
+    {
+      "utc": "2026-10-05T11:00:29Z",
+      "agent": "buffy",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T11:02:52Z",
+      "agent": "buffy",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T11:02:52Z",
+      "agent": "buffy",
+      "event": "handoff HO-003 -> HO-005 (id collided with hermes' UX-01 handoff)"
+    },
+    {
+      "utc": "2026-10-05T11:14:54Z",
+      "agent": "antigravity",
+      "event": "verified via HO-005"
+    },
+    {
+      "utc": "2026-10-05T11:40:26Z",
+      "agent": "antigravity",
+      "event": "verified via HO-005"
+    }
+  ],
+  "handoff": "HO-005"
+}

@@ -1,0 +1,61 @@
+{
+  "id": "UX-09",
+  "title": "Analyst maths audit: pick the twelve numbers an FP&A analyst must never get wrong (Tb, coverage, variance, bridge residual, forecast error) and prove each one end to end from import to export, with the arithmetic shown at every hop and a test that fails if a hop rounds. Output evidence/ux/numbers-trace.md",
+  "source": "docs/33",
+  "priority": "P0",
+  "status": "review",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "product",
+  "created_utc": "2026-10-05T14:09:59Z",
+  "updated_utc": "2026-10-05T20:36:50Z",
+  "history": [
+    {
+      "utc": "2026-10-05T14:09:59Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T14:37:38Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T14:46:25Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T15:01:32Z",
+      "agent": "buffy",
+      "event": "rejected via HO-033"
+    },
+    {
+      "utc": "2026-10-05T15:03:29Z",
+      "agent": "hermes",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-05T15:44:00Z",
+      "agent": "buffy",
+      "event": "restored to todo after a leader falsification script left it in review"
+    },
+    {
+      "utc": "2026-10-05T20:26:18Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T20:28:16Z",
+      "agent": "hermes",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-05T20:36:50Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-051"
+}

@@ -1,0 +1,56 @@
+{
+  "id": "RV-01",
+  "title": "Independent whole-project design review by EVERY agent — one doc per agent at team/reviews/<agent>.md: what makes this the perfect FP&A analyst tool, what is over/under-built, top 5 suggestions with evidence and cost; leader synthesises into team/reviews/SYNTHESIS.md + docs/18 proposal if it changes scope",
+  "source": "buffy",
+  "priority": "P1",
+  "status": "done",
+  "owner": "hermes",
+  "claim_id": "hermes-20261005T1101Z-2ff4",
+  "deps": [],
+  "lane": "research",
+  "created_utc": "2026-10-05T10:14:20Z",
+  "updated_utc": "2026-10-05T12:44:22Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:14:20Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T10:14:20Z",
+      "agent": "buffy",
+      "event": "renamed T-046 -> RV-01"
+    },
+    {
+      "utc": "2026-10-05T11:01:26Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T11:03:24Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T11:55:10Z",
+      "agent": "antigravity",
+      "event": "verified via HO-004"
+    },
+    {
+      "utc": "2026-10-05T12:03:33Z",
+      "agent": "buffy",
+      "event": "rejected via HO-004"
+    },
+    {
+      "utc": "2026-10-05T12:42:52Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T12:44:22Z",
+      "agent": "antigravity",
+      "event": "verified via HO-004"
+    }
+  ],
+  "handoff": "HO-004"
+}

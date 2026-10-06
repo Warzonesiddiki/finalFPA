@@ -1,0 +1,180 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\Tahir\Documents\GitHub\finalFPA
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.15.1, cov-7.1.0
+collected 859 items / 16 deselected / 843 selected
+
+tests\artefacts\test_cross_artifact.py .                                 [  0%]
+tests\artefacts\test_negative_corpus.py ................                 [  2%]
+tests\integration\test_ai_journey_e2e.py .                               [  2%]
+tests\integration\test_api.py ...........                                [  3%]
+tests\integration\test_api_contract.py ........                          [  4%]
+tests\integration\test_cli_exceptions.py ..........                      [  5%]
+tests\integration\test_debug_csv.py .                                    [  5%]
+tests\integration\test_def006_isolation.py ...                           [  6%]
+tests\integration\test_def026_account_consistency.py ....                [  6%]
+tests\integration\test_dim_account_integrity.py .                        [  6%]
+tests\integration\test_error_catalog.py .                                [  6%]
+tests\integration\test_error_envelope.py ....                            [  7%]
+tests\integration\test_import_api.py ...                                 [  7%]
+tests\integration\test_mapping_seam_api.py .....                         [  8%]
+tests\integration\test_mapping_seam_e2e.py ...............               [  9%]
+tests\integration\test_mapping_suggestions_api.py .............          [ 11%]
+tests\integration\test_period_lifecycle.py ............                  [ 12%]
+tests\integration\test_portable_mode.py ...                              [ 13%]
+tests\integration\test_prior_version_upgrade.py .                        [ 13%]
+tests\integration\test_store.py ..                                       [ 13%]
+tests\rules\test_acceptance.py .....................                     [ 16%]
+tests\rules\test_acceptance_blocked_regression.py ........               [ 17%]
+tests\uat\test_uat_dry_run.py ........                                   [ 18%]
+tests\unit\test_acceptance_cli_utf8.py ...                               [ 18%]
+tests\unit\test_ai_client.py ....                                        [ 18%]
+tests\unit\test_ai_client_coverage.py .................................. [ 22%]
+........................................................................ [ 31%]
+...............                                                          [ 33%]
+tests\unit\test_ai_defenses.py .....                                     [ 33%]
+tests\unit\test_ai_eval_fixtures.py .....                                [ 34%]
+tests\unit\test_ai_guardrails.py ...........................             [ 37%]
+tests\unit\test_ai_key_rotation_drill.py .                               [ 37%]
+tests\unit\test_ai_pinning.py .......                                    [ 38%]
+tests\unit\test_ai_prompts.py ..                                         [ 38%]
+tests\unit\test_ai_provenance.py .                                       [ 38%]
+tests\unit\test_ai_usage.py .                                            [ 39%]
+tests\unit\test_analytics_repo.py ..                                     [ 39%]
+tests\unit\test_budget_replace.py .                                      [ 39%]
+tests\unit\test_calc.py ....                                             [ 39%]
+tests\unit\test_calc_foundation.py ........................              [ 42%]
+tests\unit\test_control_reconciliation.py .                              [ 42%]
+tests\unit\test_control_totals_import.py ........                        [ 43%]
+tests\unit\test_crash_recovery_import.py .                               [ 43%]
+tests\unit\test_csv_parsing_matrix.py ...                                [ 44%]
+tests\unit\test_date_parsing_matrix.py ..                                [ 44%]
+tests\unit\test_def010_batch_metadata.py ................                [ 46%]
+tests\unit\test_def011_asset_validity.py ...........                     [ 47%]
+tests\unit\test_def013_guard_vacuous_asserts.py .                        [ 47%]
+tests\unit\test_def015_excel_pack.py .                                   [ 47%]
+tests\unit\test_def019_double_entry.py .....                             [ 48%]
+tests\unit\test_def021_data_quality_score.py .....                       [ 49%]
+tests\unit\test_def024_rule_containment.py .............                 [ 50%]
+tests\unit\test_def029_http_exception_handler.py ..                      [ 50%]
+tests\unit\test_def030_bulk_insert.py ....                               [ 51%]
+tests\unit\test_desktop_shell.py ........                                [ 52%]
+tests\unit\test_empty_tiny_file_handling.py ....                         [ 52%]
+tests\unit\test_evidence_bundle.py .                                     [ 52%]
+tests\unit\test_excel_pack.py ...........                                [ 54%]
+tests\unit\test_file_size_limit_enforcement.py .                         [ 54%]
+tests\unit\test_fiscal_dimension_parsing.py ..                           [ 54%]
+tests\unit\test_forecast_methods.py ..............                       [ 56%]
+tests\unit\test_forecast_repo.py .                                       [ 56%]
+tests\unit\test_forecast_scenarios.py ...                                [ 56%]
+tests\unit\test_formula_error_cell_handling.py .                         [ 56%]
+tests\unit\test_guardrails_floor_d15.py ................................ [ 60%]
+.........                                                                [ 61%]
+tests\unit\test_hardening.py .........                                   [ 62%]
+tests\unit\test_import_repo.py ...                                       [ 63%]
+tests\unit\test_import_repository_catalog_metadata.py .                  [ 63%]
+tests\unit\test_imports.py ....                                          [ 63%]
+tests\unit\test_long_job_progress_cancel.py .                            [ 63%]
+tests\unit\test_mapping_repo.py .......                                  [ 64%]
+tests\unit\test_mapping_suggestions.py ...........................       [ 67%]
+tests\unit\test_math_extra.py .                                          [ 67%]
+tests\unit\test_math_floor_d15.py ...................................... [ 72%]
+......                                                                   [ 73%]
+tests\unit\test_mixed_currency_handling.py .                             [ 73%]
+tests\unit\test_money_math_def015.py ...                                 [ 73%]
+tests\unit\test_number_parsing_matrix.py ..                              [ 73%]
+tests\unit\test_owner_resolver.py .....                                  [ 74%]
+tests\unit\test_period_repo.py .                                         [ 74%]
+tests\unit\test_ppt_pack.py .............                                [ 76%]
+tests\unit\test_pptx_fill_layout.py .................................    [ 80%]
+tests\unit\test_pptx_fill_patterns.py .................................. [ 84%]
+...............                                                          [ 85%]
+tests\unit\test_profile_binding.py .                                     [ 86%]
+tests\unit\test_quality_score.py ............                            [ 87%]
+tests\unit\test_reports_repo.py .                                        [ 87%]
+tests\unit\test_rules_01_08.py ...................                       [ 89%]
+tests\unit\test_rules_09_16.py ...............................           [ 93%]
+tests\unit\test_rules_17_24.py ........                                  [ 94%]
+tests\unit\test_rules_batch.py ...                                       [ 94%]
+tests\unit\test_rules_catalog_001_008.py .......................         [ 97%]
+tests\unit\test_sanitizer.py ....                                        [ 97%]
+tests\unit\test_sheet_selection_handling.py .                            [ 98%]
+tests\unit\test_staleness.py .                                           [ 98%]
+tests\unit\test_validation_runtime_proof.py .....                        [ 98%]
+tests\unit\test_vendor_budget_loader.py ..........C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\coverage\sqlitedb.py:122: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001F89A1C2980>
+  return self.con.execute(sql, parameters)  # type: ignore[arg-type]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+                       [100%]
+
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.14.7-final-0 _______________
+
+Name                                          Stmts   Miss Branch BrPart  Cover   Missing
+-----------------------------------------------------------------------------------------
+app\__init__.py                                   2      0      0      0   100%
+app\api\__init__.py                               2      0      0      0   100%
+app\api\main.py                                 661    140     60     17    76%   202, 210, 245, 296-298, 422, 450, 484, 490, 505, 550-555, 563-584, 722-725, 762-765, 986-987, 1069, 1120-1136, 1144-1151, 1159-1170, 1187, 1229-1240, 1248-1251, 1259-1264, 1314-1321, 1348-1349, 1432->1436, 1436->1440, 1545-1548, 1567->1569, 1569->1571, 1571->1573, 1574, 1583-1593, 1609-1617, 1652-1654, 1671-1673, 1681-1691, 1699-1703, 1714-1715, 1723-1724, 1738-1740, 1748-1758, 1766-1769, 1780-1787, 1863, 1878, 1890, 1898, 1906, 1929, 1941, 1987->1990
+app\api\openapi.py                               10     10      0      0     0%   9-27
+app\desktop\__init__.py                           2      0      0      0   100%
+app\desktop\shell.py                            155     49     34      8    67%   50, 60->62, 68-70, 79-80, 88->98, 106-116, 122->125, 125->exit, 128-129, 135-136, 141-143, 149, 162-164, 168-170, 227-229, 233-261, 266-277
+app\engine\__init__.py                            0      0      0      0   100%
+app\engine\ai\__init__.py                         0      0      0      0   100%
+app\engine\ai\client.py                         664     48    258     25    91%   189->191, 252, 253->257, 258, 262, 277->283, 361-362, 370->366, 380-381, 385->exit, 450, 452, 466-469, 579->578, 686, 765-772, 775->783, 778-781, 811-812, 816-826, 885-892, 899, 910, 1306->1313, 1310->1309, 1317->1316, 1322->1321, 1343->1352
+app\engine\ai\guardrails.py                     495     16    170      8    96%   246->253, 250->253, 334->338, 428-429, 435-436, 449->447, 481->480, 497, 791->788, 1070-1081
+app\engine\ai\pinning.py                         12      0      4      0   100%
+app\engine\ai\prompts.py                         45      0      8      0   100%
+app\engine\ai\provenance.py                      42      1      2      1    95%   116
+app\engine\ai\usage.py                           65      3      4      1    94%   106-107, 131
+app\engine\calc\__init__.py                       3      0      0      0   100%
+app\engine\calc\math.py                         424      1    166      5    99%   365->363, 380->378, 656->658, 666->668, 742
+app\engine\calc\quality_score.py                157     11     50      8    90%   175, 180-182, 222-223, 256, 282, 315, 374->301, 386, 388
+app\engine\errors.py                              5      0      0      0   100%
+app\engine\exceptions\__init__.py                 0      0      0      0   100%
+app\engine\exceptions\owner_resolver.py          29      4     18      3    81%   55-56, 84, 88
+app\engine\exports\__init__.py                    0      0      0      0   100%
+app\engine\exports\excel_pack.py                796      7    168      8    98%   496, 701->704, 712->692, 1240-1241, 1377->1360, 1503-1504, 1589, 1675
+app\engine\exports\formats.py                    30      0      0      0   100%
+app\engine\exports\ppt_fit.py                    43     13     18      4    62%   50, 71, 76, 84-95
+app\engine\exports\ppt_pack.py                  325     10     32      7    95%   456, 518, 625, 666->669, 716->722, 729, 907, 982, 1051-1054
+app\engine\exports\stamps.py                      5      0      0      0   100%
+app\engine\forecast\__init__.py                   2      0      0      0   100%
+app\engine\forecast\methods.py                  202     19     70     13    86%   34, 64, 85, 120, 132->159, 203-204, 290, 463, 490, 515-519, 528, 531-534, 573
+app\engine\forecast\scenarios.py                296     95     68     13    60%   124-125, 128, 130, 151, 155, 163, 167, 171-172, 178-181, 184-185, 196-227, 232, 234, 237, 291, 329->336, 331-332, 336->341, 397-411, 431-435, 438-441, 445-451, 454, 457-461, 473-493, 500-510, 514-524, 591, 619, 647->651
+app\engine\imports\__init__.py                    8      0      0      0   100%
+app\engine\imports\control_totals.py            113     17     44     14    80%   68->67, 82, 85-86, 137, 151, 176, 183, 194, 196, 204, 213, 229->243, 240-242, 246, 261, 269
+app\engine\imports\hardening.py                 376     30    186     26    90%   124-136, 158-159, 162-163, 172-174, 186-187, 238, 254, 285-286, 348->347, 390->382, 420->425, 428, 433->443, 458, 468-469, 527-528, 556, 559, 614, 677->676, 710->709, 713, 714->709, 717, 753->752, 769->768, 770->769, 772->769
+app\engine\imports\mapping_suggestions.py       129     10     36      6    90%   141-142, 174, 176, 178, 203, 230, 324, 339-341
+app\engine\imports\models.py                     53      1     10      1    97%   56
+app\engine\imports\parser.py                    497     63    192     38    84%   58, 83, 128->139, 133->128, 143->146, 167, 196, 223->229, 231-233, 265, 273-276, 280->283, 284-297, 304, 311, 340, 343, 354, 376, 386, 390-400, 406, 588, 646, 702-703, 717-724, 742-749, 783, 785, 791, 796-797, 977, 979, 981, 1012, 1031, 1087-1088, 1090, 1099-1108, 1113->1124
+app\engine\imports\profile_binding.py            94      6     28      6    90%   189, 192, 251, 269, 277, 334
+app\engine\imports\profiles.py                   63      1      8      1    97%   251
+app\engine\imports\vendor_budget_loader.py      294     38     66     10    86%   111, 143-149, 229-234, 238-239, 317-321, 340->338, 352-355, 500-501, 510-512, 517->521, 520, 523, 525, 560-568, 572-573, 610-611, 709
+app\engine\pptx_fill\__init__.py                  4      0      0      0   100%
+app\engine\pptx_fill\core.py                    107      4     48      6    94%   66, 119, 121, 165, 217->219, 219->exit
+app\engine\pptx_fill\layout.py                   85      2     34      7    92%   124->121, 146->150, 160, 164->171, 167, 175->exit, 176->175
+app\engine\pptx_fill\patterns.py                 91      1     38      1    98%   130
+app\engine\pptx_fill\ppt_spec.py                 21      0      0      0   100%
+app\engine\rules\__init__.py                      5      0      0      0   100%
+app\engine\rules\acceptance.py                  450     56    124     26    84%   191, 383, 391, 410, 415, 437, 452, 462, 469, 509-515, 570-571, 610->621, 660, 671, 966-967, 987->991, 1003, 1019->1026, 1032->1039, 1040-1044, 1048->1051, 1057, 1069-1070, 1086-1089, 1097-1100, 1109-1112, 1134-1138, 1143-1151, 1182-1187
+app\engine\rules\batch.py                        97      9     24      4    89%   123-124, 130-131, 137, 140, 144, 217-218, 219->213
+app\engine\rules\rules_01_08.py                 396     18    148     21    93%   64->68, 139, 143-144, 150, 176, 211->216, 213->216, 223, 257, 269->276, 278, 344, 350, 357, 365, 427, 428->417, 438, 489, 508, 516, 653
+app\engine\rules\rules_09_16.py                 249     18    104     24    88%   62, 68->54, 70->54, 141, 172, 176->169, 281->273, 284->273, 328->319, 459, 462-463, 478, 487, 490, 493, 496, 502, 506, 509, 513, 532, 537->541, 560, 572, 576->569
+app\engine\rules\rules_17_24.py                 202     13     84     12    91%   41, 48, 51-52, 107, 110, 152, 162, 165, 244, 247, 259, 263, 469->466
+app\engine\rules\rules_catalog_001_008.py       345     30    150     25    88%   36, 64->66, 76, 79-80, 85-88, 90, 98, 110, 113->108, 119->118, 145, 156, 231, 254, 280, 283, 318, 395, 512, 516, 522, 536, 554, 557-562, 606-607, 673
+app\engine\security\sanitizer.py                 44     12     16      4    63%   14, 18, 28-34, 45, 49, 59
+app\engine\store\__init__.py                      4      0      0      0   100%
+app\engine\store\analytics_repo.py              191     50     32      2    75%   346-355, 403-524, 584-712, 944-945
+app\engine\store\db.py                           85     20     22      6    74%   38, 54->58, 62, 84-87, 94-101, 104->107, 180-184, 194, 198
+app\engine\store\exceptions_repo.py             383    113    104     29    66%   141->147, 144-145, 212->203, 241, 272-273, 275, 277, 280, 318-319, 338-339, 365->371, 368-369, 419-468, 506-507, 510-511, 514-518, 521-522, 525-527, 552-553, 558-561, 565, 644, 650-651, 655-658, 696->702, 699-700, 703->710, 706-707, 775, 780->795, 795->810, 810->828, 854, 857->873, 873->888, 888->894, 911-914, 921-936, 954-1022
+app\engine\store\forecast_repo.py               235     24     68      8    86%   156-157, 169, 238-240, 246-254, 258-262, 281-283, 331->356, 389->395, 392-393, 462->472
+app\engine\store\import_repo.py                 221     53     46      3    76%   57-58, 204, 257-263, 344-350, 441-459, 463-509, 626-628
+app\engine\store\mapping_repo.py                192      7     48     10    93%   30->exit, 59, 173->189, 220, 354->366, 392, 431, 458-467, 504, 540->538, 644->651
+app\engine\store\mapping_suggestion_repo.py     145      6     32      4    94%   113, 118, 272, 301, 405-406
+app\engine\store\period_repo.py                  79      1     12      1    98%   214
+app\engine\store\reports_repo.py                178      8     20      4    94%   353, 383, 488-490, 502-507
+-----------------------------------------------------------------------------------------
+TOTAL                                          9908   1038   2854    420    87%
+Required test coverage of 75.0% reached. Total coverage: 87.21%
+=============== 843 passed, 16 deselected in 317.67s (0:05:17) ================

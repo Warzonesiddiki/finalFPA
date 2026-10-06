@@ -1,0 +1,21 @@
+{
+  "id": "DOC-07",
+  "title": "The client's audit Q&A, anticipated: the twenty questions a finance controller or auditor will ask about this tool, each with the answer and the command that produces the evidence behind it. Output evidence/ops/client-audit-qa.md - no answer without a command",
+  "priority": "P1",
+  "lane": "docs",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:22:07Z",
+  "updated_utc": "2026-10-05T15:22:07Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:22:07Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

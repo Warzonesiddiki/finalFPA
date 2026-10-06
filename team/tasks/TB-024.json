@@ -1,0 +1,25 @@
+{
+  "id": "TB-024",
+  "title": "Record remaining NFR measurements (cold start, interaction, PPT, Excel, memory, installer size) in `14` §8.2 with numbers, not adjectives",
+  "source": "docs/33",
+  "priority": "P2",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "perf",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T10:14:19Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:19Z",
+      "agent": "buffy",
+      "event": "triaged P2 / lane perf by leader"
+    }
+  ]
+}

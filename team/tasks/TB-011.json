@@ -1,0 +1,46 @@
+{
+  "id": "TB-011",
+  "title": "Make P1/P9 plantings reachable per the `OQ-025` ruling (load path + EXC-001/009 behaviour)",
+  "source": "docs/33",
+  "priority": "P0",
+  "status": "review",
+  "owner": "freebuff2",
+  "claim_id": "freebuff2-20261005T1510Z-4ca5",
+  "deps": [],
+  "lane": "corpus",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T15:27:13Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:18Z",
+      "agent": "buffy",
+      "event": "triaged P0 / lane corpus by leader"
+    },
+    {
+      "utc": "2026-10-05T12:04:39Z",
+      "agent": "freebuff2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T15:10:34Z",
+      "agent": "freebuff2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T15:27:13Z",
+      "agent": "freebuff2",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T15:27:13Z",
+      "agent": "freebuff2",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-038"
+}

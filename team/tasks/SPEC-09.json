@@ -1,0 +1,21 @@
+{
+  "id": "SPEC-09",
+  "title": "Make the user-facing language come from one place: every term the UI shows should resolve through docs/18 rather than being retyped per screen, and any term the UI invents that is not in the glossary is a finding. Acceptance: the list of UI strings with no glossary entry, and the mapping for the rest",
+  "priority": "P1",
+  "lane": "docs",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:22:06Z",
+  "updated_utc": "2026-10-05T15:22:06Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:22:06Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

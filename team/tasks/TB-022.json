@@ -1,0 +1,27 @@
+{
+  "id": "TB-022",
+  "title": "Full `scripts/check` transcript green (every step, exit 0) attached as gate evidence",
+  "source": "docs/33",
+  "priority": "P1",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [
+    "TB-014"
+  ],
+  "lane": "verification",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T10:14:19Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:19Z",
+      "agent": "buffy",
+      "event": "triaged P1 / lane verification by leader"
+    }
+  ]
+}

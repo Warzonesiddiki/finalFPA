@@ -1,0 +1,563 @@
+2026-10-05T12:31:37Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T12:31:37Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T12:31:37Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T12:31:37Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T12:32:17Z NUDGE -> antigravity: Stream check: no active claim while its stream still has claimable work: RV-02, SPEC-03, RV-03. Claim the firs
+2026-10-05T12:32:17Z tick #1: check exit 1 (2 fail, 10 warn), 7 active claim(s), 45 card(s) todo, 1 action(s)
+2026-10-05T12:33:00Z tick #2: check exit 1 (2 fail, 11 warn), 7 active claim(s), 44 card(s) todo, 0 action(s)
+2026-10-05T12:33:00Z sleeping 20 min
+2026-10-05T12:33:49Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T12:33:49Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T12:33:49Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T12:33:49Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T12:34:34Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T12:34:34Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T12:34:34Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T12:34:34Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T12:36:22Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: TB-022. Claim the first one and start
+2026-10-05T12:36:22Z tick #3: check exit 1 (2 fail, 10 warn), 7 active claim(s), 43 card(s) todo, 1 action(s)
+2026-10-05T12:37:16Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T12:37:16Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T12:37:16Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T12:37:16Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T12:37:42Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T12:37:42Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T12:37:42Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T12:37:42Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T12:37:42Z REFUSED start: loop already running as pid 6796
+2026-10-05T12:37:42Z taking over the lock of dead pid 1006795
+2026-10-05T12:37:42Z TICK FAILED: OSError: subprocess exploded
+2026-10-05T12:37:42Z Traceback (most recent call last): |   File "C:\Users\Tahir\Documents\GitHub\finalFPA\scripts\team_watchdog.py", line 274, in tick |     return _tick(dry_run) |   File "C:\Users\Tahir\Documents\GitHub\finalFPA\scripts\team_watchdog.py", line 288, in _tick |     code_check, out_check = run([sys.executable, "scripts/team.py", "check"]) |                             ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ |   File "C:\Users\Tahir\Documents\GitHub\finalFPA\tests\unit\test_team_watchdog.py", line 147, in boom |     raise OSError("subprocess exploded") | OSError: subprocess exploded
+2026-10-05T12:37:52Z TICK FAILED: OSError: subprocess exploded
+2026-10-05T12:37:52Z Traceback (most recent call last): |   File "C:\Users\Tahir\Documents\GitHub\finalFPA\scripts\team_watchdog.py", line 274, in tick |     return _tick(dry_run) |   File "C:\Users\Tahir\Documents\GitHub\finalFPA\scripts\team_watchdog.py", line 288, in _tick |     code_check, out_check = run([sys.executable, "scripts/team.py", "check"]) |                             ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ |   File "C:\Users\Tahir\Documents\GitHub\finalFPA\tests\unit\test_team_watchdog.py", line 147, in boom |     raise OSError("subprocess exploded") | OSError: subprocess exploded
+2026-10-05T12:38:20Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T12:38:20Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T12:38:20Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T12:38:20Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T12:38:20Z REFUSED start: loop already running as pid 20260
+2026-10-05T12:38:21Z taking over the lock of dead pid 1020259
+2026-10-05T12:38:21Z TICK FAILED: OSError: subprocess exploded
+2026-10-05T12:38:21Z Traceback (most recent call last): |   File "C:\Users\Tahir\Documents\GitHub\finalFPA\scripts\team_watchdog.py", line 282, in tick |     return _tick(dry_run) |   File "C:\Users\Tahir\Documents\GitHub\finalFPA\scripts\team_watchdog.py", line 296, in _tick |     code_check, out_check = run([sys.executable, "scripts/team.py", "check"]) |                             ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ |   File "C:\Users\Tahir\Documents\GitHub\finalFPA\tests\unit\test_team_watchdog.py", line 147, in boom |     raise OSError("subprocess exploded") | OSError: subprocess exploded
+2026-10-05T12:38:31Z TICK FAILED: OSError: subprocess exploded
+2026-10-05T12:38:31Z Traceback (most recent call last): |   File "C:\Users\Tahir\Documents\GitHub\finalFPA\scripts\team_watchdog.py", line 282, in tick |     return _tick(dry_run) |   File "C:\Users\Tahir\Documents\GitHub\finalFPA\scripts\team_watchdog.py", line 296, in _tick |     code_check, out_check = run([sys.executable, "scripts/team.py", "check"]) |                             ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ |   File "C:\Users\Tahir\Documents\GitHub\finalFPA\tests\unit\test_team_watchdog.py", line 147, in boom |     raise OSError("subprocess exploded") | OSError: subprocess exploded
+2026-10-05T12:38:43Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T12:38:43Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T12:38:43Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T12:38:43Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T12:38:52Z tick #4: check exit 1 (1 fail, 10 warn), 7 active claim(s), 43 card(s) todo, 1 action(s)
+2026-10-05T12:38:52Z reached --max-ticks 1 - loop exiting
+2026-10-05T12:38:54Z stop file appeared during sleep - exiting
+2026-10-05T12:38:55Z stop file present - loop exiting
+2026-10-05T12:39:03Z REFUSED start: loop already running as pid 11760
+2026-10-05T12:41:31Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: TB-022. Claim the first one and start
+2026-10-05T12:41:31Z tick #4: check exit 0 (0 fail, 10 warn), 7 active claim(s), 42 card(s) todo, 1 action(s)
+2026-10-05T12:41:31Z reached --max-ticks 1 - loop exiting
+2026-10-05T12:43:31Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: TB-022. Claim the first one and start
+2026-10-05T12:43:31Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: UX-02, UX-03, UX-04. Claim the first 
+2026-10-05T12:43:31Z tick #5: check exit 0 (0 fail, 10 warn), 4 active claim(s), 42 card(s) todo, 2 action(s)
+2026-10-05T12:43:31Z sleeping 1 min; next tick due 12:M:SZ
+2026-10-05T12:46:13Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: TB-022. Claim the first one and start
+2026-10-05T12:46:13Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: UX-02, UX-03, UX-04. Claim the first 
+2026-10-05T12:46:13Z tick #6: check exit 0 (0 fail, 10 warn), 5 active claim(s), 41 card(s) todo, 2 action(s)
+2026-10-05T12:46:13Z reached --max-ticks 2 - loop exiting
+2026-10-05T12:47:58Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T12:47:58Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T12:47:58Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T12:47:58Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T12:50:24Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: TB-022. Claim the first one and start
+2026-10-05T12:50:24Z tick #7: check exit 0 (0 fail, 10 warn), 7 active claim(s), 39 card(s) todo, 1 action(s), tick took 143.2s
+2026-10-05T12:52:01Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T12:52:01Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T12:52:01Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T12:52:01Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T12:52:13Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T12:52:13Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T12:52:13Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T12:52:13Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T12:53:47Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: TB-022. Claim the first one and start
+2026-10-05T12:53:47Z tick #8: check exit 0 (0 fail, 10 warn), 7 active claim(s), 39 card(s) todo, 1 action(s), tick took 92.3s
+2026-10-05T12:55:32Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: TB-022. Claim the first one and start
+2026-10-05T12:55:32Z tick #9: check exit 0 (0 fail, 10 warn), 5 active claim(s), 39 card(s) todo, 1 action(s), tick took 104.1s
+2026-10-05T12:56:04Z REFUSED start: loop already running as pid 18324
+2026-10-05T12:57:39Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: TB-022. Claim the first one and start
+2026-10-05T12:57:39Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: UX-02, UX-03, UX-04. Claim the first 
+2026-10-05T12:57:39Z tick #10: check exit 0 (0 fail, 11 warn), 3 active claim(s), 39 card(s) todo, 2 action(s), tick took 121.3s
+2026-10-05T12:57:39Z sleeping 20 min; next tick due 2026-10-05T13:17:39+00:00
+2026-10-05T13:11:19Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T13:11:19Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T13:11:19Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T13:11:19Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T13:11:34Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T13:11:34Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T13:11:34Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T13:11:34Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T13:17:28Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T13:17:28Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T13:17:28Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T13:17:28Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T13:19:01Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: RV-05, DOC-02, TB-022. Claim the firs
+2026-10-05T13:19:01Z NUDGE -> antigravity: Stream check: no active claim while its stream still has claimable work: RV-04, RV-05. Claim the first one and
+2026-10-05T13:19:01Z NUDGE -> opencode: Stream check: no active claim while its stream still has claimable work: TB-029, TB-022. Claim the first one a
+2026-10-05T13:19:01Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: RV-04, UX-02, UX-03. Claim the first 
+2026-10-05T13:19:01Z NUDGE -> opencode2: Stream check: no active claim while its stream still has claimable work: TB-029, TB-022. Claim the first one a
+2026-10-05T13:19:01Z ESCALATE -> owner: RV-02 has been waiting 38 min for an independent verifier (handoff HO-018). Either a peer verifies it or the l
+2026-10-05T13:19:01Z ESCALATE -> owner: RV-03 has been waiting 35 min for an independent verifier (handoff HO-019). Either a peer verifies it or the l
+2026-10-05T13:19:01Z ESCALATE -> owner: TB-007 has been waiting 46 min for an independent verifier (handoff HO-015). Either a peer verifies it or the 
+2026-10-05T13:19:01Z tick #11: check exit 0 (0 fail, 15 warn), 2 active claim(s), 46 card(s) todo, 8 action(s), tick took 77.4s
+2026-10-05T13:19:01Z sleeping 20 min; next tick due 2026-10-05T13:39:01+00:00
+2026-10-05T13:20:09Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T13:20:09Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T13:20:09Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T13:20:09Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T13:20:10Z REFUSED start: loop already running as pid 18324
+2026-10-05T13:20:10Z REFUSED start: loop already running as pid 18324
+2026-10-05T13:20:11Z stop file appeared during sleep - exiting
+2026-10-05T13:20:25Z stop file present - loop exiting
+2026-10-05T13:24:30Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: RV-05, DOC-02, TB-022. Claim the firs
+2026-10-05T13:24:30Z ESCALATE -> owner: PERF-01 has been waiting 30 min for an independent verifier (handoff HO-020). Either a peer verifies it or the
+2026-10-05T13:24:30Z tick #12: check exit 0 (0 fail, 14 warn), 4 active claim(s), 44 card(s) todo, 2 action(s), tick took 97.8s
+2026-10-05T13:24:30Z sleeping 1 min; next tick due 2026-10-05T13:25:30+00:00
+2026-10-05T13:25:30Z RELOAD: team.py, team_watchdog.py or config.json changed since this loop started - re-executing to pick it up
+2026-10-05T13:25:30Z taking over the lock of dead pid 20640
+2026-10-05T13:27:03Z REFUSED start: loop already running as pid 17588
+2026-10-05T13:27:10Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: RV-05, DOC-02, TB-022. Claim the firs
+2026-10-05T13:27:10Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: RV-04, UX-02, UX-06. Claim the first 
+2026-10-05T13:27:10Z ESCALATE -> owner: ENG-01 has been waiting 32 min for an independent verifier (handoff HO-021). Either a peer verifies it or the 
+2026-10-05T13:27:10Z ESCALATE -> owner: PA-01 has been waiting 30 min for an independent verifier (handoff HO-022). Either a peer verifies it or the l
+2026-10-05T13:27:10Z tick #13: check exit 0 (0 fail, 14 warn), 3 active claim(s), 44 card(s) todo, 4 action(s), tick took 99.4s
+2026-10-05T13:27:10Z sleeping 1 min; next tick due 2026-10-05T13:28:10+00:00
+2026-10-05T13:29:59Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: RV-05, DOC-02, TB-022. Claim the firs
+2026-10-05T13:29:59Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: RV-04, UX-02, UX-06. Claim the first 
+2026-10-05T13:29:59Z ESCALATE -> owner: PA-02 has been waiting 32 min for an independent verifier (handoff HO-023). Either a peer verifies it or the l
+2026-10-05T13:29:59Z tick #14: check exit 0 (0 fail, 15 warn), 3 active claim(s), 44 card(s) todo, 3 action(s), tick took 109.7s
+2026-10-05T13:29:59Z reached --max-ticks 2 - loop exiting
+2026-10-05T13:31:13Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T13:31:13Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T13:31:13Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T13:31:13Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T13:33:01Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: RV-05, DOC-02, TB-022. Claim the firs
+2026-10-05T13:33:01Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: RV-04, UX-02, UX-06. Claim the first 
+2026-10-05T13:33:01Z tick #15: check exit 0 (0 fail, 15 warn), 3 active claim(s), 44 card(s) todo, 2 action(s), tick took 85.5s
+2026-10-05T13:33:01Z sleeping 20 min; next tick due 2026-10-05T13:53:01+00:00
+2026-10-05T13:53:01Z RELOAD: team.py, team_watchdog.py or config.json changed since this loop started - re-executing to pick it up
+2026-10-05T13:53:01Z taking over the lock of dead pid 6932
+2026-10-05T13:55:24Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: RV-05, DOC-02, TB-022. Claim the firs
+2026-10-05T13:55:24Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: RV-04, UX-02, UX-06. Claim the first 
+2026-10-05T13:55:24Z ESCALATE -> owner: Claim freebuff2-20261005T1045Z-58e4 is past its TTL with no heartbeat. It can be taken over with `python scrip
+2026-10-05T13:55:24Z ESCALATE -> owner: INT-01 has been waiting 42 min for an independent verifier (handoff HO-018). Either a peer verifies it or the 
+2026-10-05T13:55:24Z tick #16: check exit 1 (1 fail, 29 warn), 2 active claim(s), 43 card(s) todo, 4 action(s), tick took 142.2s
+2026-10-05T13:55:24Z sleeping 20 min; next tick due 2026-10-05T14:15:24+00:00
+2026-10-05T13:56:57Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T13:56:57Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T13:56:57Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T13:56:57Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T14:10:44Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T14:10:44Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T14:10:44Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T14:10:44Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T14:15:25Z RELOAD: team.py, team_watchdog.py or config.json changed since this loop started - re-executing to pick it up
+2026-10-05T14:15:25Z taking over the lock of dead pid 19996
+2026-10-05T14:17:23Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: RV-05, DOC-02, TB-022. Claim the firs
+2026-10-05T14:17:23Z NUDGE -> freebuff2: Stream check: no active claim while its stream still has claimable work: TB-010, TB-021. Claim the first one a
+2026-10-05T14:17:23Z NUDGE -> opencode2: Stream check: no active claim while its stream still has claimable work: TB-022. Claim the first one and start
+2026-10-05T14:17:23Z ESCALATE -> owner: Claim freebuff2-20261005T1045Z-58e4 is past its TTL with no heartbeat. It can be taken over with `python scrip
+2026-10-05T14:17:23Z ESCALATE -> owner: Claim freebuff2-20261005T1204Z-f8e3 is past its TTL with no heartbeat. It can be taken over with `python scrip
+2026-10-05T14:17:23Z ESCALATE -> owner: ENG-01 has been waiting 82 min for an independent verifier (handoff HO-021). Either a peer verifies it or the 
+2026-10-05T14:17:23Z ESCALATE -> owner: PA-01 has been waiting 81 min for an independent verifier (handoff HO-022). Either a peer verifies it or the l
+2026-10-05T14:17:23Z ESCALATE -> owner: PA-02 has been waiting 80 min for an independent verifier (handoff HO-023). Either a peer verifies it or the l
+2026-10-05T14:17:23Z ESCALATE -> owner: PERF-01 has been waiting 83 min for an independent verifier (handoff HO-020). Either a peer verifies it or the
+2026-10-05T14:17:23Z ESCALATE -> owner: RV-02 has been waiting 97 min for an independent verifier (handoff HO-018). Either a peer verifies it or the l
+2026-10-05T14:17:23Z ESCALATE -> owner: RV-03 has been waiting 94 min for an independent verifier (handoff HO-019). Either a peer verifies it or the l
+2026-10-05T14:17:23Z ESCALATE -> owner: TB-007 has been waiting 105 min for an independent verifier (handoff HO-015). Either a peer verifies it or the
+2026-10-05T14:17:23Z ESCALATE -> owner: TB-027 has been waiting 33 min for an independent verifier (handoff HO-026). Either a peer verifies it or the 
+2026-10-05T14:17:23Z tick #17: check exit 0 (0 fail, 32 warn), 1 active claim(s), 46 card(s) todo, 13 action(s), tick took 117.9s
+2026-10-05T14:17:23Z sleeping 20 min; next tick due 2026-10-05T14:37:23+00:00
+2026-10-05T14:37:23Z RELOAD: team.py, team_watchdog.py or config.json changed since this loop started - re-executing to pick it up
+2026-10-05T14:37:24Z taking over the lock of dead pid 19792
+2026-10-05T14:41:09Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: DOC-02, DOC-03, RV-05. Claim the firs
+2026-10-05T14:41:09Z NUDGE -> freebuff2: Stream check: no active claim while its stream still has claimable work: CORPUS-02, PERF-02, TB-010. Claim the
+2026-10-05T14:41:09Z ESCALATE -> owner: Claim freebuff2-20261005T1045Z-58e4 is past its TTL with no heartbeat. It can be taken over with `python scrip
+2026-10-05T14:41:09Z ESCALATE -> owner: Claim freebuff2-20261005T1204Z-f8e3 is past its TTL with no heartbeat. It can be taken over with `python scrip
+2026-10-05T14:41:09Z ESCALATE -> owner: INT-01 has been waiting 87 min for an independent verifier (handoff HO-018). Either a peer verifies it or the 
+2026-10-05T14:41:09Z ESCALATE -> owner: TB-029 has been waiting 36 min for an independent verifier (handoff HO-027). Either a peer verifies it or the 
+2026-10-05T14:41:09Z ESCALATE -> owner: TB-031 has been waiting 32 min for an independent verifier (handoff HO-028). Either a peer verifies it or the 
+2026-10-05T14:41:09Z ESCALATE -> owner: TB-032 has been waiting 30 min for an independent verifier (handoff HO-029). Either a peer verifies it or the 
+2026-10-05T14:41:09Z tick #18: check exit 0 (0 fail, 29 warn), 3 active claim(s), 56 card(s) todo, 8 action(s), tick took 225.4s
+2026-10-05T14:41:09Z sleeping 20 min; next tick due 2026-10-05T15:01:09+00:00
+2026-10-05T15:01:10Z RELOAD: team.py, team_watchdog.py or config.json changed since this loop started - re-executing to pick it up
+2026-10-05T15:01:11Z taking over the lock of dead pid 7508
+2026-10-05T15:03:48Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: LEAD-01, LEAD-02, DOC-03. Claim the f
+2026-10-05T15:03:48Z NUDGE -> opencode2: Stream check: no active claim while its stream still has claimable work: ENG-05, ENG-07, ENG-06. Claim the fir
+2026-10-05T15:03:48Z ESCALATE -> owner: ENG-01 has been waiting 129 min for an independent verifier (handoff HO-021). Either a peer verifies it or the
+2026-10-05T15:03:48Z ESCALATE -> owner: PA-01 has been waiting 127 min for an independent verifier (handoff HO-022). Either a peer verifies it or the 
+2026-10-05T15:03:48Z ESCALATE -> owner: PA-02 has been waiting 126 min for an independent verifier (handoff HO-023). Either a peer verifies it or the 
+2026-10-05T15:03:48Z ESCALATE -> owner: PERF-01 has been waiting 129 min for an independent verifier (handoff HO-020). Either a peer verifies it or th
+2026-10-05T15:03:48Z ESCALATE -> owner: RV-02 has been waiting 143 min for an independent verifier (handoff HO-018). Either a peer verifies it or the 
+2026-10-05T15:03:48Z ESCALATE -> owner: RV-03 has been waiting 140 min for an independent verifier (handoff HO-019). Either a peer verifies it or the 
+2026-10-05T15:03:48Z ESCALATE -> owner: TB-007 has been waiting 151 min for an independent verifier (handoff HO-015). Either a peer verifies it or the
+2026-10-05T15:03:48Z ESCALATE -> owner: TB-027 has been waiting 79 min for an independent verifier (handoff HO-026). Either a peer verifies it or the 
+2026-10-05T15:03:48Z ESCALATE -> owner: UX-05 has been waiting 52 min for an independent verifier (handoff HO-030). Either a peer verifies it or the l
+2026-10-05T15:03:48Z tick #19: check exit 1 (1 fail, 36 warn), 2 active claim(s), 78 card(s) todo, 11 action(s), tick took 157.5s
+2026-10-05T15:03:48Z sleeping 20 min; next tick due 2026-10-05T15:23:48+00:00
+2026-10-05T15:06:52Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T15:06:52Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T15:06:52Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T15:06:52Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T15:09:03Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T15:09:03Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T15:09:03Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T15:09:03Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T15:23:49Z RELOAD: team.py, team_watchdog.py or config.json changed since this loop started - re-executing to pick it up
+2026-10-05T15:23:49Z taking over the lock of dead pid 12808
+2026-10-05T15:23:56Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T15:23:56Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T15:23:56Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T15:23:56Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T15:26:11Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T15:26:11Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T15:26:11Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T15:26:11Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T15:27:06Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T15:27:06Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T15:27:06Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T15:27:06Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T15:27:11Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: LEAD-01, LEAD-02, DOC-03. Claim the f
+2026-10-05T15:27:11Z NUDGE -> opencode2: Stream check: no active claim while its stream still has claimable work: QUAL-01, ENG-05, QUAL-02. Claim the f
+2026-10-05T15:27:11Z ESCALATE -> owner: ENG-02 has been waiting 40 min for an independent verifier (handoff HO-032). Either a peer verifies it or the 
+2026-10-05T15:27:11Z ESCALATE -> owner: ENG-03 has been waiting 34 min for an independent verifier (handoff HO-034). Either a peer verifies it or the 
+2026-10-05T15:27:11Z ESCALATE -> owner: INT-01 has been waiting 133 min for an independent verifier (handoff HO-018). Either a peer verifies it or the
+2026-10-05T15:27:11Z ESCALATE -> owner: TB-006 has been waiting 33 min for an independent verifier (handoff HO-036). Either a peer verifies it or the 
+2026-10-05T15:27:11Z ESCALATE -> owner: TB-029 has been waiting 82 min for an independent verifier (handoff HO-027). Either a peer verifies it or the 
+2026-10-05T15:27:11Z ESCALATE -> owner: TB-031 has been waiting 78 min for an independent verifier (handoff HO-028). Either a peer verifies it or the 
+2026-10-05T15:27:11Z ESCALATE -> owner: TB-032 has been waiting 76 min for an independent verifier (handoff HO-029). Either a peer verifies it or the 
+2026-10-05T15:27:11Z ESCALATE -> owner: UX-03 has been waiting 50 min for an independent verifier (handoff HO-025). Either a peer verifies it or the l
+2026-10-05T15:27:11Z tick #20: check exit 0 (0 fail, 36 warn), 3 active claim(s), 94 card(s) todo, 10 action(s), tick took 202.0s
+2026-10-05T15:27:11Z sleeping 20 min; next tick due 2026-10-05T15:47:11+00:00
+2026-10-05T15:29:46Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T15:29:46Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T15:29:46Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T15:29:46Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T15:30:16Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T15:30:16Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T15:30:16Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T15:30:16Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T15:30:35Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T15:30:35Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T15:30:35Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T15:30:35Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T15:30:53Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T15:30:53Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T15:30:53Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T15:30:53Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T15:31:25Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T15:31:25Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T15:31:25Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T15:31:25Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T15:31:42Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T15:31:42Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T15:31:42Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T15:31:42Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T15:47:12Z RELOAD: team.py, team_watchdog.py or config.json changed since this loop started - re-executing to pick it up
+2026-10-05T15:47:13Z taking over the lock of dead pid 20636
+2026-10-05T15:50:24Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: LEAD-01, LEAD-02, DOC-03. Claim the f
+2026-10-05T15:50:24Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: UX-08, UX-09, UX-10. Claim the first 
+2026-10-05T15:50:24Z NUDGE -> opencode2: Stream check: no active claim while its stream still has claimable work: QUAL-01, ENG-05, QUAL-02. Claim the f
+2026-10-05T15:50:24Z ESCALATE -> owner: ENG-01 has been waiting 175 min for an independent verifier (handoff HO-021). Either a peer verifies it or the
+2026-10-05T15:50:24Z ESCALATE -> owner: PA-01 has been waiting 174 min for an independent verifier (handoff HO-022). Either a peer verifies it or the 
+2026-10-05T15:50:24Z ESCALATE -> owner: PA-02 has been waiting 173 min for an independent verifier (handoff HO-023). Either a peer verifies it or the 
+2026-10-05T15:50:24Z ESCALATE -> owner: PERF-01 has been waiting 176 min for an independent verifier (handoff HO-020). Either a peer verifies it or th
+2026-10-05T15:50:24Z ESCALATE -> owner: RV-02 has been waiting 190 min for an independent verifier (handoff HO-018). Either a peer verifies it or the 
+2026-10-05T15:50:24Z ESCALATE -> owner: RV-03 has been waiting 187 min for an independent verifier (handoff HO-019). Either a peer verifies it or the 
+2026-10-05T15:50:24Z ESCALATE -> owner: TB-007 has been waiting 198 min for an independent verifier (handoff HO-015). Either a peer verifies it or the
+2026-10-05T15:50:24Z ESCALATE -> owner: TB-027 has been waiting 126 min for an independent verifier (handoff HO-026). Either a peer verifies it or the
+2026-10-05T15:50:24Z ESCALATE -> owner: UX-05 has been waiting 98 min for an independent verifier (handoff HO-030). Either a peer verifies it or the l
+2026-10-05T15:50:24Z tick #21: check exit 0 (0 fail, 37 warn), 1 active claim(s), 95 card(s) todo, 12 action(s), tick took 191.5s
+2026-10-05T15:50:24Z sleeping 20 min; next tick due 2026-10-05T16:10:24+00:00
+2026-10-05T16:12:29Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: LEAD-01, LEAD-02, DOC-03. Claim the f
+2026-10-05T16:12:29Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: UX-08, UX-09, UX-10. Claim the first 
+2026-10-05T16:12:29Z NUDGE -> opencode2: Stream check: no active claim while its stream still has claimable work: QUAL-01, ENG-05, QUAL-02. Claim the f
+2026-10-05T16:12:29Z ESCALATE -> owner: ENG-02 has been waiting 86 min for an independent verifier (handoff HO-032). Either a peer verifies it or the 
+2026-10-05T16:12:29Z ESCALATE -> owner: ENG-03 has been waiting 80 min for an independent verifier (handoff HO-034). Either a peer verifies it or the 
+2026-10-05T16:12:29Z ESCALATE -> owner: INT-01 has been waiting 179 min for an independent verifier (handoff HO-018). Either a peer verifies it or the
+2026-10-05T16:12:29Z ESCALATE -> owner: TB-006 has been waiting 78 min for an independent verifier (handoff HO-036). Either a peer verifies it or the 
+2026-10-05T16:12:29Z ESCALATE -> owner: TB-011 has been waiting 45 min for an independent verifier (handoff HO-038). Either a peer verifies it or the 
+2026-10-05T16:12:29Z ESCALATE -> owner: TB-029 has been waiting 128 min for an independent verifier (handoff HO-027). Either a peer verifies it or the
+2026-10-05T16:12:29Z ESCALATE -> owner: TB-031 has been waiting 123 min for an independent verifier (handoff HO-028). Either a peer verifies it or the
+2026-10-05T16:12:29Z ESCALATE -> owner: TB-032 has been waiting 122 min for an independent verifier (handoff HO-029). Either a peer verifies it or the
+2026-10-05T16:12:29Z ESCALATE -> owner: UX-02 has been waiting 50 min for an independent verifier (handoff HO-037). Either a peer verifies it or the l
+2026-10-05T16:12:29Z tick #22: check exit 0 (0 fail, 37 warn), 1 active claim(s), 95 card(s) todo, 12 action(s), tick took 124.6s
+2026-10-05T16:12:29Z sleeping 20 min; next tick due 2026-10-05T16:32:29+00:00
+2026-10-05T16:34:35Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: LEAD-01, LEAD-02, DOC-03. Claim the f
+2026-10-05T16:34:35Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: UX-08, UX-09, UX-10. Claim the first 
+2026-10-05T16:34:35Z NUDGE -> opencode2: Stream check: no active claim while its stream still has claimable work: QUAL-01, ENG-05, QUAL-02. Claim the f
+2026-10-05T16:34:35Z ESCALATE -> owner: ENG-01 has been waiting 220 min for an independent verifier (handoff HO-021). Either a peer verifies it or the
+2026-10-05T16:34:35Z ESCALATE -> owner: PA-01 has been waiting 218 min for an independent verifier (handoff HO-022). Either a peer verifies it or the 
+2026-10-05T16:34:35Z ESCALATE -> owner: PA-02 has been waiting 217 min for an independent verifier (handoff HO-023). Either a peer verifies it or the 
+2026-10-05T16:34:35Z ESCALATE -> owner: PERF-01 has been waiting 220 min for an independent verifier (handoff HO-020). Either a peer verifies it or th
+2026-10-05T16:34:35Z ESCALATE -> owner: RV-02 has been waiting 234 min for an independent verifier (handoff HO-018). Either a peer verifies it or the 
+2026-10-05T16:34:35Z ESCALATE -> owner: RV-03 has been waiting 231 min for an independent verifier (handoff HO-019). Either a peer verifies it or the 
+2026-10-05T16:34:35Z ESCALATE -> owner: TB-007 has been waiting 242 min for an independent verifier (handoff HO-015). Either a peer verifies it or the
+2026-10-05T16:34:35Z ESCALATE -> owner: TB-027 has been waiting 170 min for an independent verifier (handoff HO-026). Either a peer verifies it or the
+2026-10-05T16:34:35Z ESCALATE -> owner: UX-05 has been waiting 142 min for an independent verifier (handoff HO-030). Either a peer verifies it or the 
+2026-10-05T16:34:35Z tick #23: check exit 0 (0 fail, 37 warn), 1 active claim(s), 95 card(s) todo, 12 action(s), tick took 124.4s
+2026-10-05T16:34:35Z sleeping 20 min; next tick due 2026-10-05T16:54:35+00:00
+2026-10-05T16:56:59Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: LEAD-01, LEAD-02, DOC-03. Claim the f
+2026-10-05T16:56:59Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: UX-08, UX-09, UX-10. Claim the first 
+2026-10-05T16:56:59Z NUDGE -> opencode2: Stream check: no active claim while its stream still has claimable work: QUAL-01, ENG-05, QUAL-02. Claim the f
+2026-10-05T16:56:59Z ESCALATE -> owner: ENG-02 has been waiting 130 min for an independent verifier (handoff HO-032). Either a peer verifies it or the
+2026-10-05T16:56:59Z ESCALATE -> owner: ENG-03 has been waiting 124 min for an independent verifier (handoff HO-034). Either a peer verifies it or the
+2026-10-05T16:56:59Z ESCALATE -> owner: INT-01 has been waiting 223 min for an independent verifier (handoff HO-018). Either a peer verifies it or the
+2026-10-05T16:56:59Z ESCALATE -> owner: TB-006 has been waiting 123 min for an independent verifier (handoff HO-036). Either a peer verifies it or the
+2026-10-05T16:56:59Z ESCALATE -> owner: TB-011 has been waiting 89 min for an independent verifier (handoff HO-038). Either a peer verifies it or the 
+2026-10-05T16:56:59Z ESCALATE -> owner: TB-029 has been waiting 172 min for an independent verifier (handoff HO-027). Either a peer verifies it or the
+2026-10-05T16:57:00Z ESCALATE -> owner: TB-031 has been waiting 167 min for an independent verifier (handoff HO-028). Either a peer verifies it or the
+2026-10-05T16:57:00Z ESCALATE -> owner: TB-032 has been waiting 166 min for an independent verifier (handoff HO-029). Either a peer verifies it or the
+2026-10-05T16:57:00Z ESCALATE -> owner: UX-02 has been waiting 94 min for an independent verifier (handoff HO-037). Either a peer verifies it or the l
+2026-10-05T16:57:00Z tick #24: check exit 0 (0 fail, 37 warn), 1 active claim(s), 95 card(s) todo, 12 action(s), tick took 144.3s
+2026-10-05T16:57:00Z sleeping 20 min; next tick due 2026-10-05T17:17:00+00:00
+2026-10-05T17:17:00Z RELOAD: team.py, team_watchdog.py or config.json changed since this loop started - re-executing to pick it up
+2026-10-05T17:17:01Z taking over the lock of dead pid 6816
+2026-10-05T17:21:01Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: LEAD-03, LEAD-01, LEAD-02. Claim the 
+2026-10-05T17:21:01Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: UX-22, UX-08, UX-09. Claim the first 
+2026-10-05T17:21:01Z ESCALATE -> owner: ENG-01 has been waiting 266 min for an independent verifier (handoff HO-021). Either a peer verifies it or the
+2026-10-05T17:21:01Z ESCALATE -> owner: PA-01 has been waiting 264 min for an independent verifier (handoff HO-022). Either a peer verifies it or the 
+2026-10-05T17:21:01Z ESCALATE -> owner: PA-02 has been waiting 263 min for an independent verifier (handoff HO-023). Either a peer verifies it or the 
+2026-10-05T17:21:01Z ESCALATE -> owner: PERF-01 has been waiting 267 min for an independent verifier (handoff HO-020). Either a peer verifies it or th
+2026-10-05T17:21:01Z ESCALATE -> owner: RV-02 has been waiting 280 min for an independent verifier (handoff HO-018). Either a peer verifies it or the 
+2026-10-05T17:21:01Z ESCALATE -> owner: RV-03 has been waiting 277 min for an independent verifier (handoff HO-019). Either a peer verifies it or the 
+2026-10-05T17:21:01Z ESCALATE -> owner: TB-007 has been waiting 288 min for an independent verifier (handoff HO-015). Either a peer verifies it or the
+2026-10-05T17:21:01Z ESCALATE -> owner: TB-027 has been waiting 217 min for an independent verifier (handoff HO-026). Either a peer verifies it or the
+2026-10-05T17:21:01Z ESCALATE -> owner: UX-05 has been waiting 189 min for an independent verifier (handoff HO-030). Either a peer verifies it or the 
+2026-10-05T17:21:01Z tick #25: check exit 0 (0 fail, 37 warn), 2 active claim(s), 98 card(s) todo, 11 action(s), tick took 240.0s
+2026-10-05T17:21:01Z sleeping 20 min; next tick due 2026-10-05T17:41:01+00:00
+2026-10-05T17:43:10Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: LEAD-03, LEAD-01, LEAD-02. Claim the 
+2026-10-05T17:43:10Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: UX-22, UX-08, UX-09. Claim the first 
+2026-10-05T17:43:10Z ESCALATE -> owner: ENG-02 has been waiting 176 min for an independent verifier (handoff HO-032). Either a peer verifies it or the
+2026-10-05T17:43:10Z ESCALATE -> owner: ENG-03 has been waiting 170 min for an independent verifier (handoff HO-034). Either a peer verifies it or the
+2026-10-05T17:43:10Z ESCALATE -> owner: INT-01 has been waiting 269 min for an independent verifier (handoff HO-018). Either a peer verifies it or the
+2026-10-05T17:43:10Z ESCALATE -> owner: TB-006 has been waiting 169 min for an independent verifier (handoff HO-036). Either a peer verifies it or the
+2026-10-05T17:43:10Z ESCALATE -> owner: TB-011 has been waiting 135 min for an independent verifier (handoff HO-038). Either a peer verifies it or the
+2026-10-05T17:43:10Z ESCALATE -> owner: TB-029 has been waiting 218 min for an independent verifier (handoff HO-027). Either a peer verifies it or the
+2026-10-05T17:43:10Z ESCALATE -> owner: TB-031 has been waiting 214 min for an independent verifier (handoff HO-028). Either a peer verifies it or the
+2026-10-05T17:43:10Z ESCALATE -> owner: TB-032 has been waiting 212 min for an independent verifier (handoff HO-029). Either a peer verifies it or the
+2026-10-05T17:43:10Z ESCALATE -> owner: UX-02 has been waiting 141 min for an independent verifier (handoff HO-037). Either a peer verifies it or the 
+2026-10-05T17:43:10Z tick #26: check exit 0 (0 fail, 37 warn), 2 active claim(s), 98 card(s) todo, 11 action(s), tick took 128.7s
+2026-10-05T17:43:10Z sleeping 20 min; next tick due 2026-10-05T18:03:10+00:00
+2026-10-05T18:05:36Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: LEAD-03, LEAD-01, LEAD-02. Claim the 
+2026-10-05T18:05:36Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: UX-22, UX-08, UX-09. Claim the first 
+2026-10-05T18:05:36Z ESCALATE -> owner: ENG-01 has been waiting 311 min for an independent verifier (handoff HO-021). Either a peer verifies it or the
+2026-10-05T18:05:36Z ESCALATE -> owner: PA-01 has been waiting 309 min for an independent verifier (handoff HO-022). Either a peer verifies it or the 
+2026-10-05T18:05:36Z ESCALATE -> owner: PA-02 has been waiting 308 min for an independent verifier (handoff HO-023). Either a peer verifies it or the 
+2026-10-05T18:05:36Z ESCALATE -> owner: PERF-01 has been waiting 311 min for an independent verifier (handoff HO-020). Either a peer verifies it or th
+2026-10-05T18:05:36Z ESCALATE -> owner: RV-02 has been waiting 325 min for an independent verifier (handoff HO-018). Either a peer verifies it or the 
+2026-10-05T18:05:36Z ESCALATE -> owner: RV-03 has been waiting 322 min for an independent verifier (handoff HO-019). Either a peer verifies it or the 
+2026-10-05T18:05:36Z ESCALATE -> owner: TB-007 has been waiting 333 min for an independent verifier (handoff HO-015). Either a peer verifies it or the
+2026-10-05T18:05:36Z ESCALATE -> owner: TB-027 has been waiting 261 min for an independent verifier (handoff HO-026). Either a peer verifies it or the
+2026-10-05T18:05:36Z ESCALATE -> owner: UX-05 has been waiting 233 min for an independent verifier (handoff HO-030). Either a peer verifies it or the 
+2026-10-05T18:05:36Z tick #27: check exit 0 (0 fail, 37 warn), 2 active claim(s), 98 card(s) todo, 11 action(s), tick took 145.6s
+2026-10-05T18:05:36Z sleeping 20 min; next tick due 2026-10-05T18:25:36+00:00
+2026-10-05T18:28:01Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: LEAD-03, LEAD-01, LEAD-02. Claim the 
+2026-10-05T18:28:01Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: UX-22, UX-08, UX-09. Claim the first 
+2026-10-05T18:28:01Z ESCALATE -> owner: ENG-02 has been waiting 221 min for an independent verifier (handoff HO-032). Either a peer verifies it or the
+2026-10-05T18:28:01Z ESCALATE -> owner: ENG-03 has been waiting 215 min for an independent verifier (handoff HO-034). Either a peer verifies it or the
+2026-10-05T18:28:01Z ESCALATE -> owner: INT-01 has been waiting 314 min for an independent verifier (handoff HO-018). Either a peer verifies it or the
+2026-10-05T18:28:01Z ESCALATE -> owner: TB-006 has been waiting 214 min for an independent verifier (handoff HO-036). Either a peer verifies it or the
+2026-10-05T18:28:01Z ESCALATE -> owner: TB-011 has been waiting 180 min for an independent verifier (handoff HO-038). Either a peer verifies it or the
+2026-10-05T18:28:01Z ESCALATE -> owner: TB-029 has been waiting 263 min for an independent verifier (handoff HO-027). Either a peer verifies it or the
+2026-10-05T18:28:01Z ESCALATE -> owner: TB-031 has been waiting 258 min for an independent verifier (handoff HO-028). Either a peer verifies it or the
+2026-10-05T18:28:01Z ESCALATE -> owner: TB-032 has been waiting 257 min for an independent verifier (handoff HO-029). Either a peer verifies it or the
+2026-10-05T18:28:01Z ESCALATE -> owner: UX-02 has been waiting 185 min for an independent verifier (handoff HO-037). Either a peer verifies it or the 
+2026-10-05T18:28:01Z tick #28: check exit 0 (0 fail, 37 warn), 2 active claim(s), 98 card(s) todo, 11 action(s), tick took 144.7s
+2026-10-05T18:28:01Z sleeping 20 min; next tick due 2026-10-05T18:48:01+00:00
+2026-10-05T18:53:15Z NUDGE -> opencode2: Stream check: no active claim while its stream still has claimable work: ENG-12, QUAL-01, QUAL-02. Claim the f
+2026-10-05T18:53:15Z ESCALATE -> owner: ENG-01 has been waiting 358 min for an independent verifier (handoff HO-021). Either a peer verifies it or the
+2026-10-05T18:53:15Z ESCALATE -> owner: PA-01 has been waiting 357 min for an independent verifier (handoff HO-022). Either a peer verifies it or the 
+2026-10-05T18:53:15Z ESCALATE -> owner: PA-02 has been waiting 355 min for an independent verifier (handoff HO-023). Either a peer verifies it or the 
+2026-10-05T18:53:15Z ESCALATE -> owner: PERF-01 has been waiting 359 min for an independent verifier (handoff HO-020). Either a peer verifies it or th
+2026-10-05T18:53:15Z ESCALATE -> owner: RV-02 has been waiting 373 min for an independent verifier (handoff HO-018). Either a peer verifies it or the 
+2026-10-05T18:53:15Z ESCALATE -> owner: RV-03 has been waiting 369 min for an independent verifier (handoff HO-019). Either a peer verifies it or the 
+2026-10-05T18:53:15Z ESCALATE -> owner: TB-007 has been waiting 381 min for an independent verifier (handoff HO-015). Either a peer verifies it or the
+2026-10-05T18:53:15Z ESCALATE -> owner: TB-027 has been waiting 309 min for an independent verifier (handoff HO-026). Either a peer verifies it or the
+2026-10-05T18:53:15Z ESCALATE -> owner: UX-05 has been waiting 281 min for an independent verifier (handoff HO-030). Either a peer verifies it or the 
+2026-10-05T18:53:15Z tick #29: check exit 0 (0 fail, 34 warn), 3 active claim(s), 96 card(s) todo, 10 action(s), tick took 313.1s
+2026-10-05T18:53:15Z sleeping 20 min; next tick due 2026-10-05T19:13:15+00:00
+2026-10-05T19:12:17Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T19:12:17Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T19:12:17Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T19:12:17Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T19:19:41Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: UX-09, UX-10, UX-14. Claim the first 
+2026-10-05T19:19:41Z ESCALATE -> owner: ENG-02 has been waiting 273 min for an independent verifier (handoff HO-032). Either a peer verifies it or the
+2026-10-05T19:19:41Z ESCALATE -> owner: ENG-03 has been waiting 267 min for an independent verifier (handoff HO-034). Either a peer verifies it or the
+2026-10-05T19:19:41Z ESCALATE -> owner: INT-01 has been waiting 366 min for an independent verifier (handoff HO-018). Either a peer verifies it or the
+2026-10-05T19:19:41Z ESCALATE -> owner: TB-006 has been waiting 266 min for an independent verifier (handoff HO-036). Either a peer verifies it or the
+2026-10-05T19:19:41Z ESCALATE -> owner: TB-011 has been waiting 232 min for an independent verifier (handoff HO-038). Either a peer verifies it or the
+2026-10-05T19:19:41Z ESCALATE -> owner: TB-029 has been waiting 315 min for an independent verifier (handoff HO-027). Either a peer verifies it or the
+2026-10-05T19:19:41Z ESCALATE -> owner: TB-031 has been waiting 310 min for an independent verifier (handoff HO-028). Either a peer verifies it or the
+2026-10-05T19:19:41Z ESCALATE -> owner: TB-032 has been waiting 309 min for an independent verifier (handoff HO-029). Either a peer verifies it or the
+2026-10-05T19:19:41Z ESCALATE -> owner: UX-02 has been waiting 237 min for an independent verifier (handoff HO-037). Either a peer verifies it or the 
+2026-10-05T19:19:41Z tick #30: check exit 0 (0 fail, 38 warn), 3 active claim(s), 91 card(s) todo, 10 action(s), tick took 384.9s
+2026-10-05T19:19:41Z sleeping 20 min; next tick due 2026-10-05T19:39:41+00:00
+2026-10-05T19:35:18Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T19:35:18Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T19:35:18Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T19:35:18Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T19:35:39Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T19:35:39Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T19:35:39Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T19:35:39Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T19:36:16Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T19:36:16Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T19:36:16Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T19:36:16Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T19:48:23Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: DOC-03, DOC-08, DOC-05. Claim the fir
+2026-10-05T19:48:23Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: UX-09, UX-10, UX-14. Claim the first 
+2026-10-05T19:48:23Z ESCALATE -> owner: ENG-01 has been waiting 413 min for an independent verifier (handoff HO-021). Either a peer verifies it or the
+2026-10-05T19:48:23Z ESCALATE -> owner: ENG-05 has been waiting 56 min for an independent verifier (handoff HO-040). Either a peer verifies it or the 
+2026-10-05T19:48:23Z ESCALATE -> owner: ENG-07 has been waiting 47 min for an independent verifier (handoff HO-041). Either a peer verifies it or the 
+2026-10-05T19:48:23Z ESCALATE -> owner: LEAD-03 has been waiting 33 min for an independent verifier (handoff HO-043). Either a peer verifies it or the
+2026-10-05T19:48:23Z ESCALATE -> owner: PA-01 has been waiting 412 min for an independent verifier (handoff HO-022). Either a peer verifies it or the 
+2026-10-05T19:48:23Z ESCALATE -> owner: PA-02 has been waiting 411 min for an independent verifier (handoff HO-023). Either a peer verifies it or the 
+2026-10-05T19:48:23Z ESCALATE -> owner: PERF-01 has been waiting 414 min for an independent verifier (handoff HO-020). Either a peer verifies it or th
+2026-10-05T19:48:23Z ESCALATE -> owner: QUAL-01 has been waiting 32 min for an independent verifier (handoff HO-044). Either a peer verifies it or the
+2026-10-05T19:48:23Z ESCALATE -> owner: RV-02 has been waiting 428 min for an independent verifier (handoff HO-018). Either a peer verifies it or the 
+2026-10-05T19:48:23Z ESCALATE -> owner: RV-03 has been waiting 425 min for an independent verifier (handoff HO-019). Either a peer verifies it or the 
+2026-10-05T19:48:23Z ESCALATE -> owner: TB-007 has been waiting 436 min for an independent verifier (handoff HO-015). Either a peer verifies it or the
+2026-10-05T19:48:23Z ESCALATE -> owner: TB-027 has been waiting 364 min for an independent verifier (handoff HO-026). Either a peer verifies it or the
+2026-10-05T19:48:23Z ESCALATE -> owner: UX-05 has been waiting 336 min for an independent verifier (handoff HO-030). Either a peer verifies it or the 
+2026-10-05T19:48:23Z ESCALATE -> owner: UX-08 has been waiting 44 min for an independent verifier (handoff HO-042). Either a peer verifies it or the l
+2026-10-05T19:48:23Z ESCALATE -> owner: UX-22 has been waiting 43 min for an independent verifier (handoff HO-039). Either a peer verifies it or the l
+2026-10-05T19:48:23Z tick #31: check exit 0 (0 fail, 42 warn), 2 active claim(s), 87 card(s) todo, 17 action(s), tick took 518.8s
+2026-10-05T19:48:23Z sleeping 20 min; next tick due 2026-10-05T20:08:23+00:00
+2026-10-05T19:51:37Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T19:51:37Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T19:51:37Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T19:51:37Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T19:54:18Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T19:54:18Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T19:54:18Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T19:54:18Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T20:13:37Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: UX-09, UX-10, UX-14. Claim the first 
+2026-10-05T20:13:37Z ESCALATE -> owner: CORPUS-03 has been waiting 43 min for an independent verifier (handoff HO-047). Either a peer verifies it or t
+2026-10-05T20:13:37Z ESCALATE -> owner: ENG-02 has been waiting 327 min for an independent verifier (handoff HO-032). Either a peer verifies it or the
+2026-10-05T20:13:37Z ESCALATE -> owner: ENG-03 has been waiting 321 min for an independent verifier (handoff HO-034). Either a peer verifies it or the
+2026-10-05T20:13:37Z ESCALATE -> owner: ENG-06 has been waiting 35 min for an independent verifier (handoff HO-049). Either a peer verifies it or the 
+2026-10-05T20:13:37Z ESCALATE -> owner: INT-01 has been waiting 420 min for an independent verifier (handoff HO-018). Either a peer verifies it or the
+2026-10-05T20:13:37Z ESCALATE -> owner: LEAD-01 has been waiting 51 min for an independent verifier (handoff HO-046). Either a peer verifies it or the
+2026-10-05T20:13:37Z ESCALATE -> owner: LEAD-02 has been waiting 39 min for an independent verifier (handoff HO-048). Either a peer verifies it or the
+2026-10-05T20:13:37Z ESCALATE -> owner: QUAL-02 has been waiting 53 min for an independent verifier (handoff HO-045). Either a peer verifies it or the
+2026-10-05T20:13:37Z ESCALATE -> owner: TB-006 has been waiting 319 min for an independent verifier (handoff HO-036). Either a peer verifies it or the
+2026-10-05T20:13:37Z ESCALATE -> owner: TB-011 has been waiting 286 min for an independent verifier (handoff HO-038). Either a peer verifies it or the
+2026-10-05T20:13:37Z ESCALATE -> owner: TB-029 has been waiting 369 min for an independent verifier (handoff HO-027). Either a peer verifies it or the
+2026-10-05T20:13:37Z ESCALATE -> owner: TB-031 has been waiting 364 min for an independent verifier (handoff HO-028). Either a peer verifies it or the
+2026-10-05T20:13:37Z ESCALATE -> owner: TB-032 has been waiting 363 min for an independent verifier (handoff HO-029). Either a peer verifies it or the
+2026-10-05T20:13:37Z ESCALATE -> owner: UX-02 has been waiting 291 min for an independent verifier (handoff HO-037). Either a peer verifies it or the 
+2026-10-05T20:13:37Z tick #32: check exit 0 (0 fail, 44 warn), 3 active claim(s), 88 card(s) todo, 15 action(s), tick took 313.9s
+2026-10-05T20:13:37Z sleeping 20 min; next tick due 2026-10-05T20:33:37+00:00
+2026-10-05T20:17:16Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T20:17:16Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T20:17:16Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T20:17:16Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T20:22:54Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T20:22:54Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T20:22:54Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T20:22:54Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T20:33:38Z RELOAD: team.py, team_watchdog.py or config.json changed since this loop started - re-executing to pick it up
+2026-10-05T20:33:39Z taking over the lock of dead pid 10008
+2026-10-05T20:38:56Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: DOC-08, DOC-05, RV-05. Claim the firs
+2026-10-05T20:38:56Z NUDGE -> opencode: Stream check: no active claim while its stream still has claimable work: GATE-FAST, FMT-01, CONST-01. Claim th
+2026-10-05T20:38:56Z ESCALATE -> owner: ENG-01 has been waiting 464 min for an independent verifier (handoff HO-021). Either a peer verifies it or the
+2026-10-05T20:38:56Z ESCALATE -> owner: ENG-05 has been waiting 106 min for an independent verifier (handoff HO-040). Either a peer verifies it or the
+2026-10-05T20:38:56Z ESCALATE -> owner: LEAD-03 has been waiting 84 min for an independent verifier (handoff HO-043). Either a peer verifies it or the
+2026-10-05T20:38:56Z ESCALATE -> owner: PA-01 has been waiting 462 min for an independent verifier (handoff HO-022). Either a peer verifies it or the 
+2026-10-05T20:38:56Z ESCALATE -> owner: PA-02 has been waiting 461 min for an independent verifier (handoff HO-023). Either a peer verifies it or the 
+2026-10-05T20:38:56Z ESCALATE -> owner: PERF-01 has been waiting 465 min for an independent verifier (handoff HO-020). Either a peer verifies it or th
+2026-10-05T20:38:56Z ESCALATE -> owner: QUAL-01 has been waiting 83 min for an independent verifier (handoff HO-044). Either a peer verifies it or the
+2026-10-05T20:38:56Z ESCALATE -> owner: RV-02 has been waiting 478 min for an independent verifier (handoff HO-018). Either a peer verifies it or the 
+2026-10-05T20:38:56Z ESCALATE -> owner: RV-03 has been waiting 475 min for an independent verifier (handoff HO-019). Either a peer verifies it or the 
+2026-10-05T20:38:56Z ESCALATE -> owner: TB-007 has been waiting 486 min for an independent verifier (handoff HO-015). Either a peer verifies it or the
+2026-10-05T20:38:56Z ESCALATE -> owner: TB-027 has been waiting 415 min for an independent verifier (handoff HO-026). Either a peer verifies it or the
+2026-10-05T20:38:56Z ESCALATE -> owner: UX-05 has been waiting 387 min for an independent verifier (handoff HO-030). Either a peer verifies it or the 
+2026-10-05T20:38:56Z ESCALATE -> owner: UX-08 has been waiting 94 min for an independent verifier (handoff HO-042). Either a peer verifies it or the l
+2026-10-05T20:38:56Z ESCALATE -> owner: UX-22 has been waiting 94 min for an independent verifier (handoff HO-039). Either a peer verifies it or the l
+2026-10-05T20:38:57Z tick #33: check exit 0 (0 fail, 47 warn), 3 active claim(s), 91 card(s) todo, 16 action(s), tick took 317.8s
+2026-10-05T20:38:57Z sleeping 20 min; next tick due 2026-10-05T20:58:57+00:00
+2026-10-05T21:00:50Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T21:00:50Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T21:00:50Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T21:00:50Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T21:03:39Z NUDGE -> buffy: Stream check: no active claim while its stream still has claimable work: DOC-08, DOC-05, RV-05. Claim the firs
+2026-10-05T21:03:39Z NUDGE -> freebuff2: Stream check: no active claim while its stream still has claimable work: CORPUS-05, CORPUS-02, PERF-02. Claim 
+2026-10-05T21:03:39Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: UX-10, UX-19, SPEC-08. Claim the firs
+2026-10-05T21:03:39Z ESCALATE -> owner: CORPUS-03 has been waiting 93 min for an independent verifier (handoff HO-047). Either a peer verifies it or t
+2026-10-05T21:03:39Z ESCALATE -> owner: DOC-03 has been waiting 32 min for an independent verifier (handoff HO-050). Either a peer verifies it or the 
+2026-10-05T21:03:39Z ESCALATE -> owner: ENG-02 has been waiting 377 min for an independent verifier (handoff HO-032). Either a peer verifies it or the
+2026-10-05T21:03:39Z ESCALATE -> owner: ENG-03 has been waiting 371 min for an independent verifier (handoff HO-034). Either a peer verifies it or the
+2026-10-05T21:03:39Z ESCALATE -> owner: ENG-06 has been waiting 85 min for an independent verifier (handoff HO-049). Either a peer verifies it or the 
+2026-10-05T21:03:39Z ESCALATE -> owner: INT-01 has been waiting 470 min for an independent verifier (handoff HO-018). Either a peer verifies it or the
+2026-10-05T21:03:39Z ESCALATE -> owner: LEAD-01 has been waiting 101 min for an independent verifier (handoff HO-046). Either a peer verifies it or th
+2026-10-05T21:03:39Z ESCALATE -> owner: LEAD-02 has been waiting 89 min for an independent verifier (handoff HO-048). Either a peer verifies it or the
+2026-10-05T21:03:40Z ESCALATE -> owner: QUAL-02 has been waiting 103 min for an independent verifier (handoff HO-045). Either a peer verifies it or th
+2026-10-05T21:03:40Z ESCALATE -> owner: TB-006 has been waiting 369 min for an independent verifier (handoff HO-036). Either a peer verifies it or the
+2026-10-05T21:03:40Z ESCALATE -> owner: TB-011 has been waiting 336 min for an independent verifier (handoff HO-038). Either a peer verifies it or the
+2026-10-05T21:03:40Z ESCALATE -> owner: TB-029 has been waiting 419 min for an independent verifier (handoff HO-027). Either a peer verifies it or the
+2026-10-05T21:03:40Z ESCALATE -> owner: TB-031 has been waiting 414 min for an independent verifier (handoff HO-028). Either a peer verifies it or the
+2026-10-05T21:03:40Z ESCALATE -> owner: TB-032 has been waiting 413 min for an independent verifier (handoff HO-029). Either a peer verifies it or the
+2026-10-05T21:03:40Z ESCALATE -> owner: UX-02 has been waiting 341 min for an independent verifier (handoff HO-037). Either a peer verifies it or the 
+2026-10-05T21:03:40Z tick #34: check exit 1 (1 fail, 54 warn), 2 active claim(s), 85 card(s) todo, 18 action(s), tick took 281.3s
+2026-10-05T21:03:40Z sleeping 20 min; next tick due 2026-10-05T21:23:40+00:00
+2026-10-05T21:23:10Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-05T21:23:10Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-05T21:23:10Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-05T21:23:10Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers
+2026-10-05T21:23:41Z RELOAD: team.py, team_watchdog.py or config.json changed since this loop started - re-executing to pick it up
+2026-10-05T21:23:42Z taking over the lock of dead pid 20872
+2026-10-05T21:30:17Z ESCALATE -> owner: ENG-01 has been waiting 515 min for an independent verifier (handoff HO-021). Either a peer verifies it or the
+2026-10-05T21:30:17Z ESCALATE -> owner: ENG-05 has been waiting 158 min for an independent verifier (handoff HO-040). Either a peer verifies it or the
+2026-10-05T21:30:17Z ESCALATE -> owner: ENG-07 has been waiting 42 min for an independent verifier (handoff HO-053). Either a peer verifies it or the 
+2026-10-05T21:30:17Z ESCALATE -> owner: ENG-12 has been waiting 44 min for an independent verifier (handoff HO-052). Either a peer verifies it or the 
+2026-10-05T21:30:17Z ESCALATE -> owner: GATE-FAST has been waiting 32 min for an independent verifier (handoff HO-056). Either a peer verifies it or t
+2026-10-05T21:30:17Z ESCALATE -> owner: LEAD-03 has been waiting 135 min for an independent verifier (handoff HO-043). Either a peer verifies it or th
+2026-10-05T21:30:17Z ESCALATE -> owner: PA-01 has been waiting 514 min for an independent verifier (handoff HO-022). Either a peer verifies it or the 
+2026-10-05T21:30:17Z ESCALATE -> owner: PA-02 has been waiting 512 min for an independent verifier (handoff HO-023). Either a peer verifies it or the 
+2026-10-05T21:30:17Z ESCALATE -> owner: PERF-01 has been waiting 516 min for an independent verifier (handoff HO-020). Either a peer verifies it or th
+2026-10-05T21:30:17Z ESCALATE -> owner: QUAL-01 has been waiting 134 min for an independent verifier (handoff HO-044). Either a peer verifies it or th
+2026-10-05T21:30:17Z ESCALATE -> owner: QUAL-05 has been waiting 30 min for an independent verifier (handoff HO-057). Either a peer verifies it or the
+2026-10-05T21:30:17Z ESCALATE -> owner: RV-02 has been waiting 530 min for an independent verifier (handoff HO-018). Either a peer verifies it or the 
+2026-10-05T21:30:17Z ESCALATE -> owner: RV-03 has been waiting 526 min for an independent verifier (handoff HO-019). Either a peer verifies it or the 
+2026-10-05T21:30:17Z ESCALATE -> owner: RV-04 has been waiting 41 min for an independent verifier (handoff HO-054). Either a peer verifies it or the l
+2026-10-05T21:30:17Z ESCALATE -> owner: TB-027 has been waiting 466 min for an independent verifier (handoff HO-026). Either a peer verifies it or the
+2026-10-05T21:30:17Z ESCALATE -> owner: UX-05 has been waiting 438 min for an independent verifier (handoff HO-030). Either a peer verifies it or the 
+2026-10-05T21:30:17Z ESCALATE -> owner: UX-08 has been waiting 146 min for an independent verifier (handoff HO-042). Either a peer verifies it or the 
+2026-10-05T21:30:17Z ESCALATE -> owner: UX-09 has been waiting 53 min for an independent verifier (handoff HO-051). Either a peer verifies it or the l
+2026-10-05T21:30:17Z ESCALATE -> owner: UX-15 has been waiting 35 min for an independent verifier (handoff HO-055). Either a peer verifies it or the l
+2026-10-05T21:30:17Z ESCALATE -> owner: UX-22 has been waiting 145 min for an independent verifier (handoff HO-039). Either a peer verifies it or the 
+2026-10-05T21:30:17Z tick #35: check exit 1 (29 fail, 61 warn), 4 active claim(s), 79 card(s) todo, 20 action(s), tick took 395.8s
+2026-10-05T21:30:17Z sleeping 20 min; next tick due 2026-10-05T21:50:17+00:00
+2026-10-05T21:54:59Z NUDGE -> opencode: Stream check: no active claim while its stream still has claimable work: GATE-FAST, ENG-09, ENG-10. Claim the 
+2026-10-05T21:54:59Z NUDGE -> hermes: Stream check: no active claim while its stream still has claimable work: UX-10, UX-19, SPEC-08. Claim the firs
+2026-10-05T21:54:59Z ESCALATE -> owner: CONST-01 has been waiting 48 min for an independent verifier (handoff HO-061). Either a peer verifies it or th
+2026-10-05T21:54:59Z ESCALATE -> owner: CORPUS-03 has been waiting 145 min for an independent verifier (handoff HO-047). Either a peer verifies it or 
+2026-10-05T21:54:59Z ESCALATE -> owner: DOC-03 has been waiting 83 min for an independent verifier (handoff HO-050). Either a peer verifies it or the 
+2026-10-05T21:54:59Z ESCALATE -> owner: ENG-02 has been waiting 428 min for an independent verifier (handoff HO-032). Either a peer verifies it or the
+2026-10-05T21:54:59Z ESCALATE -> owner: ENG-03 has been waiting 422 min for an independent verifier (handoff HO-034). Either a peer verifies it or the
+2026-10-05T21:54:59Z ESCALATE -> owner: ENG-06 has been waiting 137 min for an independent verifier (handoff HO-049). Either a peer verifies it or the
+2026-10-05T21:54:59Z ESCALATE -> owner: ENG-08 has been waiting 39 min for an independent verifier (handoff HO-066). Either a peer verifies it or the 
+2026-10-05T21:54:59Z ESCALATE -> owner: INT-01 has been waiting 521 min for an independent verifier (handoff HO-018). Either a peer verifies it or the
+2026-10-05T21:54:59Z ESCALATE -> owner: LEAD-01 has been waiting 152 min for an independent verifier (handoff HO-046). Either a peer verifies it or th
+2026-10-05T21:54:59Z ESCALATE -> owner: LEAD-02 has been waiting 140 min for an independent verifier (handoff HO-048). Either a peer verifies it or th
+2026-10-05T21:54:59Z ESCALATE -> owner: QUAL-02 has been waiting 154 min for an independent verifier (handoff HO-045). Either a peer verifies it or th
+2026-10-05T21:54:59Z ESCALATE -> owner: QUAL-03 has been waiting 41 min for an independent verifier (handoff HO-065). Either a peer verifies it or the
+2026-10-05T21:54:59Z ESCALATE -> owner: T-002 has been waiting 51 min for an independent verifier (handoff HO-060). Either a peer verifies it or the l
+2026-10-05T21:54:59Z ESCALATE -> owner: TB-006 has been waiting 421 min for an independent verifier (handoff HO-036). Either a peer verifies it or the
+2026-10-05T21:54:59Z ESCALATE -> owner: TB-011 has been waiting 387 min for an independent verifier (handoff HO-038). Either a peer verifies it or the
+2026-10-05T21:54:59Z ESCALATE -> owner: TB-029 has been waiting 470 min for an independent verifier (handoff HO-027). Either a peer verifies it or the
+2026-10-05T21:54:59Z ESCALATE -> owner: TB-031 has been waiting 465 min for an independent verifier (handoff HO-028). Either a peer verifies it or the
+2026-10-05T21:54:59Z ESCALATE -> owner: TB-032 has been waiting 464 min for an independent verifier (handoff HO-029). Either a peer verifies it or the
+2026-10-05T21:54:59Z ESCALATE -> owner: UX-02 has been waiting 392 min for an independent verifier (handoff HO-037). Either a peer verifies it or the 
+2026-10-05T21:54:59Z ESCALATE -> owner: UX-03 has been waiting 48 min for an independent verifier (handoff HO-062). Either a peer verifies it or the l
+2026-10-05T21:54:59Z ESCALATE -> owner: UX-04 has been waiting 42 min for an independent verifier (handoff HO-064). Either a peer verifies it or the l
+2026-10-05T21:54:59Z ESCALATE -> owner: UX-16 has been waiting 52 min for an independent verifier (handoff HO-058). Either a peer verifies it or the l
+2026-10-05T21:54:59Z tick #36: check exit 1 (29 fail, 64 warn), 0 active claim(s), 84 card(s) todo, 24 action(s), tick took 280.8s
+2026-10-05T21:54:59Z sleeping 20 min; next tick due 2026-10-05T22:14:59+00:00
+2026-10-05T22:15:00Z RELOAD: team.py, team_watchdog.py or config.json changed since this loop started - re-executing to pick it up
+2026-10-05T22:15:01Z taking over the lock of dead pid 18600

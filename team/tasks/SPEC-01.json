@@ -1,0 +1,20 @@
+{
+  "id": "SPEC-01",
+  "title": "FR-to-test traceability: one row per FR in 02 (FR id, owning doc clause, implementing module:line, TST id, automated?, or the reason it is manual). Every FR with no automated test becomes a TB row for docs/20; output evidence/spec/fr-test-matrix.md",
+  "source": "team",
+  "priority": "P1",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "product",
+  "created_utc": "2026-10-05T12:04:27Z",
+  "updated_utc": "2026-10-05T12:04:27Z",
+  "history": [
+    {
+      "utc": "2026-10-05T12:04:27Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

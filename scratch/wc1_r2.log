@@ -1,0 +1,14 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\Tahir\Documents\GitHub\finalFPA
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collected 54 items
+
+tests\unit\test_rules_catalog_001_008.py .......................         [ 42%]
+tests\unit\test_rules_01_08.py ...................                       [ 77%]
+tests\unit\test_rules_batch.py ...                                       [ 83%]
+tests\unit\test_import_repository_catalog_metadata.py .                  [ 85%]
+tests\unit\test_control_totals_import.py ........                        [100%]
+
+============================= 54 passed in 4.08s ==============================

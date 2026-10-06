@@ -1,0 +1,16 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\Tahir\Documents\GitHub\finalFPA
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collected 118 items
+
+tests\unit\test_pptx_fill_layout.py .................................    [ 27%]
+tests\unit\test_pptx_fill_patterns.py .................................. [ 56%]
+.............                                                            [ 67%]
+tests\unit\test_ppt_pack.py .............                                [ 78%]
+tests\artefacts\test_cross_artifact.py .                                 [ 79%]
+tests\artefacts\test_negative_corpus.py ................                 [ 93%]
+tests\uat\test_uat_dry_run.py ........                                   [100%]
+
+============================ 118 passed in 11.60s =============================

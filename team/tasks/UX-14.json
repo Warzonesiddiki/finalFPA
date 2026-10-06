@@ -1,0 +1,32 @@
+{
+  "id": "UX-14",
+  "title": "Make the citation checker able to fail. scripts/verify_audit_citations.py only greps SCR/FR/CALC id strings out of docs/*.md, so it passes a fabricated ui/src/main.tsx:145 citation. Extend it to resolve every file:line code citation by reading that line and checking the claimed token is on it, and ship a test that deliberately breaks one citation and asserts the checker reports it. Acceptance: a corrupted citation turns the gate red, demonstrated with the before/after output pasted in the handoff",
+  "priority": "P0",
+  "lane": "product",
+  "status": "done",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:03:12Z",
+  "updated_utc": "2026-10-05T20:50:06Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:03:12Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T20:49:09Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T20:49:52Z",
+      "agent": "hermes",
+      "event": "release (todo)"
+    }
+  ],
+  "handoff": null
+}

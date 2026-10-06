@@ -1,0 +1,32 @@
+{
+  "id": "SPEC-08",
+  "title": "Close the gap that let three fabricated audits through: write the acceptance standard a card must meet. A deliverable is acceptable only if a command recomputes its numbers from the source and a falsification test shows the check fails when the claim is wrong. Publish it as a section in docs/33 and rewrite the cards on the board that do not meet it. Acceptance: the rewritten card count and the standard's location",
+  "priority": "P0",
+  "lane": "docs",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:03:12Z",
+  "updated_utc": "2026-10-05T21:49:18Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:03:12Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T21:48:29Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T21:49:18Z",
+      "agent": "hermes",
+      "event": "release (todo)"
+    }
+  ],
+  "handoff": null
+}

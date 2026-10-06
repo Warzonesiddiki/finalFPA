@@ -1,0 +1,51 @@
+{
+  "id": "UX-10",
+  "title": "Error-message catalogue: every user-visible error the tool can show, mapped to cause, who acts, and the recovery step, and checked against the API error contract in docs/26. Any error with no recovery step is a P0 finding. Output evidence/ux/error-catalogue.md",
+  "source": "docs/33",
+  "priority": "P1",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "product",
+  "created_utc": "2026-10-05T14:09:59Z",
+  "updated_utc": "2026-10-05T20:40:36Z",
+  "history": [
+    {
+      "utc": "2026-10-05T14:09:59Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T14:49:07Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T14:53:10Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T15:01:32Z",
+      "agent": "buffy",
+      "event": "rejected via HO-035"
+    },
+    {
+      "utc": "2026-10-05T15:03:29Z",
+      "agent": "hermes",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-05T20:37:43Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T20:40:36Z",
+      "agent": "hermes",
+      "event": "release (todo)"
+    }
+  ],
+  "handoff": null
+}

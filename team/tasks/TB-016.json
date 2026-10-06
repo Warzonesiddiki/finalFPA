@@ -1,0 +1,66 @@
+{
+  "id": "TB-016",
+  "title": "Install `mypy`; add strict config for `app/engine`; wire into `scripts/check` — then fix what it finds (no `# type: ignore` escapes)",
+  "source": "docs/33",
+  "priority": "P1",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "gate-tooling",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T12:27:35Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:19Z",
+      "agent": "buffy",
+      "event": "triaged P1 / lane gate-tooling by leader"
+    },
+    {
+      "utc": "2026-10-05T11:25:32Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T11:29:06Z",
+      "agent": "opencode",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-05T11:29:13Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T11:33:39Z",
+      "agent": "opencode",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-05T11:33:46Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T11:50:21Z",
+      "agent": "opencode",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T12:09:50Z",
+      "agent": "buffy",
+      "event": "rejected via HO-010"
+    },
+    {
+      "utc": "2026-10-05T12:27:35Z",
+      "agent": "opencode",
+      "event": "release (todo)"
+    }
+  ],
+  "handoff": null
+}

@@ -1,0 +1,32 @@
+{
+  "id": "ENG-12",
+  "title": "Findings respect the claim they were raised in: a finding carries the run\ncorrelation id and the claim id (or batch id) it came from, so a client who\nasks 'which close did this come from' gets an answer, not a guess. The claim is\nclosed after the finding is raised; nothing about the finding depends on the\nclaim booting after it. Acceptance: one finding, with run id and claim id\npresent in the exported artefact, and a test that fails when either id is\nmissing",
+  "priority": "P1",
+  "lane": "engine",
+  "status": "review",
+  "owner": "opencode2",
+  "claim_id": "opencode2-20261005T1938Z-aa55",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T17:01:58Z",
+  "updated_utc": "2026-10-05T20:46:07Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T17:01:58Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T19:38:27Z",
+      "agent": "opencode2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T20:46:07Z",
+      "agent": "opencode2",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-052"
+}

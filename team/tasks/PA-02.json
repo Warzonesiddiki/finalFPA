@@ -1,0 +1,36 @@
+{
+  "id": "PA-02",
+  "title": "Prior-art review #2 (github.com/Warzonesiddiki/fp-A-betterversion): licence gate 4A FIRST, then lessons as text; reuse only via Intake (§10) + ADP row; never copy unlicensed code (L2)",
+  "source": "buffy",
+  "priority": "P2",
+  "status": "review",
+  "owner": "hermes",
+  "claim_id": "hermes-20261005T1246Z-b333",
+  "deps": [],
+  "lane": "prior-art",
+  "created_utc": "2026-10-05T10:14:20Z",
+  "updated_utc": "2026-10-05T12:57:18Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:14:20Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T10:14:20Z",
+      "agent": "buffy",
+      "event": "renamed T-045 -> PA-02"
+    },
+    {
+      "utc": "2026-10-05T12:46:51Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T12:57:18Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-023"
+}

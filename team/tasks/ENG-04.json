@@ -1,0 +1,21 @@
+{
+  "id": "ENG-04",
+  "title": "Reproducible payload proof: a clean-tree build must regenerate the notices, the SBOM and the payload file list byte-identically twice in a row, and license_gate CHECK 6 must pass on the built payload - not only on the source tree. Evidence: evidence/packaging/reproducible-build.md with both runs' checksums",
+  "priority": "P2",
+  "lane": "packaging",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T14:36:06Z",
+  "updated_utc": "2026-10-05T14:36:06Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T14:36:06Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

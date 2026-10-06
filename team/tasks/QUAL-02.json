@@ -1,0 +1,32 @@
+{
+  "id": "QUAL-02",
+  "title": "Traceability generated from code, not written: rule ID -> the module that implements it -> the test that proves it -> the evidence artefact, built by parsing app/engine and tests/ rather than by hand. Every rule with any leg missing is reported. Acceptance: the matrix regenerates with one command, and the list of incomplete rules is the deliverable, not a claim that none exist",
+  "priority": "P0",
+  "lane": "engine",
+  "status": "review",
+  "owner": "opencode2",
+  "claim_id": "opencode2-20261005T1916Z-dce4",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:22:06Z",
+  "updated_utc": "2026-10-05T19:20:04Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:22:06Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T19:16:11Z",
+      "agent": "opencode2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T19:20:04Z",
+      "agent": "opencode2",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-045"
+}

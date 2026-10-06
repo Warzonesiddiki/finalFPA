@@ -8,9 +8,10 @@ Governed by 14_TESTING_QA_PLAN.md:
 import sys
 import time
 from pathlib import Path
+
 import pytest
 
-from app.engine.imports import prescan_file, parse_csv_transactions, parse_and_validate_csv
+from app.engine.imports import parse_csv_transactions, prescan_file
 
 
 def get_peak_working_set_bytes() -> int:

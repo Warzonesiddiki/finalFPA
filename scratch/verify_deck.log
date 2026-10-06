@@ -1,0 +1,67 @@
+generated: scratch\deck.pptx 62894 bytes
+PPT-001: layout=FPA-PPT-001 shapes=9 missing=[]
+PPT-002: layout=FPA-PPT-002 shapes=37 missing=[]
+PPT-003: layout=FPA-PPT-003 shapes=7 missing=[]
+PPT-004: layout=FPA-PPT-004 shapes=7 missing=[]
+PPT-005: layout=FPA-PPT-005 shapes=19 missing=[]
+PPT-006: layout=FPA-PPT-006 shapes=19 missing=[]
+
+--- slide 1 text ---
+  PPT-001_title: 'Alpha Industries Pvt Ltd'
+  PPT-001_sources: 'SOURCES\nD365 GL Sep-26.xlsx · batch 1041 · 96,412 rows\nPayroll Sep-26.csv · batch 1042 · 1,204 rows\nProcurement Sep-26.x'
+  PPT-001_stamp: 'STAMP\nProject:      Alpha Industries Pvt Ltd\nPeriod:       FY26-P09 (MTD)\nGenerated:    01-10-2026 14:22\nPack:         v'
+  PPT-001_footer_left: 'Potential exceptions only — advisory tool, not professional advice. Review by a qualified accountant required. Figures m'
+  PPT-001_footer_right: 'Slide 1 of 6 · Pack v3 · FY26-P09'
+
+--- slide 2 kpi1/kpi3 ---
+  PPT-002_title: 'Executive summary — FY26-P09' sz=24.0 col=1F3A5F
+  PPT-002_kpi3_value: '+₹ 8,75,000.00' sz=24.0 col=B3261E
+  PPT-002_kpi6_label: 'EXCEPTIONS OPEN' sz=10.0 col=6B7280
+  PPT-002_narrative_label: 'Executive narrative · approved by A. Sharma, 01-10-2026' sz=9.0 col=6B7280
+  PPT-002_footnote: '₹ whole units · month × account × cost centre · Simple sum — no eliminations' sz=9.0 col=6B7280
+
+--- slide 3 bridge chart ---
+  cats: ['Opening (Budget)', 'Opex other', 'Contractors', 'Materials', 'Repairs', 'Utilities', 'Other', 'Closing (Actual)']
+  base: [0, 15770000, 15950000, 16090000, 16168000, 16143000, 16145000, 0]
+  amount: [15770000, 180000, 140000, 78000, -25000, 2000, 500000, 16645000]
+  title: 'Bridge: FY26-P09 (₹ whole units · MTD)'
+  bar tops: [15770000.0, 15950000.0, 16090000.0, 16168000.0, 16143000.0, 16145000.0, 16645000.0, 16645000.0]
+  drivers text: TOP DRIVERS
+▼ Opex other   +₹ 180,000.00
+▼ Contractors   +₹ 140,000.00
+▼ Materials   +₹ 78,000.00
+▲ Repairs   −₹ 25,000.00
+▼ Utilities   +₹ 2,000.00
+▼ Other (unexplained)   +₹ 500,000.00
+
+--- slide 4 table ---
+   ['Account', 'Actual', 'Budget', 'Variance', 'Var %', 'Sig.', 'Driver']
+   ['5600 Contractors', '9,60,000.00', '8,20,000.00', '+1,40,000.00', '+17.1%', 'Adv ▼', 'Third-party engine']
+   ['5300 Raw Materials', '6,18,000.00', '5,40,000.00', '+78,000.00', '+14.4%', 'Adv ▼', 'Steel price increa']
+   ['5200 Factory Repai', '3,55,000.00', '3,80,000.00', '-25,000.00', '-6.6%', 'Fav ▲', 'Two scheduled over']
+   ['5800 Utilities & F', '2,12,000.00', '2,10,000.00', '+2,000.00', '+1.0%', 'Adv ▼', 'Peak tariff adjust']
+   ['5900 General Opex', '4,90,000.00', '3,10,000.00', '+1,80,000.00', '+58.1%', 'Adv ▼', 'Annual regulatory ']
+
+--- slide 5 chips+table ---
+  chip1: OPEN=14
+  chip2: OVERDUE=2
+  chip3: HIGH=3
+  chip4: UNASSIGNED=2
+  rows: 6 cols: 6
+  r0: ['Rule', 'Subject', 'At risk', 'Sev.', 'Owner', 'Status / Age']
+
+--- slide 6 forecast chart + gap ---
+  Actual: [140.0, 145.0, 150.0, 148.0, 155.0, 160.0, 158.0, 162.0, 166.45, None, None, None]
+  Forecast: [None, None, None, None, None, None, None, None, 166.45, 165.0, 168.0, 170.0]
+  Budget: [142.0, 142.0, 145.0, 145.0, 150.0, 150.0, 155.0, 155.0, 157.7, 160.0, 162.0, 165.0]
+  cats: ['P01', 'P02', 'P03', 'P04', 'P05', 'P06', 'P07', 'P08', 'P09', 'P10', 'P11', 'P12']
+  legend: True BOTTOM (-4107)
+  outlook: Methods: Remaining budget 62% · 3-mo run-rate 38% · overrides: 0
+Outlook narrative · approved by A. Sharma, 01-10-2026
+Full-year landing estimate projects ₹ 12.
+
+reopened slides: 6
+reopened bridge cats: ['Opening (Budget)', 'Opex other', 'Contractors', 'Materials', 'Repairs', 'Utilities', 'Other', 'Closing (Actual)']
+reopened bridge series: ['base', 'amount']
+
+PROBLEMS: ["PPT-006: not in contract ['PPT-006_card1', 'PPT-006_card2', 'PPT-006_card3']"]

@@ -163,6 +163,8 @@ class PackContext:
     sample_data: str = "No"
     stale_results: str = "No"
     content_hash: str = "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    correlation_id: str = "run-default"
+    claim_id: str = "claim-default"
 
 
 @dataclass
@@ -305,18 +307,31 @@ class ForecastRow:
     forecast: Decimal | None
     variance: Decimal
     var_pct: float | None
-    signal: str
+    signal: str = ""
     base_method: str = ""
     adjustment_pct: float | None = None
     override_reason: str = ""
     version: str = "Base v3"
     updated_at: str = "2026-09-30 18:00"
 
+
+
+@dataclass
+class AccountingActionLogRow:
+    voucher_no: str
+    account_code: str
+    cost_centre: str
+    posting_date: str
+    debit: Decimal
+    credit: Decimal
+    description: str
+    exception_id: int
+    rule_id: str
+
+
     def __post_init__(self) -> None:
-        self.actual = _coerce_money(self.actual)
-        self.budget = _coerce_money(self.budget)
-        self.forecast = _coerce_money(self.forecast)
-        self.variance = _coerce_money(self.variance)
+        self.debit = _coerce_money(self.debit)
+        self.credit = _coerce_money(self.credit)
 
 
 @dataclass
@@ -1345,6 +1360,8 @@ def build_sheet_cover(ws: Any, data: MonthEndPackData) -> None:
         "AI content": "none",
         "Sample data": ctx.sample_data,
         "Stale derived results": ctx.stale_results,
+        "Run correlation ID": ctx.correlation_id,
+        "Claim ID": ctx.claim_id,
         "Tie-out state": ctx.tie_out_state,
         "Rounding note": "Components may not sum to the total due to rounding.",
         "Disclaimer (short)": "Advisory tool, not professional advice. Review by qualified accountant required.",
@@ -2462,8 +2479,46 @@ def build_sheet_import_reconciliation(ws: Any, data: MonthEndPackData) -> None:
 # -------------------------------------------------------------------------
 
 
-def generate_month_end_pack(data: MonthEndPackData | None = None) -> openpyxl.Workbook:
-    """Generate the complete 7-sheet Month-End Excel Pack using openpyxl.
+def build_sheet_accounting_action_log(ws: Any, data: MonthEndPackData) -> None:
+    """Build Sheet 8: Accounting Action Log (SCR-023)."""
+    ws.title = "Accounting Action Log"
+    ws.sheet_properties.tabColor = TAB_COLORS.get(ws.title, "000000")
+    ws.views.sheetView[0].showGridLines = True
+    ws.freeze_panes = "A2"
+
+    cols: list[tuple[str, int, str]] = [
+        ("Voucher no", 15, fmt.CODE),
+        ("Account code", 15, fmt.CODE),
+        ("Cost centre", 15, fmt.CODE),
+        ("Posting date", 15, fmt.DATE_DMY),
+        ("Debit", 15, fmt.MONEY_IN),
+        ("Credit", 15, fmt.MONEY_IN),
+        ("Description", 40, fmt.TEXT),
+        ("Exception ID", 15, fmt.COUNT_INT),
+        ("Rule ID", 15, fmt.CODE),
+    ]
+
+    _apply_header_block(
+        ws,
+        "Accounting Action Log",
+        data.context,
+        "D365-compliant Journal Entry template for exception corrections.",
+        last_col=len(cols),
+    )
+    _style_table_header(ws, 6, cols)
+
+    current_row = 7
+    # Placeholder: AAL export logic will be populated via T-003 follow-up if exceptions exist.
+    ws.cell(
+        row=current_row, column=1, value="No accounting action log entries generated."
+    ).font = FONT_EMPTY
+
+
+def generate_month_end_pack(
+    data: MonthEndPackData | None = None,
+    include_accounting_action_log: bool = False,
+) -> openpyxl.Workbook:
+    """Generate the complete Month-End Excel Pack using openpyxl per 11_EXCEL_OUTPUT_SPEC.md.
 
     Sheets:
     1. Cover & Context
@@ -2473,6 +2528,7 @@ def generate_month_end_pack(data: MonthEndPackData | None = None) -> openpyxl.Wo
     5. Exception Register
     6. Forecast Summary
     7. Import Reconciliation
+    (Optional 8. Accounting Action Log per T-003 / SCR-023)
     """
     pack_data = data or create_sample_pack_data()
     wb = openpyxl.Workbook()
@@ -2502,8 +2558,13 @@ def generate_month_end_pack(data: MonthEndPackData | None = None) -> openpyxl.Wo
     build_sheet_forecast_summary(ws_fc, pack_data)
 
     # Sheet 7: Import Reconciliation
-    ws_imp = wb.create_sheet()
-    build_sheet_import_reconciliation(ws_imp, pack_data)
+    ws_ir = wb.create_sheet()
+    build_sheet_import_reconciliation(ws_ir, pack_data)
+
+    # Sheet 8 (Optional): Accounting Action Log (T-003)
+    if include_accounting_action_log:
+        ws_aal = wb.create_sheet()
+        build_sheet_accounting_action_log(ws_aal, pack_data)
 
     # Document properties
     ctx = pack_data.context

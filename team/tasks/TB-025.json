@@ -1,0 +1,46 @@
+{
+  "id": "TB-025",
+  "title": "Extract `app/jobs/`: worker thread, job registry with states/progress/ETA/cancellation (queue depth 1) per ADR-006; delete the ad-hoc server-thread coupling",
+  "source": "docs/33",
+  "priority": "P2",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "engine",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T12:55:13Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:19Z",
+      "agent": "buffy",
+      "event": "triaged P2 / lane engine by leader"
+    },
+    {
+      "utc": "2026-10-05T12:00:46Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T12:12:01Z",
+      "agent": "opencode",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T12:30:23Z",
+      "agent": "buffy",
+      "event": "rejected via HO-013"
+    },
+    {
+      "utc": "2026-10-05T12:55:13Z",
+      "agent": "opencode",
+      "event": "release (todo)"
+    }
+  ],
+  "handoff": null
+}

@@ -5229,6 +5229,28 @@
         ],
         "title": "BulkMappingDecisionRequest"
       },
+      "ControlTotalAcceptanceRequest": {
+        "properties": {
+          "acceptedBy": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Acceptedby"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 10,
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "acceptedBy",
+          "reason"
+        ],
+        "title": "ControlTotalAcceptanceRequest"
+      },
       "DecideSuggestionRequest": {
         "properties": {
           "action": {
@@ -5393,6 +5415,30 @@
               }
             ],
             "title": "Sourcetype"
+          },
+          "balanceTolerance": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Balancetolerance",
+            "default": "0.00"
+          },
+          "controlTotalAcceptance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ControlTotalAcceptanceRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -5806,6 +5852,28 @@
             ],
             "title": "Asofdate",
             "default": "2026-11-12"
+          },
+          "correlationId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correlationid"
+          },
+          "claimId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claimid"
           }
         },
         "type": "object",

@@ -1,0 +1,58 @@
+{
+  "id": "TB-030",
+  "title": "Fix `DEF-015` — eliminate float money paths (mutation-verified)",
+  "source": "docs/33",
+  "priority": "P1",
+  "status": "done",
+  "owner": "opencode",
+  "claim_id": "opencode-20261005T1045Z-21ce",
+  "deps": [
+    "TB-022"
+  ],
+  "lane": "engine",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T11:40:09Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:19Z",
+      "agent": "buffy",
+      "event": "triaged P1 / lane engine by leader"
+    },
+    {
+      "utc": "2026-10-05T10:43:42Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T10:45:05Z",
+      "agent": "opencode",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-05T10:45:10Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T11:12:41Z",
+      "agent": "opencode",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T11:13:57Z",
+      "agent": "antigravity",
+      "event": "verified via HO-007"
+    },
+    {
+      "utc": "2026-10-05T11:40:09Z",
+      "agent": "antigravity",
+      "event": "verified via HO-007"
+    }
+  ],
+  "handoff": "HO-007"
+}

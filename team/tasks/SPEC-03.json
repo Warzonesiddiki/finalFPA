@@ -1,0 +1,36 @@
+{
+  "id": "SPEC-03",
+  "title": "Threshold conformance: every numeric threshold, tolerance and default in 06 and 14 (500000 floors, coverage pct, min_coverage_gap_periods, tolerances) compared against the code and config defaults; each mismatch is a row with clause, code:line, value in code, value in spec, verdict. Output evidence/spec/threshold-conformance.md",
+  "source": "team",
+  "priority": "P0",
+  "status": "done",
+  "owner": "opencode",
+  "claim_id": "opencode-20261005T1228Z-4fd2",
+  "deps": [],
+  "lane": "rules",
+  "created_utc": "2026-10-05T12:04:29Z",
+  "updated_utc": "2026-10-05T12:39:25Z",
+  "history": [
+    {
+      "utc": "2026-10-05T12:04:29Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T12:28:28Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T12:32:55Z",
+      "agent": "opencode",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T12:39:25Z",
+      "agent": "antigravity",
+      "event": "verified via HO-016"
+    }
+  ],
+  "handoff": "HO-016"
+}

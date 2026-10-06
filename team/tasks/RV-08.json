@@ -1,0 +1,21 @@
+{
+  "id": "RV-08",
+  "title": "Expected-failures register: a dated, owned list of the failures we are shipping with (each with its reason, the task that will fix it, and the bar it blocks), so a red gate is never ambiguous about what is known-red",
+  "priority": "P2",
+  "lane": "verification",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T14:36:06Z",
+  "updated_utc": "2026-10-05T14:36:06Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T14:36:06Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

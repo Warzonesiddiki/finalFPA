@@ -1,0 +1,32 @@
+{
+  "id": "ENG-05",
+  "title": "Retire the generators that emit a table instead of measuring one. scripts/audit_accessibility_matrix.py, verify_analyst_maths_trace.py, generate_error_catalogue.py and generate_screen_conformance_matrix.py print hard-coded content and exit 0. Each must either read its subject at run time or be deleted. Acceptance: for each, a test that fails if the script goes back to a literal, and a written statement of which of the two you chose and why",
+  "priority": "P0",
+  "lane": "gate-tooling",
+  "status": "review",
+  "owner": "opencode2",
+  "claim_id": "opencode2-20261005T1703Z-a6dc",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:03:12Z",
+  "updated_utc": "2026-10-05T18:52:10Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:03:12Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T17:03:16Z",
+      "agent": "opencode2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T18:52:10Z",
+      "agent": "opencode2",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-040"
+}

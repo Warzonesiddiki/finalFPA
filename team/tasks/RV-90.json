@@ -1,0 +1,27 @@
+{
+  "id": "RV-90",
+  "title": "Synthesise the four independent reviews into one proposal (no code): ranked recommendations, spec conflict check (R1), and the OQ/DEC list the owner must rule on; land it in docs/18 + 27 as needed",
+  "source": "buffy",
+  "priority": "P2",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [
+    "RV-01"
+  ],
+  "lane": "research",
+  "created_utc": "2026-10-05T10:14:20Z",
+  "updated_utc": "2026-10-05T10:14:20Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:14:20Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T10:14:20Z",
+      "agent": "buffy",
+      "event": "renamed T-047 -> RV-90"
+    }
+  ]
+}

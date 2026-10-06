@@ -1,0 +1,21 @@
+{
+  "id": "RV-07",
+  "title": "Falsify the evidence itself: for every SHA256SUMS manifest under evidence/, recompute the digests and report any mismatch, then open two closure reports at random and try to find a number that does not reproduce. A self-check that cannot fail is a claim, not evidence",
+  "priority": "P1",
+  "lane": "verification",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T14:36:06Z",
+  "updated_utc": "2026-10-05T14:36:06Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T14:36:06Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

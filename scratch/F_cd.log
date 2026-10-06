@@ -1,0 +1,3 @@
+C:\Users\Tahir\AppData\Roaming\Python\Python314\site-packages\fastapi\openapi\utils.py:303: UserWarning: Duplicate Operation ID api_list_exceptions_api_v1_exceptions_get for function api_list_exceptions at C:\Users\Tahir\Documents\GitHub\finalFPA\app\api\main.py
+  warnings.warn(message, stacklevel=1)
+OpenAPI contract drift check PASSED: No schema drift detected.

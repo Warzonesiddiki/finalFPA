@@ -1,0 +1,61 @@
+{
+  "id": "TB-007",
+  "title": "Align P20/P21/P24 subject-key formats where rule and key disagree (key-format misses)",
+  "source": "docs/33",
+  "priority": "P0",
+  "status": "done",
+  "owner": "antigravity",
+  "claim_id": "antigravity-20261005T1229Z-180d",
+  "deps": [],
+  "lane": "rules",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T21:22:02Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:18Z",
+      "agent": "buffy",
+      "event": "triaged P0 / lane rules by leader"
+    },
+    {
+      "utc": "2026-10-05T10:51:41Z",
+      "agent": "antigravity",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T11:10:08Z",
+      "agent": "antigravity",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T12:03:32Z",
+      "agent": "buffy",
+      "event": "rejected via HO-006"
+    },
+    {
+      "utc": "2026-10-05T12:29:27Z",
+      "agent": "antigravity",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T12:31:58Z",
+      "agent": "antigravity",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T12:32:07Z",
+      "agent": "antigravity",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T21:22:02Z",
+      "agent": "hermes",
+      "event": "verified via HO-015"
+    }
+  ],
+  "handoff": "HO-015"
+}

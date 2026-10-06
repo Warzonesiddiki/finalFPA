@@ -1,0 +1,20 @@
+{
+  "id": "SPEC-05",
+  "title": "Test-spec authorship: write the missing test specifications for the 14 zero-coverage exception rules listed by the acceptance gate, as executable-ready cases (arrange/act/assert with the spec clause each one proves). Output evidence/spec/zero-coverage-cases.md",
+  "source": "docs/33",
+  "priority": "P1",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "docs",
+  "created_utc": "2026-10-05T14:10:00Z",
+  "updated_utc": "2026-10-05T14:10:00Z",
+  "history": [
+    {
+      "utc": "2026-10-05T14:10:00Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

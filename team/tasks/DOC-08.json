@@ -1,0 +1,21 @@
+{
+  "id": "DOC-08",
+  "title": "Close the unsigned gate: docs/28 GATE-13 carries an approval nobody has given. Assemble the packet the signer actually needs - what is being approved, the measured state of each bar, the limits stated as numbers, and the decision being asked for. Acceptance: a one-page decision request with the evidence links, and a named blocker if a ruling is genuinely needed first",
+  "priority": "P1",
+  "lane": "docs",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:22:07Z",
+  "updated_utc": "2026-10-05T15:22:07Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:22:07Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

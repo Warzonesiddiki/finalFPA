@@ -1,0 +1,56 @@
+{
+  "id": "UX-08",
+  "title": "Interaction-design audit: for every screen in the 43-screen matrix, the keyboard path, focus order, focus trap in modals, ARIA role/label on custom controls, and the screen-reader announcement of async results. One row per defect with the WCAG 2.2 AA clause and the component file:line. Output evidence/ux/a11y-keyboard.md",
+  "source": "docs/33",
+  "priority": "P0",
+  "status": "review",
+  "owner": "hermes",
+  "claim_id": "hermes-20261005T1858Z-539a",
+  "deps": [],
+  "lane": "product",
+  "created_utc": "2026-10-05T14:09:58Z",
+  "updated_utc": "2026-10-05T19:04:08Z",
+  "history": [
+    {
+      "utc": "2026-10-05T14:09:58Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T14:36:16Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T14:45:40Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T15:01:32Z",
+      "agent": "buffy",
+      "event": "rejected via HO-031"
+    },
+    {
+      "utc": "2026-10-05T15:38:47Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T15:44:35Z",
+      "agent": "buffy",
+      "event": "returned to todo: released straight back into review with no successor handoff, so it pointed at HO-031 which was rejected. team.py check now FAILs this shape (rejected handoff, no successor)"
+    },
+    {
+      "utc": "2026-10-05T18:58:16Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T19:04:08Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-042"
+}

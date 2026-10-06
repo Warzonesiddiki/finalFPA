@@ -1,0 +1,21 @@
+{
+  "id": "PILOT-03",
+  "title": "The day the analyst has a number they do not trust. Write the support path: what they send, what we ask for, what we can rule out from the run id alone, and the response time we commit to during a live close",
+  "priority": "P2",
+  "lane": "pilot",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:22:07Z",
+  "updated_utc": "2026-10-05T15:22:07Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:22:07Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

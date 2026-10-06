@@ -1,0 +1,38 @@
+{
+  "id": "TB-029",
+  "title": "Code-health sweep: delete `analytics_repo_snippet.txt`, the 500-LOC check, zero commented-out code, `TODO` → `27` IDs",
+  "source": "docs/33",
+  "priority": "P1",
+  "status": "review",
+  "owner": "opencode2",
+  "claim_id": "opencode2-20261005T1352Z-4e9e",
+  "deps": [
+    "TB-014"
+  ],
+  "lane": "engine",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T14:04:21Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:19Z",
+      "agent": "buffy",
+      "event": "triaged P1 / lane engine by leader"
+    },
+    {
+      "utc": "2026-10-05T13:52:12Z",
+      "agent": "opencode2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T14:04:21Z",
+      "agent": "opencode2",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-027"
+}

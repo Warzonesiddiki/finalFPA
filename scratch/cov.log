@@ -1,0 +1,15 @@
+........................................................................ [ 77%]
+.....................                                                    [100%]
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.14.7-final-0 _______________
+
+Name                               Stmts   Miss Branch BrPart  Cover   Missing
+------------------------------------------------------------------------------
+app\engine\pptx_fill\__init__.py       4      0      0      0   100%
+app\engine\pptx_fill\core.py         107      4     48      6    94%   66, 119, 121, 165, 217->219, 219->exit
+app\engine\pptx_fill\layout.py        85      2     34      7    92%   124->121, 146->150, 160, 164->171, 167, 175->exit, 176->175
+app\engine\pptx_fill\patterns.py      91      1     38      1    98%   130
+app\engine\pptx_fill\ppt_spec.py      21      0      0      0   100%
+------------------------------------------------------------------------------
+TOTAL                                308      7    120     14    95%
+Required test coverage of 75.0% reached. Total coverage: 95.09%

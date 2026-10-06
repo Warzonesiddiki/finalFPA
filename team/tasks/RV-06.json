@@ -1,0 +1,20 @@
+{
+  "id": "RV-06",
+  "title": "Adversarial review of the three highest-risk code paths a client would touch: the import commit path, the exception-finding persistence, and the board-pack export. For each: the failure the code cannot survive, and whether a test exists that would catch it. Output evidence/reviews/adversarial-code-review.md",
+  "source": "docs/33",
+  "priority": "P1",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "verification",
+  "created_utc": "2026-10-05T14:10:01Z",
+  "updated_utc": "2026-10-05T14:10:01Z",
+  "history": [
+    {
+      "utc": "2026-10-05T14:10:01Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

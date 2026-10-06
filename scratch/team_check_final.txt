@@ -1,0 +1,43 @@
+team check — PASS (2 active claims, 131 tasks, 0 fail, 41 warn)
+  WARN task DOC-02 says source docs/33 but is not there anymore
+  WARN task INT-01 says source docs/33 but is not there anymore
+  WARN task RV-06 says source docs/33 but is not there anymore
+  WARN task SPEC-05 says source docs/33 but is not there anymore
+  WARN task UX-08 says source docs/33 but is not there anymore
+  WARN task UX-09 says source docs/33 but is not there anymore
+  WARN task UX-10 says source docs/33 but is not there anymore
+  WARN task UX-11 says source docs/33 but is not there anymore
+  WARN TB-026 is done while dep TB-016 is todo
+  WARN TB-030 is done while dep TB-022 is todo
+  WARN TB-031 is review while dep TB-022 is todo
+  WARN TB-032 is review while dep TB-022 is todo
+  WARN TB-045 is in-progress while dep TB-043 is todo
+  WARN HO-007-tb-030.md: 2 file(s) written inside the claim window but OUTSIDE the claimed scopes: AGENTS.md, GEMINI.md
+  WARN HO-009-tb-015.md: 1 file(s) changed inside the claim window but not declared under '## Changed': tests/unit/test_gate_ruff.py
+  WARN HO-010-tb-016.md: 5 file(s) changed inside the claim window but not declared under '## Changed': app/engine/ai/usage.py, app/engine/exports/excel_pack.py, app/engine/store/forecast_repo.py, pyproject.toml, tests/unit/test_gate_mypy.py
+  WARN HO-010-tb-016.md: 2 file(s) written inside the claim window but OUTSIDE the claimed scopes: tests/unit/test_rules_01_08.py, tests/unit/test_rules_09_16.py
+  WARN HO-012-tb-017.md: 3 file(s) changed inside the claim window but not declared under '## Changed': ui/eslint.config.js, ui/package-lock.json, ui/package.json
+  WARN HO-013-tb-025.md: 4 file(s) changed inside the claim window but not declared under '## Changed': app/desktop/shell.py, app/jobs/__init__.py, app/jobs/registry.py, app/jobs/worker.py
+  WARN HO-013-tb-025.md: 1 file(s) written inside the claim window but OUTSIDE the claimed scopes: scripts/build.py
+  WARN HO-015-tb-007.md: 2 file(s) changed inside the claim window but not declared under '## Changed': app/engine/rules/rules_01_08.py, app/engine/rules/rules_09_16.py
+  WARN HO-015-tb-007.md: 8 file(s) written inside the claim window but OUTSIDE the claimed scopes: .import_linter_cache/.gitignore, .import_linter_cache/3aba9e28428eba0e4969263086dae345455662fc.data.json, .import_linter_cache/CACHEDIR.TAG, scripts/build.py, scripts/license_gate.py
+  WARN HO-021-eng-01.md: 2 file(s) changed inside the claim window but not declared under '## Changed': app/engine/pptx_fill/core.py, app/engine/pptx_fill/patterns.py
+  WARN HO-022-pa-01.md: docs-only handoff verified only by the coordination command (`team.py check`); the deliverable's own content was not re-checked
+  WARN HO-023-pa-02.md: docs-only handoff verified only by the coordination command (`team.py check`); the deliverable's own content was not re-checked
+  WARN HO-030-ux-05.md: docs-only handoff verified only by the coordination command (`team.py check`); the deliverable's own content was not re-checked
+  WARN HO-031-ux-08.md: 3 file(s) written inside the claim window but OUTSIDE the claimed scopes: scripts/check_ui_gate.py, scripts/ui_gate_baseline.json, tests/unit/test_check_ui_gate.py
+  WARN HO-033-ux-09.md: 3 file(s) written inside the claim window but OUTSIDE the claimed scopes: scripts/check_ui_gate.py, scripts/ui_gate_baseline.json, tests/unit/test_check_ui_gate.py
+  WARN HO-035-ux-10.md: 1 file(s) written inside the claim window but OUTSIDE the claimed scopes: evidence/findings_lifecycle_audit.md
+  WARN HO-036-tb-006.md: 17 file(s) written inside the claim window but OUTSIDE the claimed scopes: .import_linter_cache/.gitignore, .import_linter_cache/3aba9e28428eba0e4969263086dae345455662fc.data.json, .import_linter_cache/CACHEDIR.TAG, AGENTS.md, GEMINI.md
+  WARN HO-038-tb-011.md: 1 file(s) written inside the claim window but OUTSIDE the claimed scopes: scripts/memory.py
+  WARN HO-039-ux-22.md: 5 file(s) written inside the claim window but OUTSIDE the claimed scopes: scripts/generate_error_catalogue.py, the, Last, Owning, Status
+  WARN HO-040-eng-05.md: 5 file(s) written inside the claim window but OUTSIDE the claimed scopes: app/api/openapi.json, the, Last, Owning, Status
+  WARN HO-041-eng-07.md: 1 file(s) written inside the claim window but OUTSIDE the claimed scopes: tests/unit/test_retire_hardcoded_generators.py
+  WARN HO-042-ux-08.md: 1 file(s) written inside the claim window but OUTSIDE the claimed scopes: tests/unit/test_retire_hardcoded_generators.py
+  WARN HO-043-lead-03.md: 12 file(s) written inside the claim window but OUTSIDE the claimed scopes: app/engine/calc/__init__.py, app/engine/calc/observable.py, evidence/qual01_decimal_money_audit.md, evidence/retire_hardcoded_generators.md, scripts/generate_error_catalogue.py
+  WARN HO-046-lead-01.md: 5 file(s) written inside the claim window but OUTSIDE the claimed scopes: evidence/eng06_fast_gate_evidence.md, evidence/rule_traceability_matrix.md, scripts/check_rule_traceability.py, tests/unit/test_check_rule_traceability.py, tests/unit/test_fast_gate.py
+  WARN HO-047-corpus-03.md: 22 file(s) written inside the claim window but OUTSIDE the claimed scopes: .import_linter_cache/7beb7a4ac8ae1e2b65abb849946b51c0e3af74e6.data.json, .import_linter_cache/app.meta.json, app/api/openapi.json, app/engine/calc/__init__.py, app/engine/calc/observable.py
+  WARN HO-048-lead-02.md: 1 file(s) written inside the claim window but OUTSIDE the claimed scopes: tests/unit/test_corpus_determinism.py
+  WARN 213 working-tree edit(s) not covered by an active claim: .gitignore, CHANGELOG.md, README.md, STATE.md, app/cli/main.py, app/desktop/shell.py, app/engine/ai/guardrails.py, app/engine/ai/usage.py
+  WARN team/digest.md is older than STATE.md — run `python scripts/team.py digest`
+EXIT=0

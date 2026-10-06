@@ -1,0 +1,21 @@
+{
+  "id": "RV-09",
+  "title": "Falsify the handoffs, not the files. Take ten handoffs at random, re-run the command each one quotes, and report every number that does not reproduce. A handoff whose figure cannot be re-derived is the single most expensive defect this team can ship, because it is trusted downstream",
+  "priority": "P1",
+  "lane": "verification",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:03:12Z",
+  "updated_utc": "2026-10-05T15:03:12Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:03:12Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

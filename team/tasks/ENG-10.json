@@ -1,0 +1,42 @@
+{
+  "id": "ENG-10",
+  "title": "Structured logging with a run correlation id, so a client who says 'the 12th failed' can be answered by one id rather than by asking them to reproduce it. Acceptance: one run id threads import through rule execution to the exported pack, and the id appears in the pack itself",
+  "priority": "P1",
+  "lane": "api",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:22:06Z",
+  "updated_utc": "2026-10-05T21:45:36Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:22:06Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T21:06:50Z",
+      "agent": "opencode2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T21:11:46Z",
+      "agent": "opencode2",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T21:43:32Z",
+      "agent": "opencode",
+      "event": "rejected via HO-063"
+    },
+    {
+      "utc": "2026-10-05T21:45:36Z",
+      "agent": "opencode2",
+      "event": "release (todo)"
+    }
+  ],
+  "handoff": null
+}

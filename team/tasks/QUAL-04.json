@@ -1,0 +1,21 @@
+{
+  "id": "QUAL-04",
+  "title": "Installer rebuild, nightly end-to-end and the coverage bars, landed as one repeatable step rather than three things someone remembers to do. Acceptance: the command, its exit code, and the artefacts it leaves behind",
+  "priority": "P1",
+  "lane": "packaging",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:22:06Z",
+  "updated_utc": "2026-10-05T15:22:06Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:22:06Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

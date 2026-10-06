@@ -1,0 +1,36 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\Tahir\Documents\GitHub\finalFPA
+configfile: pyproject.toml
+plugins: anyio-4.15.1, cov-7.1.0
+collected 31 items
+
+tests\rules\test_acceptance.py ......................FFFF.F...           [100%]
+
+================================== FAILURES ===================================
+E   AssertionError: >= 29 of 32 (>= 90 % of the 32 raises) - measured 11/32 = 34.4 %. Missed: ['P1', 'P2', 'P2', 'P2', 'P3', 'P4', 'P6', 'P8', 'P9', 'P10', 'P10', 'P12', 'P13', 'P13', 'P14', 'P15', 'P16', 'P20', 'P21', 'P21', 'P24']
+    assert False
+     +  where False = BarResult(name='Planted-exception recall', requirement='>= 29 of 32 (>= 90 % of the 32 raises)', measured='11/32 = 34.4 %', passed=False, detail='21 planted case(s) not detected', measurable=True).passed
+C:\Users\Tahir\Documents\GitHub\finalFPA\tests\rules\test_acceptance.py:519: AssertionError: >= 29 of 32 (>= 90 % of the 32 raises) - measured 11/32 = 34.4 %. Missed: ['P1', 'P2', 'P2', 'P2', 'P3', 'P4', 'P6', 'P8', 'P9', 'P10', 'P10', 'P12', 'P13', 'P13', 'P14', 'P15', 'P16', 'P20', 'P21', 'P21', 'P24']
+E   AssertionError: 0 of 8 controls may raise - measured 1 fired. Fired: ['P30']
+    assert False
+     +  where False = BarResult(name='Control precision', requirement='0 of 8 controls may raise', measured='1 fired', passed=False, detail='P30 EXC-018', measurable=True).passed
+C:\Users\Tahir\Documents\GitHub\finalFPA\tests\rules\test_acceptance.py:530: AssertionError: 0 of 8 controls may raise - measured 1 fired. Fired: ['P30']
+E   AssertionError: 18 of 18 High plantings found - measured 6/18
+    assert False
+     +  where False = BarResult(name='High-severity recall', requirement='18 of 18 High plantings found', measured='6/18', passed=False, detail='a missed High is a control failure, not a statistic', measurable=True).passed
+C:\Users\Tahir\Documents\GitHub\finalFPA\tests\rules\test_acceptance.py:544: AssertionError: 18 of 18 High plantings found - measured 6/18
+E   AssertionError: a rule with > 3 unexplained findings is tuned or documented before the gate - measured 422 extra across 10 rule(s); over threshold: ['EXC-006', 'EXC-017', 'EXC-018', 'EXC-019', 'EXC-021', 'EXC-022']
+    assert False
+     +  where False = BarResult(name='Extra findings', requirement='a rule with > 3 unexplained findings is tuned or documented before the g...itive log reference is committed in this repository; extras are therefore UNEXPLAINED, not justified', measurable=True).passed
+C:\Users\Tahir\Documents\GitHub\finalFPA\tests\rules\test_acceptance.py:552: AssertionError: a rule with > 3 unexplained findings is tuned or documented before the gate - measured 422 extra across 10 rule(s); over threshold: ['EXC-006', 'EXC-017', 'EXC-018', 'EXC-019', 'EXC-021', 'EXC-022']
+E   AssertionError: rules with zero coverage (planted but raised nothing): ['EXC-001', 'EXC-002', 'EXC-003', 'EXC-006', 'EXC-008', 'EXC-009', 'EXC-010', 'EXC-012', 'EXC-013', 'EXC-014', 'EXC-016', 'EXC-020', 'EXC-021', 'EXC-024']
+    assert not ['EXC-001', 'EXC-002', 'EXC-003', 'EXC-006', 'EXC-008', 'EXC-009', ...]
+C:\Users\Tahir\Documents\GitHub\finalFPA\tests\rules\test_acceptance.py:575: AssertionError: rules with zero coverage (planted but raised nothing): ['EXC-001', 'EXC-002', 'EXC-003', 'EXC-006', 'EXC-008', 'EXC-009', 'EXC-010', 'EXC-012', 'EXC-013', 'EXC-014', 'EXC-016', 'EXC-020', 'EXC-021', 'EXC-024']
+=========================== short test summary info ===========================
+FAILED tests/rules/test_acceptance.py::test_planted_exception_recall_bar - As...
+FAILED tests/rules/test_acceptance.py::test_control_precision_bar - Assertion...
+FAILED tests/rules/test_acceptance.py::test_high_severity_recall_bar - Assert...
+FAILED tests/rules/test_acceptance.py::test_extra_findings_bar - AssertionErr...
+FAILED tests/rules/test_acceptance.py::test_no_rule_has_zero_coverage - Asser...
+================== 5 failed, 26 passed in 277.05s (0:04:37) ===================

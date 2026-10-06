@@ -1,0 +1,37 @@
+{
+  "id": "RV-11",
+  "title": "Falsify the money guarantee. Search for float in every monetary path and try to construct an amount that loses a paisa from parse to pack. Report the first real loss you find, or the argument for why none exists. Acceptance: the search that was run, the constructed case, and its exact arithmetic",
+  "priority": "P0",
+  "lane": "verification",
+  "status": "in-progress",
+  "owner": "hermes",
+  "claim_id": "hermes-20261006T1138Z-ac05",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:22:07Z",
+  "updated_utc": "2026-10-06T11:38:43Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:22:07Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T21:16:42Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T21:18:00Z",
+      "agent": "hermes",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-06T11:38:43Z",
+      "agent": "hermes",
+      "event": "claimed"
+    }
+  ],
+  "handoff": null
+}

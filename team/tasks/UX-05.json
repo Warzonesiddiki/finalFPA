@@ -1,0 +1,31 @@
+{
+  "id": "UX-05",
+  "title": "The analyst's three artifacts of desire: (1) one-page board narrative, (2) reconciliation worksheet view, (3) what-changed-since-last-close diff. For each: the journey step it serves, the FRs/SCRs it needs, and the smallest shippable slice; output evidence/ux/analyst-wishes.md and feed docs/18 proposals",
+  "source": "team",
+  "priority": "P2",
+  "status": "review",
+  "owner": "hermes",
+  "claim_id": "hermes-20261005T1403Z-56de",
+  "deps": [],
+  "lane": "product",
+  "created_utc": "2026-10-05T12:04:11Z",
+  "updated_utc": "2026-10-05T14:11:46Z",
+  "history": [
+    {
+      "utc": "2026-10-05T12:04:11Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T14:03:44Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T14:11:46Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-030"
+}

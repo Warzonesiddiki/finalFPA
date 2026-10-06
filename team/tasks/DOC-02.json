@@ -1,0 +1,20 @@
+{
+  "id": "DOC-02",
+  "title": "EULA / disclaimer decision packet for the payload: build.py reports a blocker because the repo ships no EULA source text. Produce a 3-option packet (what a commercial FP&A tool typically ships, what the docs already say in 04/15/17, and the minimum acceptable text) with the decision the owner must make, the legal exposure of each, and the exact file the build should read. No text is written into the payload until the owner rules",
+  "source": "docs/33",
+  "priority": "P2",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "packaging",
+  "created_utc": "2026-10-05T13:11:46Z",
+  "updated_utc": "2026-10-05T13:11:46Z",
+  "history": [
+    {
+      "utc": "2026-10-05T13:11:46Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

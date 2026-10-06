@@ -1,0 +1,31 @@
+{
+  "id": "UX-02",
+  "title": "Re-baseline the journey audit against the decided questions: for every friction in evidence/ux/hermes-journey.md that cites OQ-025/026/027, mark it settled-by-DEC-056/057/058 or still-open, with the DEC id and the clause it changes; output evidence/ux/hermes-journey-v2.md (do not edit v1)",
+  "source": "team",
+  "priority": "P0",
+  "status": "review",
+  "owner": "hermes",
+  "claim_id": "hermes-20261005T1511Z-335d",
+  "deps": [],
+  "lane": "product",
+  "created_utc": "2026-10-05T12:04:09Z",
+  "updated_utc": "2026-10-05T15:22:07Z",
+  "history": [
+    {
+      "utc": "2026-10-05T12:04:09Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T15:11:36Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T15:22:07Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-037"
+}

@@ -1,0 +1,27 @@
+{
+  "id": "TB-023",
+  "title": "Measure `NFR-002` end-to-end (250k rows incl. validation report) ≤ 60 s; record in the `14` §8.2 baseline; optimise honestly if still over",
+  "source": "docs/33",
+  "priority": "P2",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [
+    "TB-022"
+  ],
+  "lane": "perf",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T10:14:19Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:19Z",
+      "agent": "buffy",
+      "event": "triaged P2 / lane perf by leader"
+    }
+  ]
+}

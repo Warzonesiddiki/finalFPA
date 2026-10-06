@@ -1,0 +1,21 @@
+{
+  "id": "QUAL-06",
+  "title": "Round-trip: every number on the generated board pack must be traceable back to the source rows that produced it, and the trace must be machine-checkable rather than asserted. Acceptance: a command that walks one headline number to its source rows and prints the path, run on every headline number",
+  "priority": "P1",
+  "lane": "corpus",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:22:07Z",
+  "updated_utc": "2026-10-05T15:22:07Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:22:07Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

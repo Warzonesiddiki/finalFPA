@@ -1,0 +1,20 @@
+{
+  "id": "RV-05",
+  "title": "Guard-hunting: try to break each of the six licence-gate checks and each team.py claim guard (overlap, leader-only, off-limits, WIP, empty handoff section, undeclared changed file, release --done gate). For every guard that cannot be made to fail, report it with the exact input that slipped through",
+  "source": "team",
+  "priority": "P1",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "verification",
+  "created_utc": "2026-10-05T13:03:33Z",
+  "updated_utc": "2026-10-05T13:03:33Z",
+  "history": [
+    {
+      "utc": "2026-10-05T13:03:33Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

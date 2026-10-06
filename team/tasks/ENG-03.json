@@ -1,0 +1,32 @@
+{
+  "id": "ENG-03",
+  "title": "Finding-lifecycle audit and gap fill: trace a finding from raise to sign-off through store, API and export; list what the store persists today, then implement only the gaps the workflow in UX-12 needs (owner, comment, status history). Migration-safe, with the existing tests for each file touched",
+  "priority": "P1",
+  "lane": "engine",
+  "status": "review",
+  "owner": "opencode2",
+  "claim_id": "opencode2-20261005T1447Z-7b90",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T14:36:06Z",
+  "updated_utc": "2026-10-05T14:52:26Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T14:36:06Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T14:47:25Z",
+      "agent": "opencode2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T14:52:26Z",
+      "agent": "opencode2",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-034"
+}

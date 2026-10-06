@@ -1,0 +1,20 @@
+{
+  "id": "UX-06",
+  "title": "Board-pack narrative: spec the one page an FP&A manager actually reads - the five numbers, the variance story and the ask. Map it to docs 08/02 screens and FRs, say what the tool must compute versus what the analyst types. Output evidence/ux/board-narrative.md",
+  "source": "team",
+  "priority": "P1",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "product",
+  "created_utc": "2026-10-05T13:03:34Z",
+  "updated_utc": "2026-10-05T13:03:34Z",
+  "history": [
+    {
+      "utc": "2026-10-05T13:03:34Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

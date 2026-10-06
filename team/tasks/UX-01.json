@@ -1,0 +1,66 @@
+{
+  "id": "UX-01",
+  "title": "Analyst journey audit (FP&A month-end walked hour by hour against 08/05/02): every step, friction and missing capability tied to the governing clause; deliver team/reviews/hermes-journey.md + ranked gap list",
+  "source": "buffy",
+  "priority": "P1",
+  "status": "done",
+  "owner": "hermes",
+  "claim_id": "hermes-20261005T1054Z-c6be",
+  "deps": [],
+  "lane": "product",
+  "created_utc": "2026-10-05T10:45:24Z",
+  "updated_utc": "2026-10-05T12:44:17Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:45:24Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T10:45:24Z",
+      "agent": "buffy",
+      "event": "renamed T-048 -> UX-01 (hermes seat)"
+    },
+    {
+      "utc": "2026-10-05T10:54:02Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T11:00:11Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T11:04:57Z",
+      "agent": "antigravity",
+      "event": "verified via HO-003"
+    },
+    {
+      "utc": "2026-10-05T11:04:57Z",
+      "agent": "buffy",
+      "event": "status reverted from done to review: a leader probe appended a verification to the WRONG handoff (two files shared HO-003) and no check was actually run — verification still owed"
+    },
+    {
+      "utc": "2026-10-05T11:55:21Z",
+      "agent": "antigravity",
+      "event": "verified via HO-003"
+    },
+    {
+      "utc": "2026-10-05T12:03:33Z",
+      "agent": "buffy",
+      "event": "rejected via HO-003"
+    },
+    {
+      "utc": "2026-10-05T12:42:08Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T12:44:17Z",
+      "agent": "antigravity",
+      "event": "verified via HO-003"
+    }
+  ],
+  "handoff": "HO-003"
+}

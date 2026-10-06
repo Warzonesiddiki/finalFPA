@@ -1,0 +1,42 @@
+{
+  "id": "LEAD-01",
+  "title": "The false-evidence register: one row per rejected handoff with the pattern it failed on, so the pattern is visible instead of recurring. Three of this session's rejects share one root cause - a generator that prints a literal and a checker that greps documents. Output evidence/ops/false-evidence-register.md with the systemic fix each pattern needs",
+  "priority": "P0",
+  "lane": "verification",
+  "status": "review",
+  "owner": "buffy",
+  "claim_id": "buffy-20261005T1916Z-2c19",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:03:12Z",
+  "updated_utc": "2026-10-05T19:22:36Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:03:12Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T19:16:12Z",
+      "agent": "buffy",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T19:16:55Z",
+      "agent": "buffy",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-05T19:16:56Z",
+      "agent": "buffy",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T19:22:36Z",
+      "agent": "buffy",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-046"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "TB-034",
+  "title": "Close `DEF-012`/`DEF-014` — traceability chains complete (FR → spec → SCR → API → test)",
+  "source": "docs/33",
+  "priority": "P2",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "docs",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T10:14:19Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:19Z",
+      "agent": "buffy",
+      "event": "triaged P2 / lane docs by leader"
+    }
+  ]
+}

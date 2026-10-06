@@ -1,0 +1,21 @@
+{
+  "id": "CORPUS-05",
+  "title": "Determinism witness script for the corpus: the same seed produces byte-identical\nGL and budget files on two runs, and the two runs' checksums are recorded.\nCORPUS-03's fault-injection cases are seeded from sample-data, so they also\ndepend on the corpus being deterministic; this card makes that dependency\nvisible rather than assumed. Acceptance: two runs diffed clean, the command and\nexit code for both, and the recorded checksums in evidence/corpus/",
+  "priority": "P1",
+  "lane": "corpus",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T17:01:58Z",
+  "updated_utc": "2026-10-05T17:01:58Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T17:01:58Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

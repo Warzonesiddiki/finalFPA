@@ -1,0 +1,32 @@
+{
+  "id": "QUAL-05",
+  "title": "Determinism: the same corpus must produce byte-identical findings, identity hashes and board pack on two runs. The tie-out evidence already filed depends on it. Acceptance: two runs diffed clean, the command and exit code for both, and a test that fails when ordering or a hash becomes non-deterministic",
+  "priority": "P0",
+  "lane": "corpus",
+  "status": "review",
+  "owner": "freebuff2",
+  "claim_id": "freebuff2-20261005T1929Z-fa11",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:22:06Z",
+  "updated_utc": "2026-10-05T20:59:40Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:22:06Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T19:29:55Z",
+      "agent": "freebuff2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T20:59:40Z",
+      "agent": "freebuff2",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-057"
+}

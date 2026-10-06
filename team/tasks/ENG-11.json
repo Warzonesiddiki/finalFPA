@@ -1,0 +1,21 @@
+{
+  "id": "ENG-11",
+  "title": "What happens with no network: the AI commentary and any enrichment path must degrade to a stated, logged fallback rather than a hang or a silent empty result. Acceptance: the offline behaviour is specified, implemented and tested with the network disabled",
+  "priority": "P2",
+  "lane": "api",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:22:06Z",
+  "updated_utc": "2026-10-05T15:22:06Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:22:06Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

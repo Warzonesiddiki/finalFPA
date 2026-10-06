@@ -1,0 +1,31 @@
+{
+  "id": "RV-03",
+  "title": "Falsification pass on the guards themselves: prove tests/unit/test_engine_common.py fails on an injected duplicate, and that team.py check fails on an overlap, a leader-only write, an empty handoff section and an undeclared changed file. Report any rule that cannot be made to fail",
+  "source": "team",
+  "priority": "P1",
+  "status": "review",
+  "owner": "antigravity",
+  "claim_id": "antigravity-20261005T1241Z-c67f",
+  "deps": [],
+  "lane": "verification",
+  "created_utc": "2026-10-05T12:04:31Z",
+  "updated_utc": "2026-10-05T12:43:21Z",
+  "history": [
+    {
+      "utc": "2026-10-05T12:04:31Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T12:41:22Z",
+      "agent": "antigravity",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T12:43:21Z",
+      "agent": "antigravity",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-019"
+}

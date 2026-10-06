@@ -1,0 +1,74 @@
+============================= test session starts =============================
+collected 39 items
+
+tests\unit\test_dedupe.py ...........F...F.....FF............F.F.        [100%]
+
+================================== FAILURES ===================================
+_____________ test_normalise_invoice_no[ inv-00088213 -INV88213] ______________
+tests\unit\test_dedupe.py:82: in test_normalise_invoice_no
+    assert normalise_invoice_no(raw) == expected
+E   AssertionError: assert 'INV00088213' == 'INV88213'
+E     
+E     - INV88213
+E     + INV00088213
+E     ?    +++
+___________________ test_normalise_invoice_no[INV-0000-INV] ___________________
+tests\unit\test_dedupe.py:82: in test_normalise_invoice_no
+    assert normalise_invoice_no(raw) == expected
+E   AssertionError: assert 'INV0000' == 'INV'
+E     
+E     - INV
+E     + INV0000
+______________ test_normalise_invoice_no_bare_zero_int_is_empty _______________
+tests\unit\test_dedupe.py:91: in test_normalise_invoice_no_bare_zero_int_is_empty
+    assert normalise_invoice_no(0) == ""
+E   AssertionError: assert '0' == ''
+E     
+E     + 0
+__ test_normalise_invoice_no_collapses_the_same_invoice_on_different_layouts __
+tests\unit\test_dedupe.py:98: in test_normalise_invoice_no_collapses_the_same_invoice_on_different_layouts
+    assert {normalise_invoice_no(s) for s in spellings} == {"INV88213"}
+E   AssertionError: assert {'INV00088213', 'INV88213'} == {'INV88213'}
+E     
+E     Extra items in the left set:
+E     'INV00088213'
+E     Use -v to get more diff
+________ test_exc_007_style_blocking_needs_two_rows_and_an_ordered_key ________
+tests\unit\test_dedupe.py:259: in test_exc_007_style_blocking_needs_two_rows_and_an_ordered_key
+    assert [row for row in members] == ["row-1", "row-2"]
+E   AssertionError: assert [(('V-00931',...')), 'row-2')] == ['row-1', 'row-2']
+E     
+E     At index 0 diff: (('V-00931', 'INV88213', Decimal('45000.00')), 'row-1') != 'row-1'
+E     Use -v to get more diff
+________ test_rules_delegate_to_this_module_rather_than_reimplementing ________
+tests\unit\test_dedupe.py:292: in test_rules_delegate_to_this_module_rather_than_reimplementing
+    assert "groups.setdefault(" not in src_01
+E   assert 'groups.setdefault(' not in '"""Exceptio...l(context)\n'
+E     
+E     'groups.setdefault(' is contained here:
+E        unmapped_groups.setdefault(acc, []).append(tx)
+E     ?           ++++++++++++++++++
+E       
+E           for acc, tx_list in sorted(unmapped_groups.items(), key=lambda x: x[0]):
+E               if len(tx_list) < min_rows:...
+E     
+E     ...Full output truncated (621 lines hidden), use '-vv' to show
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.14.7-final-0 _______________
+
+Name                             Stmts   Miss Branch BrPart  Cover   Missing
+----------------------------------------------------------------------------
+app\engine\dedupe\__init__.py        3      0      0      0   100%
+app\engine\dedupe\blocking.py       23      0      8      0   100%
+app\engine\dedupe\normalize.py      17      0      6      0   100%
+----------------------------------------------------------------------------
+TOTAL                               43      0     14      0   100%
+Required test coverage of 75.0% reached. Total coverage: 100.00%
+=========================== short test summary info ===========================
+FAILED tests/unit/test_dedupe.py::test_normalise_invoice_no[ inv-00088213 -INV88213]
+FAILED tests/unit/test_dedupe.py::test_normalise_invoice_no[INV-0000-INV] - A...
+FAILED tests/unit/test_dedupe.py::test_normalise_invoice_no_bare_zero_int_is_empty
+FAILED tests/unit/test_dedupe.py::test_normalise_invoice_no_collapses_the_same_invoice_on_different_layouts
+FAILED tests/unit/test_dedupe.py::test_exc_007_style_blocking_needs_two_rows_and_an_ordered_key
+FAILED tests/unit/test_dedupe.py::test_rules_delegate_to_this_module_rather_than_reimplementing
+======================== 6 failed, 33 passed in 0.57s =========================

@@ -107,6 +107,8 @@ class SaveCommentaryRequest(BaseModel):
 class RunRulesRequest(BaseModel):
     period: Optional[str] = "FY26-P09"
     asOfDate: Optional[str] = "2026-11-12"
+    correlationId: Optional[str] = None
+    claimId: Optional[str] = None
 
 
 class PatchExceptionRequest(BaseModel):
@@ -871,9 +873,16 @@ def create_app() -> FastAPI:
         """
         period = payload.period if payload and payload.period else "FY26-P09"
         as_of = payload.asOfDate if payload and payload.asOfDate else None
+        corr_id = payload.correlationId if payload and payload.correlationId else None
+        claim_id = payload.claimId if payload and payload.claimId else None
         db_mgr = DatabaseManager()
         repo = ExceptionsRepository(db_mgr)
-        summary = repo.run_rules(period_code=period, as_of_date=as_of)
+        summary = repo.run_rules(
+            period_code=period,
+            as_of_date=as_of,
+            correlation_id=corr_id,
+            claim_id=claim_id,
+        )
         return {"status": "ok", "data": summary}
 
     # =========================================================================

@@ -1,0 +1,32 @@
+{
+  "id": "DOC-03",
+  "title": "Release-readiness dossier: one page the owner can read to decide ship or not - every gate with its real exit status, open decisions with their blast radius, licence posture with SHAs, and the known limits stated as numbers. No adjectives, no optimism; every line traceable to a command",
+  "priority": "P1",
+  "lane": "docs",
+  "status": "review",
+  "owner": "buffy",
+  "claim_id": "buffy-20261005T2004Z-217d",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T14:36:06Z",
+  "updated_utc": "2026-10-05T20:31:03Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T14:36:06Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T20:04:43Z",
+      "agent": "buffy",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T20:31:03Z",
+      "agent": "buffy",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-050"
+}

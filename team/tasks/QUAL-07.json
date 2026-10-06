@@ -1,0 +1,21 @@
+{
+  "id": "QUAL-07",
+  "title": "Timezone and calendar edges for an Indian month-end close: the run date, the fiscal period boundary and any timestamp stored in UTC must land on the right local day. Acceptance: the edge dates tested, the expected local date for each, and the command",
+  "priority": "P1",
+  "lane": "corpus",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:22:07Z",
+  "updated_utc": "2026-10-05T15:22:07Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:22:07Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

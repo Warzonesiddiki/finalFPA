@@ -1,0 +1,21 @@
+{
+  "id": "CORPUS-04",
+  "title": "A data-quality report on sample-data itself: rows, entities, periods, currency mix, missing fields and the residual per entity-month, generated not typed. Acceptance: the report regenerates from the corpus with one command and every figure traces to a query",
+  "priority": "P1",
+  "lane": "corpus",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:03:12Z",
+  "updated_utc": "2026-10-05T15:03:12Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:03:12Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

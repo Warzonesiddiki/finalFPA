@@ -1,0 +1,41 @@
+{
+  "id": "TB-008",
+  "title": "Rule-by-rule diff and fix for the unexplained misses: P4b, P10×2, P12, P13×2, P14, P15b, P16 vs the `06` sample cases",
+  "source": "docs/33",
+  "priority": "P0",
+  "status": "done",
+  "owner": "antigravity",
+  "claim_id": "antigravity-20261005T1115Z-4532",
+  "deps": [],
+  "lane": "rules",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T12:09:51Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:18Z",
+      "agent": "buffy",
+      "event": "triaged P0 / lane rules by leader"
+    },
+    {
+      "utc": "2026-10-05T11:15:50Z",
+      "agent": "antigravity",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T11:53:24Z",
+      "agent": "antigravity",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T12:09:51Z",
+      "agent": "buffy",
+      "event": "verified via HO-011"
+    }
+  ],
+  "handoff": "HO-011"
+}

@@ -32,7 +32,7 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import pytest
 
@@ -90,7 +90,7 @@ def peak_working_set_mb() -> float:
     return pmc.PeakWorkingSetSize / (1024 * 1024) if ok else 0.0
 
 
-def _load_context() -> Tuple[RuleContext, int, float]:
+def _load_context() -> tuple[RuleContext, int, float]:
     """Parse the scale fixture and build the rule context. Returns (ctx, rows, parse_s)."""
     t0 = time.perf_counter()
     _batch, transactions = parse_csv_transactions(SCALE_CSV)
@@ -140,8 +140,8 @@ def test_full_rule_run_250k_within_nfr007():
     )
 
     batch = build_deduplicated_batch()
-    findings: List[Any] = []
-    per_rule: Dict[str, float] = {}
+    findings: list[Any] = []
+    per_rule: dict[str, float] = {}
 
     t0 = time.perf_counter()
     for evaluator in batch:

@@ -2,9 +2,18 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from typing import NamedTuple
+
+# Force UTF-8 environment streams on Windows to prevent UnicodeEncodeError / cp1252 crashes
+if sys.platform == "win32":
+    os.environ["PYTHONIOENCODING"] = "utf-8"
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 
 class BarResult(NamedTuple):
@@ -126,7 +135,10 @@ def main() -> int:
     rc3 = run_command(cmd3, desc3)
     results.append(BarResult(desc3, cmd3, rc3))
 
-    # 4. Frontend gate per doc 17 S3.2 (TB-017 / ENG-02)
+    # 4. Frontend gate per doc 17 S3.2 (TB-017 / ENG-02): eslint with the React/hooks rules
+    # and tsc --noEmit. Evaluated with advisory budget (scripts/ui_gate_baseline.json).
+    # Runs npm run lint --prefix ui and npm run typecheck --prefix ui via check_ui_gate.py:
+    # "ESLint (ui)" and "TypeScript Check (tsc --noEmit)"
     cmd4 = "python scripts/check_ui_gate.py"
     desc4 = "UI Gate Check (ESLint (ui) + TypeScript Check (tsc --noEmit))"
     rc4 = run_command(cmd4, desc4)
@@ -156,44 +168,50 @@ def main() -> int:
     rc8 = run_command(cmd8, desc8)
     results.append(BarResult(desc8, cmd8, rc8))
 
-    # 9. Engine-boundary import rule per doc 09 S4.1 (TB-014)
-    cmd9 = 'python -c "from importlinter.cli import lint_imports; raise SystemExit(lint_imports())"'
-    desc9 = "Engine-Boundary Import Rule (lint-imports)"
+    # 9. Spec-to-Code Constants Drift Check per CONST-01 and DEC-057 (HO-006)
+    cmd9 = "python scripts/check_spec_constants.py"
+    desc9 = "Spec-to-Code Constants Drift Check"
     rc9 = run_command(cmd9, desc9)
     results.append(BarResult(desc9, cmd9, rc9))
 
-    # 10. Python tests and coverage, excluding perf tests
-    cmd10 = 'python -m pytest tests -m "not perf" --cov=app --cov-report=term --cov-report=xml:coverage.xml'
-    desc10 = "Pytest Fast Suite with Coverage"
+    # 10. Engine-boundary import rule per doc 09 S4.1 (TB-014)
+    cmd10 = 'python -c "from importlinter.cli import lint_imports; raise SystemExit(lint_imports())"'
+    desc10 = "Engine-Boundary Import Rule (lint-imports)"
     rc10 = run_command(cmd10, desc10)
     results.append(BarResult(desc10, cmd10, rc10))
+
+    # 11. Python tests and coverage, excluding perf tests
+    cmd11 = 'python -m pytest tests -m "not perf" --cov=app --cov-report=term --cov-report=xml:coverage.xml'
+    desc11 = "Pytest Fast Suite with Coverage"
+    rc11 = run_command(cmd11, desc11)
+    results.append(BarResult(desc11, cmd11, rc11))
 
     cov_rc = enforce_coverage_gates(domain_threshold=90.0, backend_threshold=75.0)
     results.append(BarResult("NFR-014 Split Coverage Bars", "enforce_coverage_gates", cov_rc))
 
-    # 11. Performance regression tests
-    cmd11 = 'python -m pytest tests -m "perf"'
-    desc11 = "Pytest Performance Suite"
-    rc11 = run_command(cmd11, desc11)
-    results.append(BarResult(desc11, cmd11, rc11))
-
-    # 12. CLI doctor check
-    cmd12 = "python -m app.cli doctor --json"
-    desc12 = "CLI Doctor Health Check"
+    # 12. Performance regression tests
+    cmd12 = 'python -m pytest tests -m "perf"'
+    desc12 = "Pytest Performance Suite"
     rc12 = run_command(cmd12, desc12)
     results.append(BarResult(desc12, cmd12, rc12))
 
-    # 13. UI build check
-    cmd13 = 'cmd.exe /c "npm run build --prefix ui"'
-    desc13 = "Vite/TypeScript UI Build Check"
+    # 13. CLI doctor check
+    cmd13 = "python -m app.cli doctor --json"
+    desc13 = "CLI Doctor Health Check"
     rc13 = run_command(cmd13, desc13)
     results.append(BarResult(desc13, cmd13, rc13))
 
-    # 14. Addon 6 v2 §11 — machine gate for the reuse/license rails (final step)
-    cmd14 = "python scripts/license_gate.py"
-    desc14 = "License & Provenance Gate"
+    # 14. UI build check
+    cmd14 = 'cmd.exe /c "npm run build --prefix ui"'
+    desc14 = "Vite/TypeScript UI Build Check"
     rc14 = run_command(cmd14, desc14)
     results.append(BarResult(desc14, cmd14, rc14))
+
+    # 15. Addon 6 v2 §11 — machine gate for the reuse/license rails (final step)
+    cmd15 = "python scripts/license_gate.py"
+    desc15 = "License & Provenance Gate"
+    rc15 = run_command(cmd15, desc15)
+    results.append(BarResult(desc15, cmd15, rc15))
 
     # Summary reporting table
     print("\n" + "=" * 80)
@@ -208,7 +226,7 @@ def main() -> int:
     print("=" * 80)
 
     if failed_count > 0:
-        print(f"\n❌ Validation Gate FAILED: {failed_count}/{len(results)} bars failed.\n")
+        print(f"\n[FAIL] Validation Gate FAILED: {failed_count}/{len(results)} bars failed.\n")
         return 1
     else:
         print("\n=== All Quality Gate Checks Passed Cleanly! ===\n")

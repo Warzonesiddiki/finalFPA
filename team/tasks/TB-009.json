@@ -1,0 +1,27 @@
+{
+  "id": "TB-009",
+  "title": "Author P30's control case per `06` §7.2 F13c so precision lands at 0/8 by construction, not by random draw",
+  "source": "docs/33",
+  "priority": "P0",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [
+    "TB-006"
+  ],
+  "lane": "rules",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T10:14:18Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:18Z",
+      "agent": "buffy",
+      "event": "triaged P0 / lane rules by leader"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "PA-01",
+  "title": "Prior-art review #1 (github.com/Warzonesiddiki/fpa): licence gate 4A FIRST, then extract lessons (architecture, UX, what failed) as text; any code reuse needs Intake (§10) + ADP row",
+  "source": "buffy",
+  "priority": "P2",
+  "status": "review",
+  "owner": "hermes",
+  "claim_id": "hermes-20261005T1246Z-4b11",
+  "deps": [],
+  "lane": "prior-art",
+  "created_utc": "2026-10-05T10:14:20Z",
+  "updated_utc": "2026-10-05T12:56:14Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:14:20Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T10:14:20Z",
+      "agent": "buffy",
+      "event": "renamed T-044 -> PA-01"
+    },
+    {
+      "utc": "2026-10-05T12:46:21Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T12:56:14Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-022"
+}

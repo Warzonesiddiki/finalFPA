@@ -1,0 +1,32 @@
+{
+  "id": "CORPUS-03",
+  "title": "Fault injection: a command that corrupts the corpus in a named, documented way (drop a planted finding, duplicate a batch, unbalance a control total) and asserts the tool catches each one. This is what separates a rule that fires from a rule that happens to fire on this fixture. Acceptance: the injected defect name, the expected detection, and the exit code, for each",
+  "priority": "P0",
+  "lane": "corpus",
+  "status": "review",
+  "owner": "freebuff2",
+  "claim_id": "freebuff2-20261005T1531Z-f02e",
+  "source": "team",
+  "created_by": "buffy",
+  "created_utc": "2026-10-05T15:03:12Z",
+  "updated_utc": "2026-10-05T19:29:54Z",
+  "deps": [],
+  "history": [
+    {
+      "utc": "2026-10-05T15:03:12Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T15:31:03Z",
+      "agent": "freebuff2",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T19:29:54Z",
+      "agent": "freebuff2",
+      "event": "release (review)"
+    }
+  ],
+  "handoff": "HO-047"
+}

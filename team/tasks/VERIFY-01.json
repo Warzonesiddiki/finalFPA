@@ -1,0 +1,31 @@
+{
+  "id": "VERIFY-01",
+  "title": "Drain your share of the verification backlog: verify these seven handoffs, none of them yours - RV-02/HO-018, INT-01/HO-024, TB-031/HO-028, ENG-03/HO-034, ENG-05/HO-040, QUAL-01/HO-044, LEAD-02/HO-048. They have waited 311-443 minutes against a 30-minute service level. NOTE: QUAL-01 and ENG-05 are Decimal money work - R8 means any float path is a reject, not a nit. Run the author's own declared commands first and paste the output before reading anything else; if the command exits 0, the work still has not been verified, only reproduced. Acceptance: every handoff named below carries a `### Verified by` block naming a DIFFERENT agent from its author, and each block states what was actually re-run plus the raw result. A handoff that does not reproduce is rejected with the command that failed, not softened. Start with the oldest. If one blocks you, leave it for the next verifier and move on - verification is a queue, not a gate you wait at. Close the card only when its list is empty.",
+  "source": "docs/33",
+  "priority": "P0",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "verification",
+  "created_utc": "2026-10-05T20:03:33Z",
+  "updated_utc": "2026-10-05T21:49:18Z",
+  "history": [
+    {
+      "utc": "2026-10-05T20:03:33Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T21:18:07Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T21:49:18Z",
+      "agent": "hermes",
+      "event": "release (todo)"
+    }
+  ],
+  "handoff": null
+}

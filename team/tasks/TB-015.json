@@ -1,0 +1,61 @@
+{
+  "id": "TB-015",
+  "title": "Install `ruff`; add `[tool.ruff]` (format check + lint) to `pyproject.toml`; wire both steps into `scripts/check`",
+  "source": "docs/33",
+  "priority": "P1",
+  "status": "done",
+  "owner": "opencode",
+  "claim_id": "opencode-20261005T1122Z-dd67",
+  "deps": [],
+  "lane": "gate-tooling",
+  "created_utc": "2026-10-05T10:12:06Z",
+  "updated_utc": "2026-10-05T11:39:57Z",
+  "history": [
+    {
+      "utc": "2026-10-05T10:12:06Z",
+      "agent": "sync",
+      "event": "imported from docs/33"
+    },
+    {
+      "utc": "2026-10-05T10:14:19Z",
+      "agent": "buffy",
+      "event": "triaged P1 / lane gate-tooling by leader"
+    },
+    {
+      "utc": "2026-10-05T11:18:37Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T11:21:42Z",
+      "agent": "opencode",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-05T11:21:48Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T11:22:02Z",
+      "agent": "opencode",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-05T11:22:07Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T11:25:16Z",
+      "agent": "opencode",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T11:39:57Z",
+      "agent": "antigravity",
+      "event": "verified via HO-009"
+    }
+  ],
+  "handoff": "HO-009"
+}

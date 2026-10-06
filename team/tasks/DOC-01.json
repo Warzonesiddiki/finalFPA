@@ -1,0 +1,36 @@
+{
+  "id": "DOC-01",
+  "title": "Packaging notices audit: verify 15 step 4a and the distribution notices list every adopted source (ADP-001..003) and BUILD record (BD-001) with licence and SHA; output the exact text to add. No file may ship an adopted source's code without its notice",
+  "source": "team",
+  "priority": "P2",
+  "status": "done",
+  "owner": "buffy",
+  "claim_id": "buffy-20261005T1210Z-0a58",
+  "deps": [],
+  "lane": "packaging",
+  "created_utc": "2026-10-05T12:04:33Z",
+  "updated_utc": "2026-10-05T12:33:54Z",
+  "history": [
+    {
+      "utc": "2026-10-05T12:04:33Z",
+      "agent": "buffy",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-05T12:10:32Z",
+      "agent": "buffy",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-05T12:18:22Z",
+      "agent": "buffy",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-05T12:33:54Z",
+      "agent": "antigravity",
+      "event": "verified via HO-014"
+    }
+  ],
+  "handoff": "HO-014"
+}
