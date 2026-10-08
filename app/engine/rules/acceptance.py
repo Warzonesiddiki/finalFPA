@@ -285,6 +285,11 @@ class AcceptanceReport:
     divergences: List[str] = field(default_factory=list)
     hard_failures: List[str] = field(default_factory=list)
     blocked_reasons: List[str] = field(default_factory=list)
+    # A rule that raised inside the batch (T-009). Fault isolation records the
+    # exception and the run continues (batch.py, doc-06 §2.9), but the rule's
+    # zero findings are then a FAULT, not a measurement: without this list the
+    # report shows a crashed rule and a correctly-silent rule identically.
+    rule_faults: List[str] = field(default_factory=list)
     findings_total: int = 0
     extras_total: int = 0
     miss_list: List[Dict[str, str]] = field(default_factory=list)
@@ -332,6 +337,7 @@ class AcceptanceReport:
             "corpus": self.corpus,
             "divergences": self.divergences,
             "hard_failures": self.hard_failures,
+            "rule_faults": self.rule_faults,
             "bars": [b.to_dict() for b in self.bars],
             "per_rule": [r.to_dict() for r in self.rules],
             "findings_total": self.findings_total,
@@ -844,6 +850,18 @@ def run_rules(context) -> List[Any]:
     return evaluate_all_rules(context)
 
 
+def run_rules_detailed(context):
+    """The same run with its per-rule execution record (T-009).
+
+    `run_rules` returns findings only, so a rule that raised during the batch is
+    indistinguishable from a rule that correctly found nothing: both contribute
+    zero findings. The detailed result carries `status == error` with the
+    exception, which is what lets the report say *why* a rule is at zero.
+    """
+    from app.engine.rules.batch import evaluate_all_rules_detailed
+    return evaluate_all_rules_detailed(context)
+
+
 def measure(
     context,
     raises: Sequence[Dict[str, str]],
@@ -862,7 +880,23 @@ def measure(
 
     coverage = catalog_rule_coverage()
 
-    first = run_rules(context)
+    from app.engine.rules.batch import RuleExecutionStatus
+
+    first_run = run_rules_detailed(context)
+    first = first_run.findings
+    report.rule_faults = [
+        f"{execution.rule_name}: {execution.error_type}: {execution.error_message}"
+        for execution in first_run.executions
+        if execution.status == RuleExecutionStatus.ERROR
+    ]
+    # A crashed rule's findings were never measured, so a run that contains one
+    # cannot be PASS no matter how the seven bars score: an unmeasured bar is not
+    # a met bar. Recorded as a hard failure rather than a bar so the seven §5.3
+    # bars keep their spec'd meaning and count.
+    report.hard_failures.extend(
+        f"Rule execution fault (unmeasured, not a clean zero): {fault}"
+        for fault in report.rule_faults
+    )
     raised = [(_catalog_id(f), f.subject_key) for f in first]
     raised_set = set(raised)
     report.findings_total = len(first)
@@ -871,7 +905,7 @@ def measure(
     stable = True
     stability_detail = "identical"
     if stability_runs >= 2:
-        second = run_rules(context)
+        second = run_rules_detailed(context).findings
         second_set = {(_catalog_id(f), f.subject_key) for f in second}
         if second_set != raised_set:
             stable = False
@@ -945,6 +979,16 @@ def measure(
     zero_cov = [r.rule_id for r in report.rules if r.zero_coverage]
     unwired = [r.rule_id for r in report.rules if not r.wired]
 
+    zero_cov_detail = f"zero coverage: {zero_cov}" if zero_cov else ""
+    if report.rule_faults:
+        fault_note = (
+            "rule execution fault(s) recorded, not clean zeros: "
+            + "; ".join(report.rule_faults)
+        )
+        zero_cov_detail = (
+            f"{zero_cov_detail}; {fault_note}" if zero_cov_detail else fault_note
+        )
+
     report.bars = [
         BarResult(
             "Planted-exception recall",
@@ -998,7 +1042,7 @@ def measure(
             "every rule with a planted case raises at least one finding",
             f"{len(zero_cov)} rule(s) with zero coverage",
             not zero_cov,
-            f"zero coverage: {zero_cov}" if zero_cov else "",
+            zero_cov_detail,
         ),
     ]
 
@@ -1156,6 +1200,27 @@ def run_acceptance(
 # Step 5 - reports
 # --------------------------------------------------------------------------
 
+def _append_rule_faults(A, report: AcceptanceReport) -> None:
+    """Render the T-009 fault block: a crashed rule is unmeasured, not a zero.
+
+    Kept out of `render_markdown` both to hold that function's branching down and
+    because a fault block is a section about *measurement integrity*, not part of
+    the bars, so it must read as its own claim.
+    """
+    if not report.rule_faults:
+        return
+    A("## Rule execution faults (these zeros are faults, not measurements)")
+    A("")
+    A("The rule(s) below raised inside the batch. Fault isolation records the "
+      "exception and the run continues (doc-06 §2.9), so their recall rows are "
+      "**unmeasured**, not zero: read the row as a fault until the exception is "
+      "fixed. A rule that legitimately finds nothing never appears here.")
+    A("")
+    for fault in report.rule_faults:
+        A(f"- {fault}")
+    A("")
+
+
 def render_markdown(report: AcceptanceReport) -> str:
     """Human-readable report (doc 14 §5.2 step 5)."""
     L: List[str] = []
@@ -1185,7 +1250,7 @@ def render_markdown(report: AcceptanceReport) -> str:
         A("")
 
     if report.hard_failures:
-        A("## HARD FAILURES (prerequisites)")
+        A("## HARD FAILURES (prerequisites and rule faults)")
         A("")
         for f in report.hard_failures:
             A(f"- {f}")
@@ -1210,6 +1275,8 @@ def render_markdown(report: AcceptanceReport) -> str:
     # One heading only: an earlier version emitted this section twice, once
     # unconditionally and once conditionally, which read as a duplicated table
     # in every report.
+    _append_rule_faults(A, report)
+
     if not report.measurable:
         A("## Per-rule recall (doc 14 §5.4) - DIAGNOSTIC ONLY, NOT A BAR RESULT")
         A("")

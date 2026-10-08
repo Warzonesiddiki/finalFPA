@@ -1,0 +1,25 @@
+{
+  "id": "T-010",
+  "title": "Five pre-existing red tests are stale fixtures vs current spec-conformant code, all reproduced at HEAD in a clean extract. (1) test_evaluate_exc_021 passes EXC-021_single_threshold/dual_threshold config keys, but docs/06 section EXC-021 and the rule read MasterApprovalThreshold master records (context.master_approval_thresholds); the rule is spec-conformant, the fixture predates the master-data migration. (2) test_unbalanced_subledger_is_reported_but_not_scored_as_a_blocker asserts the capital-S needle 'Sub-ledger' but the divergence text is 'Required sub-ledger fixture ...' (docs pin the policy, not the casing). (3)(4) test_acceptance_imports_history_around_main_actuals_in_documented_order and test_corpus_integrity_reports_all_files_and_actual_commitability predate the control-total sidecar import_history/02_gl_batch_039.acceptance.json now required by the harness (missing-fixture gate) and the parse_excel_transactions(control_total_acceptance=...) kwarg. (5) test_run_acceptance_end_to_end_reports_blocked builds a 1-file fake corpus but the harness now requires all ACCEPTANCE_IMPORT_FILES plus the sidecar. R7: fix fixtures to the documented contracts, strengthen assertions where the old ones were vacuous; change no engine code, touch no thresholds or bars.",
+  "source": "opencode",
+  "priority": "P1",
+  "status": "in-progress",
+  "owner": "opencode",
+  "claim_id": "opencode-20261008T2111Z-436e",
+  "deps": [],
+  "lane": "engine",
+  "created_utc": "2026-10-08T21:11:32Z",
+  "updated_utc": "2026-10-08T21:11:38Z",
+  "history": [
+    {
+      "utc": "2026-10-08T21:11:32Z",
+      "agent": "opencode",
+      "event": "created"
+    },
+    {
+      "utc": "2026-10-08T21:11:38Z",
+      "agent": "opencode",
+      "event": "claimed"
+    }
+  ]
+}

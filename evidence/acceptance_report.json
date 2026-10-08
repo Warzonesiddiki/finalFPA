@@ -1,55 +1,38 @@
 {
-  "verdict": "FAIL",
-  "passed": false,
+  "verdict": "PASS",
+  "passed": true,
   "measurable": true,
   "blocked_reasons": [],
   "as_of": "2026-11-12",
   "period": "FY26-P09",
-  "elapsed_seconds": 28.7,
+  "elapsed_seconds": 23.8,
   "corpus_checksum": {
     "import_history/01_bank_batch_037.csv": "9bd938aff4dcb5f7d41cd5211c1fc6eb0c745a3b652de1e9c89b5866b09b6b88",
     "import_history/02_gl_batch_039.xlsx": "d8739ecd1dc2c36d4a7b061283c2c56c91da745d03af0205ff82d329b9b679ce",
-    "d365_gl_actuals.csv": "2ce854fa28fc9bc24903090b301d50efbd5e9d2e211668f2dfffa2b718a77c06",
+    "d365_gl_actuals.csv": "007dd68158b6b030259cf72ed34ad373ad58f3d701e7bdaee0c31cebe20171d4",
     "bank_ledger_actuals.csv": "d64e26698ed07a16681d098a5edcbd34c291a2024af7114877c79084b1bc7599",
     "payroll_procurement_actuals.csv": "1cd8993029befad7c3a0a657fe2561dc4b0ca9bc84291e573955a4e7342a17e1",
     "import_history/03_bank_batch_040.csv": "2ef1314edc64b5787aebb13225acc2c695be8aeaaa2053b8f66e604e0e885427",
     "import_history/04_bank_batch_041.csv": "33c24b3deaaa4895a55e0b5ea44f891e032d984843c8a66c3ed90c6f7c598f83"
   },
   "checksum_scope": {
-    "fingerprinted_count": 22,
+    "fingerprinted_count": 56,
+    "fingerprinted_suffixes": [
+      ".csv",
+      ".json",
+      ".xlsx"
+    ],
     "fingerprinted": [
       "bank_ledger_actuals.csv",
       "budget_fy26.csv",
       "d365_gl_actuals.csv",
       "expected_exceptions.csv",
       "import_history/01_bank_batch_037.csv",
+      "import_history/02_gl_batch_039.acceptance.json",
+      "import_history/02_gl_batch_039.xlsx",
       "import_history/03_bank_batch_040.csv",
       "import_history/04_bank_batch_041.csv",
       "malformed/bank_ledger_unbalanced.csv",
-      "malformed/parentheses_negatives.csv",
-      "malformed/semicolon_delimiter.csv",
-      "malformed/truncated_gl.csv",
-      "payroll_procurement_actuals.csv",
-      "test_comment.csv",
-      "test_scale/bank_ledger_actuals.csv",
-      "test_scale/budget_fy26.csv",
-      "test_scale/d365_gl_actuals.csv",
-      "test_scale/expected_exceptions.csv",
-      "test_scale/malformed/bank_ledger_unbalanced.csv",
-      "test_scale/malformed/parentheses_negatives.csv",
-      "test_scale/malformed/semicolon_delimiter.csv",
-      "test_scale/malformed/truncated_gl.csv",
-      "test_scale/payroll_procurement_actuals.csv"
-    ],
-    "excluded_count": 33,
-    "excluded_suffixes": [
-      ".xlsx"
-    ],
-    "exclusion_reason": {
-      ".xlsx": "openpyxl embeds a wall-clock dcterms:created in docProps/core.xml, so the hash changes on every generation"
-    },
-    "excluded": [
-      "import_history/02_gl_batch_039.xlsx",
       "malformed/cp1252_ansi_dates.xlsx",
       "malformed/duplicate_headers.xlsx",
       "malformed/embedded_total_rows.xlsx",
@@ -59,13 +42,23 @@
       "malformed/missing_voucher_column.xlsx",
       "malformed/mixed_currency_rows.xlsx",
       "malformed/no_data_rows.xlsx",
+      "malformed/parentheses_negatives.csv",
       "malformed/protected_sheet.xlsx",
+      "malformed/semicolon_delimiter.csv",
+      "malformed/truncated_gl.csv",
       "malformed/unicode_vendor_names.xlsx",
       "malformed/zip_bomb_guard.xlsx",
+      "payroll_procurement_actuals.csv",
       "templates/budget_template.xlsx",
       "templates/gl_actuals_template.xlsx",
       "templates/master_data_template.xlsx",
       "templates/pilot_tieout_worksheet_template.xlsx",
+      "test_comment.csv",
+      "test_scale/bank_ledger_actuals.csv",
+      "test_scale/budget_fy26.csv",
+      "test_scale/d365_gl_actuals.csv",
+      "test_scale/expected_exceptions.csv",
+      "test_scale/malformed/bank_ledger_unbalanced.csv",
       "test_scale/malformed/cp1252_ansi_dates.xlsx",
       "test_scale/malformed/duplicate_headers.xlsx",
       "test_scale/malformed/embedded_total_rows.xlsx",
@@ -75,15 +68,81 @@
       "test_scale/malformed/missing_voucher_column.xlsx",
       "test_scale/malformed/mixed_currency_rows.xlsx",
       "test_scale/malformed/no_data_rows.xlsx",
+      "test_scale/malformed/parentheses_negatives.csv",
       "test_scale/malformed/protected_sheet.xlsx",
+      "test_scale/malformed/semicolon_delimiter.csv",
+      "test_scale/malformed/truncated_gl.csv",
       "test_scale/malformed/unicode_vendor_names.xlsx",
       "test_scale/malformed/zip_bomb_guard.xlsx",
+      "test_scale/payroll_procurement_actuals.csv",
       "test_scale/templates/budget_template.xlsx",
       "test_scale/templates/gl_actuals_template.xlsx",
       "test_scale/templates/master_data_template.xlsx",
       "test_scale/templates/pilot_tieout_worksheet_template.xlsx"
     ],
-    "note": "paths are relative to the sample dir; test_scale/ holds a second copy of the template and malformed fixtures and is counted once per distinct path"
+    "sha256": {
+      "bank_ledger_actuals.csv": "d64e26698ed07a16681d098a5edcbd34c291a2024af7114877c79084b1bc7599",
+      "budget_fy26.csv": "59fec46b9dfe827fac7c49c4fb55d8e141dcac264401ee584ab9cc94276cfaf7",
+      "d365_gl_actuals.csv": "007dd68158b6b030259cf72ed34ad373ad58f3d701e7bdaee0c31cebe20171d4",
+      "expected_exceptions.csv": "d0691762bb82b9774e8506cf63f13806f221b936413e9b93f15ec80621999b21",
+      "import_history/01_bank_batch_037.csv": "9bd938aff4dcb5f7d41cd5211c1fc6eb0c745a3b652de1e9c89b5866b09b6b88",
+      "import_history/02_gl_batch_039.acceptance.json": "ee40f1bb9d14db5b3fac076ac4b0811f3f5fdf3692ae2ef59e4a6b4cb1e66053",
+      "import_history/02_gl_batch_039.xlsx": "d8739ecd1dc2c36d4a7b061283c2c56c91da745d03af0205ff82d329b9b679ce",
+      "import_history/03_bank_batch_040.csv": "2ef1314edc64b5787aebb13225acc2c695be8aeaaa2053b8f66e604e0e885427",
+      "import_history/04_bank_batch_041.csv": "33c24b3deaaa4895a55e0b5ea44f891e032d984843c8a66c3ed90c6f7c598f83",
+      "malformed/bank_ledger_unbalanced.csv": "faff4ecc985992430ae7fd94b6461367ebfdd6cbe2b8695479cd44eb72a17e0e",
+      "malformed/cp1252_ansi_dates.xlsx": "38c9623b583bcf232ca35ae30ea2d9cc8c5579042809df4dad9b890470f543cd",
+      "malformed/duplicate_headers.xlsx": "412e08672836d3d99a9552b401f469b60d32c7164b41c5540efdb04dd9f4ea58",
+      "malformed/embedded_total_rows.xlsx": "273f899a8637b8a5b486d1337aea70f0b9179f98b5d79fe7d0fde9f6ba9eacee",
+      "malformed/future_period_rows.xlsx": "b7cffed566a5cf3394e0d6ec3bb6b9f92e491ee8dd52bba1872251056e772a44",
+      "malformed/hidden_rows_missing_header.xlsx": "7ae40b187ec76741427ca047bd5f00f7ab9682c666827c12e0459df64dff7367",
+      "malformed/merged_two_row_header.xlsx": "5a9c66a7ad720eacee9018b33136e6a6fbbe8b5d31b17cd45d586394068f6715",
+      "malformed/missing_voucher_column.xlsx": "720c81cb7b8ebcfdd661c352ba509efecd76a6944b638828dcd2f6fbfa19a3aa",
+      "malformed/mixed_currency_rows.xlsx": "cd077fae65e67f0ec99be6a919f56a2b2f0cfae8fe13316d42ddea5e65369cc9",
+      "malformed/no_data_rows.xlsx": "cc6bcfe8778de414d3fd252dd17f4999b1a7160e894e5302c25887c031499537",
+      "malformed/parentheses_negatives.csv": "242120d9ce65bbbecbe9ff4922cfbc8436a8f3d8b6c5ba1d755242568d214ffc",
+      "malformed/protected_sheet.xlsx": "3727fa3aff0d1b3dcde8616718545e2678410695a6ae24a174fc0aef7a758bca",
+      "malformed/semicolon_delimiter.csv": "3759155bfcc787378f04d4c9cb96e3ada07a0441720fd1ca59b395e570534190",
+      "malformed/truncated_gl.csv": "f5066c68b694e6be3291e218a051d2b835ccd98460faff17c9b8ac197570458a",
+      "malformed/unicode_vendor_names.xlsx": "b7064666c32c3db59a6a27c7f08664dd1002995a86d95b14679a389caae0a0ee",
+      "malformed/zip_bomb_guard.xlsx": "58d2c5f658586ebc0fe513ae00edfd7f78d312264af794fe683c41ad4b3b952b",
+      "payroll_procurement_actuals.csv": "1cd8993029befad7c3a0a657fe2561dc4b0ca9bc84291e573955a4e7342a17e1",
+      "templates/budget_template.xlsx": "059d7539b76334e0c04737b7761163eb8f94e24f80443a1a93ebf0f3ab5e0b49",
+      "templates/gl_actuals_template.xlsx": "0d60ae875e91cd64fa69ce0f356cf5c9c6fcb91b6d042146ddfdc9b11f53479f",
+      "templates/master_data_template.xlsx": "7b9bbe09cf0437abb4e2e880d5d94ecf387c69b489b98d23fd774a24d488c73c",
+      "templates/pilot_tieout_worksheet_template.xlsx": "187239f9cc645d255df3e80a5553b9410eb529f56d73b4e7f27613fd6fb971ad",
+      "test_comment.csv": "6ab892233c30bcf70bfb86c523942e039e4a92aed3b4106c10e46f6564d09f6d",
+      "test_scale/bank_ledger_actuals.csv": "75ffb64015049e324726253afce4c7c0a625989377a86d96b95b29bea0727ed2",
+      "test_scale/budget_fy26.csv": "4e33e7d108ecc1d5e8d50974a61a0f9cee5f4c7b7a110d2c6f5020259fdff51c",
+      "test_scale/d365_gl_actuals.csv": "f2223e100a15c072e894f30ea1ea2f2b8f90767721c36010495ec162e9aa4ce4",
+      "test_scale/expected_exceptions.csv": "d4da88074f4a155364e329362b5128ee32d6ab811c88c15f2b857310901d31e6",
+      "test_scale/malformed/bank_ledger_unbalanced.csv": "faff4ecc985992430ae7fd94b6461367ebfdd6cbe2b8695479cd44eb72a17e0e",
+      "test_scale/malformed/cp1252_ansi_dates.xlsx": "0b7ca12d3a718d9aaa5cbeacdc56ceb7cb9725a4ffda68f7a565f342ca36097f",
+      "test_scale/malformed/duplicate_headers.xlsx": "75d0ab4dd2ba700cbe09b3754ac60399995b87ca30d9a7508c51bdba799ea635",
+      "test_scale/malformed/embedded_total_rows.xlsx": "a2defa6e297942c0cd89f7cb04664fa983a246f01c8efc63a2d9d9c938d8b3a5",
+      "test_scale/malformed/future_period_rows.xlsx": "6a509b305f1b8f6eb3e98da8db2f54fbe39b4c07732b1f4a822e86cb26973c13",
+      "test_scale/malformed/hidden_rows_missing_header.xlsx": "7370d611ccef52b2945bc80104cd90725f4f9c56e124a1330cc5537ee1284d66",
+      "test_scale/malformed/merged_two_row_header.xlsx": "953f91452612cc970a811e9ad59bc6ecc8a8b701b8fada68577af34d3c5555d4",
+      "test_scale/malformed/missing_voucher_column.xlsx": "ac6fb8c05b8c46957abef8395bead71bfc5d2a0f3ac1e771340499d7540ce973",
+      "test_scale/malformed/mixed_currency_rows.xlsx": "f133665cbbc25a6ebf6cb24100c830e61592dc401ebbe2916e6ad894ca915793",
+      "test_scale/malformed/no_data_rows.xlsx": "7977f86b2f64b651d925f66723664692da61b1788aaef429efd4fd066a76f4b4",
+      "test_scale/malformed/parentheses_negatives.csv": "242120d9ce65bbbecbe9ff4922cfbc8436a8f3d8b6c5ba1d755242568d214ffc",
+      "test_scale/malformed/protected_sheet.xlsx": "831af8270ad57f204799d07f44d26b179a6333d85eef11d0db6ce829b29a8a01",
+      "test_scale/malformed/semicolon_delimiter.csv": "3759155bfcc787378f04d4c9cb96e3ada07a0441720fd1ca59b395e570534190",
+      "test_scale/malformed/truncated_gl.csv": "f5066c68b694e6be3291e218a051d2b835ccd98460faff17c9b8ac197570458a",
+      "test_scale/malformed/unicode_vendor_names.xlsx": "9ad6c236a8b0e94b082b225f10117ebe22fdbd06a0daf639c86a7937c46c932b",
+      "test_scale/malformed/zip_bomb_guard.xlsx": "b213d01b03a07b57d6a18fe5afdc8a8ad7437ac2c6f339dc8add11a7396c8a0b",
+      "test_scale/payroll_procurement_actuals.csv": "f4c9055a4a8297e5ea2dc0bc666a0b51514b5c04e931bdf4de1219d53389baf9",
+      "test_scale/templates/budget_template.xlsx": "4f0d1f3ad41e3f7b58c1afa01d1319c17994eb6f0e3a3ceed7accc068b5fb2f3",
+      "test_scale/templates/gl_actuals_template.xlsx": "854f80210d1dae8a47b5cef3e9a246d5f0ceb8dd0ee806eb93e46dbf015ad8ca",
+      "test_scale/templates/master_data_template.xlsx": "6a5ff58d0638c8535539119992bf4e4b2f7948c8bff918a56da8dfb6e81154c5",
+      "test_scale/templates/pilot_tieout_worksheet_template.xlsx": "187239f9cc645d255df3e80a5553b9410eb529f56d73b4e7f27613fd6fb971ad"
+    },
+    "excluded_count": 0,
+    "excluded_suffixes": [],
+    "exclusion_reason": {},
+    "excluded": [],
+    "note": "paths are relative to the sample dir; test_scale/ holds second copies of templates and malformed fixtures, counted as separate paths; the history acceptance sidecar is included"
   },
   "corpus": [
     {
@@ -249,12 +308,12 @@
       "balanced": true,
       "committable": true,
       "balance_gate": "journal exact debit=credit (04 \u00a712/IMP-023)",
-      "rows": 250482,
-      "loaded_count": 250482,
+      "rows": 250503,
+      "loaded_count": 250503,
       "quarantined_count": 0,
       "rejected_count": 0,
-      "total_debit": "15681538388.70",
-      "total_credit": "15681538388.70",
+      "total_debit": "15672231601.81",
+      "total_credit": "15672231601.81",
       "net_imbalance": "0.00",
       "checks_run": 10,
       "checks": [
@@ -314,8 +373,8 @@
       "data_quality_raw_score": "100.0",
       "data_quality_failed": [],
       "data_quality_weight_set": "1.0",
-      "checksum": "2ce854fa28fc9bc24903090b301d50efbd5e9d2e211668f2dfffa2b718a77c06",
-      "parsed_loaded_count": 250482
+      "checksum": "007dd68158b6b030259cf72ed34ad373ad58f3d701e7bdaee0c31cebe20171d4",
+      "parsed_loaded_count": 250503
     },
     {
       "file": "bank_ledger_actuals.csv",
@@ -630,14 +689,15 @@
     "Answer key row outside P1..P32 and not counted as a planting: INJ-01 EXC-SEC-14 Raised (this is the prompt-injection fixture, not one of the 40)."
   ],
   "hard_failures": [],
+  "rule_faults": [],
   "bars": [
     {
       "name": "Planted-exception recall",
       "requirement": ">= 29 of 32 (>= 90 % of the 32 raises)",
-      "measured": "27/32 = 84.4 %",
-      "passed": false,
+      "measured": "32/32 = 100.0 %",
+      "passed": true,
       "measurable": true,
-      "detail": "5 planted case(s) not detected"
+      "detail": "0 planted case(s) not detected"
     },
     {
       "name": "Control precision",
@@ -650,16 +710,16 @@
     {
       "name": "High-severity recall",
       "requirement": "18 of 18 High plantings found",
-      "measured": "16/18",
-      "passed": false,
+      "measured": "18/18",
+      "passed": true,
       "measurable": true,
       "detail": "a missed High is a control failure, not a statistic"
     },
     {
       "name": "Extra findings",
       "requirement": "a rule with > 3 unexplained findings is tuned or documented before the gate",
-      "measured": "33 extra across 9 rule(s); over threshold: ['EXC-017', 'EXC-021', 'EXC-022', 'EXC-023']",
-      "passed": false,
+      "measured": "17 extra across 9 rule(s); over threshold: none",
+      "passed": true,
       "measurable": true,
       "detail": "no false-positive log reference is committed in this repository; extras are therefore UNEXPLAINED, not justified"
     },
@@ -682,10 +742,10 @@
     {
       "name": "Zero-coverage rules",
       "requirement": "every rule with a planted case raises at least one finding",
-      "measured": "3 rule(s) with zero coverage",
-      "passed": false,
+      "measured": "0 rule(s) with zero coverage",
+      "passed": true,
       "measurable": true,
-      "detail": "zero coverage: ['EXC-010', 'EXC-013', 'EXC-016']"
+      "detail": ""
     }
   ],
   "per_rule": [
@@ -870,18 +930,18 @@
         "P10",
         "P10"
       ],
-      "detected": [],
-      "missed": [
+      "detected": [
         "P10",
         "P10"
       ],
+      "missed": [],
       "controls": [],
       "controls_fired": [],
-      "findings_raised": 0,
+      "findings_raised": 2,
       "extras": 0,
       "wired": true,
-      "recall_pct": 0.0,
-      "zero_coverage": true
+      "recall_pct": 100.0,
+      "zero_coverage": false
     },
     {
       "rule_id": "EXC-011",
@@ -928,20 +988,20 @@
         "P13",
         "P13"
       ],
-      "detected": [],
-      "missed": [
+      "detected": [
         "P13",
         "P13"
       ],
+      "missed": [],
       "controls": [
         "P28"
       ],
       "controls_fired": [],
-      "findings_raised": 0,
+      "findings_raised": 2,
       "extras": 0,
       "wired": true,
-      "recall_pct": 0.0,
-      "zero_coverage": true
+      "recall_pct": 100.0,
+      "zero_coverage": false
     },
     {
       "rule_id": "EXC-014",
@@ -955,8 +1015,8 @@
       "missed": [],
       "controls": [],
       "controls_fired": [],
-      "findings_raised": 3,
-      "extras": 2,
+      "findings_raised": 4,
+      "extras": 3,
       "wired": true,
       "recall_pct": 100.0,
       "zero_coverage": false
@@ -989,17 +1049,17 @@
       "plantings": [
         "P16"
       ],
-      "detected": [],
-      "missed": [
+      "detected": [
         "P16"
       ],
+      "missed": [],
       "controls": [],
       "controls_fired": [],
-      "findings_raised": 0,
+      "findings_raised": 1,
       "extras": 0,
       "wired": true,
-      "recall_pct": 0.0,
-      "zero_coverage": true
+      "recall_pct": 100.0,
+      "zero_coverage": false
     },
     {
       "rule_id": "EXC-017",
@@ -1013,8 +1073,8 @@
       "missed": [],
       "controls": [],
       "controls_fired": [],
-      "findings_raised": 7,
-      "extras": 6,
+      "findings_raised": 2,
+      "extras": 1,
       "wired": true,
       "recall_pct": 100.0,
       "zero_coverage": false
@@ -1034,8 +1094,8 @@
         "P30"
       ],
       "controls_fired": [],
-      "findings_raised": 4,
-      "extras": 3,
+      "findings_raised": 3,
+      "extras": 2,
       "wired": true,
       "recall_pct": 100.0,
       "zero_coverage": false
@@ -1092,8 +1152,8 @@
         "P31"
       ],
       "controls_fired": [],
-      "findings_raised": 11,
-      "extras": 9,
+      "findings_raised": 5,
+      "extras": 3,
       "wired": true,
       "recall_pct": 100.0,
       "zero_coverage": false
@@ -1110,8 +1170,8 @@
       "missed": [],
       "controls": [],
       "controls_fired": [],
-      "findings_raised": 5,
-      "extras": 4,
+      "findings_raised": 3,
+      "extras": 2,
       "wired": true,
       "recall_pct": 100.0,
       "zero_coverage": false
@@ -1128,8 +1188,8 @@
       "missed": [],
       "controls": [],
       "controls_fired": [],
-      "findings_raised": 6,
-      "extras": 5,
+      "findings_raised": 3,
+      "extras": 2,
       "wired": true,
       "recall_pct": 100.0,
       "zero_coverage": false
@@ -1153,56 +1213,20 @@
       "zero_coverage": false
     }
   ],
-  "findings_total": 61,
-  "extras_total": 33,
+  "findings_total": 50,
+  "extras_total": 17,
   "extras_by_rule": {
-    "EXC-017": 6,
-    "EXC-022": 4,
-    "EXC-023": 5,
-    "EXC-021": 9,
+    "EXC-002": 1,
     "EXC-006": 1,
-    "EXC-018": 3,
-    "EXC-014": 2,
     "EXC-007": 2,
-    "EXC-002": 1
+    "EXC-014": 3,
+    "EXC-017": 1,
+    "EXC-018": 2,
+    "EXC-021": 3,
+    "EXC-022": 2,
+    "EXC-023": 2
   },
-  "miss_list": [
-    {
-      "planting_id": "P10",
-      "rule_id": "EXC-010",
-      "severity": "High",
-      "subject_key": "V-00412|INV-89101",
-      "notes": "Document dated 29-Sep posted 05-Oct (potential cut-off issue)"
-    },
-    {
-      "planting_id": "P10",
-      "rule_id": "EXC-010",
-      "severity": "High",
-      "subject_key": "V-00276|INV-89045",
-      "notes": "Document dated 28-Sep posted 03-Oct (potential cut-off issue)"
-    },
-    {
-      "planting_id": "P13",
-      "rule_id": "EXC-013",
-      "severity": "Medium",
-      "subject_key": "IN01|5600|CC-140",
-      "notes": "Spend spike 4.1x trailing 3-month baseline (deviation \u20b9141000.00)"
-    },
-    {
-      "planting_id": "P13",
-      "rule_id": "EXC-013",
-      "severity": "Medium",
-      "subject_key": "IN01|6300|CC-120",
-      "notes": "Spend spike 3.2x trailing 3-month baseline"
-    },
-    {
-      "planting_id": "P16",
-      "rule_id": "EXC-016",
-      "severity": "Medium",
-      "subject_key": "IN01|6100|CC-120",
-      "notes": "Expected month-end accrual pattern on account 6100 absent in P09"
-    }
-  ],
+  "miss_list": [],
   "controls_fired": [],
   "severity_counts": {
     "expected": {
@@ -1211,13 +1235,10 @@
       "Medium": 12
     },
     "detected": {
-      "High": 16,
+      "High": 18,
       "Low": 2,
-      "Medium": 9
+      "Medium": 12
     },
-    "missed": {
-      "High": 2,
-      "Medium": 3
-    }
+    "missed": {}
   }
 }

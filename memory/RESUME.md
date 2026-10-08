@@ -176,14 +176,12 @@ missing section in this file, a missing per-seat log, or an empty journal.
 
 ### Live team state
 
-- Cards: 142 total — done 15, in-progress 3, review 44, todo 80
-- Live claims: 3
+- Cards: 145 total — done 15, in-progress 4, review 47, todo 79
+- Live claims: 0
 - **You are active.**
 - `antigravity` — quota ended for 2026-10-05; stream parked, verification lane reassigned to hermes/buffy
 
-- `opencode2-20261005T2127Z-8bd3` — opencode2 on `T-003` (scopes: app/engine/exports/excel_pack.py,app/engine/exceptions/)
-- `opencode2-20261005T2145Z-0dac` — opencode2 on `T-005` (scopes: ui/src/components/common/StaleBanner.tsx, app/engine/calc/quality_score.py)
-- `hermes-20261005T2149Z-1d34` — hermes on `T-006` (scopes: docs/acceptance_standard.md)
+_(no live claims — every seat is idle; take the top of your stream)_
 
 ### Open blockers recorded in memory
 
@@ -228,6 +226,7 @@ thing that stopped UX-08 was a c
 
 ### Traps that have already cost time
 
+- **K-0048** `2026-10-08T17:13:56Z` — opencode — *trap*: A rule that crashes and a rule that correctly finds nothing produce the same acceptance artefact: zero findings. If the gate consumes findings only, the crash is invisible and its red bar reads as a corpus gap - this one cost 20 minutes of hand diagnosis. Fault isolation must be *reported*, not just recorded: surface status=error in the gate output, and make an unmeasured rule fail the run rather than pass it quietly. (see `app/engine/rules/acceptance.py`)
 - **K-0039** `2026-10-05T19:44:20Z` — buffy — *trap*: A captured command result goes stale the moment a teammate edits the file it measured. evidence/ops/lead-03-citation-audit.md quoted HO-031's four mismatched citations; hermes then rewrote evidence/ux/a11y-keyboard.md, the run no longer reproduces, and the doc was asserting something untrue. Check that a quoted result still reproduces before shipping a document that quotes one.
 - **K-0027** `2026-10-05T19:14:57Z` — buffy — *trap*: aria- occurs 0 times across all 60 .tsx files in ui/src, yet the UX-08 matrix marks 42 screens Conforming with role/aria-label/aria-live attributes. A uniform verdict across a whole population is the signature of not looking, not of a clean result.
 - **K-0026** `2026-10-05T19:14:56Z` — buffy — *trap*: A file:line citation is not evidence until the line is opened. Measured on HO-031: all four cited files real, all four line numbers in range, all four lines carrying none of the claimed attributes. Existence plus range is not a check.

@@ -620,7 +620,7 @@ def _exc022_inputs(context: RuleContext) -> Dict[str, Any]:
                         degraded_category.add(company)
             continue
 
-        period = _transaction_period(tx, context)
+        period = _transaction_period(tx)
         if (
             not period
             or _fy_of(period) != current_fy
