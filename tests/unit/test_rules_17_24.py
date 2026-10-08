@@ -11,8 +11,9 @@ from app.engine.rules.rules_17_24 import (
     _fy_of,
     _period_num,
     _open_periods,
+    _exc021_required_input,
 )
-from app.engine.rules.rules_01_08 import RuleContext
+from app.engine.rules.rules_01_08 import ApprovalThresholdRuleItem, RuleContext
 
 def test_rules_17_24_basic():
     ctx = RuleContext(
@@ -111,33 +112,147 @@ def test_evaluate_exc_020_span():
 
 @pytest.mark.tst_id("TST-RUL-21")
 def test_evaluate_exc_021():
-    # Test dual threshold with split vouchers
+    """Doc 06 EXC-021: thresholds resolve from MasterApprovalThreshold records.
+
+    T-010: the old fixture passed `EXC-021_single_threshold` /
+    `EXC-021_dual_threshold` config keys, but the rule (and docs/06 §EXC-021)
+    resolves thresholds from versioned `MasterApprovalThreshold` master records
+    on `context.master_approval_thresholds`, seeded with the two company-scope
+    defaults (Rs 5,00,000 single, Rs 25,00,000 dual). With config keys alone
+    the rule saw no records and raised nothing, so the test was red for a
+    fixture reason, not a rule reason. These records mirror the documented
+    seeding and the P21 planting shape (dual crossing supersedes single).
+    """
+    thresholds = [
+        ApprovalThresholdRuleItem(
+            threshold_id="THR-SINGLE-500K",
+            scope="company",
+            amount_threshold=Decimal("500000.00"),
+            requires_dual_approval=False,
+            effective_from="2025-04-01",
+            company_code="IN01",
+        ),
+        ApprovalThresholdRuleItem(
+            threshold_id="THR-DUAL-2500K",
+            scope="company",
+            amount_threshold=Decimal("2500000.00"),
+            requires_dual_approval=True,
+            effective_from="2025-04-01",
+            company_code="IN01",
+        ),
+    ]
     ctx = RuleContext(
         period_id="FY26-P03",
         transactions=[
+            # Crosses the single threshold only.
             {"company_code": "IN01", "account_code": "6000", "vendor_code": "VEND1", "voucher_no": "V100", "debit": Decimal("600000"), "posting_date": "2026-03-01", "source_row_ref": "r1"},
-            {"company_code": "IN01", "account_code": "6000", "vendor_code": "VEND1", "voucher_no": "V101", "debit": Decimal("2000000"), "posting_date": "2026-03-01", "source_row_ref": "r2"},
+            # P21 shape: crosses the dual threshold; the dual finding must
+            # supersede the single one, so exactly one finding for the voucher.
+            {"company_code": "IN01", "account_code": "5450", "vendor_code": "VEND2", "voucher_no": "V101", "debit": Decimal("2750000"), "posting_date": "2026-03-01", "source_row_ref": "r2"},
+            # Below every threshold: no finding.
+            {"company_code": "IN01", "account_code": "6000", "vendor_code": "VEND3", "voucher_no": "V102", "debit": Decimal("499999"), "posting_date": "2026-03-01", "source_row_ref": "r3"},
         ],
         budgets={},
-        config={"EXC-021_single_threshold": "500000.00", "EXC-021_dual_threshold": "2500000.00"}
+        master_approval_thresholds=thresholds,
+        config={},
     )
     findings = evaluate_exc_021(ctx)
-    assert len(findings) >= 1
-    assert any(f.rule_id == "EXC-021" for f in findings)
+    assert [f.subject_key for f in findings] == [
+        "IN01|V100|THR-SINGLE-500K",
+        "IN01|V101|THR-DUAL-2500K",
+    ]
+    assert all(f.rule_id == "EXC-021" and f.severity == "High" for f in findings)
+    assert "single approval required" in findings[0].detail
+    assert "dual approval required" in findings[1].detail
+    assert findings[1].amount_at_risk == Decimal("2750000.00")
+
+
+@pytest.mark.tst_id("TST-RUL-21")
+def test_evaluate_exc_021_is_disabled_without_approval_thresholds_per_doc_06():
+    """Doc 06 EXC-021 'Depends on': without MasterApprovalThreshold records the
+    rule is disabled with a notice - it raises nothing and the required-input
+    gate names the missing dependency, so the batch records DISABLED rather
+    than scoring a silent, unexplained zero.
+    """
+    ctx = RuleContext(
+        period_id="FY26-P03",
+        transactions=[
+            {"company_code": "IN01", "account_code": "6000", "voucher_no": "V100",
+             "debit": Decimal("600000"), "posting_date": "2026-03-01",
+             "source_row_ref": "r1"},
+        ],
+        budgets={},
+        config={},
+    )
+    assert evaluate_exc_021(ctx) == []
+    assert _exc021_required_input(ctx) == "EXC-021_approval_thresholds"
 
 @pytest.mark.tst_id("TST-RUL-22")
 def test_evaluate_exc_022():
+    """Doc 06 EXC-022: a round manual journal above the entity baseline raises.
+
+    T-009: the three prior periods are load-bearing, not decoration. They are the
+    only path into `_exc022_inputs`' history branch, which called
+    `_transaction_period(tx, context)` - two arguments into a one-argument helper.
+    Without them the fixture never reached the defect and the rule's zero
+    coverage on planting P22 looked like a corpus gap instead of a TypeError.
+    """
     ctx = RuleContext(
-        period_id="2025-P03",
+        period_id="FY26-P04",
         transactions=[
-            {"company_code": "IN01", "voucher_no": "V200", "debit": Decimal("1000000.00"), "source_row_ref": "r1"}
+            # Baseline: three prior periods of round manual journals (mean 200,000).
+            {"company_code": "IN01", "voucher_no": "H001", "period_code": "FY26-P01",
+             "journal_category": "manual", "net_amount": Decimal("100000.00"),
+             "source_row_ref": "h1"},
+            {"company_code": "IN01", "voucher_no": "H002", "period_code": "FY26-P02",
+             "journal_category": "manual", "net_amount": Decimal("200000.00"),
+             "source_row_ref": "h2"},
+            {"company_code": "IN01", "voucher_no": "H003", "period_code": "FY26-P03",
+             "journal_category": "manual", "net_amount": Decimal("300000.00"),
+             "source_row_ref": "h3"},
+            # Current period: 1,000,000 is round, above the floor and 5x the baseline.
+            {"company_code": "IN01", "voucher_no": "V200", "period_code": "FY26-P04",
+             "journal_category": "manual", "net_amount": Decimal("1000000.00"),
+             "source_row_ref": "r1"},
         ],
         budgets={},
-        config={"EXC-022_round_unit": "10000.00", "EXC-022_round_floor": "500000.00"}
+        config={
+            "EXC-022_round_unit": "10000.00",
+            "EXC-022_round_floor": "500000.00",
+            "EXC-022_history_periods": 3,
+            "EXC-022_multiple": "1.5",
+        },
     )
     findings = evaluate_exc_022(ctx)
     assert len(findings) == 1
     assert findings[0].rule_id == "EXC-022"
+    assert findings[0].subject_key == "IN01|V200"
+    assert findings[0].severity == "Low"
+
+
+@pytest.mark.tst_id("TST-RUL-22")
+def test_evaluate_exc_022_is_disabled_without_history_per_doc_06_section_2_9():
+    """History-dependent rules are disabled, never approximated, without N periods.
+
+    Doc 06 section 2.9: a missing prior-period baseline disables EXC-013, EXC-016
+    and EXC-022 with "Needs at least N loaded periods". `evaluate_exc_022` returns
+    no findings and its `REQUIRED_INPUT_CHECK` names the dependency the batch
+    records as `disabled`, so a first-period project can never get a fabricated
+    baseline. This is why the raise case above must load three periods: an empty
+    fixture is the disabled path, not a missed detection.
+    """
+    ctx = RuleContext(
+        period_id="2025-P03",
+        transactions=[
+            {"company_code": "IN01", "voucher_no": "V200",
+             "debit": Decimal("1000000.00"), "source_row_ref": "r1"}
+        ],
+        budgets={},
+        config={"EXC-022_round_unit": "10000.00", "EXC-022_round_floor": "500000.00"},
+    )
+    assert evaluate_exc_022(ctx) == []
+    assert evaluate_exc_022.REQUIRED_INPUT_CHECK(ctx) == "EXC-022_history"
+
 
 @pytest.mark.tst_id("TST-RUL-23")
 def test_evaluate_exc_023():

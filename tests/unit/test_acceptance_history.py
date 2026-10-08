@@ -7,6 +7,7 @@ belong to the explicit acceptance gate, not the default unit suite.
 
 from __future__ import annotations
 
+import json
 from decimal import Decimal
 from pathlib import Path
 from types import SimpleNamespace
@@ -21,12 +22,39 @@ from app.engine.store import db as db_module
 from app.engine.store import exceptions_repo, import_repo
 
 
+def _write_control_total_sidecars(root: Path) -> None:
+    """Create the recorded control-total acceptance sidecars the harness requires.
+
+    T-010: since DEC-056's control-total gate, `build_acceptance_context`
+    refuses to run unless every fixture in `CONTROL_TOTAL_ACCEPTANCE_FIXTURES`
+    exists with a valid recorded decision, and the production import passes it
+    to `parse_excel_transactions(control_total_acceptance=...)`. Tests that
+    build their own corpus must supply the sidecar exactly like sample-data/.
+    """
+    for sidecar in acc.CONTROL_TOTAL_ACCEPTANCE_FIXTURES.values():
+        path = root / sidecar
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(
+                {
+                    "accepted_by": "test-suite",
+                    "reason": (
+                        "Synthetic control-total acceptance recorded by the "
+                        "unit test."
+                    ),
+                }
+            ),
+            encoding="utf-8",
+        )
+
+
 def _stub_acceptance_imports(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> dict[str, Any]:
     """Replace storage/parsing with recorders while exercising source orchestration."""
     database = object()
     context = object()
     committed: list[str] = []
     parser_calls: list[tuple[str, str, object]] = []
+    acceptance_calls: list[tuple[str, dict[str, Any]]] = []
     profile = object()
 
     class FakeImportRepository:
@@ -63,9 +91,16 @@ def _stub_acceptance_imports(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) ->
         assert base_profile is profile
         return SimpleNamespace(profile=profile)
 
-    def parse(path: str | Path, *, profile: object | None = None) -> tuple[Any, list[Any]]:
+    def parse(
+        path: str | Path,
+        *,
+        profile: object | None = None,
+        control_total_acceptance: dict[str, Any] | None = None,
+    ) -> tuple[Any, list[Any]]:
         source = Path(path)
         parser_calls.append((source.suffix.lower(), source.name, profile))
+        if control_total_acceptance is not None:
+            acceptance_calls.append((source.name, control_total_acceptance))
         return SimpleNamespace(file_name=source.name), [source.name]
 
     monkeypatch.setattr(parser, "prescan_file", prescan_file)
@@ -78,6 +113,7 @@ def _stub_acceptance_imports(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) ->
         "committed": committed,
         "context": context,
         "parser_calls": parser_calls,
+        "acceptance_calls": acceptance_calls,
         "profile": profile,
     }
 
@@ -94,6 +130,7 @@ def test_acceptance_imports_history_around_main_actuals_in_documented_order(
     for name in expected:
         (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
         (tmp_path / name).touch()
+    _write_control_total_sidecars(tmp_path)
 
     stubs = _stub_acceptance_imports(monkeypatch, tmp_path)
     result = acc.build_acceptance_context(
@@ -108,6 +145,17 @@ def test_acceptance_imports_history_around_main_actuals_in_documented_order(
         ".xlsx" if name.endswith(".xlsx") else ".csv" for name in expected
     ]
     assert all(profile is stubs["profile"] for _, _, profile in stubs["parser_calls"])
+    # T-010: the recorded control-total decision rides only with the fixture it
+    # belongs to, and reaches the production parser as a keyword argument.
+    assert stubs["acceptance_calls"] == [
+        ("02_gl_batch_039.xlsx", {
+            "accepted_by": "test-suite",
+            "reason": (
+                "Synthetic control-total acceptance recorded by the "
+                "unit test."
+            ),
+        })
+    ]
 
 
 def test_acceptance_does_not_silently_skip_a_missing_history_fixture(
@@ -151,8 +199,10 @@ def test_corpus_integrity_reports_all_files_and_actual_commitability(
         path = tmp_path / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.touch()
+    _write_control_total_sidecars(tmp_path)
 
     calls: list[tuple[str, str]] = []
+    acceptance_calls: list[tuple[str, dict[str, Any]]] = []
 
     def make_batch(path: str | Path) -> SimpleNamespace:
         source = Path(path)
@@ -190,7 +240,13 @@ def test_corpus_integrity_reports_all_files_and_actual_commitability(
     def parse_csv(path: str | Path) -> SimpleNamespace:
         return make_batch(path)
 
-    def parse_excel(path: str | Path) -> tuple[SimpleNamespace, list[Any]]:
+    def parse_excel(
+        path: str | Path,
+        *,
+        control_total_acceptance: dict[str, Any] | None = None,
+    ) -> tuple[SimpleNamespace, list[Any]]:
+        if control_total_acceptance is not None:
+            acceptance_calls.append((Path(path).name, control_total_acceptance))
         return make_batch(path), []
 
     monkeypatch.setattr(parser, "parse_and_validate_csv", parse_csv)
@@ -209,6 +265,17 @@ def test_corpus_integrity_reports_all_files_and_actual_commitability(
     rows = acc.corpus_integrity(tmp_path)
     assert [row["file"] for row in rows] == list(acc.ACCEPTANCE_IMPORT_FILES)
     assert [name for _, name in calls] == [Path(name).name for name in acc.ACCEPTANCE_IMPORT_FILES]
+    # T-010: the recorded control-total decision must reach the production
+    # excel parser for the fixture it belongs to, and only for that one.
+    assert acceptance_calls == [
+        ("02_gl_batch_039.xlsx", {
+            "accepted_by": "test-suite",
+            "reason": (
+                "Synthetic control-total acceptance recorded by the "
+                "unit test."
+            ),
+        })
+    ]
     rejected_gl = next(row for row in rows if row["file"].endswith("039.xlsx"))
     assert rejected_gl["balanced"] is True
     assert rejected_gl["committable"] is False

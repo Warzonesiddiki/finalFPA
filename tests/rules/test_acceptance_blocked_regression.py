@@ -224,6 +224,23 @@ def test_run_acceptance_end_to_end_reports_blocked(tmp_path):
     shutil.copy2(SAMPLE_DIR / "expected_exceptions.csv",
                  fake / "expected_exceptions.csv")
 
+    # T-010: since DEC-056's control-total gate the harness refuses to run
+    # unless the FULL ordered fixture set plus the recorded control-total
+    # sidecar exist, so the synthetic corpus carries the real history and
+    # sub-ledger fixtures; only the general ledger is replaced with the
+    # deliberately unbalanced file under test. That makes this a stronger
+    # proof than before: everything healthy except the GL must still BLOCK.
+    for name in acc.ACCEPTANCE_IMPORT_FILES:
+        if Path(name).name == "d365_gl_actuals.csv":
+            continue
+        dest = fake / name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(SAMPLE_DIR / name, dest)
+    for sidecar in acc.CONTROL_TOTAL_ACCEPTANCE_FIXTURES.values():
+        dest = fake / sidecar
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(SAMPLE_DIR / sidecar, dest)
+
     # A minimal general-ledger CSV whose debits do not equal its credits. The
     # watermark first line matches the real corpus so parsing behaves the same.
     header = ("VoucherNo,PostingDate,CompanyCode,AccountCode,CostCenterCode,"

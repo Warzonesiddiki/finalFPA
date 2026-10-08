@@ -262,6 +262,18 @@ def _perfect_findings(raises):
     ]
 
 
+def _batch(findings):
+    """Wrap crafted findings in the detailed result `measure()` consumes.
+
+    T-009: the harness names the rule(s) that raised inside the batch, so its
+    seam is `run_rules_detailed`. These tests craft findings and inject no
+    execution faults, so the execution record is empty.
+    """
+    from app.engine.rules.batch import RuleBatchResult
+
+    return RuleBatchResult(findings=list(findings))
+
+
 @pytest.fixture()
 def answer_key():
     return acc.load_answer_key(SAMPLE_DIR)
@@ -272,7 +284,7 @@ def test_scoring_passes_on_a_perfect_run(monkeypatch, answer_key):
     from app.engine.rules import batch as rule_batch
 
     raises, controls, _ = answer_key
-    monkeypatch.setattr(acc, "run_rules", lambda ctx: _perfect_findings(raises))
+    monkeypatch.setattr(acc, "run_rules_detailed", lambda ctx: _batch(_perfect_findings(raises)))
     monkeypatch.setattr(
         rule_batch,
         "catalog_rule_coverage",
@@ -296,7 +308,7 @@ def test_acceptance_rejects_catalog_gaps_even_when_all_plants_appear_to_fire(
     raises, controls, _ = answer_key
     missing_ids = {"EXC-001", "EXC-002", "EXC-003", "EXC-006", "EXC-008"}
     complete_coverage = rule_batch.catalog_rule_coverage()
-    monkeypatch.setattr(acc, "run_rules", lambda ctx: _perfect_findings(raises))
+    monkeypatch.setattr(acc, "run_rules_detailed", lambda ctx: _batch(_perfect_findings(raises)))
     monkeypatch.setattr(
         rule_batch,
         "catalog_rule_coverage",
@@ -325,7 +337,7 @@ def test_acceptance_rejects_catalog_gaps_even_when_all_plants_appear_to_fire(
 def test_recall_bar_fails_when_plantings_are_missed(monkeypatch, answer_key):
     raises, controls, _ = answer_key
     # Drop every detection: recall must collapse and the bar must fail.
-    monkeypatch.setattr(acc, "run_rules", lambda ctx: [])
+    monkeypatch.setattr(acc, "run_rules_detailed", lambda ctx: _batch([]))
     report = acc.measure(None, raises, controls, stability_runs=1)
 
     recall = next(b for b in report.bars if b.name == "Planted-exception recall")
@@ -339,7 +351,7 @@ def test_control_bar_fails_when_one_control_fires(monkeypatch, answer_key):
     raises, controls, _ = answer_key
     findings = _perfect_findings(raises)
     findings.append(_finding(controls[0]["rule_id"], controls[0]["subject_key"]))
-    monkeypatch.setattr(acc, "run_rules", lambda ctx: findings)
+    monkeypatch.setattr(acc, "run_rules_detailed", lambda ctx: _batch(findings))
     report = acc.measure(None, raises, controls, stability_runs=1)
 
     bar = next(b for b in report.bars if b.name == "Control precision")
@@ -355,7 +367,7 @@ def test_high_severity_bar_fails_on_a_single_missed_high(monkeypatch, answer_key
         f for f in _perfect_findings(raises)
         if not (f.rule_id == "EXC-001" and f.severity == "High")
     ]
-    monkeypatch.setattr(acc, "run_rules", lambda ctx: findings)
+    monkeypatch.setattr(acc, "run_rules_detailed", lambda ctx: _batch(findings))
     report = acc.measure(None, raises, controls, stability_runs=1)
 
     bar = next(b for b in report.bars if b.name == "High-severity recall")
@@ -369,7 +381,7 @@ def test_extra_findings_bar_fails_past_the_documented_threshold(monkeypatch, ans
     findings = _perfect_findings(raises)
     for i in range(acc.BAR_UNEXPLAINED_EXTRAS_PER_RULE + 1):
         findings.append(_finding("EXC-001", f"IN01|EXTRA-{i}", catalog="EXC-001"))
-    monkeypatch.setattr(acc, "run_rules", lambda ctx: findings)
+    monkeypatch.setattr(acc, "run_rules_detailed", lambda ctx: _batch(findings))
     report = acc.measure(None, raises, controls, stability_runs=1)
 
     bar = next(b for b in report.bars if b.name == "Extra findings")
@@ -385,9 +397,9 @@ def test_stability_bar_fails_when_two_runs_differ(monkeypatch, answer_key):
     def flaky(ctx):
         calls["n"] += 1
         base = _perfect_findings(raises)
-        return base if calls["n"] == 1 else base[:-1]  # drop one on the second run
+        return _batch(base) if calls["n"] == 1 else _batch(base[:-1])  # drop one on the second run
 
-    monkeypatch.setattr(acc, "run_rules", flaky)
+    monkeypatch.setattr(acc, "run_rules_detailed", flaky)
     report = acc.measure(None, raises, controls, stability_runs=2)
 
     bar = next(b for b in report.bars if b.name == "Stability")
@@ -406,8 +418,8 @@ def test_join_prefers_catalog_rule_id_over_engine_rule_id(monkeypatch, answer_ke
     raises, controls, _ = answer_key
     target = next(r for r in raises if r["rule_id"] == "EXC-012")
     monkeypatch.setattr(
-        acc, "run_rules",
-        lambda ctx: [_finding("EXC-005", target["subject_key"], catalog="EXC-012")],
+        acc, "run_rules_detailed",
+        lambda ctx: _batch([_finding("EXC-005", target["subject_key"], catalog="EXC-012")]),
     )
     report = acc.measure(None, raises, controls, stability_runs=1)
 
@@ -424,13 +436,61 @@ def test_zero_coverage_gate_catches_a_rule_that_raises_nothing(monkeypatch, answ
         f for f in _perfect_findings(raises)
         if f.rule_id not in {"EXC-001", "EXC-016"}
     ]
-    monkeypatch.setattr(acc, "run_rules", lambda ctx: findings)
+    monkeypatch.setattr(acc, "run_rules_detailed", lambda ctx: _batch(findings))
     report = acc.measure(None, raises, controls, stability_runs=1)
 
     zero = [r.rule_id for r in report.rules if r.zero_coverage]
     assert set(zero) >= {"EXC-001", "EXC-016"}
     bar = next(b for b in report.bars if b.name == "Zero-coverage rules")
     assert not bar.passed
+    assert not report.passed
+
+
+def test_rule_execution_faults_are_named_not_scored_as_clean_zeros(monkeypatch, answer_key):
+    """T-009: a rule that raised must be reported with its exception.
+
+    Before this, a crashing evaluator and a rule that correctly found nothing
+    produced the same report: a zero-coverage row with no reason. That is how the
+    EXC-022 arity bug survived a green-looking per-rule table - the only evidence
+    was absence. The fault list now names the rule, its exception type and its
+    message in the report object, the JSON and the zero-coverage bar's detail,
+    and a run containing a fault cannot be PASS.
+    """
+    from app.engine.rules.batch import RuleBatchResult, RuleExecution
+
+    raises, controls, _ = answer_key
+
+    def faulty_batch(ctx):
+        return RuleBatchResult(
+            findings=_perfect_findings(raises),
+            executions=[
+                RuleExecution(
+                    rule_name="evaluate_exc_022",
+                    status="error",
+                    finding_count=0,
+                    error_type="TypeError",
+                    error_message=(
+                        "_transaction_period() takes 1 positional argument "
+                        "but 2 were given"
+                    ),
+                )
+            ],
+        )
+
+    monkeypatch.setattr(acc, "run_rules_detailed", faulty_batch)
+    report = acc.measure(None, raises, controls, stability_runs=1)
+
+    assert report.rule_faults == [
+        "evaluate_exc_022: TypeError: _transaction_period() takes 1 positional "
+        "argument but 2 were given"
+    ]
+    assert report.to_dict()["rule_faults"] == report.rule_faults
+    markdown = acc.render_markdown(report)
+    assert "## Rule execution faults" in markdown
+    assert "evaluate_exc_022" in markdown
+    bar = next(b for b in report.bars if b.name == "Zero-coverage rules")
+    assert "TypeError" in bar.detail
+    # A fault is unmeasured work, so the run can never be a clean pass.
     assert not report.passed
 
 
@@ -453,7 +513,15 @@ def test_unbalanced_subledger_is_reported_but_not_scored_as_a_blocker():
     assert not report.blocked_reasons, "a sub-ledger must not block the whole run"
     assert report.measurable
     assert report.divergences
-    assert any("Sub-ledger" in d for d in report.divergences)
+    # T-010: the divergence text reads "Required sub-ledger fixture ..." (the
+    # old needle expected a capital-S 'Sub-ledger' that never matched). Pin the
+    # contract, not the casing: the file and its failed check must be named.
+    assert any(
+        "sub-ledger" in d.casefold()
+        and "bank_ledger_actuals.csv" in d
+        and "IMP-023" in d
+        for d in report.divergences
+    ), "the rejected sub-ledger must be named with its failed check"
     assert "499 of 499" in report.divergences[0]
 
 
