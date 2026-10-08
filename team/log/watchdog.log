@@ -561,3 +561,7 @@
 2026-10-05T21:54:59Z sleeping 20 min; next tick due 2026-10-05T22:14:59+00:00
 2026-10-05T22:15:00Z RELOAD: team.py, team_watchdog.py or config.json changed since this loop started - re-executing to pick it up
 2026-10-05T22:15:01Z taking over the lock of dead pid 18600
+2026-10-07T14:52:30Z REFUSED action of unknown kind 'verify' - the watchdog may not widen its own powers
+2026-10-07T14:52:30Z REFUSED action of unknown kind 'accept' - the watchdog may not widen its own powers
+2026-10-07T14:52:30Z REFUSED action of unknown kind 'release_done' - the watchdog may not widen its own powers
+2026-10-07T14:52:30Z REFUSED action of unknown kind 'commit' - the watchdog may not widen its own powers

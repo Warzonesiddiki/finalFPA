@@ -1,19 +1,21 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-05
-> **Owning FRs/areas:** architecture, ADRs, engine boundary, CLI, storage layout, job queue, crash recovery, migrations, configuration layering, data-volume rule, code-health guardrails
+> **Last updated:** 2026-10-07
+> **Owning FRs/areas:** architecture, ADRs, engine boundary, CLI, storage layout, job queue, crash recovery, migrations, configuration layering, data-volume rule, code-health guardrails; architecture upgrade direction owned here per `ADR-015`
 > **TL;DR (≤ 15 lines):** This document owns how the system is built. §3 is the **ADR index** (`ADR-000`
-> template + `ADR-001`…`ADR-013`): the approved stack (ADR-001), the pinned toolchain (ADR-002), the
+> template + `ADR-001`…`ADR-015`): the approved stack (ADR-001), the pinned toolchain (ADR-002), the
 > unsigned-installer stance (ADR-003), the non-synced storage location (ADR-004), real-Windows validation
 > (ADR-005), the single-process/threaded-job model (ADR-006), hand-written SQL over an ORM (ADR-007),
 > forward-only migrations with backup (ADR-008), static-UI serving through the local API (ADR-009),
 > AI providers over OpenAI-compatible HTTP (ADR-010), and the Addon 6 reuse adoptions: WS-02 template-fill
 > engine (ADR-011), WS-10 fill patterns (ADR-012), WS-03 overflow cascade behind a flag (ADR-013).
-> §4 is the module map and the **headless-engine boundary rule**; §5 the CLI with exit codes; §6 the data
-> flow; §7 storage layout, `%LOCALAPPDATA%` decision and the **storage-growth maths**; §8 the job queue,
-> cancellation and crash recovery; §9 the local API and security posture; §10 configuration layering;
-> §11 recompute/invalidation semantics; §12 the data-volume rule; §13 schema migration; §14 performance
-> budgets mapped to `NFR` (with the measured DEF-030 bulk-load evidence); §15 spikes, code-health
-> guardrails and the fresh-clone gate.
+> `ADR-014` extracts duplicate-detection primitives; `ADR-015` is the architecture-upgrade decision for
+> this project — sharpen the offline core, govern the AI path, shape the data model for MNC-later (full
+> design at `docs/superpowers/specs/2026-10-07-adr-015-architecture-upgrade.md`). §4 is the module map and
+> the **headless-engine boundary rule**; §5 the CLI with exit codes; §6 the data flow; §7 storage layout,
+> `%LOCALAPPDATA%` decision and the **storage-growth maths**; §8 the job queue, cancellation and crash
+> recovery; §9 the local API and security posture; §10 configuration layering; §11 recompute/invalidation
+> semantics; §12 the data-volume rule; §13 schema migration; §14 performance budgets mapped to `NFR` (with
+> the measured DEF-030 bulk-load evidence); §15 spikes, code-health guardrails and the fresh-clone gate.
 
 ---
 
@@ -68,6 +70,8 @@
 
 **Index (a decision without a row here is incomplete — Addon 3 §I.2):**
 
+Note: `ADR-015` is the architecture-upgrade decision for this project (`docs/superpowers/specs/2026-10-07-adr-015-architecture-upgrade.md`). It is the normative record for the "offline-first + governed AI + MNC-later" direction and should be read alongside the updated roadmap (`16`) and the PRD consequences (`01` §15.2).
+
 | ADR | Decision | Status | Date | Reversibility |
 |---|---|---|---|---|
 | `ADR-001` | Authoritative technical stack (§3.2) | **Accepted** | 2026-10-01 | Costly (packaging + UI would be rebuilt) |
@@ -84,6 +88,8 @@
 | `ADR-012` | Adopt WS-10 `keithmcnulty/ppt-generation` as `ADP-002` — fill patterns for charts/tables/placeholders (§3.13) | **Accepted** | 2026-10-05 | Cheap (one 77-line module) |
 | `ADR-013` | Adopt WS-03 `deckforge` overflow cascade as `ADP-003` — flag-gated, default off (§3.14) | **Accepted** | 2026-10-05 | Cheap (one module behind a flag) |
 | `ADR-014` | Extract the duplicate-detection primitives into `app/engine/dedupe/` (BUILD, `BD-001`) — one implementation for `EXC-007`/`EXC-008` (§3.15) | **Accepted** | 2026-10-05 | Cheap (module addition; call sites unchanged) |
+| `ADR-015` | Architecture upgrade: sharpen the offline core, govern the AI path, shape the data model for MNC-later (§3.16, `docs/superpowers/specs/2026-10-07-adr-015-architecture-upgrade.md`) | **Accepted** | 2026-10-07 | Moderate (structural; flag-gated AI module + additive MNC shape; engine-boundary/performance work per task) |
+| `ADR-015` | Architecture upgrade: sharpen the offline core, govern the AI path, shape the data model for MNC-later (§3.16) | **Accepted** | 2026-10-07 | Moderate (structural; flag-gated AI module + additive MNC shape; engine-boundary/performance work per task) |
 
 ### 3.2 `ADR-001` — Authoritative technical stack
 
@@ -454,12 +460,9 @@ recorded in `ADP-003` — trim (ppt_fit) is the spec path, the cascade is opt-in
 **Reversibility.** Cheap — flag-gated module; removing the flag setting restores today's behaviour.
 
 **Affected docs.** `12` (§3.4/§3.6 conformance, future amendment), `32` (`ADP-003`, E12 amended
-take-list), `15` (notices payload), `00` (ID registry), `18` (`DEC-064`).
+take-list), `15` (notices payload), `00` (ID registry), `18` (`DEC-064`).### 3.15 `ADR-014` — One implementation of duplicate detection: extract `app/engine/dedupe/` (BUILD)
 
-### 3.15 `ADR-014` — One implementation of duplicate detection: extract `app/engine/dedupe/` (BUILD)
-
-**Status:** Accepted (owner ruling on `OQ-028`; Addon 6 v2 work card `WC-1`) · **Date:** 2026-10-05 ·
-**Source:** Addon 6 v2 §3 catalog `WS-01`, §14 Tier C escalation, owner decision `DEC-066`.
+**Status:** Accepted (owner ruling on `OQ-028`; Addon 6 v2 work card `WC-1`) · **Date:** 2026-10-05 · **Source:** Addon 6 v2 §3 catalog `WS-01`, §14 Tier C escalation, owner decision `DEC-066`.
 
 **Context.** `WC-1` was pre-approved as a COPY-EDIT of catalog `WS-01`
 (`github.com/ricothanfx/invoice-dedupe`). The repository no longer exists — `git clone --depth 1` returns
@@ -495,6 +498,28 @@ the same 14 zero-coverage rules); 41 tests travel with the code at 100 % stateme
 **Reversibility.** Cheap — the rule modules previously carried the logic inline and can again.
 
 **Affected docs.** `18` (`DEC-066`), `32` (`BD-001`), `33` (`TB-100`), `STATE.md`.
+
+### 3.16 `ADR-015` — Architecture upgrade: sharpen the offline core, govern the AI path, shape the data model for MNC-later (§16 upgrade block)
+
+**Status:** Accepted · **Date:** 2026-10-07 · **Source:** this session's architecture-upgrade brainstorming; owner + Buffy; full design at `docs/superpowers/specs/2026-10-07-adr-015-architecture-upgrade.md`.
+
+**Context.** The product is a single-company, offline-first desktop app whose deterministic engine, exception catalogue, Excel/PPT packs and packaging path are already built and measured. The owner's broader vision is that **one trusted offline core plus a governed cloud-AI add-on should eventually do the repetitive work of an FP&A analyst team and produce what the product calls a *flawless result*** — ties-out, cross-artifact equality, no unvalidated AI number, auditable. MNC/multi-country/multi-sector scale is explicitly **later**, not v1. The upgrade question is therefore not "pick a new language": it is to make the offline core fast and correct enough to be the trusted asset, and to make the AI path a clean governed layer that can be added (and later scaled) without compromising that core.
+
+**Decision.** Adopt **A** as the v1 architecture direction — keep the existing stack (this ADR does **not** change ADR-001's stack list; it sharpens how it is used) — with **C's AI-boundary design folded in** as a governed module behind a flag, and **B held as a measurement-triggered contingency**. Concretely:
+
+1. Treat the deterministic engine (imports, calc, rules, forecast, exports) as the **trusted core** and invest the performance/correctness budget there first: profile hot paths under a 250k-row load, introduce safe parallelism only where the engine boundary and the one-writer-per-store rule (ADR-006) make it safe, and finish the headless-engine boundary enforcement (`TB-014`/`TB-025`/`TB-026`) so "AI changed a number" stays structurally impossible.
+2. Build the cloud-AI path as a **bound, flag-gated, provider-neutral adapter** with consent, redaction, minimum-data, labelling and a local audit log **designed now**, implemented behind a default-off flag and the existing keyless rule-based fallback (doc `10` §11). AI still never computes, decides, applies or sends (doc `10` §2.3) — this ADR governs the *architecture* around it, not the policy.
+3. Shape the data model **now** for the later MNC phases as first-class concerns that cost nothing controversial in v1: multi-currency as a real concept (not just display), multi-entity/consolidation-ready dimensions, a per-project storage-isolation/residency contract, and a permissions/auth placeholder boundary. Implement v1 scope only where it strengthens the offline core or the AI contract.
+4. Use "flawless result" as the governing outcome and measure it: ties-out + cross-artifact equality + no unvalidated AI number + auditability.
+
+**Alternatives considered.** B alone (rejected for v1: it trades the existing correctness evidence and packaging story for an abstract speed ceiling before any measurement says the ceiling is real). C alone as a separate service track (rejected: it splits focus and risks over-building the AI layer before the offline core is proven; the governed-AI design is worth doing, but as a module inside the desktop core with a clean boundary, not as a parallel service project in v1). A without C's boundary design (rejected: the vision includes cloud AI and you want it governed from the start; a bolt-on later would compromise the "flawless" bar).
+
+**Consequences.** Positive: v1 stays a stronger offline app with the least risk to correctness/traceability/packaging; the AI path is designed as a clean boundary so later scaling touches a contract, not a retrofit; MNC shape is designed without paying the full MNC implementation cost now; "simpler than all three" is preserved because the core stays one language and the changes are structural, not a rewrite. Negative/owed: the performance gains are measurement-dependent (profile first; parallelism only where safe); the AI-boundary design adds design cost up front; B remains available but is a later, separately-justified decision, not part of this upgrade.
+
+**Reversibility.** A is cheap to revert in pieces (the AI module is flag-gated; the boundary enforcement is config; the MNC-shaped fields are additive). B, if ever chosen, is costly (core rewrite) and would be its own ADR superseding portions of this one.
+
+**Affected docs.** `01` (PRD), `03` (data dictionary), `09` (ADR index + §4/§6/§7/§14), `10` (AI path — architectural hardening, no policy change), `16` (roadmap), `26` (API contract), `29` (client pack), `33` (execution blueprint + taskboard).
+
 
 ## 4. Module boundaries and repo structure
 

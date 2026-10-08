@@ -39,7 +39,8 @@ behaviour (`04`), API shapes (`26`) or screen behaviour (`08`).
 | Logical type | Physical type | Rules |
 |---|---|---|
 | **Money** | `DECIMAL(18,2)` | Minor-unit precision. **`FLOAT`/`DOUBLE`/`REAL` are forbidden in any money path** (schema-level test fails the build if one appears). Internal comparisons use exact equality — no epsilon (`05` §13) |
-| **Rate / ratio / percentage** | `DECIMAL(18,6)` | Percentages are stored as fractions (0.1234 = 12.34%); display applies 1 dp |
+| **Money** | `DECIMAL(18,2)` | Minor-unit precision. **`FLOAT`/`DOUBLE`/`REAL` are forbidden in any money path** (schema-level test fails the build if one appears). Internal comparisons use exact equality — no epsilon (`05` §13). In v1 there is one reporting currency per project (`01` §6.3); multi-currency is designed as a real concept now for later phases (`ADR-015`) — FX amounts/rates are stored as first-class money with `currency_code`, never as a display-only string, so a later FX path does not require reshaping the fact tables. |
+| **Rate / ratio / percentage** | `DECIMAL(18,6)` | Percentages are stored as fractions (0.1234 = 12.34%); display applies 1 dp. FX rates are a rate, stored in `DECIMAL(18,6)` with `from_currency_code`/`to_currency_code` and a validity window when the FX path lands |
 | **Quantity / units / headcount-equivalent (unused in v1)** | `DECIMAL(18,3)` | |
 | **Identifier** | `BIGINT` / `INTEGER` | Surrogates for joins; business codes are `VARCHAR` |
 | **Text (short)** | `VARCHAR(n)` | Codes ≤ 40, names ≤ 200, references ≤ 260 |
@@ -172,11 +173,14 @@ historical attribute versions except where explicitly stated. Dimension history 
 | `company_id` | `INTEGER` | PK | Surrogate. `1` |
 | `company_code` | `VARCHAR(40)` | No | Source entity code. `IN01` |
 | `company_name` | `VARCHAR(200)` | No | `Alpha Industries Pvt Ltd` |
-| `entity_type` | `VARCHAR(20)` | No | `legal` \| `division` \| `branch` |
-| `parent_company_id` | `INTEGER` | Yes | FK to `DimCompany` for grouped reporting; grouping is a **simple sum, no eliminations** (`01` §8) |
-| `currency_code` | `CHAR(3)` | No | Must equal the project currency in v1 (`01` §6.3) |
+| `entity_type` | `VARCHAR(20)` | No | `legal` \| `division` \| `branch` — the consolidation-ready entity type (`ADR-015`); in v1 every project is one legal entity, so `parent_company_id` is `NULL` and grouping is a simple sum, no eliminations (`01` §8) |
+| `parent_company_id` | `INTEGER` | Yes | FK to `DimCompany` for grouped reporting; **NULL in v1** (single-entity). The column exists now so a later consolidation path adds parentage without reshaping the fact grain (`ADR-015`) |
+| `currency_code` | `CHAR(3)` | No | The company's reporting currency. In v1 this equals the project currency (`01` §6.3); the column is real (not display-only) so multi-currency per entity is a data/setting change later, not a schema rewrite (`ADR-015`) |
 | `is_active` | `BOOLEAN` | No | Default `TRUE` |
 | `source_system` | `VARCHAR(40)` | No | `D365` \| `Payroll` \| `Procurement` |
+| `valid_from` / `valid_to` | `DATE` | No / Yes | Open-ended = `NULL` |
+| `is_current` | `BOOLEAN` | No | |
+| `created_at` | `TIMESTAMP` | No | |
 | `valid_from` / `valid_to` | `DATE` | No / Yes | Open-ended = `NULL` |
 | `is_current` | `BOOLEAN` | No | |
 | `created_at` | `TIMESTAMP` | No | |
@@ -291,7 +295,7 @@ setting that generated them.
 |---|---|---|
 | `DimScenario` | `scenario_id`, `scenario_code` (`base`\|`best`\|`worst`), `name`, `description`, `is_default` | Three scenarios in v1 (FR-FC-003) |
 | `DimMethod` | `method_id`, `method_code` (`remaining_budget`\|`run_rate`\|`avg_3m`\|`manual`), `name`, `requires_history_months`, `description` | Method mathematics owned by `07` |
-| `DimCurrency` | `currency_code`, `symbol`, `decimal_places`, `is_project_currency` | Exactly one active row in v1 (§6.3 of `01`) |
+| `DimCurrency` | `currency_code`, `symbol`, `decimal_places`, `is_project_currency`, `fx_to_project_currency` (`DECIMAL(18,6)`, NULL in v1) | Exactly one active row in v1 (§6.3 of `01`); the FX column is real and NULL-ready so multi-currency is a data/setting change later, not a schema rewrite (`ADR-015`) |
 | `DimRule` | `rule_id`, `rule_name`, `rule_family`, `severity_default`, `threshold_default` (JSON), `requires_master_data` (JSON), `subject_key_definition`, `is_enabled_default`, `rule_version`, `description` | Registry mirroring the catalog in `06`; logic is code, configuration is data (`RuleConfig`) |
 
 ### 3.8 `DimMapping` (versioned, approval-flagged)
@@ -338,7 +342,7 @@ setting that generated them.
 | `debit` | `DECIMAL(18,2)` | No | `NOT NULL DEFAULT 0` |
 | `credit` | `DECIMAL(18,2)` | No | `NOT NULL DEFAULT 0` |
 | `net_amount` | `DECIMAL(18,2)` | No | Generated as `debit − credit` (canonical sign, `05`) |
-| `currency_code` | `CHAR(3)` | No | Must equal the project currency; mixed rows are quarantined (`02` E10) |
+| `currency_code` | `CHAR(3)` | No | Must equal the project currency in v1 (`01` §6.3); the column is real (not display-only) so multi-currency per entity is a data/setting change later, not a schema rewrite (`ADR-015`) |
 | `journal_category` | `VARCHAR(20)` | Yes | `manual` \| `auto` \| `reclass` \| `accrual` — optional via profile (`01` §6.3) |
 | `source_system` | `VARCHAR(40)` | No | `D365` \| `Payroll` \| `Procurement` |
 | `source_file_name` | `VARCHAR(260)` | No | As received, for evidence display |
@@ -550,6 +554,19 @@ setting that generated them.
 | `storage_path` | `VARCHAR(500)` | No | Immutable snapshot payload |
 | `immutable` | `BOOLEAN` | No | Always `TRUE`; the app refuses writes |
 
+
+### 9.4 Data-residency / per-project storage isolation contract (shaped now for later, `ADR-015`)
+
+| Concern | v1 reality | Design decision now |
+|---|---|---|
+| Where a project's data lives | One project folder under the user's profile (`%LOCALAPPDATA%\FP&A Month-End Copilot\Projects\<project>\` per ADR-004), never a synced folder | The project folder is the **data-residency boundary**: everything for that project — analytics DB, state DB, archives, snapshots, exports, logs — is inside it, and a project can be relocated by moving that folder + re-opening |
+| Cross-project isolation | One process, one writer per store, separate DB files per project | No project can read another project's DB files; "later multi-user/MNC" is a permissions/auth layer on top of the same per-project isolation, not a storage reshuffle (`ADR-015`) |
+| Data residency for later MNC | Not a v1 requirement | The contract is designed now: a project is the unit of residency; the app never scatters a project's data outside its folder; exports are explicit user actions; the AI path sends only the redacted extract defined in `10` §6 |
+| Secrets | Machine-level `AppSetting`, DPAPI-protected (`13`); never in a project folder or backup | Kept out of the per-project boundary by design |
+| Delete/retention | User action; no background deletion | Consistent with the "project = residency unit" contract |
+
+**Why this is in the data dictionary, not only in `09`:** residency/isolation is a data-boundary fact, so it belongs with the store layout. The app's later MNC story is: keep the same per-project storage isolation and add a permissions/auth layer on top (`ADR-015`) — not redesign where data lives.
+
 ### 5.5 Mapping tables
 
 | `MappingProfile` column | Type | Null | Description |
@@ -646,7 +663,9 @@ never silently merged (P13, FR-IMP-017/018).
 | I12 | Every dimension referenced by a fact exists (no orphan dimensions); unmapped values are quarantined at import | FK + `IMP-*` checks |
 | I13 | Raw archives are read-only after write | File permission + checksum re-verification on open |
 | I14 | `ProjectSetting` and backups contain **no secrets**; secrets live only in `AppSetting` | Backup writer test |
+| I14 | `ProjectSetting` and backups contain **no secrets**; secrets live only in `AppSetting` | Backup writer test |
 | I15 | Reference tables (`DimRule`, `DimMethod`, `DimScenario`) are seeded by the app and versioned with it | Migration + seed script |
+| I16 | **Permissions/auth is a placeholder boundary in v1** (single-user, no login — `01` §8) | There is **no** per-user identity, role or ACL in v1; the placeholder is a **boundary**: every write path already carries `updated_by`/`actor` and every exported artefact carries `issued_by`, so a later permissions/auth layer (`BL-M028`) adds an identity + role check at the boundary without rewriting the workflow tables. The app does **not** pretend to enforce multi-user permissions today — that would be false assurance (`13` honesty rule) |
 
 ## 8. Example rows
 

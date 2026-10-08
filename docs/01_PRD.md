@@ -1,14 +1,20 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-01
-> **Owning FRs/areas:** scope, personas, jobs-to-be-done, success metrics, branding, disclaimer, IP stance; FR families referenced by `02_FUNCTIONAL_SPEC.md`
+> **Last updated:** 2026-10-07
+> **Owning FRs/areas:** scope, personas, jobs-to-be-done, success metrics, branding, disclaimer, IP stance; FR families referenced by `02_FUNCTIONAL_SPEC.md`; architecture-upgrade consequences owned here per `ADR-015`
 > **TL;DR (≤ 15 lines):** The product is a local, offline, single-user Windows 11 desktop app that runs the
 > client's monthly FP&A rhythm: import ERP exports → validate → analyse budget vs actual → review
 > potential exceptions → refresh the rolling forecast → issue an Excel pack and a PowerPoint deck.
 > Primary user is a non-technical FP&A analyst; secondary users are accounting owners who fix entries and
-> a CFO who reads the pack. v1 is deliberately narrow: P&L focus, import-only budgeting, single reporting
-> currency per project, no eliminations, no login, no cloud. Core scope decisions, the forced in/out list,
-> the IP stance and the canonical advisory disclaimer are settled here (§6, §7, §16, §15.1). Everything
-> else is owned by a single downstream doc per the Source-of-Truth Matrix in `00_INDEX.md`.
+> a CFO who reads the pack. v1 stays deliberately narrow: P&L focus, import-only budgeting, single
+> reporting currency per project, no eliminations, no login. **The architecture is being upgraded now**
+> (`ADR-015`): sharpen the offline core, govern the AI path, shape the data model for MNC-later. MNC/
+> multi-country/multi-sector is explicitly a later phase. The governed-AI boundary is built in the `ADR-015`
+> upgrade block before Phase 1 (`16` §6.7); AI policy is unchanged. Core scope decisions, the forced in/out list, the
+> IP stance, the advisory disclaimer and the flawless-result bar are settled here (§2.6, §5, §6, §8, §15,
+> §15.3). **The upgrade does not change v1 scope**: offline-first, AI-off-by-default, AI-never-computes,
+> MNC-later are all preserved. The governed-AI boundary is built in the `ADR-015` upgrade block before Phase 1
+> (`16` §6.7); AI policy is unchanged.
+> 
 
 ---
 
@@ -430,7 +436,24 @@ generated Excel pack, the cover/back slide of every generated deck, and the clie
 > decision, filing, or external reporting. The tool never posts, approves, or alters accounting
 > records, and it never replaces professional judgement.
 
-### 15.2 Where the disclaimer must appear (enforced by tests)
+### 15.2 What the product is not
+
+| Boundary | Why it matters to this PRD |
+|---|---|
+| It is not a hosted multi-tenant platform in v1 | The architecture upgrade (`ADR-015`) keeps offline-first as the spine; cloud AI is a governed add-on, not a move to a centralised service |
+| It does not replace the later MNC scaling work | Multi-country/multi-sector/multi-entity consolidation is later-phase scope; what is designed now is the data-model shape and the AI boundary so scaling is not a retrofit |
+| It does not pre-empt a language/runtime rewrite | A systems-language engine port is deferred out of this upgrade absent measurement; the upgrade sharpens the existing stack, it does not replace it |
+| It does not promise the tool finds every error | That is the disclaimer's job (§15.1); "flawless result" is the bar for the product's own guarantees, not a claim of total detection |
+| The architecture upgrade does not expand v1 scope into MNC | `ADR-015` shapes the data model for later MNC phases and hardens the AI path as a clean boundary; it does not add multi-entity consolidation, multi-currency FX, or multi-user permissions to v1 |
+| The governed-AI boundary is built before Phase 1, not in Phase 6 | `ADR-015` + `16` §6.7 put consent, redaction, minimum-data, labelling and audit in place first; Phase 6 then builds the four prompt-based features on top of that boundary and proves the offline/rule-based fallback |
+
+| Boundary | Why it matters to this PRD |
+|---|---|
+| It is not a hosted multi-tenant platform in v1 | The architecture upgrade (`ADR-015`) keeps offline-first as the spine; cloud AI is a governed add-on, not a move to a centralised service |
+| It does not replace the later MNC scaling work | Multi-country/multi-sector/multi-entity consolidation is later-phase scope; what is designed now is the data-model shape and the AI boundary so scaling is not a retrofit |
+| It does not pre-empt a language/runtime rewrite | A systems-language engine port is deferred out of this upgrade absent measurement; the upgrade sharpens the existing stack, it does not replace it |
+| It does not promise the tool finds every error | That is the disclaimer's job (§15.1); "flawless result" is the bar for the product's own guarantees, not a claim of total detection |
+| The architecture upgrade does not expand v1 scope into MNC | `ADR-015` shapes the data model for later MNC phases and hardens the AI path as a clean boundary; it does not add multi-entity consolidation, multi-currency FX, or multi-user permissions to v1 |
 
 | Location | Form |
 |---|---|
@@ -494,6 +517,20 @@ immediately after Phase 0 approval and before Phase 1 (Addon 4 §L.13).
 First-run/onboarding (scope item 9) is delivered progressively with each phase but must be complete
 before UAT. The application is not considered delivered until: all gates green, docs `00`–`28` complete,
 user guide written, UAT signed, and a real sanitized month reconciled (`28` §Pilot/§UAT).
+
+## 19. Architecture upgrade (ADR-015) — consequences owned here
+
+| Concern | Decision |
+|---|---|
+| What "flawless result" means in this product | A month-end pack whose every figure ties out to source transactions and source files; whose Excel, PowerPoint and on-screen numbers are identical to the engine's; whose AI-drafted text never introduced, altered or inferred a number and is clearly labelled as a draft until a person approves it; and whose work is auditable end to end (`05`, `11`, `12`, `14`, `28`). "Flawless" is a quality bar for the product's guarantees, not a claim that the tool finds every possible error (the disclaimer in §13 says so explicitly). |
+| Why an architecture upgrade is happening now | To make the offline core fast and correct enough to be the trusted asset, and to make a governed cloud-AI add-on cleanly addable later without compromising that core (`ADR-015`). |
+| What the upgrade changes in v1 | Structural sharpening of the existing stack (profile, safe parallelism where the engine boundary and one-writer-per-store rule allow it, finish the headless-engine boundary enforcement, formalise the canonical helpers), plus a designed-now governed-AI boundary (consent, redaction, minimum-data, labelling, local audit log) implemented behind a default-off flag — **not** a language rewrite, and **not** a move to a hosted multi-tenant platform. |
+| What it does not change in v1 | Offline-first stays the spine; AI stays optional and off by default; AI still never computes, decides, applies or sends (`10` §2.3); MNC/multi-country/multi-sector is still later-phase scope. |
+| What is being designed now for later | Multi-currency as a real concept, multi-entity/consolidation-ready dimensions, a per-project storage-isolation/residency contract, and a permissions/auth placeholder boundary — implemented in v1 only where it strengthens the offline core or the AI contract (`ADR-015`, §5.4, §8). |
+| The later-scaling statement | Once the offline core is proven, the same trusted core plus the governed AI boundary is the asset that scales toward MNC/multi-country/multi-sector work — not a separate rewrite. The contract is designed now so that scaling touches a shaped interface, not a retrofit. |
+| The language/rewrite question | A systems-language engine port (Rust) is **not** part of this upgrade. It remains available as a later, separately-justified decision **if** profiling shows the Python core is the actual ceiling — never as a pre-emptive rewrite (`ADR-015`). |
+
+## 20. Commercial placeholders (flagged, not decided here)
 
 ## 19. Commercial placeholders (flagged, not decided here)
 

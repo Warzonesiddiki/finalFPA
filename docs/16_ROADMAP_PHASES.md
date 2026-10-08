@@ -1,5 +1,5 @@
 > **Status:** Draft v0.1
-> **Last updated:** 2026-10-05
+> **Last updated:** 2026-10-07
 > **Owning FRs/areas:** the phase model and the **next open item** pointer (Kickoff §14.1), phase
 > deliverables and Definition of Done per phase (Kickoff §5), the packaging spike that runs first after
 > approval (Addon 4 §L.13), the phase-gate contract and gate IDs beyond the Phase-0 checklists (`14`
@@ -75,6 +75,7 @@
 |---|---|---|---|---|
 | **Phase 0 — Documentation** | `P0` | The complete Phase 0 documentation set; no product code | `GATE-01`…`GATE-05` + provisional `GATE-05B` (66 checks) | `14` §15, `00_INDEX` §9 |
 | **Packaging spike** | `P-S` | Prove build → installer → installed launch on real Windows 11 | `GATE-06` | this document §4, `15` §3/§5 |
+| **Architecture upgrade block** | `P-UA` | Sharpen the offline core, govern the AI path, shape the data model for MNC-later (`ADR-015`) | `GATE-06A` (new) | this document §6.7 |
 | **Phase 1 — Import & validation** | `P1` | Take the client's messy files to a validated, reconciled, committed dataset | `GATE-07` | this document §6.1 |
 | **Phase 2 — BvA & drill-down** | `P2` | Answer "why is this number different?" down to the transaction | `GATE-08` | §6.2 |
 | **Phase 3 — Exception engine** | `P3` | Surface what needs attention, with owners, SLAs and evidence | `GATE-09` | §6.3 |
@@ -86,8 +87,9 @@
 | **Go-live** | `P-GL` | Install, train, hand over, support live | `GATE-15` | `28`, `23` |
 
 **Rule:** gate numbers are allocated once and never reused; `GATE-01`…`GATE-05` plus provisional `GATE-05B` are the Phase-0 checklists
-defined by `14` §15, `GATE-06`…`GATE-12` are defined here, and `GATE-13`…`GATE-15` are reserved to
-`28` with the names above.
+defined by `14` §15, `GATE-06`…`GATE-12` are defined here, `GATE-06A` is defined here (the `ADR-015` upgrade
+block), and `GATE-13`…`GATE-15` are reserved to `28` with the names above. The later MNC phase is not yet
+allocated a gate.
 
 ### 2.2 Scope → phase mapping (from `01` §18)
 
@@ -415,7 +417,10 @@ cross-artifact ties (one number followed across all three surfaces). *(5 steps.)
 ### 6.6 Phase 6 — AI & polish (`GATE-12`)
 
 **Goal:** optional AI assistance that never computes, decides, applies or sends — plus the accessibility,
-performance and hardening work that makes the product feel finished.
+performance and hardening work that makes the product feel finished. The AI path entering Phase 6 has
+already been architecturally hardened by the `ADR-015` upgrade block (`16` §6.7): consent, redaction,
+minimum-data, labelling and a local audit log are designed and in place; Phase 6 builds the four prompt-
+based features (`PROMPT-01`…`04`) on top of that boundary and proves the offline/rule-based fallback.
 
 | Deliverable | Detail | Owner doc |
 |---|---|---|
@@ -440,6 +445,55 @@ ever produced by AI); scope creep in "polish" (mitigate: `27` backlog with trigg
 ranked, not accumulated).
 
 **Estimate:** **14 ideal days.**
+
+### 6.7 The architecture upgrade block (`P-UA`, `GATE-06A`) — `ADR-015` in execution
+
+**Goal:** make the offline core faster and more correct, make the governed-AI path a clean addable/scalable
+boundary, and shape the data model for the later MNC phases — without changing v1 scope (offline-first,
+AI-off-by-default, AI-never-computes, MNC-later all preserved).
+
+**Position in the roadmap:** after the packaging spike (`GATE-06`), before Phase 1 (`GATE-07`). It is a
+first-class, gate-checked block, not a side quest.
+
+**Deliverables (each is a task in the implementation plan `docs/superpowers/plans/2026-10-07-architecture-upgrade.md`):**
+
+| # | Deliverable | What it proves | Owning spec |
+|---|---|---|---|
+| UA-1 | Performance baseline + profile report under a 250k-row load (import, rule run, BvA, PPT) | Where the time actually goes now; the upgrade targets real hot paths, not guesses | `09` §14, `14` §8 |
+| UA-2 | Safe parallelism plan (worker-thread job model per ADR-006) with the engine-boundary invariant preserved | Parallelism is added only where one-writer-per-store and the headless-engine boundary make it safe | `09` §3.7, §4.1 |
+| UA-3 | Headless-engine boundary enforcement completed (`TB-014`/`TB-025`/`TB-026`): import-linter rule live, `app/engine/common/` canonical, no scattered reimplementations | "AI changed a number" stays structurally impossible; canonical helpers exist once | `09` §4.1, §4.3 |
+| UA-4 | Governed-AI boundary design + default-off flag + keyless rule-based fallback preserved | AI is cleanly addable and later scalable; the AI policy (`10` §2.3) is unchanged | `10`, `ADR-015` |
+| UA-5 | Data-model shape for later MNC (additive, v1-scoped only where it helps the core/AI contract): multi-currency as a real concept, multi-entity/consolidation-ready dimensions, per-project residency contract, permissions/auth placeholder boundary | Later MNC is a contract away, not a retrofit | `03`, `ADR-015` |
+| UA-6 | Flawless-result gate check: ties-out + cross-artifact equality + no unvalidated AI number + auditability, measured not asserted | The governing outcome is real, not a slogan | `05`, `14`, `28` |
+
+**Definition of Done (block-specific, on top of the universal contract §5.1):**
+
+1. The performance profile exists and names the hot paths the upgrade will address; no performance work is done blind.
+2. Any parallelism introduced is justified by the profile and passes the one-writer-per-store + engine-boundary constraints; single-threaded fallback still works.
+3. The import-linter boundary rule is enforced in `scripts/check` and fails the build on violation; `app/engine/common/` is canonical and the scattered helpers are migrated or tombstoned.
+4. The governed-AI boundary is designed, flag-gated, and the keyless rule-based fallback still carries every AI surface when AI is off (default).
+5. The MNC-shaped fields are additive and backward-compatible; no v1 behaviour is broken by their presence.
+6. The acceptance harness and cross-artifact equality still pass on the existing corpus (no regression); the 250k-scale baseline is recorded.
+
+**Demo outline (3–5 min, on sample data):**
+
+1. Show the performance profile / baseline read-out (hot paths named).
+2. Show the import-linter boundary still failing the build if `app/engine/` imports FastAPI/pywebview/API (a one-line violation added and removed for demonstration, or a recorded failure).
+3. Show the governed-AI settings: AI off (default) → every AI surface still works via the rule-based fallback; toggle on → consent + redaction preview + labelling.
+4. Show the data-model shape: `DimCurrency` with the FX column NULL-ready, `DimCompany.parent_company_id` NULL in v1, the residency/permissions boundary stated in docs/settings.
+5. Show the flawless-result evidence: one number followed across engine → UI → Excel → PPT, plus the audit trail.
+
+**Risks → contingencies**
+
+| Risk | Trigger | Contingency |
+|---|---|---|
+| Profiling shows Python is a real ceiling for a specific hot path | UA-1 result | Record the finding; this is the measurement that would justify a later, separately-justified engine-port decision (Rust). Do **not** start a rewrite inside this block; that is `ADR-015`'s B contingency, not A. |
+| Parallelism threatens the one-writer-per-store / engine-boundary invariants | UA-2/UA-3 | Revert the parallel change; keep the single-threaded path; re-profile. The invariants are never-cut. |
+| Governed-AI boundary work drifts into building AI features before the core is proven | UA-4 | Keep the AI module behind a default-off flag and the keyless fallback; no AI feature ships in this block — only the boundary and the flag. |
+| MNC-shaped fields are mistaken for v1 MNC scope | UA-5 | Keep the PRD (`01` §15.2) and roadmap explicit: MNC is later; the fields are designed now, not implemented in full now. |
+| The block grows into a performance-rewrite rabbit hole | UA-1…UA-6 | Gate it: the block ends at `GATE-06A` with measured baselines and a clean core, not at an arbitrary speed target. |
+
+**Estimate:** **8 ideal days** baseline (profile + boundary enforcement + governed-AI boundary design + data-model shape + flawless gate check), before re-estimation at the gate. This is the upgrade block's contribution on top of the 96-day build baseline in §7.
 
 ## 7. Estimates, re-estimation and variance
 
@@ -474,6 +528,7 @@ ranked, not accumulated).
 | 6 — AI & polish | **14** | E6.1 AI features + key/provider + review queue | 6 |
 | | | E6.2 Accessibility, wording, performance, hardening, docs | 8 |
 | **Build total (Phases 1–6)** | **96** | 12 P0 epics | 96 |
+| Architecture upgrade block (`P-UA`) | **8** | UA-1…UA-6 (per §6.7) | 8 |
 | Real-data pilot | **2** | Tie-out worksheet, classification log | — |
 | UAT support | **3** | Defect turnaround, fixes, re-test (`28`) | — |
 | Go-live | **1** | Install, train, handover, watch | — |
@@ -628,6 +683,9 @@ Both walks are **Phase-0 evidence** and both must be repeated at the pilot with 
 | Dates and calendar targets | **Deliberately not set here** — this document commits to *order and gates*, not dates (the estimates in §7.1 are ideal days) |
 | Signing-certificate decision | Client decision at go-live planning (`ADR-003` step 5, `Q-015`/`OQ-012`) |
 | AI model/provider specifics | Keyless default; the provider is configured per client (`10`, `Q-*` in `21`) |
+| The architecture upgrade block (`P-UA`) | Now a first-class block per `ADR-015`; executed before Phase 1; its gate is `GATE-06A`; see §6.7 and the implementation plan |
+| Later MNC phase (multi-country/multi-sector/multi-entity) | Not allocated a gate yet; designed for now via the data-model shape and the AI boundary, implemented in full later |
+| Language/runtime rewrite (Rust) | Explicitly deferred out of this upgrade; available only as a later, separately-justified decision if profiling shows Python is the actual ceiling (`ADR-015`) |
 | Per-machine installer, MSIX, auto-update | Parked (`27`, Addon 1 §N) |
 | Backlog items returning at a trigger | `27` owns the register; §9.3 is the only way back in |
 | Coverage-matrix rows still `IN PROGRESS` | Closed by `18`–`29` in Phase 0 (§3) |
@@ -635,7 +693,8 @@ Both walks are **Phase-0 evidence** and both must be repeated at the pilot with 
 **Assumptions.** (a) One senior engineer builds the product with AI assistance; (b) the client's analyst is
 available for the pilot and UAT as planned; (c) the reference machine is available for baselines; (d) the
 Windows validation protocol (`15` §5) is runnable at every gate; (e) no security or compliance requirement
-outside `13` emerges. Any of these failing changes the plan, not the standards.
+outside `13` emerges; (f) the architecture upgrade block does not expand v1 scope into MNC. Any of these
+failing changes the plan, not the standards.
 
 ## 14. Change control and cross-document obligations
 
@@ -653,6 +712,7 @@ outside `13` emerges. Any of these failing changes the plan, not the standards.
 | `GATE-13`…`GATE-15` mechanics, the pilot, UAT and go-live | `28` |
 | Demo scripts recorded per phase; DoD enforcement and approval recording | `19` |
 | The next open item stays in step with `00_INDEX` §10 and `SESSION_LOG` | `00`, `SESSION_LOG` |
+| The `ADR-015` upgrade block's deliverables, gate `GATE-06A`, and the implementation plan are owned by this document §6.7; the plan file `docs/superpowers/plans/2026-10-07-architecture-upgrade.md` is the execution artifact | `16` §6.7, `ADR-015` |
 
 ### 14.2 Changes to this document
 
