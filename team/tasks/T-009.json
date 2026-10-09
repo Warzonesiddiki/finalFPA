@@ -3,13 +3,13 @@
   "title": "EXC-022 never evaluates on any real run: _exc022_inputs calls _transaction_period(tx, context) but the imported helper takes (tx) only, so the prior-period history branch raises TypeError; _missing_required_dependency swallows it (except Exception) and evaluate_all_rules_detailed records status=error, which the acceptance gate counts as zero coverage. Measured 2026-10-08: the TypeErrors reproduces in isolation; the acceptance run's last red bar (zero-coverage rules, 1 rule) is this defect, not a corpus gap. Fix the call, add the history-branch regression the existing unit test never exercised, re-measure the §5.3 bars twice. Acceptance: EXC-022 raises on P22 (IN01|VCH-2026-0929-014, Rs 15,00,000, 3.6x entity mean); every other bar unchanged; two runs identical; handoff carries the raw numbers.",
   "source": "opencode",
   "priority": "P0",
-  "status": "review",
+  "status": "done",
   "owner": "opencode",
   "claim_id": "opencode-20261008T1713Z-3084",
   "deps": [],
   "lane": "engine",
   "created_utc": "2026-10-08T16:37:49Z",
-  "updated_utc": "2026-10-08T17:13:34Z",
+  "updated_utc": "2026-10-08T22:21:36Z",
   "history": [
     {
       "utc": "2026-10-08T16:37:49Z",
@@ -35,6 +35,11 @@
       "utc": "2026-10-08T17:13:34Z",
       "agent": "opencode",
       "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-08T22:21:36Z",
+      "agent": "hermes",
+      "event": "verified via HO-078"
     }
   ],
   "handoff": "HO-078"

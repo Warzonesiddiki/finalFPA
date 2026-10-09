@@ -1,5 +1,6 @@
 """Tests for GATE-FAST: non-short-circuiting check.py behavior."""
 
+import io
 import subprocess
 import sys
 from pathlib import Path
@@ -66,3 +67,83 @@ def test_check_main_returns_zero_when_all_pass():
          patch.object(check_mod, "enforce_coverage_gates", return_value=0):
         rc = check_mod.main()
         assert rc == 0
+
+
+class _Cp1252Stdout:
+    """Fake cp1252 console.
+
+    ``write`` encodes eagerly, so any character cp1252 cannot represent raises
+    ``UnicodeEncodeError`` exactly where the real Windows console would. This is
+    the gap HO-056 blocker B named: the existing tests capture stdout into a
+    StringIO, where a non-ASCII marker encodes fine, so they could not see the
+    crash that killed the failure branch of ``scripts/check.py``.
+    """
+
+    encoding = "cp1252"
+
+    def __init__(self) -> None:
+        self.buffer = io.BytesIO()
+
+    def write(self, s: str) -> int:
+        data = s.encode("cp1252")  # raises on unencodable chars, by construction
+        self.buffer.write(data)
+        return len(s)
+
+    def flush(self) -> None:
+        pass
+
+    def text(self) -> str:
+        return self.buffer.getvalue().decode("cp1252")
+
+
+def test_failure_branch_prints_its_tally_on_a_cp1252_console(monkeypatch):
+    """A red gate must still report how many bars failed on a cp1252 console.
+
+    Regression for HO-056 blocker B: the failure branch used to print a U+274C
+    marker, which raised ``UnicodeEncodeError`` on the project's default Windows
+    console. The bar table had printed and the exit code was still 1, but the
+    process died by crash instead of ``return 1``, so the "N/15 bars failed"
+    tally was never seen. Every character on the failure path must therefore be
+    cp1252-encodable, and the tally must be present.
+    """
+    executed: list[str] = []
+
+    def tracking_run(cmd: str, desc: str) -> int:
+        executed.append(desc)
+        # Fail the first bar only: this is the failure branch, not the pass one.
+        return 1 if len(executed) == 1 else 0
+
+    fake = _Cp1252Stdout()
+    monkeypatch.setattr(sys, "stdout", fake)
+    with (
+        patch.object(check_mod, "run_command", side_effect=tracking_run),
+        patch.object(check_mod, "enforce_coverage_gates", return_value=0),
+    ):
+        rc = check_mod.main()
+
+    assert rc == 1, "one red bar must still return non-zero"
+    out = fake.text()
+    assert "Validation Gate FAILED" in out
+    # The table has one row more than there are run_command bars: the NFR-014
+    # split-coverage bar is appended straight from enforce_coverage_gates. The
+    # tally counts TABLE ROWS, so it must be 1/16 here, not 1/15 - the off-by-one
+    # that made six rows of the first GATE-FAST evidence table wrong.
+    rows = [ln for ln in out.splitlines() if " | PASS " in ln or " | FAIL " in ln]
+    assert len(rows) == len(executed) + 1
+    assert len([ln for ln in rows if " | FAIL " in ln]) == 1
+    assert f"1/{len(rows)} bars failed" in out, (
+        "the tally must survive a cp1252 console, not die with the print"
+    )
+    for desc in executed:
+        assert desc in out
+
+
+def test_the_cp1252_guard_actually_rejects_the_old_marker():
+    """Falsification of the guard above: it must be able to fail.
+
+    If this stops raising, ``_Cp1252Stdout`` has become a StringIO and the test
+    above is decorative - it would pass with the emoji marker put back.
+    """
+    fake = _Cp1252Stdout()
+    with pytest.raises(UnicodeEncodeError):
+        fake.write("\u274c Validation Gate FAILED: 1/16 bars failed.")
