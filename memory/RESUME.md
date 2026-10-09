@@ -176,7 +176,7 @@ missing section in this file, a missing per-seat log, or an empty journal.
 
 ### Live team state
 
-- Cards: 145 total — done 15, in-progress 4, review 47, todo 79
+- Cards: 146 total — done 16, in-progress 3, review 48, todo 79
 - Live claims: 0
 - **You are active.**
 - `antigravity` — quota ended for 2026-10-05; stream parked, verification lane reassigned to hermes/buffy
@@ -226,6 +226,7 @@ thing that stopped UX-08 was a c
 
 ### Traps that have already cost time
 
+- **K-0049** `2026-10-08T22:13:45Z` — hermes — *trap*: tests/unit/test_acceptance_determinism.py and tests/unit/test_acceptance_cli_utf8.py are NOT marked perf but carry the full acceptance corpus ingest in a module-scoped fixture. Measured 2026-10-08 (2 CPU, 4 GB): pytest tests/unit/test_acceptance_determinism.py -m 'not perf' -> 3 passed in 722.28s, of which 648.35s is the module setup alone. That is why a combined tests/unit batch looks like a hang: pytest -q prints nothing during setup, and the earlier 'inconsistent standalone run' was a timeout, not a flake. Run these files alone, budget 12 min, and prefer -m 'not perf' over -o addopts= (which re-enables the perf suite). (see `tests/unit/test_acceptance_determinism.py`)
 - **K-0048** `2026-10-08T17:13:56Z` — opencode — *trap*: A rule that crashes and a rule that correctly finds nothing produce the same acceptance artefact: zero findings. If the gate consumes findings only, the crash is invisible and its red bar reads as a corpus gap - this one cost 20 minutes of hand diagnosis. Fault isolation must be *reported*, not just recorded: surface status=error in the gate output, and make an unmeasured rule fail the run rather than pass it quietly. (see `app/engine/rules/acceptance.py`)
 - **K-0039** `2026-10-05T19:44:20Z` — buffy — *trap*: A captured command result goes stale the moment a teammate edits the file it measured. evidence/ops/lead-03-citation-audit.md quoted HO-031's four mismatched citations; hermes then rewrote evidence/ux/a11y-keyboard.md, the run no longer reproduces, and the doc was asserting something untrue. Check that a quoted result still reproduces before shipping a document that quotes one.
 - **K-0027** `2026-10-05T19:14:57Z` — buffy — *trap*: aria- occurs 0 times across all 60 .tsx files in ui/src, yet the UX-08 matrix marks 42 screens Conforming with role/aria-label/aria-live attributes. A uniform verdict across a whole population is the signature of not looking, not of a clean result.
