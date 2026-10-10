@@ -28,6 +28,7 @@ Usage:
     python scripts/team_watchdog.py status           # show the loop state and last tick
 Stop a running loop by creating `team/log/watchdog.stop` (or sending SIGINT).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -37,7 +38,7 @@ import os
 import subprocess
 import sys
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -55,14 +56,14 @@ DEFAULTS = {
     "stale_verification_minutes": 30,
     "nudge_cooldown_minutes": 40,
     "idle_minutes": 25,
-    "max_ticks": 0,          # 0 = until the project is complete or stopped
+    "max_ticks": 0,  # 0 = until the project is complete or stopped
     "autostart_board": True,
 }
 
 
 # --------------------------------------------------------------------------- helpers
 def now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def stamp() -> str:
@@ -71,7 +72,7 @@ def stamp() -> str:
 
 def parse_ts(value):
     try:
-        return datetime.strptime(str(value), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        return datetime.strptime(str(value), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC)
     except (TypeError, ValueError):
         return None
 
@@ -92,7 +93,12 @@ def log_path() -> Path:
 
 
 def state() -> dict:
-    return team.read_json(state_path()) or {"ticks": 0, "nudges": {}, "started_utc": None, "last_tick_utc": None}
+    return team.read_json(state_path()) or {
+        "ticks": 0,
+        "nudges": {},
+        "started_utc": None,
+        "last_tick_utc": None,
+    }
 
 
 def save_state(st: dict) -> None:
@@ -107,9 +113,11 @@ def log(line: str) -> None:
     print(f"{stamp()} {line}")
 
 
-WATCHED = (ROOT / "scripts" / "team_watchdog.py",
-           ROOT / "scripts" / "team.py",
-           ROOT / "team" / "config.json")
+WATCHED = (
+    ROOT / "scripts" / "team_watchdog.py",
+    ROOT / "scripts" / "team.py",
+    ROOT / "team" / "config.json",
+)
 
 
 def code_fingerprint() -> tuple:
@@ -130,8 +138,14 @@ def code_fingerprint() -> tuple:
 def maybe_reload(seen: tuple) -> None:
     now_fp = code_fingerprint()
     if now_fp != seen:
-        log("RELOAD: team.py, team_watchdog.py or config.json changed since this loop started - re-executing to pick it up")
-        os.execv(sys.executable, [sys.executable, str(ROOT / "scripts" / "team_watchdog.py"), *sys.argv[1:]])
+        log(
+            "RELOAD: team.py, team_watchdog.py or config.json changed since this loop started - re-executing to pick it up"
+        )
+        os.execv(
+            sys.executable,
+            [sys.executable, str(ROOT / "scripts" / "team_watchdog.py"), *sys.argv[1:]],
+        )
+
 
 def board_fingerprint() -> str:
     """Cheap change-detector for the generated views: mtime+size of every
@@ -144,6 +158,7 @@ def board_fingerprint() -> str:
             continue
         h.update(f"{p.name}:{st.st_mtime_ns}:{st.st_size}".encode())
     return h.hexdigest()[:16]
+
 
 def pid_alive(pid: int) -> bool:
     if sys.platform == "win32":  # pragma: no cover - platform specific
@@ -192,7 +207,9 @@ def release_lock() -> None:
 
 
 def run(cmd: list[str]) -> tuple[int, str]:
-    res = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    res = subprocess.run(
+        cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace"
+    )
     return res.returncode, (res.stdout or "") + (res.stderr or "")
 
 
@@ -208,10 +225,16 @@ def survey() -> dict:
         seen = parse_ts(hb.get("utc")) if hb.get("utc") else None
         age = int((now() - seen).total_seconds() // 60) if seen else None
         is_away = bool(cfg.get("away", {}).get(a))
-        stream = [i for i in (cfg.get("streams", {}).get(a) or [])
-                  if ts.get(i, {}).get("status") not in (None, "done", "review")]
-        claimable_stream = [i for i in stream if team.deps_ok(ts[i], ts)
-                            and ts[i].get("status", "todo") in ("todo", "in-progress")]
+        stream = [
+            i
+            for i in (cfg.get("streams", {}).get(a) or [])
+            if ts.get(i, {}).get("status") not in (None, "done", "review")
+        ]
+        claimable_stream = [
+            i
+            for i in stream
+            if team.deps_ok(ts[i], ts) and ts[i].get("status", "todo") in ("todo", "in-progress")
+        ]
         agents[a] = {
             "active_claims": [c.get("task") for c in active if c.get("agent") == a],
             "idle_minutes": age,
@@ -219,16 +242,28 @@ def survey() -> dict:
             "stream_claimable": claimable_stream,
             "away": is_away,
         }
-    review = [{"task": t["id"], "owner": t.get("owner"), "handoff": t.get("handoff"),
-               "updated_utc": t.get("updated_utc")} for t in ts.values() if t.get("status") == "review"]
-    open_p0 = [t["id"] for t in ts.values()
-               if t.get("status") not in ("done",) and t.get("priority") == "P0"]
+    review = [
+        {
+            "task": t["id"],
+            "owner": t.get("owner"),
+            "handoff": t.get("handoff"),
+            "updated_utc": t.get("updated_utc"),
+        }
+        for t in ts.values()
+        if t.get("status") == "review"
+    ]
+    open_p0 = [
+        t["id"]
+        for t in ts.values()
+        if t.get("status") not in ("done",) and t.get("priority") == "P0"
+    ]
     todo = [t["id"] for t in ts.values() if t.get("status") == "todo"]
     return {
         "agents": agents,
         "review": review,
-        "stale_claims": [c["claim_id"] for c in cs
-                         if not c.get("closed_utc") and team.expired(c, cfg)],
+        "stale_claims": [
+            c["claim_id"] for c in cs if not c.get("closed_utc") and team.expired(c, cfg)
+        ],
         "active_claims": len(active),
         "open_p0": sorted(open_p0),
         "todo_count": len(todo),
@@ -260,43 +295,80 @@ def decide(s: dict, st: dict, cfg: dict) -> list[dict]:
         if info["active_claims"]:
             continue
         if info["stream_claimable"]:
-            why = ("no active claim while its stream still has claimable work: "
-                   + ", ".join(info["stream_claimable"][:3]))
-            out.append({"kind": "nudge", "to": agent, "key": f"idle:{agent}",
-                        "text": f"Stream check: {why}. Claim the first one and start "
-                                f"(`python scripts/team.py claim --agent {agent} --task "
-                                f"{info['stream_claimable'][0]} --scope <paths>`). Idling with "
-                                f"claimable work is a protocol violation."})
+            why = "no active claim while its stream still has claimable work: " + ", ".join(
+                info["stream_claimable"][:3]
+            )
+            out.append(
+                {
+                    "kind": "nudge",
+                    "to": agent,
+                    "key": f"idle:{agent}",
+                    "text": f"Stream check: {why}. Claim the first one and start "
+                    f"(`python scripts/team.py claim --agent {agent} --task "
+                    f"{info['stream_claimable'][0]} --scope <paths>`). Idling with "
+                    f"claimable work is a protocol violation.",
+                }
+            )
         elif not info["stream"]:
-            out.append({"kind": "draft", "to": "owner", "key": f"dry:{agent}",
-                        "text": f"{agent}'s stream is empty and it holds no claim. Propose the next "
-                                f"card (`python scripts/team.py task add --title ... --lane ...`) or "
-                                f"hand it a lane from a seat that is over-subscribed."})
+            out.append(
+                {
+                    "kind": "draft",
+                    "to": "owner",
+                    "key": f"dry:{agent}",
+                    "text": f"{agent}'s stream is empty and it holds no claim. Propose the next "
+                    f"card (`python scripts/team.py task add --title ... --lane ...`) or "
+                    f"hand it a lane from a seat that is over-subscribed.",
+                }
+            )
         elif (info["idle_minutes"] or 0) * 60 >= idle_limit and not cooled(f"blocked:{agent}"):
-            out.append({"kind": "nudge", "to": agent, "key": f"blocked:{agent}",
-                        "text": "You have no active claim. If your stream's next card is blocked by a "
-                                "dependency, say so to buffy with the blocking task id, or take the next "
-                                "unblocked card behind it. Do not go quiet."})
+            out.append(
+                {
+                    "kind": "nudge",
+                    "to": agent,
+                    "key": f"blocked:{agent}",
+                    "text": "You have no active claim. If your stream's next card is blocked by a "
+                    "dependency, say so to buffy with the blocking task id, or take the next "
+                    "unblocked card behind it. Do not go quiet.",
+                }
+            )
 
     for c in s["stale_claims"]:
-        out.append({"kind": "escalate", "to": "owner", "key": f"stale:{c}",
-                    "text": f"Claim {c} is past its TTL with no heartbeat. It can be taken over with "
-                            f"`python scripts/team.py claim --steal {c}` (the takeover is logged)."})
+        out.append(
+            {
+                "kind": "escalate",
+                "to": "owner",
+                "key": f"stale:{c}",
+                "text": f"Claim {c} is past its TTL with no heartbeat. It can be taken over with "
+                f"`python scripts/team.py claim --steal {c}` (the takeover is logged).",
+            }
+        )
 
     for r in s["review"]:
         updated = parse_ts(r.get("updated_utc") or "")
         waited = (now() - updated).total_seconds() if updated else None
         if waited is not None and waited >= verify_limit and not cooled(f"verify:{r['task']}"):
-            out.append({"kind": "escalate", "to": "owner", "key": f"verify:{r['task']}",
-                        "text": f"{r['task']} has been waiting {int(waited // 60)} min for an independent "
-                                f"verifier (handoff {r.get('handoff')}). Either a peer verifies it or the "
-                                f"leader does, with the raw output pasted."})
+            out.append(
+                {
+                    "kind": "escalate",
+                    "to": "owner",
+                    "key": f"verify:{r['task']}",
+                    "text": f"{r['task']} has been waiting {int(waited // 60)} min for an independent "
+                    f"verifier (handoff {r.get('handoff')}). Either a peer verifies it or the "
+                    f"leader does, with the raw output pasted.",
+                }
+            )
 
     if s["all_done"] and not cooled("complete"):
-        out.append({"kind": "done", "to": "owner", "key": "complete",
-                    "text": "No open cards and no open P0 remain: the taskboard is empty. The loop is "
-                            "stopping. Final gate state is whatever `scripts/check.py` last reported - "
-                            "confirm it before declaring the project done."})
+        out.append(
+            {
+                "kind": "done",
+                "to": "owner",
+                "key": "complete",
+                "text": "No open cards and no open P0 remain: the taskboard is empty. The loop is "
+                "stopping. Final gate state is whatever `scripts/check.py` last reported - "
+                "confirm it before declaring the project done.",
+            }
+        )
     return out
 
 
@@ -310,7 +382,9 @@ def apply(actions: list[dict], st: dict, dry_run: bool = False) -> list[dict]:
     st.setdefault("nudges", {})
     for a in actions:
         if a["kind"] not in SAFE:
-            log(f"REFUSED action of unknown kind {a['kind']!r} - the watchdog may not widen its own powers")
+            log(
+                f"REFUSED action of unknown kind {a['kind']!r} - the watchdog may not widen its own powers"
+            )
             continue
         applied.append(a)
         st["nudges"][a["key"]] = stamp()
@@ -327,8 +401,16 @@ def tick(dry_run: bool = False) -> dict:
     except Exception as exc:  # a supervision loop must not die silently
         log(f"TICK FAILED: {type(exc).__name__}: {exc}")
         import traceback
+
         log(traceback.format_exc().strip().replace(chr(10), " | "))
-        return {"check_exit": -1, "check_fails": 0, "check_warns": 0, "actions": [], "all_done": False, "failed": True}
+        return {
+            "check_exit": -1,
+            "check_fails": 0,
+            "check_warns": 0,
+            "actions": [],
+            "all_done": False,
+            "failed": True,
+        }
 
 
 def _tick(dry_run: bool = False) -> dict:
@@ -350,9 +432,13 @@ def _tick(dry_run: bool = False) -> dict:
     actions = decide(s, st, cfg)
     applied = apply(actions, st, dry_run=dry_run)
     st["last"] = {
-        "check_exit": code_check, "check_fails": fails, "check_warns": warns,
-        "active_claims": s["active_claims"], "todo": s["todo_count"],
-        "open_p0": s["open_p0"], "actions": [f"{a['kind']}->{a['to']}" for a in applied],
+        "check_exit": code_check,
+        "check_fails": fails,
+        "check_warns": warns,
+        "active_claims": s["active_claims"],
+        "todo": s["todo_count"],
+        "open_p0": s["open_p0"],
+        "actions": [f"{a['kind']}->{a['to']}" for a in applied],
         "all_done": s["all_done"],
         "board_fingerprint": st.get("board_fingerprint"),
     }
@@ -364,9 +450,11 @@ def _tick(dry_run: bool = False) -> dict:
     n_active = s["active_claims"]
     n_todo = s["todo_count"]
     n_actions = len(applied)
-    log(f"tick #{tick_no}: check exit {code_check} ({fails} fail, {warns} warn), "
+    log(
+        f"tick #{tick_no}: check exit {code_check} ({fails} fail, {warns} warn), "
         f"{n_active} active claim(s), {n_todo} card(s) todo, "
-        f"{n_actions} action(s), tick took {took:.1f}s")
+        f"{n_actions} action(s), tick took {took:.1f}s"
+    )
     return st["last"]
 
 
@@ -427,8 +515,11 @@ def main() -> int:
     if args.cmd == "status":
         print(json.dumps(state().get("last", {}), indent=2, default=str))
         return 0
-    return loop(args.interval or config()["interval_minutes"], args.max_ticks or config()["max_ticks"],
-                args.dry_run)
+    return loop(
+        args.interval or config()["interval_minutes"],
+        args.max_ticks or config()["max_ticks"],
+        args.dry_run,
+    )
 
 
 if __name__ == "__main__":

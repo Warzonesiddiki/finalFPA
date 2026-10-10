@@ -28,6 +28,7 @@ them all. The count of red bars is itself a reported number, because "which bar 
 
 Stdlib only.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -47,24 +48,55 @@ PY = sys.executable
 
 # (id, what it proves, argv, slow?)
 GATES: list[tuple[str, str, list[str], bool]] = [
-    ("LICENCE", "no GPL, adopted-source notices reach the payload",
-     [PY, "scripts/license_gate.py"], False),
-    ("DOC-INTEGRITY", "markdown links resolve, cross-project ids consistent",
-     [PY, "scripts/check_doc_integrity.py"], False),
-    ("MEMORY", "continuity journals well-formed and rendered",
-     [PY, "scripts/memory.py", "verify"], False),
-    ("EVID-REGISTER", "false-evidence register matches the rejected handoffs",
-     [PY, "scripts/false_evidence_register.py", "--check"], False),
-    ("RUFF-LINT", "lint clean over app/scripts/tests",
-     [PY, "-m", "ruff", "check", "app", "scripts", "tests"], False),
-    ("RUFF-FORMAT", "formatting clean over app/scripts/tests",
-     [PY, "-m", "ruff", "format", "--check", "app", "scripts", "tests"], False),
-    ("TEAM-CHECK", "board integrity: undeclared files, rejected-handoff rule, deps",
-     [PY, "scripts/team.py", "check"], True),
-    ("ACCEPTANCE", "the product acceptance gate (fails fast on first bar)",
-     [PY, "scripts/check.py"], True),
-    ("UNIT", "the unit suite",
-     [PY, "-m", "pytest", "tests/unit", "-q"], True),
+    (
+        "LICENCE",
+        "no GPL, adopted-source notices reach the payload",
+        [PY, "scripts/license_gate.py"],
+        False,
+    ),
+    (
+        "DOC-INTEGRITY",
+        "markdown links resolve, cross-project ids consistent",
+        [PY, "scripts/check_doc_integrity.py"],
+        False,
+    ),
+    (
+        "MEMORY",
+        "continuity journals well-formed and rendered",
+        [PY, "scripts/memory.py", "verify"],
+        False,
+    ),
+    (
+        "EVID-REGISTER",
+        "false-evidence register matches the rejected handoffs",
+        [PY, "scripts/false_evidence_register.py", "--check"],
+        False,
+    ),
+    (
+        "RUFF-LINT",
+        "lint clean over app/scripts/tests",
+        [PY, "-m", "ruff", "check", "app", "scripts", "tests"],
+        False,
+    ),
+    (
+        "RUFF-FORMAT",
+        "formatting clean over app/scripts/tests",
+        [PY, "-m", "ruff", "format", "--check", "app", "scripts", "tests"],
+        False,
+    ),
+    (
+        "TEAM-CHECK",
+        "board integrity: undeclared files, rejected-handoff rule, deps",
+        [PY, "scripts/team.py", "check"],
+        True,
+    ),
+    (
+        "ACCEPTANCE",
+        "the product acceptance gate (fails fast on first bar)",
+        [PY, "scripts/check.py"],
+        True,
+    ),
+    ("UNIT", "the unit suite", [PY, "-m", "pytest", "tests/unit", "-q"], True),
 ]
 
 
@@ -72,8 +104,15 @@ def run(argv: list[str], timeout: int = 2400) -> tuple[int, float, str]:
     """Returns (exit code, seconds, first meaningful lines). Never raises on non-zero."""
     started = time.monotonic()
     try:
-        p = subprocess.run(argv, capture_output=True, text=True, encoding="utf-8",
-                           errors="replace", cwd=ROOT, timeout=timeout)
+        p = subprocess.run(
+            argv,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            cwd=ROOT,
+            timeout=timeout,
+        )
         rc, out = p.returncode, (p.stdout + p.stderr)
     except subprocess.TimeoutExpired:
         return 124, time.monotonic() - started, f"TIMEOUT after {timeout}s"
@@ -85,8 +124,9 @@ def run(argv: list[str], timeout: int = 2400) -> tuple[int, float, str]:
 
 
 def git(*args: str) -> str:
-    p = subprocess.run(["git", *args], capture_output=True, text=True, encoding="utf-8",
-                       errors="replace", cwd=ROOT)
+    p = subprocess.run(
+        ["git", *args], capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=ROOT
+    )
     return p.stdout.strip() or "(unavailable)"
 
 
@@ -113,9 +153,14 @@ def main(argv: list[str] | None = None) -> int:
         prog="release_dossier.py",
         description="Build evidence/release-readiness-dossier.md from live gate runs.",
     )
-    ap.add_argument("--slow", action="store_true",
-                    help="also run the slow gates (team check, acceptance, full unit suite)")
-    ap.add_argument("--check", action="store_true", help="fail if the dossier is stale; write nothing")
+    ap.add_argument(
+        "--slow",
+        action="store_true",
+        help="also run the slow gates (team check, acceptance, full unit suite)",
+    )
+    ap.add_argument(
+        "--check", action="store_true", help="fail if the dossier is stale; write nothing"
+    )
     args = ap.parse_args(argv)
 
     gates = [g for g in GATES if args.slow or not g[3]]
@@ -123,8 +168,17 @@ def main(argv: list[str] | None = None) -> int:
     # Never short-circuit. Every gate runs, whatever the previous one did.
     for gid, proves, cmd, slow in gates:
         rc, secs, note = run(cmd)
-        results.append({"id": gid, "proves": proves, "cmd": " ".join(cmd[1:]),
-                        "rc": rc, "secs": round(secs, 1), "note": note, "slow": slow})
+        results.append(
+            {
+                "id": gid,
+                "proves": proves,
+                "cmd": " ".join(cmd[1:]),
+                "rc": rc,
+                "secs": round(secs, 1),
+                "note": note,
+                "slow": slow,
+            }
+        )
 
     red = [r for r in results if r["rc"] != 0]
     green = [r for r in results if r["rc"] == 0]
@@ -134,8 +188,19 @@ def main(argv: list[str] | None = None) -> int:
     declared_od, listed_od, od_ids = read_open_decisions()
     vq_rc, _vq, vq_note = run([PY, "scripts/verification_queue.py", "--stats"])
 
-    doc = build(results, red, green, skipped, head_sha, tracked, dirty,
-                declared_od, listed_od, od_ids, args.slow)
+    doc = build(
+        results,
+        red,
+        green,
+        skipped,
+        head_sha,
+        tracked,
+        dirty,
+        declared_od,
+        listed_od,
+        od_ids,
+        args.slow,
+    )
 
     if args.check:
         have = OUT.read_text(encoding="utf-8") if OUT.exists() else ""
@@ -147,13 +212,26 @@ def main(argv: list[str] | None = None) -> int:
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(doc, encoding="utf-8")
-    print(f"wrote {OUT.relative_to(ROOT).as_posix()} — "
-          f"{len(green)} green, {len(red)} red, {len(skipped)} skipped")
+    print(
+        f"wrote {OUT.relative_to(ROOT).as_posix()} — "
+        f"{len(green)} green, {len(red)} red, {len(skipped)} skipped"
+    )
     return 0
 
 
-def build(results, red, green, skipped, head_sha, tracked, dirty,
-          declared_od, listed_od, od_ids, slow: bool) -> str:
+def build(
+    results,
+    red,
+    green,
+    skipped,
+    head_sha,
+    tracked,
+    dirty,
+    declared_od,
+    listed_od,
+    od_ids,
+    slow: bool,
+) -> str:
     L: list[str] = []
     A = L.append
     A("# Release-readiness dossier")
@@ -189,9 +267,11 @@ def build(results, red, green, skipped, head_sha, tracked, dirty,
     A("")
     A(BEGIN)
     A("")
-    A(f"_{len(results)} gate(s) run"
-      + (f"; {len(skipped)} slow gate(s) skipped (pass `--slow` to include)" if skipped else "")
-      + "._")
+    A(
+        f"_{len(results)} gate(s) run"
+        + (f"; {len(skipped)} slow gate(s) skipped (pass `--slow` to include)" if skipped else "")
+        + "._"
+    )
     A("")
     A("| Gate | Exit | Seconds | Proves | Command |")
     A("|---|---|---|---|---|")
@@ -205,8 +285,10 @@ def build(results, red, green, skipped, head_sha, tracked, dirty,
         A(f"- `{r['id']}` (exit {r['rc']}): {r['note']}")
     A("")
     if skipped:
-        A(f"Not run this pass: {', '.join('`' + s + '`' for s in skipped)}. "
-          "A skipped gate is not a passing gate and is not counted as one.")
+        A(
+            f"Not run this pass: {', '.join('`' + s + '`' for s in skipped)}. "
+            "A skipped gate is not a passing gate and is not counted as one."
+        )
         A("")
 
     A("## 3. The acceptance gate is fail-fast")
@@ -228,7 +310,9 @@ def build(results, red, green, skipped, head_sha, tracked, dirty,
 
     A("## 4. Licence posture")
     A("")
-    A(f"- `python scripts/license_gate.py` — exit {next((r['rc'] for r in results if r['id'] == 'LICENCE'), 'not run')}")
+    A(
+        f"- `python scripts/license_gate.py` — exit {next((r['rc'] for r in results if r['id'] == 'LICENCE'), 'not run')}"
+    )
     A(f"- Git `HEAD` — `{head_sha}`")
     A(f"- Tracked files — {tracked}")
     A(f"- Untracked or modified entries — {dirty}")
@@ -245,25 +329,35 @@ def build(results, red, green, skipped, head_sha, tracked, dirty,
         f"`evidence/open_decisions.md` declares **{declared_od}** tracked open decisions and lists "
         f"**{listed_od}** ({', '.join(od_ids) if od_ids else 'none'}). The register therefore does "
         f"not currently deliver its own count."
-        if declared_od and listed_od < declared_od else
-        f"`evidence/open_decisions.md` lists {listed_od} open decision(s): "
+        if declared_od and listed_od < declared_od
+        else f"`evidence/open_decisions.md` lists {listed_od} open decision(s): "
         f"{', '.join(od_ids) if od_ids else 'none'}."
     )
     A("")
     A("| Decision | Blast radius | State |")
     A("|---|---|---|")
-    A("| `DOC-02` canonical EULA / advisory disclaimer text | Ships in the offline installer; legal "
-      "exposure on every desktop install | Blocked on an owner ruling. `scripts/build.py` reports a "
-      "blocker rather than inventing legal text. |")
-    A("| `DOC-08` / `GATE-13` in `docs/28` | An approval nobody has given is currently carried as "
-      "if it gates release | Packet not yet assembled. |")
-    A("| `TB-006` / `TB-011` corpus rebuild | Blocks the five `docs/14` §5.3 bars, which "
-      "`scripts/check.py` can no longer even report | In flight (`CORPUS-03`, `QUAL-05`). |")
-    A("| 8 handoffs authored by `antigravity` | That seat is `AWAY` (quota ended 2026-10-05) and "
-      "cannot verify its own work, so no rotation reaches them | Unreachable by the queue; needs a "
-      "documented disposition. |")
-    A("| `Ruff Format` across `app/ scripts/ tests/` | 173 files unformatted; currently masks every "
-      "later acceptance bar | Red. |")
+    A(
+        "| `DOC-02` canonical EULA / advisory disclaimer text | Ships in the offline installer; legal "
+        "exposure on every desktop install | Blocked on an owner ruling. `scripts/build.py` reports a "
+        "blocker rather than inventing legal text. |"
+    )
+    A(
+        "| `DOC-08` / `GATE-13` in `docs/28` | An approval nobody has given is currently carried as "
+        "if it gates release | Packet not yet assembled. |"
+    )
+    A(
+        "| `TB-006` / `TB-011` corpus rebuild | Blocks the five `docs/14` §5.3 bars, which "
+        "`scripts/check.py` can no longer even report | In flight (`CORPUS-03`, `QUAL-05`). |"
+    )
+    A(
+        "| 8 handoffs authored by `antigravity` | That seat is `AWAY` (quota ended 2026-10-05) and "
+        "cannot verify its own work, so no rotation reaches them | Unreachable by the queue; needs a "
+        "documented disposition. |"
+    )
+    A(
+        "| `Ruff Format` across `app/ scripts/ tests/` | 173 files unformatted; currently masks every "
+        "later acceptance bar | Red. |"
+    )
     A("")
 
     A("## 6. Known limits, as numbers")
@@ -272,13 +366,19 @@ def build(results, red, green, skipped, head_sha, tracked, dirty,
     A("|---|---|---|")
     A(f"| Gates red this pass | {len(red)} of {len(results)} run | section 2 |")
     A(f"| Gates skipped (not run, not passing) | {len(skipped)} | section 2 |")
-    A(f"| Open decisions declared vs listed | {declared_od} vs {listed_od} | "
-      "`evidence/open_decisions.md` |")
+    A(
+        f"| Open decisions declared vs listed | {declared_od} vs {listed_od} | "
+        "`evidence/open_decisions.md` |"
+    )
     A(f"| Tracked files / dirty entries | {tracked} / {dirty} | `git ls-files`, `git status` |")
-    A("| Handoffs awaiting a verifier | see `scripts/verification_queue.py --stats` | verification "
-      "queue, median wait reported there |")
-    A("| `aria-` attributes in `ui/src` | 0 across all `.tsx` files | `TB-105`, measured at "
-      "generation time in `evidence/ops/lead-03-citation-audit.md` |")
+    A(
+        "| Handoffs awaiting a verifier | see `scripts/verification_queue.py --stats` | verification "
+        "queue, median wait reported there |"
+    )
+    A(
+        "| `aria-` attributes in `ui/src` | 0 across all `.tsx` files | `TB-105`, measured at "
+        "generation time in `evidence/ops/lead-03-citation-audit.md` |"
+    )
     A("")
 
     A("## 7. What this dossier does not cover")

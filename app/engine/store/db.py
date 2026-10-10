@@ -1,26 +1,44 @@
 """Database manager managing DuckDB and SQLite split per ADR-001, ADR-004 and ADR-007."""
 
 import os
-import sys
 import sqlite3
+import sys
 from pathlib import Path
-from typing import Optional
+
 import duckdb
 
-DEFAULT_PROJECT_DIR = Path(os.environ.get("LOCALAPPDATA", ".")) / "FP&A Month-End Copilot" / "Projects" / "default"
+DEFAULT_PROJECT_DIR = (
+    Path(os.environ.get("LOCALAPPDATA", ".")) / "FP&A Month-End Copilot" / "Projects" / "default"
+)
 
 
 AUTHORITATIVE_ACCOUNT_CODES = {
-    '4000', '4100', '4200', '5000', '5100', '5200', '5300', '5400',
-    '5450', '5500', '5600', '5800', '6100', '6300', '1999',
-    '1010', '1200', '2000', '1020'
+    "4000",
+    "4100",
+    "4200",
+    "5000",
+    "5100",
+    "5200",
+    "5300",
+    "5400",
+    "5450",
+    "5500",
+    "5600",
+    "5800",
+    "6100",
+    "6300",
+    "1999",
+    "1010",
+    "1200",
+    "2000",
+    "1020",
 }
 
 
 class DatabaseManager:
     """Encapsulates DuckDB analytics store and SQLite workflow state store."""
 
-    def __init__(self, project_dir: Optional[Path] = None):
+    def __init__(self, project_dir: Path | None = None):
         env_dir = os.environ.get("FPA_PROJECT_DIR")
         if project_dir:
             self.project_dir = Path(project_dir)
@@ -33,7 +51,9 @@ class DatabaseManager:
             else:
                 local_app_data = os.environ.get("LOCALAPPDATA")
                 if local_app_data:
-                    self.project_dir = Path(local_app_data) / "FP&A Month-End Copilot" / "Projects" / "default"
+                    self.project_dir = (
+                        Path(local_app_data) / "FP&A Month-End Copilot" / "Projects" / "default"
+                    )
                 else:
                     self.project_dir = Path.cwd() / "Projects" / "default"
 
@@ -65,9 +85,7 @@ class DatabaseManager:
                 )
             for column_name in ("external_batch_ref", "subject_namespace"):
                 if column_name not in batch_columns:
-                    conn.execute(
-                        f"ALTER TABLE FactImportBatch ADD COLUMN {column_name} TEXT;"
-                    )
+                    conn.execute(f"ALTER TABLE FactImportBatch ADD COLUMN {column_name} TEXT;")
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_fact_import_batch_external_ref "
                 "ON FactImportBatch(external_batch_ref);"
@@ -133,13 +151,10 @@ class DatabaseManager:
                     "ADD COLUMN change_note VARCHAR(500) DEFAULT '';"
                 )
             staleness_columns = {
-                row[1]
-                for row in conn.execute("PRAGMA table_info('DerivedDataState')").fetchall()
+                row[1] for row in conn.execute("PRAGMA table_info('DerivedDataState')").fetchall()
             }
             if "generation" not in staleness_columns:
-                conn.execute(
-                    "ALTER TABLE DerivedDataState ADD COLUMN generation BIGINT DEFAULT 0;"
-                )
+                conn.execute("ALTER TABLE DerivedDataState ADD COLUMN generation BIGINT DEFAULT 0;")
             conn.execute(
                 "INSERT OR IGNORE INTO DerivedDataState (state_id, is_stale, reason) VALUES (1, FALSE, NULL)"
             )
@@ -226,6 +241,7 @@ class DatabaseManager:
     def get_duckdb_connection(self) -> duckdb.DuckDBPyConnection:
         """Get DuckDB connection for analytical queries with retry / fallback for concurrent locks."""
         import time
+
         for attempt in range(3):
             try:
                 return duckdb.connect(str(self.duckdb_path))

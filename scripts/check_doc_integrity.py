@@ -15,9 +15,9 @@ Exits 0 on clean integrity check, non-zero if broken links or unknown IDs are de
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
 import re
 import sys
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -83,7 +83,9 @@ def check_link_validity(files: list[Path], root: Path) -> list[str]:
             resolved = (fpath.parent / path_part).resolve()
             if not resolved.exists():
                 rel_doc = fpath.relative_to(root) if fpath.is_relative_to(root) else fpath
-                errors.append(f"Broken link in {rel_doc}: target '{target}' resolved to non-existent path '{resolved}'")
+                errors.append(
+                    f"Broken link in {rel_doc}: target '{target}' resolved to non-existent path '{resolved}'"
+                )
 
     return errors
 

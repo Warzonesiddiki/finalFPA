@@ -8,32 +8,33 @@ all Decimal inputs, formula identifier, and calculation hops without rounding dr
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from collections.abc import Sequence
+from dataclasses import dataclass
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any
 
 from app.engine.calc.math import (
-    calculate_variance,
-    calculate_variance_pct,
-    calculate_favourability,
-    calculate_percentage_point_variance,
-    calculate_gross_margin_pct,
-    calculate_budget_burn_pct,
-    calculate_mape_lite,
-    quantize_money,
     Direction,
     Favourability,
+    calculate_budget_burn_pct,
+    calculate_favourability,
+    calculate_gross_margin_pct,
+    calculate_mape_lite,
+    calculate_percentage_point_variance,
+    calculate_variance,
+    calculate_variance_pct,
 )
 from app.engine.calc.quality_score import (
+    QualityScoreResult,
     calculate_quality_score,
     create_f12_fixture_checks,
-    QualityScoreResult,
 )
 
 
 @dataclass(frozen=True)
 class ObservableHop:
     """Represents an observable processing or arithmetic hop in the pipeline."""
+
     name: str
     hop_type: str  # e.g. "ingest", "store", "compute", "export"
     detail: str
@@ -42,15 +43,16 @@ class ObservableHop:
 @dataclass(frozen=True)
 class ObservableNumber:
     """Structured data container representing an observable financial quantity."""
+
     id: int
     name: str
     formula_id: str
     value: Decimal | Favourability | QualityScoreResult
-    inputs: Dict[str, Any]
-    hops: List[ObservableHop]
+    inputs: dict[str, Any]
+    hops: list[ObservableHop]
     display: str
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert observable number to structured JSON-serializable dictionary."""
         val = self.value
         if isinstance(val, Favourability):
@@ -67,10 +69,7 @@ class ObservableNumber:
             "name": self.name,
             "formula_id": self.formula_id,
             "value": val_repr,
-            "inputs": {
-                k: str(v) if isinstance(v, Decimal) else v
-                for k, v in self.inputs.items()
-            },
+            "inputs": {k: str(v) if isinstance(v, Decimal) else v for k, v in self.inputs.items()},
             "hops": [{"name": h.name, "type": h.hop_type, "detail": h.detail} for h in self.hops],
             "display": self.display,
         }
@@ -90,7 +89,9 @@ def observe_number_1_tb_balance(debits: Decimal, credits: Decimal) -> Observable
         hops=[
             ObservableHop("Ingest", "ingest", "CSV line parsed to Decimal without float cast"),
             ObservableHop("Analytical Store", "store", "DuckDB DECIMAL(18,2) exact representation"),
-            ObservableHop("Balance Verification", "compute", f"Debit ({debits}) − Credit ({credits}) = {net}"),
+            ObservableHop(
+                "Balance Verification", "compute", f"Debit ({debits}) − Credit ({credits}) = {net}"
+            ),
         ],
         display=f"Net: {net:+.2f}",
     )
@@ -130,7 +131,9 @@ def observe_number_3_variance(actual: Decimal, budget: Decimal) -> ObservableNum
         hops=[
             ObservableHop("Actuals Staging", "store", "FactActual aggregation"),
             ObservableHop("Budget Staging", "store", "FactBudget aggregation"),
-            ObservableHop("Variance Arithmetic", "compute", f"Actual ({actual}) − Budget ({budget}) = {var}"),
+            ObservableHop(
+                "Variance Arithmetic", "compute", f"Actual ({actual}) − Budget ({budget}) = {var}"
+            ),
         ],
         display=f"Variance: {var:+.2f}",
     )
@@ -172,13 +175,17 @@ def observe_number_5_favourability(
         inputs={"actual": actual, "budget": budget, "direction": direction.value},
         hops=[
             ObservableHop("Actual vs Budget", "store", f"Actual={actual}, Budget={budget}"),
-            ObservableHop("Direction Evaluation", "compute", f"Direction={direction.value} -> {fav.value}"),
+            ObservableHop(
+                "Direction Evaluation", "compute", f"Direction={direction.value} -> {fav.value}"
+            ),
         ],
         display=f"{fav.value} (▲)" if fav == Favourability.FAVOURABLE else f"{fav.value} (▼)",
     )
 
 
-def observe_number_6_percentage_points(actual_pct: Decimal, budget_pct: Decimal) -> ObservableNumber:
+def observe_number_6_percentage_points(
+    actual_pct: Decimal, budget_pct: Decimal
+) -> ObservableNumber:
     """6. Percentage Points difference: actual_pct - budget_pct (CALC-013)."""
     assert isinstance(actual_pct, Decimal), "Inputs must be Decimal"
     assert isinstance(budget_pct, Decimal), "Inputs must be Decimal"
@@ -190,7 +197,9 @@ def observe_number_6_percentage_points(actual_pct: Decimal, budget_pct: Decimal)
         value=pp,
         inputs={"actual_pct": actual_pct, "budget_pct": budget_pct},
         hops=[
-            ObservableHop("Ratio Scale", "compute", f"Actual GM={actual_pct}%, Budget GM={budget_pct}%"),
+            ObservableHop(
+                "Ratio Scale", "compute", f"Actual GM={actual_pct}%, Budget GM={budget_pct}%"
+            ),
             ObservableHop("Point Arithmetic", "compute", f"{actual_pct} − {budget_pct} = {pp} pp"),
         ],
         display=f"{pp:+.1f} pp",
@@ -221,17 +230,21 @@ def observe_number_7_bridge_residual(
     )
 
 
-def observe_number_8_dq_score(fixture_checks: Optional[List[Dict[str, Any]]] = None) -> ObservableNumber:
+def observe_number_8_dq_score(
+    fixture_checks: list[dict[str, Any]] | None = None,
+) -> ObservableNumber:
     """8. Data Quality Score: 100-pt system (CALC-050)."""
     checks = fixture_checks if fixture_checks is not None else create_f12_fixture_checks()
     res = calculate_quality_score(checks)
-    score_dec = Decimal(str(res.score))
     return ObservableNumber(
         id=8,
         name="Data Quality Score (100-pt)",
         formula_id="CALC-050",
         value=res,
-        inputs={"checks_count": len(checks), "total_deductions": Decimal(str(res.total_deductions))},
+        inputs={
+            "checks_count": len(checks),
+            "total_deductions": Decimal(str(res.total_deductions)),
+        },
         hops=[
             ObservableHop("Check Evaluation", "compute", f"{len(checks)} checks evaluated"),
             ObservableHop("Deduction Tally", "compute", f"Total deductions={res.total_deductions}"),
@@ -254,7 +267,11 @@ def observe_number_9_gross_margin(revenue: Decimal, cogs: Decimal) -> Observable
         value=ratio_res.value,
         inputs={"revenue": revenue, "cogs": cogs},
         hops=[
-            ObservableHop("Gross Profit Delta", "compute", f"Revenue ({revenue}) − COGS ({cogs}) = {revenue - cogs}"),
+            ObservableHop(
+                "Gross Profit Delta",
+                "compute",
+                f"Revenue ({revenue}) − COGS ({cogs}) = {revenue - cogs}",
+            ),
             ObservableHop("Revenue Ratio", "compute", f"Ratio = {ratio_res.value}"),
         ],
         display=f"{ratio_res.display} GM",
@@ -283,11 +300,13 @@ def observe_number_10_budget_burn(ytd_actual: Decimal, annual_budget: Decimal) -
 
 
 def observe_number_11_mape_lite(
-    period_pairs: Sequence[tuple[Decimal, Decimal]]
+    period_pairs: Sequence[tuple[Decimal, Decimal]],
 ) -> ObservableNumber:
     """11. Forecast Accuracy MAPE-lite: mean(|actual - fc| / |actual|) (CALC-069 / KPI-006)."""
     for act, fc in period_pairs:
-        assert isinstance(act, Decimal) and isinstance(fc, Decimal), "All period pairs must be Decimal"
+        assert isinstance(act, Decimal) and isinstance(fc, Decimal), (
+            "All period pairs must be Decimal"
+        )
     ratio_res, excluded = calculate_mape_lite(period_pairs)
     assert ratio_res.value is not None
     return ObservableNumber(
@@ -295,7 +314,10 @@ def observe_number_11_mape_lite(
         name="Forecast Accuracy MAPE-lite",
         formula_id="CALC-069",
         value=ratio_res.value,
-        inputs={"period_pairs": [[p[0], p[1]] for p in period_pairs], "excluded_zero_actuals": excluded},
+        inputs={
+            "period_pairs": [[p[0], p[1]] for p in period_pairs],
+            "excluded_zero_actuals": excluded,
+        },
         hops=[
             ObservableHop("Absolute Forecast Error", "compute", "Error per period computed"),
             ObservableHop("Mean Error Aggregate", "compute", f"Mean MAPE = {ratio_res.value}"),
@@ -330,23 +352,35 @@ def observe_number_12_rounding_footnote(
         },
         hops=[
             ObservableHop("Raw Line Summation", "compute", f"Unrounded Total = {total_unrounded}"),
-            ObservableHop("Displayed Rows Sum", "compute", f"Sum of Displayed = {sum_of_displayed}"),
-            ObservableHop("Discrepancy Evaluation", "compute", f"Discrepancy = {discrepancy} (Footnote: {is_footnote_required})"),
+            ObservableHop(
+                "Displayed Rows Sum", "compute", f"Sum of Displayed = {sum_of_displayed}"
+            ),
+            ObservableHop(
+                "Discrepancy Evaluation",
+                "compute",
+                f"Discrepancy = {discrepancy} (Footnote: {is_footnote_required})",
+            ),
         ],
         display=f"Discrepancy: {discrepancy} (Footnote {'Required' if is_footnote_required else 'Not Needed'})",
     )
 
 
-def get_twelve_observable_numbers() -> List[ObservableNumber]:
+def get_twelve_observable_numbers() -> list[ObservableNumber]:
     """Retrieve all twelve observable financial numbers with canonical defaults."""
     return [
         observe_number_1_tb_balance(Decimal("10800000.00"), Decimal("10800000.00")),
         observe_number_2_net_amount(Decimal("150000.50"), Decimal("0.00")),
         observe_number_3_variance(Decimal("10800000.00"), Decimal("10000000.00")),
         observe_number_4_variance_pct(Decimal("10800000.00"), Decimal("10000000.00")),
-        observe_number_5_favourability(Decimal("10800000.00"), Decimal("10000000.00"), Direction.HIGHER_IS_FAVOURABLE),
+        observe_number_5_favourability(
+            Decimal("10800000.00"), Decimal("10000000.00"), Direction.HIGHER_IS_FAVOURABLE
+        ),
         observe_number_6_percentage_points(Decimal("40.0"), Decimal("38.5")),
-        observe_number_7_bridge_residual(Decimal("15770000.00"), [Decimal("250000.00"), Decimal("125000.00")], Decimal("500000.00")),
+        observe_number_7_bridge_residual(
+            Decimal("15770000.00"),
+            [Decimal("250000.00"), Decimal("125000.00")],
+            Decimal("500000.00"),
+        ),
         observe_number_8_dq_score(),
         observe_number_9_gross_margin(Decimal("1000000.00"), Decimal("600000.00")),
         observe_number_10_budget_burn(Decimal("2580000.00"), Decimal("10000000.00")),

@@ -1,5 +1,5 @@
-import pytest
 from app.engine.ai.usage import AIUsageStore
+
 
 def test_ai_usage_store_and_cap_enforcement():
     """Test AI usage log schema and monthly hard token cap enforcement per doc 10 §8 & §9."""
@@ -24,7 +24,7 @@ def test_ai_usage_store_and_cap_enforcement():
         input_row_count=10,
         tokens_in=3000,
         tokens_out=1500,
-        outcome="ok"
+        outcome="ok",
     )
 
     assert log_res["callId"].startswith("aicall_")

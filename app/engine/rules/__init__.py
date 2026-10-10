@@ -5,6 +5,24 @@ from app.engine.rules.batch import (
     catalog_rule_coverage,
     evaluate_all_rules,
 )
+from app.engine.rules.rules_01_08 import (
+    BATCH_01_08_EVALUATORS,
+    ApprovalThresholdRuleItem,
+    Finding,
+    RecurringCostRuleItem,
+    RuleContext,
+    evaluate_all,
+    evaluate_exc_001,
+    evaluate_exc_002,
+    evaluate_exc_003,
+    evaluate_exc_004,
+    evaluate_exc_005,
+    evaluate_exc_006,
+    evaluate_exc_007,
+    evaluate_exc_008,
+    period_end_from_id,
+    resolve_as_of_date,
+)
 from app.engine.rules.rules_09_16 import (
     BATCH_09_16_EVALUATORS,
     evaluate_all_09_16,
@@ -24,24 +42,6 @@ from app.engine.rules.rules_catalog_001_008 import (
     evaluate_catalog_exc_003,
     evaluate_catalog_exc_006,
     evaluate_catalog_exc_008,
-)
-from app.engine.rules.rules_01_08 import (
-    BATCH_01_08_EVALUATORS,
-    Finding,
-    RuleContext,
-    RecurringCostRuleItem,
-    ApprovalThresholdRuleItem,
-    evaluate_all,
-    evaluate_exc_001,
-    evaluate_exc_002,
-    evaluate_exc_003,
-    evaluate_exc_004,
-    evaluate_exc_005,
-    evaluate_exc_006,
-    evaluate_exc_007,
-    evaluate_exc_008,
-    period_end_from_id,
-    resolve_as_of_date,
 )
 
 __all__ = [

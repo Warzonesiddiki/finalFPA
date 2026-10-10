@@ -7,12 +7,9 @@ from __future__ import annotations
 
 import math
 import re
-from typing import Tuple
 
 AVG_ADVANCE: float = 0.50
-TRIMMED_FOOTNOTE: str = (
-    "Trimmed for space — full text in the Excel pack and the commentary editor."
-)
+TRIMMED_FOOTNOTE: str = "Trimmed for space — full text in the Excel pack and the commentary editor."
 
 
 def compute_character_budget(
@@ -31,15 +28,11 @@ def compute_character_budget(
         design_max_lines = min(max(1, lines_available - slack_lines), configured_max_lines)
         budget_chars = chars_per_line * design_max_lines
     """
-    chars_per_line = math.floor(
-        (box_width_inches * 72.0) / (AVG_ADVANCE * font_size_pt)
-    )
+    chars_per_line = math.floor((box_width_inches * 72.0) / (AVG_ADVANCE * font_size_pt))
     line_height_in = 1.22 * font_size_pt / 72.0
     lines_available = math.floor(box_height_inches / line_height_in)
     effective_slack = min(slack_lines, max(0, lines_available - 1))
-    design_max_lines = min(
-        max(1, lines_available - effective_slack), configured_max_lines
-    )
+    design_max_lines = min(max(1, lines_available - effective_slack), configured_max_lines)
     budget_chars = chars_per_line * design_max_lines
     return max(1, budget_chars)
 
@@ -54,7 +47,7 @@ def split_sentences(text: str) -> list[str]:
     return [p.strip() for p in parts if p.strip()]
 
 
-def trim_text_to_budget(text: str, budget: int) -> Tuple[str, bool]:
+def trim_text_to_budget(text: str, budget: int) -> tuple[str, bool]:
     """Trim prose text deterministically to fit within character budget.
 
     Returns (trimmed_text, was_trimmed).

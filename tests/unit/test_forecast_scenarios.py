@@ -4,17 +4,14 @@ Per docs/07_FORECAST_METHODS_SPEC.md §6-§10 and docs/05_CALCULATION_SPEC.md §
 """
 
 from decimal import Decimal
-import pytest
 
 from app.engine.forecast.scenarios import (
-    ScenarioType,
-    ForecastVersionStatus,
-    FactForecastVersion,
     FactForecastRow,
+    FactForecastVersion,
+    ForecastVersionStatus,
     ScenarioGenerator,
-    calculate_signed_error,
     calculate_absolute_error,
-    calculate_signed_bias,
+    calculate_signed_error,
     evaluate_forecast_accuracy,
 )
 
@@ -90,4 +87,3 @@ def test_forecast_accuracy_calculations():
     assert report is not None
     assert report.periods_compared == 2
     assert report.signed_bias == Decimal("-2500.00")  # (+5000 + -10000)/2 = -2500
-

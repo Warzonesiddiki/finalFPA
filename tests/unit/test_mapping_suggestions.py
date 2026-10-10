@@ -13,15 +13,15 @@ import pytest
 
 from app.engine.imports.mapping_suggestions import (
     CANONICAL_FIELDS,
-    InvalidSuggestionTransition,
-    MalformedAiSuggestion,
-    MappingSuggestion,
     ORIGIN_AI,
     ORIGIN_RULE,
     STATE_ACCEPTED,
     STATE_EDITED,
     STATE_REJECTED,
     STATE_SUGGESTED,
+    InvalidSuggestionTransition,
+    MalformedAiSuggestion,
+    MappingSuggestion,
     applyable_suggestions,
     build_suggestion_queue,
 )
@@ -54,6 +54,7 @@ def repo(tmp_path) -> MappingSuggestionRepository:
 # ---------------------------------------------------------------------------
 # State machine: suggested -> accepted | edited | rejected
 # ---------------------------------------------------------------------------
+
 
 def test_initial_state_is_suggested():
     assert make_suggestion().state == STATE_SUGGESTED
@@ -141,6 +142,7 @@ def test_confidence_must_be_within_unit_interval():
 # FR-IMP-008: never auto-applied in the same run
 # ---------------------------------------------------------------------------
 
+
 def test_suggestion_never_applies_to_its_own_run():
     s = make_suggestion(run_id=100)
     s.accept("Aarti")
@@ -182,6 +184,7 @@ def test_applyable_suggestions_filters_same_run():
 # Queue construction: dedup, AI-disabled, malformed
 # ---------------------------------------------------------------------------
 
+
 def test_duplicate_column_is_deduplicated_keeping_highest_confidence():
     """FR-IMP-008 edge case: "the same column suggested twice (deduplicated)"."""
     queue = build_suggestion_queue(
@@ -213,8 +216,18 @@ def test_queue_ordering_is_deterministic():
 def test_ai_disabled_shows_rule_based_suggestions_only():
     """FR-IMP-008: "With AI disabled, the queue shows rule-based suggestions only"."""
     proposals = [
-        {"source_column": "RuleCol", "target_field": "amount", "confidence": "0.9", "origin": ORIGIN_RULE},
-        {"source_column": "AiCol", "target_field": "debit", "confidence": "0.9", "origin": ORIGIN_AI},
+        {
+            "source_column": "RuleCol",
+            "target_field": "amount",
+            "confidence": "0.9",
+            "origin": ORIGIN_RULE,
+        },
+        {
+            "source_column": "AiCol",
+            "target_field": "debit",
+            "confidence": "0.9",
+            "origin": ORIGIN_AI,
+        },
     ]
     without_ai = build_suggestion_queue(1, proposals, ai_enabled=False)
     assert [s.source_column for s in without_ai] == ["RuleCol"]
@@ -245,6 +258,7 @@ def test_canonical_fields_are_validated():
 # Persistence + audit trail
 # ---------------------------------------------------------------------------
 
+
 def test_enqueue_persists_and_dedupes_across_calls(repo):
     queue = build_suggestion_queue(
         7, [{"source_column": "Amt", "target_field": "amount", "confidence": "0.9"}]
@@ -256,9 +270,11 @@ def test_enqueue_persists_and_dedupes_across_calls(repo):
 
 
 def test_decision_writes_audit_trail(repo):
-    s = repo.enqueue(build_suggestion_queue(
-        7, [{"source_column": "Amt", "target_field": "amount", "confidence": "0.9"}]
-    ))[0]
+    s = repo.enqueue(
+        build_suggestion_queue(
+            7, [{"source_column": "Amt", "target_field": "amount", "confidence": "0.9"}]
+        )
+    )[0]
     repo.decide(s.suggestion_id, "accept", "Aarti")
     audit = repo.get_audit_trail(s.suggestion_id)
     assert len(audit) == 1
@@ -268,9 +284,11 @@ def test_decision_writes_audit_trail(repo):
 
 
 def test_illegal_decision_writes_no_audit_row(repo):
-    s = repo.enqueue(build_suggestion_queue(
-        7, [{"source_column": "Amt", "target_field": "amount", "confidence": "0.9"}]
-    ))[0]
+    s = repo.enqueue(
+        build_suggestion_queue(
+            7, [{"source_column": "Amt", "target_field": "amount", "confidence": "0.9"}]
+        )
+    )[0]
     repo.decide(s.suggestion_id, "accept", "Aarti")
     with pytest.raises(InvalidSuggestionTransition):
         repo.decide(s.suggestion_id, "reject", "Someone")
@@ -279,14 +297,16 @@ def test_illegal_decision_writes_no_audit_row(repo):
 
 
 def test_bulk_decide_reports_applied_and_skipped(repo):
-    queued = repo.enqueue(build_suggestion_queue(
-        7,
-        [
-            {"source_column": "A", "target_field": "amount", "confidence": "0.9"},
-            {"source_column": "B", "target_field": "debit", "confidence": "0.8"},
-            {"source_column": "C", "target_field": "credit", "confidence": "0.7"},
-        ],
-    ))
+    queued = repo.enqueue(
+        build_suggestion_queue(
+            7,
+            [
+                {"source_column": "A", "target_field": "amount", "confidence": "0.9"},
+                {"source_column": "B", "target_field": "debit", "confidence": "0.8"},
+                {"source_column": "C", "target_field": "credit", "confidence": "0.7"},
+            ],
+        )
+    )
     ids = [s.suggestion_id for s in queued]
     result = repo.bulk_decide(ids, "accept", "Aarti")
     assert result["applied"] == ids
@@ -299,13 +319,15 @@ def test_bulk_decide_reports_applied_and_skipped(repo):
 
 
 def test_bulk_edit_applies_per_item_targets(repo):
-    queued = repo.enqueue(build_suggestion_queue(
-        7,
-        [
-            {"source_column": "A", "target_field": "amount", "confidence": "0.9"},
-            {"source_column": "B", "target_field": "amount", "confidence": "0.8"},
-        ],
-    ))
+    queued = repo.enqueue(
+        build_suggestion_queue(
+            7,
+            [
+                {"source_column": "A", "target_field": "amount", "confidence": "0.9"},
+                {"source_column": "B", "target_field": "amount", "confidence": "0.8"},
+            ],
+        )
+    )
     a_id, b_id = [s.suggestion_id for s in queued]
     result = repo.bulk_decide(
         [a_id, b_id], "edit", "Aarti", new_targets={a_id: "debit", b_id: "credit"}
@@ -316,13 +338,15 @@ def test_bulk_edit_applies_per_item_targets(repo):
 
 
 def test_bulk_edit_skips_invalid_target_without_aborting_others(repo):
-    queued = repo.enqueue(build_suggestion_queue(
-        7,
-        [
-            {"source_column": "A", "target_field": "amount", "confidence": "0.9"},
-            {"source_column": "B", "target_field": "amount", "confidence": "0.8"},
-        ],
-    ))
+    queued = repo.enqueue(
+        build_suggestion_queue(
+            7,
+            [
+                {"source_column": "A", "target_field": "amount", "confidence": "0.9"},
+                {"source_column": "B", "target_field": "amount", "confidence": "0.8"},
+            ],
+        )
+    )
     a_id, b_id = [s.suggestion_id for s in queued]
     result = repo.bulk_decide(
         [a_id, b_id], "edit", "Aarti", new_targets={a_id: "debit", b_id: "bogus_field"}
@@ -335,13 +359,18 @@ def test_bulk_edit_skips_invalid_target_without_aborting_others(repo):
 # No-same-run application at the query level (the import read path)
 # ---------------------------------------------------------------------------
 
+
 def test_repo_applyable_excludes_same_run(repo):
-    same_run = repo.enqueue(build_suggestion_queue(
-        7, [{"source_column": "SameRun", "target_field": "amount", "confidence": "0.9"}]
-    ))[0]
-    prior_run = repo.enqueue(build_suggestion_queue(
-        6, [{"source_column": "PriorRun", "target_field": "debit", "confidence": "0.9"}]
-    ))[0]
+    same_run = repo.enqueue(
+        build_suggestion_queue(
+            7, [{"source_column": "SameRun", "target_field": "amount", "confidence": "0.9"}]
+        )
+    )[0]
+    prior_run = repo.enqueue(
+        build_suggestion_queue(
+            6, [{"source_column": "PriorRun", "target_field": "debit", "confidence": "0.9"}]
+        )
+    )[0]
     repo.decide(same_run.suggestion_id, "accept", "Aarti")
     repo.decide(prior_run.suggestion_id, "accept", "Aarti")
 
@@ -350,27 +379,41 @@ def test_repo_applyable_excludes_same_run(repo):
 
 
 def test_count_by_state(repo):
-    repo.enqueue(build_suggestion_queue(
-        7,
-        [
-            {"source_column": "A", "target_field": "amount", "confidence": "0.9"},
-            {"source_column": "B", "target_field": "debit", "confidence": "0.8"},
-        ],
-    ))
+    repo.enqueue(
+        build_suggestion_queue(
+            7,
+            [
+                {"source_column": "A", "target_field": "amount", "confidence": "0.9"},
+                {"source_column": "B", "target_field": "debit", "confidence": "0.8"},
+            ],
+        )
+    )
     counts = repo.count_by_state(7)
     assert counts.get(STATE_SUGGESTED) == 2
     assert counts.get(STATE_ACCEPTED) is None
 
 
 def test_list_filters_by_origin_and_state(repo):
-    repo.enqueue(build_suggestion_queue(
-        7,
-        [
-            {"source_column": "R", "target_field": "amount", "confidence": "0.9", "origin": ORIGIN_RULE},
-            {"source_column": "AI", "target_field": "debit", "confidence": "0.8", "origin": ORIGIN_AI},
-        ],
-        ai_enabled=True,
-    ))
+    repo.enqueue(
+        build_suggestion_queue(
+            7,
+            [
+                {
+                    "source_column": "R",
+                    "target_field": "amount",
+                    "confidence": "0.9",
+                    "origin": ORIGIN_RULE,
+                },
+                {
+                    "source_column": "AI",
+                    "target_field": "debit",
+                    "confidence": "0.8",
+                    "origin": ORIGIN_AI,
+                },
+            ],
+            ai_enabled=True,
+        )
+    )
     ai_only = repo.list_suggestions(origin=ORIGIN_AI)
     assert [i["source_column"] for i in ai_only["items"]] == ["AI"]
 

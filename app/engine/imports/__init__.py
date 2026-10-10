@@ -1,52 +1,40 @@
 """Engine imports root package."""
 
-from app.engine.imports.models import (
-    PreScanResult,
-    ValidationIssue,
-    ValidationCheckReport,
-    ParsedTransaction,
-    ImportBatchResult,
+from app.engine.imports.hardening import (
+    CsvDetectionResult,
+    ExcelHardenedData,
+    HardeningFinding,
+    concatenate_multi_row_headers,
+    detect_csv_encoding_and_delimiter,
+    detect_hidden_sheets,
+    detect_merged_data_cells,
+    is_total_subtotal_row,
+    load_hardened_excel_sheet,
+    read_hardened_csv,
+    trim_trailing_empty,
+    unmerge_header_cells,
+    verify_cached_formulas,
 )
-from app.engine.imports.profiles import (
-    MappingProfile,
-    MappingProfileVersion,
-    DimMapping,
-    BUILTIN_PROFILES,
-    match_profile,
-    normalize_header,
-    compute_header_signature,
+from app.engine.imports.mapping_suggestions import (
+    CANONICAL_FIELDS,
+    MappingSuggestion,
+    applyable_suggestions,
+    build_suggestion_queue,
+)
+from app.engine.imports.models import (
+    ImportBatchResult,
+    ParsedTransaction,
+    PreScanResult,
+    ValidationCheckReport,
+    ValidationIssue,
 )
 from app.engine.imports.parser import (
-    prescan_file,
+    compute_file_checksum,
     parse_and_validate_csv,
     parse_csv_transactions,
     parse_excel_transactions,
-    compute_file_checksum,
+    prescan_file,
 )
-
-from app.engine.imports.hardening import (
-    HardeningFinding,
-    CsvDetectionResult,
-    ExcelHardenedData,
-    detect_csv_encoding_and_delimiter,
-    read_hardened_csv,
-    detect_hidden_sheets,
-    unmerge_header_cells,
-    detect_merged_data_cells,
-    verify_cached_formulas,
-    trim_trailing_empty,
-    concatenate_multi_row_headers,
-    is_total_subtotal_row,
-    load_hardened_excel_sheet,
-)
-
-from app.engine.imports.mapping_suggestions import (
-    MappingSuggestion,
-    CANONICAL_FIELDS,
-    build_suggestion_queue,
-    applyable_suggestions,
-)
-
 from app.engine.imports.profile_binding import (
     ProfileBindingResult,
     next_import_run_id,
@@ -55,7 +43,15 @@ from app.engine.imports.profile_binding import (
     unmapped_columns_for_headers,
     verify_run_id_prediction,
 )
-
+from app.engine.imports.profiles import (
+    BUILTIN_PROFILES,
+    DimMapping,
+    MappingProfile,
+    MappingProfileVersion,
+    compute_header_signature,
+    match_profile,
+    normalize_header,
+)
 from app.engine.imports.vendor_budget_loader import (
     BudgetCommitBlocked,
     BudgetLoadResult,

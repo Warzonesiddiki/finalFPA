@@ -36,7 +36,7 @@ import re
 import secrets
 import subprocess
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
@@ -58,21 +58,44 @@ DEFAULTS = {
     "wip_limit": 2,
     "default_ttl_minutes": 120,
     "agent_idle_minutes": 30,
-    "leader_only_paths": ["docs/18_GLOSSARY_ASSUMPTIONS_OPEN_QUESTIONS.md", "docs/SESSION_LOG.md",
-                          "docs/33_EXECUTION_BLUEPRINT_AND_TASKBOARD.md", "docs/00_INDEX.md",
-                          "CHANGELOG.md", "STATE.md", "team/", "project prompt/"],
-    "orphan_ignore": [".coverage", "coverage.xml", "evidence/acceptance_report.json",
-                      "evidence/acceptance_report.md", "scratch/", "memory/", "*.pyc",
-                      "__pycache__/", ".pytest_cache/", "*.log"],
+    "leader_only_paths": [
+        "docs/18_GLOSSARY_ASSUMPTIONS_OPEN_QUESTIONS.md",
+        "docs/SESSION_LOG.md",
+        "docs/33_EXECUTION_BLUEPRINT_AND_TASKBOARD.md",
+        "docs/00_INDEX.md",
+        "CHANGELOG.md",
+        "STATE.md",
+        "team/",
+        "project prompt/",
+    ],
+    "orphan_ignore": [
+        ".coverage",
+        "coverage.xml",
+        "evidence/acceptance_report.json",
+        "evidence/acceptance_report.md",
+        "scratch/",
+        "memory/",
+        "*.pyc",
+        "__pycache__/",
+        ".pytest_cache/",
+        "*.log",
+    ],
     "lanes": {},
 }
 TASK_STATUSES = ("todo", "blocked", "claimed", "in-progress", "review", "done")
-HANDOFF_SECTIONS = ("## Claim", "## Changed", "## Verification", "## Doc-sync", "## Evidence", "## Next")
+HANDOFF_SECTIONS = (
+    "## Claim",
+    "## Changed",
+    "## Verification",
+    "## Doc-sync",
+    "## Evidence",
+    "## Next",
+)
 
 
 # --------------------------------------------------------------------------- helpers
 def now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def stamp(dt: datetime | None = None) -> str:
@@ -94,7 +117,7 @@ def config() -> dict:
     return cfg
 
 
-def die(msg: str, code: int = 2) -> "None":
+def die(msg: str, code: int = 2) -> None:
     print(f"ERROR: {msg}")
     sys.exit(code)
 
@@ -148,7 +171,9 @@ def read_json(path: Path) -> dict | None:
 def write_json(path: Path, data: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
-    tmp.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+    tmp.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n"
+    )
     os.replace(tmp, path)
 
 
@@ -187,7 +212,7 @@ def is_active(c: dict, cfg: dict) -> bool:
 
 def expired(c: dict, cfg: dict) -> bool:
     try:
-        hb = datetime.strptime(c.get("heartbeat_utc", ""), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        hb = datetime.strptime(c.get("heartbeat_utc", ""), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC)
     except (TypeError, ValueError):
         return True
     return now() > hb + timedelta(minutes=int(c.get("ttl_minutes", cfg["default_ttl_minutes"])))
@@ -214,8 +239,14 @@ def tb_ids_in_docs33() -> set[str]:
 
 def git_changed_paths() -> list[str]:
     try:
-        r = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True,
-                           encoding="utf-8", errors="replace")
+        r = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
     except OSError:
         return []
     if r.returncode != 0:
@@ -329,7 +360,7 @@ def cmd_status(args: argparse.Namespace) -> int:
         last = hb.get("utc")
         if last:
             try:
-                dt = datetime.strptime(last, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+                dt = datetime.strptime(last, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC)
                 mins = int((now() - dt).total_seconds() // 60)
                 seen = f"{mins} min ago" if mins < 120 else f"{mins // 60} h ago"
             except ValueError:
@@ -342,11 +373,15 @@ def cmd_status(args: argparse.Namespace) -> int:
     print(f"Claims: {len(act)} active, {len(stale)} stale")
     for c in act:
         left = int(c.get("ttl_minutes", cfg["default_ttl_minutes"]))
-        print(f"  {c.get('claim_id'):<34}{c.get('agent'):<14}{(c.get('task') or '-'):<10}"
-              f"{c.get('kind', ''):<10}scopes={', '.join(c.get('scopes', []))[:80]} ttl={left}m")
+        print(
+            f"  {c.get('claim_id'):<34}{c.get('agent'):<14}{(c.get('task') or '-'):<10}"
+            f"{c.get('kind', ''):<10}scopes={', '.join(c.get('scopes', []))[:80]} ttl={left}m"
+        )
     for c in stale:
-        print(f"  STALE {c.get('claim_id')} ({c.get('agent')}) — takeover with: "
-              f"team.py claim --steal {c.get('claim_id')}")
+        print(
+            f"  STALE {c.get('claim_id')} ({c.get('agent')}) — takeover with: "
+            f"team.py claim --steal {c.get('claim_id')}"
+        )
     by = {}
     for t in ts.values():
         by[t.get("status", "todo")] = by.get(t.get("status", "todo"), 0) + 1
@@ -355,26 +390,33 @@ def cmd_status(args: argparse.Namespace) -> int:
     claimable.sort(key=lambda t: (t.get("priority", "P3"), t.get("id", "")))
     if claimable:
         t = claimable[0]
-        print(f"Next claimable: {t['id']} [{t.get('priority', 'P3')}] {t.get('lane', '')} — {t.get('title', '')[:90]}")
+        print(
+            f"Next claimable: {t['id']} [{t.get('priority', 'P3')}] {t.get('lane', '')} — {t.get('title', '')[:90]}"
+        )
     orphans = [p for p in git_changed_paths() if not covered(p, act, cfg)]
-    print(f"Working-tree edits not covered by an active claim: {len(orphans)}"
-          + (f" (e.g. {', '.join(orphans[:5])})" if orphans else ""))
+    print(
+        f"Working-tree edits not covered by an active claim: {len(orphans)}"
+        + (f" (e.g. {', '.join(orphans[:5])})" if orphans else "")
+    )
     return 0
 
 
 def cmd_tasks(args: argparse.Namespace) -> int:
     ts = tasks()
     show = [t for t in ts.values() if args.all or t.get("status", "todo") != "done"]
-    show.sort(key=lambda t: (t.get("status", "todo") != "todo", t.get("priority", "P3"), t.get("id", "")))
+    show.sort(
+        key=lambda t: (t.get("status", "todo") != "todo", t.get("priority", "P3"), t.get("id", ""))
+    )
     print(f"{'ID':<9}{'P':<4}{'STATUS':<12}{'OWNER':<14}{'LANE':<12}TITLE")
     for t in show:
-        print(f"{t.get('id',''):<9}{t.get('priority','P3'):<4}{t.get('status','todo'):<12}"
-              f"{(t.get('owner') or '-'):<14}{(t.get('lane') or '-'):<12}{t.get('title','')[:80]}")
+        print(
+            f"{t.get('id', ''):<9}{t.get('priority', 'P3'):<4}{t.get('status', 'todo'):<12}"
+            f"{(t.get('owner') or '-'):<14}{(t.get('lane') or '-'):<12}{t.get('title', '')[:80]}"
+        )
     return 0
 
 
 def cmd_task_add(args: argparse.Namespace) -> int:
-    cfg = config()
     ts = tasks()
     if args.tb:
         tid = args.tb
@@ -386,11 +428,20 @@ def cmd_task_add(args: argparse.Namespace) -> int:
     if args.tb and tid in tasks():
         print(f"task {tid} already present")
         return 0
-    t = {"id": tid, "title": args.title, "source": "docs/33" if args.tb else (args.by or "team"),
-         "priority": args.priority, "status": "todo", "owner": None, "claim_id": None,
-         "deps": [d for d in (args.deps or "").split(",") if d.strip()],
-         "lane": args.lane or "", "created_utc": stamp(), "updated_utc": stamp(),
-         "history": [{"utc": stamp(), "agent": args.by or "?", "event": "created"}]}
+    t = {
+        "id": tid,
+        "title": args.title,
+        "source": "docs/33" if args.tb else (args.by or "team"),
+        "priority": args.priority,
+        "status": "todo",
+        "owner": None,
+        "claim_id": None,
+        "deps": [d for d in (args.deps or "").split(",") if d.strip()],
+        "lane": args.lane or "",
+        "created_utc": stamp(),
+        "updated_utc": stamp(),
+        "history": [{"utc": stamp(), "agent": args.by or "?", "event": "created"}],
+    }
     write_json(TASKS / f"{tid}.json", t)
     log_note(args.by or "?", f"task created: `{tid}` — {args.title}")
     print(f"task {tid} created")
@@ -411,7 +462,9 @@ def cmd_task_set(args: argparse.Namespace) -> int:
     if args.lane:
         t["lane"] = args.lane
     if args.note:
-        t.setdefault("history", []).append({"utc": stamp(), "agent": args.by or "?", "event": args.note})
+        t.setdefault("history", []).append(
+            {"utc": stamp(), "agent": args.by or "?", "event": args.note}
+        )
     t["updated_utc"] = stamp()
     write_json(TASKS / f"{args.id}.json", t)
     print(f"{args.id} → {t['status']}")
@@ -441,10 +494,16 @@ def cmd_claim(args: argparse.Namespace) -> int:
     if args.steal:
         old = claim_by_id(args.steal)
         if not expired(old, cfg):
-            die(f"{args.steal} is still live (heartbeat {old.get('heartbeat_utc')}); it cannot be stolen")
+            die(
+                f"{args.steal} is still live (heartbeat {old.get('heartbeat_utc')}); it cannot be stolen"
+            )
         log_note(agent, f"STALE TAKEOVER of `{args.steal}` from {old.get('agent')}")
-        msg(agent, str(old.get("agent")), f"I am taking over your stale claim {args.steal} "
-                                         f"(heartbeat {old.get('heartbeat_utc')}, TTL {old.get('ttl_minutes')}m).")
+        msg(
+            agent,
+            str(old.get("agent")),
+            f"I am taking over your stale claim {args.steal} "
+            f"(heartbeat {old.get('heartbeat_utc')}, TTL {old.get('ttl_minutes')}m).",
+        )
         old["agent"] = agent
         old["heartbeat_utc"] = stamp()
         old.setdefault("history", []).append({"utc": stamp(), "agent": agent, "event": "steal"})
@@ -465,7 +524,9 @@ def cmd_claim(args: argparse.Namespace) -> int:
             die(f"{args.task} is done; create a new task or reopen it with `task set`")
         if not deps_ok(t, ts) and not args.force:
             missing = [d for d in t.get("deps", []) if ts.get(d, {}).get("status") != "done"]
-            die(f"{args.task} is not claimable yet: deps not done: {missing} (--force to override, logged)")
+            die(
+                f"{args.task} is not claimable yet: deps not done: {missing} (--force to override, logged)"
+            )
         title, scopes = t.get("title", args.task), list(args.scope or [])
     else:
         if not args.title:
@@ -478,30 +539,50 @@ def cmd_claim(args: argparse.Namespace) -> int:
     # WIP + overlap + leader-only checks
     mine = [c for c in act if c.get("agent") == agent]
     if len(mine) >= int(cfg["wip_limit"]) and not args.force:
-        die(f"WIP limit {cfg['wip_limit']} reached for {agent}: release or hand off first "
-            f"({', '.join(c.get('claim_id', '') for c in mine)})")
+        die(
+            f"WIP limit {cfg['wip_limit']} reached for {agent}: release or hand off first "
+            f"({', '.join(c.get('claim_id', '') for c in mine)})"
+        )
     for c in act:
         for s1 in scopes:
             for s2 in c.get("scopes", []):
                 if scopes_overlap(s1, s2):
-                    die(f"scope {s1} overlaps {s2} in {c.get('claim_id')} held by {c.get('agent')}; "
-                        f"wait for release or take over if stale")
+                    die(
+                        f"scope {s1} overlaps {s2} in {c.get('claim_id')} held by {c.get('agent')}; "
+                        f"wait for release or take over if stale"
+                    )
     for p in cfg.get("do_not_claim", []):
         for s in scopes:
             if scopes_overlap(s, p):
-                die(f"{s} is off-limits ({p}): it is the owner's own file, not the team's — never claim it")
+                die(
+                    f"{s} is off-limits ({p}): it is the owner's own file, not the team's — never claim it"
+                )
     if agent != cfg["leader"]:
         for p in cfg["leader_only_paths"]:
             for s in scopes:
-                if covered_by_pattern(_base(s) or s, p) or covered_by_pattern(p, s) or scopes_overlap(s, p):
-                    die(f"{s} is leader-only ({p}); put the change in a handoff and message {cfg['leader']}")
+                if (
+                    covered_by_pattern(_base(s) or s, p)
+                    or covered_by_pattern(p, s)
+                    or scopes_overlap(s, p)
+                ):
+                    die(
+                        f"{s} is leader-only ({p}); put the change in a handoff and message {cfg['leader']}"
+                    )
 
     cid = f"{agent}-{now().strftime('%Y%m%dT%H%MZ')}-{secrets.token_hex(2)}"
-    c = {"claim_id": cid, "agent": agent, "task": t["id"] if t else None, "title": title,
-         "kind": args.kind or ("engine" if any(s.startswith("app/") for s in scopes) else "docs"),
-         "scopes": scopes, "opened_utc": stamp(), "heartbeat_utc": stamp(),
-         "ttl_minutes": int(args.ttl or cfg["default_ttl_minutes"]),
-         "notes": args.note or "", "history": [{"utc": stamp(), "agent": agent, "event": "claimed"}]}
+    c = {
+        "claim_id": cid,
+        "agent": agent,
+        "task": t["id"] if t else None,
+        "title": title,
+        "kind": args.kind or ("engine" if any(s.startswith("app/") for s in scopes) else "docs"),
+        "scopes": scopes,
+        "opened_utc": stamp(),
+        "heartbeat_utc": stamp(),
+        "ttl_minutes": int(args.ttl or cfg["default_ttl_minutes"]),
+        "notes": args.note or "",
+        "history": [{"utc": stamp(), "agent": agent, "event": "claimed"}],
+    }
     path = CLAIMS / f"{cid}.json"
     fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)  # atomic: cannot race another claim
     with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
@@ -515,15 +596,19 @@ def cmd_claim(args: argparse.Namespace) -> int:
         write_json(TASKS / f"{t['id']}.json", t)
     heartbeat(agent, f"claimed {t['id'] if t else title}")
     log_note(agent, f"claimed `{t['id'] if t else title}` ({cid}); scopes: {', '.join(scopes)}")
-    print(f"claimed {cid}\n  task: {t['id'] if t else title}\n  scopes: {', '.join(scopes)}\n"
-          f"  ttl: {c['ttl_minutes']}m — renew with `team.py touch --claim {cid}`")
+    print(
+        f"claimed {cid}\n  task: {t['id'] if t else title}\n  scopes: {', '.join(scopes)}\n"
+        f"  ttl: {c['ttl_minutes']}m — renew with `team.py touch --claim {cid}`"
+    )
     return 0
 
 
 def cmd_touch(args: argparse.Namespace) -> int:
     c = claim_by_id(args.claim)
     c["heartbeat_utc"] = stamp()
-    c.setdefault("history", []).append({"utc": stamp(), "agent": args.agent or c.get("agent"), "event": "touch"})
+    c.setdefault("history", []).append(
+        {"utc": stamp(), "agent": args.agent or c.get("agent"), "event": "touch"}
+    )
     write_json(Path(c["_file"]), {k: v for k, v in c.items() if k != "_file"})
     heartbeat(args.agent or c.get("agent", "?"), f"touch {args.claim}")
     print(f"{args.claim} heartbeat renewed ({stamp()})")
@@ -540,8 +625,13 @@ def cmd_release(args: argparse.Namespace) -> int:
     c["closed_utc"] = stamp()
     c["closed_note"] = args.note or ("done" if args.done else "released")
     c["heartbeat_utc"] = stamp()
-    c.setdefault("history", []).append({"utc": stamp(), "agent": args.agent or c.get("agent"),
-                                        "event": "done" if args.done else "released"})
+    c.setdefault("history", []).append(
+        {
+            "utc": stamp(),
+            "agent": args.agent or c.get("agent"),
+            "event": "done" if args.done else "released",
+        }
+    )
     write_json(Path(c["_file"]), {k: v for k, v in c.items() if k != "_file"})
     if c.get("task") and c["task"] in ts:
         t = ts[c["task"]]
@@ -549,24 +639,28 @@ def cmd_release(args: argparse.Namespace) -> int:
         if t["status"] == "todo":
             t["owner"], t["claim_id"] = None, None
         t["handoff"] = args.handoff
-        t.setdefault("history", []).append({"utc": stamp(), "agent": c.get("agent"),
-                                            "event": f"release ({t['status']})"})
+        t.setdefault("history", []).append(
+            {"utc": stamp(), "agent": c.get("agent"), "event": f"release ({t['status']})"}
+        )
         t["updated_utc"] = stamp()
         write_json(TASKS / f"{c['task']}.json", t)
-    log_note(c.get("agent", "?"), f"released `{args.claim}`{' (handoff ' + args.handoff + ')' if args.handoff else ''}"
-                                  f"{' — ' + args.note if args.note else ''}")
+    log_note(
+        c.get("agent", "?"),
+        f"released `{args.claim}`{' (handoff ' + args.handoff + ')' if args.handoff else ''}"
+        f"{' — ' + args.note if args.note else ''}",
+    )
     print(f"released {args.claim}")
     return 0
 
 
 def cmd_handoff(args: argparse.Namespace) -> int:
     c = claim_by_id(args.claim)
-    body = f"""# __HID__ — {c.get('title')}
+    body = f"""# __HID__ — {c.get("title")}
 
 ## Claim
-- claim: `{c.get('claim_id')}` · task: `{c.get('task') or '-'}` · author: `{c.get('agent')}`
-- scopes: {', '.join('`' + s + '`' for s in c.get('scopes', []))}
-- opened: {c.get('opened_utc')} · handed off: {stamp()}
+- claim: `{c.get("claim_id")}` · task: `{c.get("task") or "-"}` · author: `{c.get("agent")}`
+- scopes: {", ".join("`" + s + "`" for s in c.get("scopes", []))}
+- opened: {c.get("opened_utc")} · handed off: {stamp()}
 
 ## Changed
 {args.changed}
@@ -587,13 +681,18 @@ def cmd_handoff(args: argparse.Namespace) -> int:
 _(required before `done`: a different agent re-runs the commands above and pastes the raw result, then
 `team.py verify --task <id> --by <agent> --handoff __HID__ --note "<what was reproduced>"`)_
 """
-    hid, fname = write_handoff_atomic(next_handoff_id(), body,
-                                      slug(c.get("task") or c.get("title", "work")))
+    hid, fname = write_handoff_atomic(
+        next_handoff_id(), body, slug(c.get("task") or c.get("title", "work"))
+    )
     c["handoff"] = hid
-    c.setdefault("history", []).append({"utc": stamp(), "agent": args.agent or c.get("agent"), "event": f"handoff {hid}"})
+    c.setdefault("history", []).append(
+        {"utc": stamp(), "agent": args.agent or c.get("agent"), "event": f"handoff {hid}"}
+    )
     write_json(Path(c["_file"]), {k: v for k, v in c.items() if k != "_file"})
     log_note(c.get("agent", "?"), f"handoff `{hid}` ({fname})")
-    print(f"wrote team/handoffs/{fname}\nnow release: team.py release --claim {c.get('claim_id')} --handoff {hid}")
+    print(
+        f"wrote team/handoffs/{fname}\nnow release: team.py release --claim {c.get('claim_id')} --handoff {hid}"
+    )
     return 0
 
 
@@ -608,12 +707,16 @@ def cmd_verify(args: argparse.Namespace) -> int:
     if not hid:
         die("no handoff on this task; the author must write one first")
     hf = resolve_handoff(hid)
-    block = (f"\n### Verified by `{args.by}` — {stamp()}\n"
-             f"{args.note or 'commands re-run; result reproduced'}\n")
+    block = (
+        f"\n### Verified by `{args.by}` — {stamp()}\n"
+        f"{args.note or 'commands re-run; result reproduced'}\n"
+    )
     with hf.open("a", encoding="utf-8", newline="\n") as fh:
         fh.write(block)
     t["status"] = "done"
-    t.setdefault("history", []).append({"utc": stamp(), "agent": args.by, "event": f"verified via {hid}"})
+    t.setdefault("history", []).append(
+        {"utc": stamp(), "agent": args.by, "event": f"verified via {hid}"}
+    )
     t["updated_utc"] = stamp()
     write_json(TASKS / f"{args.task}.json", t)
     log_note(args.by, f"verified `{args.task}` via `{hid}`")
@@ -625,8 +728,12 @@ def msg(frm: str, to: str, text: str) -> None:
     ensure_dirs()
     f = INBOX / f"{to}.md"
     if not f.exists():
-        f.write_text(f"# Inbox — `{to}`\n\n> Append-only. Other agents write here (via `team.py msg`); "
-                     f"`{to}` reads it at session start.\n\n", encoding="utf-8", newline="\n")
+        f.write_text(
+            f"# Inbox — `{to}`\n\n> Append-only. Other agents write here (via `team.py msg`); "
+            f"`{to}` reads it at session start.\n\n",
+            encoding="utf-8",
+            newline="\n",
+        )
     with f.open("a", encoding="utf-8", newline="\n") as fh:
         fh.write(f"- **{stamp()}** from `{frm}`: {text}\n")
 
@@ -653,12 +760,16 @@ def cmd_reject(args: argparse.Namespace) -> int:
         die(f"no handoff on `{args.task}`; nothing to reject")
     hf = resolve_handoff(hid)
     author = t.get("owner") or "unassigned"
-    block = (f"\n### Rejected by `{args.by}` — {stamp()}\n"
-             f"Required before re-handoff:\n\n{args.actions}\n")
+    block = (
+        f"\n### Rejected by `{args.by}` — {stamp()}\n"
+        f"Required before re-handoff:\n\n{args.actions}\n"
+    )
     with hf.open("a", encoding="utf-8", newline="\n") as fh:
         fh.write(block)
     t["status"] = "in-progress"
-    t.setdefault("history", []).append({"utc": stamp(), "agent": args.by, "event": f"rejected via {hid}"})
+    t.setdefault("history", []).append(
+        {"utc": stamp(), "agent": args.by, "event": f"rejected via {hid}"}
+    )
     t["updated_utc"] = stamp()
     write_json(TASKS / f"{args.task}.json", t)
     # re-arm the author's claim so their scopes stay reserved and they keep the work
@@ -666,16 +777,24 @@ def cmd_reject(args: argparse.Namespace) -> int:
         if c.get("task") == args.task and c.get("agent") == author and not c.get("closed_utc"):
             break
     else:
-        c = next((c for c in claims() if c.get("task") == args.task and c.get("agent") == author), None)
+        c = next(
+            (c for c in claims() if c.get("task") == args.task and c.get("agent") == author), None
+        )
         if c is not None:
             c["closed_utc"] = None
             c["closed_note"] = f"re-armed by {args.by} rejection"
             c["heartbeat_utc"] = stamp()
-            c.setdefault("history", []).append({"utc": stamp(), "agent": args.by, "event": "re-armed"})
+            c.setdefault("history", []).append(
+                {"utc": stamp(), "agent": args.by, "event": "re-armed"}
+            )
             write_json(Path(c["_file"]), {k: v for k, v in c.items() if k != "_file"})
     log_note(args.by, f"REJECTED `{args.task}` via `{hid}` — returned to {author}")
-    msg(args.by, author, f"`{args.task}` came back from {hid}. Required before re-handoff:\n\n{args.actions}\n"
-                        f"Your claim is re-armed — continue, do not release the scopes.")
+    msg(
+        args.by,
+        author,
+        f"`{args.task}` came back from {hid}. Required before re-handoff:\n\n{args.actions}\n"
+        f"Your claim is re-armed — continue, do not release the scopes.",
+    )
     print(f"{args.task} → in-progress (rejected by {args.by}; claim re-armed for {author})")
     return 0
 
@@ -700,42 +819,57 @@ def cmd_board(args: argparse.Namespace) -> int:
     cfg = config()
     ts, cs = tasks(), claims()
     act = {c["claim_id"]: c for c in cs if is_active(c, cfg)}
-    lines = [f"# Team taskboard (generated by `scripts/team.py board` — do not hand-edit)",
-             "",
-             f"> Generated {stamp()} · source of truth: `team/tasks/*.json` + `team/claims/*.json` · "
-             f"the project taskboard is `docs/33` (`TB-nnn`); rows here mirror it and add team ownership.",
-             "",
-             "| ID | P | Status | Owner | Lane | Task | Claim |",
-             "|---|---|---|---|---|---|---|"]
-    order = sorted(ts.values(), key=lambda t: (t.get("status", "todo") == "done",
-                                               t.get("priority", "P3"), t.get("id", "")))
+    lines = [
+        "# Team taskboard (generated by `scripts/team.py board` — do not hand-edit)",
+        "",
+        f"> Generated {stamp()} · source of truth: `team/tasks/*.json` + `team/claims/*.json` · "
+        f"the project taskboard is `docs/33` (`TB-nnn`); rows here mirror it and add team ownership.",
+        "",
+        "| ID | P | Status | Owner | Lane | Task | Claim |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    order = sorted(
+        ts.values(),
+        key=lambda t: (t.get("status", "todo") == "done", t.get("priority", "P3"), t.get("id", "")),
+    )
     for t in order:
-        lines.append(f"| `{t.get('id')}` | {t.get('priority', 'P3')} | {t.get('status', 'todo')} | "
-                     f"{t.get('owner') or '—'} | {t.get('lane') or '—'} | {t.get('title', '')[:120]} | "
-                     f"{t.get('claim_id') or '—'} |")
+        lines.append(
+            f"| `{t.get('id')}` | {t.get('priority', 'P3')} | {t.get('status', 'todo')} | "
+            f"{t.get('owner') or '—'} | {t.get('lane') or '—'} | {t.get('title', '')[:120]} | "
+            f"{t.get('claim_id') or '—'} |"
+        )
     live = [c for c in cs if c["claim_id"] in act]
     lines += ["", "## Active claims", ""]
     if live:
         lines += ["| Claim | Agent | Scopes | Renewed | TTL |", "|---|---|---|---|---|"]
         for c in live:
-            lines.append(f"| `{c['claim_id']}` | {c['agent']} | {', '.join(c.get('scopes', []))} | "
-                         f"{c.get('heartbeat_utc')} | {c.get('ttl_minutes')}m |")
+            lines.append(
+                f"| `{c['claim_id']}` | {c['agent']} | {', '.join(c.get('scopes', []))} | "
+                f"{c.get('heartbeat_utc')} | {c.get('ttl_minutes')}m |"
+            )
     else:
         lines.append("_(none)_")
-    lines += ["", "## Queue rules (see `team/README.md` §2–§4)", "",
-              "- Claim with `python scripts/team.py claim --agent <you> --task <ID>` — never edit unclaimed paths.",
-              "- Finish → `handoff` → `release --handoff` → a **different** agent runs "
-              "`verify --task <ID> --by <them>` → row becomes `done`.",
-              "- Blocked? `task set <ID> --status blocked --note \"why\"` + `msg --to owner`.",
-              ""]
+    lines += [
+        "",
+        "## Queue rules (see `team/README.md` §2–§4)",
+        "",
+        "- Claim with `python scripts/team.py claim --agent <you> --task <ID>` — never edit unclaimed paths.",
+        "- Finish → `handoff` → `release --handoff` → a **different** agent runs "
+        "`verify --task <ID> --by <them>` → row becomes `done`.",
+        '- Blocked? `task set <ID> --status blocked --note "why"` + `msg --to owner`.',
+        "",
+    ]
     (TEAM / "taskboard.md").write_text("\n".join(lines), encoding="utf-8", newline="\n")
     print(f"wrote team/taskboard.md ({len(ts)} tasks, {len(live)} active claims)")
     return 0
 
 
 def cmd_digest(args: argparse.Namespace) -> int:
-    cfg = config()
-    state = (ROOT / "STATE.md").read_text(encoding="utf-8", errors="replace") if (ROOT / "STATE.md").exists() else ""
+    state = (
+        (ROOT / "STATE.md").read_text(encoding="utf-8", errors="replace")
+        if (ROOT / "STATE.md").exists()
+        else ""
+    )
     head = {}
     for line in state.splitlines()[:6]:
         m = re.match(r"^(LEVEL|PHASE|TASK|LAST_GATE|ESCALATIONS):\s*(.*)$", line)
@@ -743,16 +877,24 @@ def cmd_digest(args: argparse.Namespace) -> int:
             head[m.group(1)] = m.group(2)
     act = [c for c in claims() if is_active(c, config())]
     ts = tasks()
-    claimable = sorted([t for t in ts.values() if t.get("status", "todo") == "todo" and deps_ok(t, ts)],
-                       key=lambda t: (t.get("priority", "P3"), t.get("id", "")))[:6]
+    claimable = sorted(
+        [t for t in ts.values() if t.get("status", "todo") == "todo" and deps_ok(t, ts)],
+        key=lambda t: (t.get("priority", "P3"), t.get("id", "")),
+    )[:6]
     tail = []
     logf = LOGS / f"{today()}.md"
     if logf.exists():
-        tail = [ln for ln in logf.read_text(encoding="utf-8").splitlines() if ln.startswith("- ")][-6:]
-    out = [f"# Team digest (generated by `scripts/team.py digest` — do not hand-edit)", "",
-           f"> Generated {stamp()}. Capsule for a context-lost agent: read this, then `team/README.md`, "
-           f"then claim. The spec of record is `docs/00`–`33`; this page only points.",
-           "", "## Where the project stands"]
+        tail = [ln for ln in logf.read_text(encoding="utf-8").splitlines() if ln.startswith("- ")][
+            -6:
+        ]
+    out = [
+        "# Team digest (generated by `scripts/team.py digest` — do not hand-edit)",
+        "",
+        f"> Generated {stamp()}. Capsule for a context-lost agent: read this, then `team/README.md`, "
+        f"then claim. The spec of record is `docs/00`–`33`; this page only points.",
+        "",
+        "## Where the project stands",
+    ]
     for k in ("LEVEL", "PHASE", "LAST_GATE"):
         if k in head:
             out.append(f"- **{k}:** {head[k]}")
@@ -762,20 +904,30 @@ def cmd_digest(args: argparse.Namespace) -> int:
         out.append(f"- **ESCALATIONS:** {head['ESCALATIONS'][:600]}")
     out += ["", "## Live work"]
     if act:
-        out += [f"- `{c['claim_id']}` **{c['agent']}** — {c.get('title')} "
-                f"({', '.join(c.get('scopes', []))[:120]})" for c in act]
+        out += [
+            f"- `{c['claim_id']}` **{c['agent']}** — {c.get('title')} "
+            f"({', '.join(c.get('scopes', []))[:120]})"
+            for c in act
+        ]
     else:
         out.append("- (no active claims — the board is free)")
     out += ["", "## Claimable now (highest priority first)", ""]
-    out += [f"- `{t['id']}` [{t.get('priority', 'P3')}] {t.get('lane', '')} — {t.get('title', '')[:110]}"
-            for t in claimable] or ["- (none)"]
+    out += [
+        f"- `{t['id']}` [{t.get('priority', 'P3')}] {t.get('lane', '')} — {t.get('title', '')[:110]}"
+        for t in claimable
+    ] or ["- (none)"]
     out += ["", "## Recent team log", ""]
     out += tail or ["- (empty)"]
-    out += ["", "## Non-negotiables (from the contract, not this file)", "",
-            "- `R1` spec wins · `R7` never weaken a test · `R8` Decimal money · `R5` records before code · "
-            "`R14` one writer per path (this folder's claims are that rule made operable).",
-            "- No commits/pushes without the owner's explicit instruction in the session.",
-            "- Every number needs the command that produced it.", ""]
+    out += [
+        "",
+        "## Non-negotiables (from the contract, not this file)",
+        "",
+        "- `R1` spec wins · `R7` never weaken a test · `R8` Decimal money · `R5` records before code · "
+        "`R14` one writer per path (this folder's claims are that rule made operable).",
+        "- No commits/pushes without the owner's explicit instruction in the session.",
+        "- Every number needs the command that produced it.",
+        "",
+    ]
     (TEAM / "digest.md").write_text("\n".join(out), encoding="utf-8", newline="\n")
     print("wrote team/digest.md")
     return 0
@@ -800,8 +952,13 @@ def cmd_leader(args: argparse.Namespace) -> int:
         age = None
         if hb.get("utc"):
             try:
-                age = int((now() - datetime.strptime(hb["utc"], "%Y-%m-%dT%H:%M:%SZ")
-                           .replace(tzinfo=timezone.utc)).total_seconds() // 60)
+                age = int(
+                    (
+                        now()
+                        - datetime.strptime(hb["utc"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC)
+                    ).total_seconds()
+                    // 60
+                )
             except ValueError:
                 age = None
         seen = "never" if age is None else (f"{age} min ago" if age < 120 else f"{age // 60} h ago")
@@ -831,32 +988,62 @@ def cmd_leader(args: argparse.Namespace) -> int:
                 if len(nxt) == 3:
                     break
             print(f"    {a:<12}{' -> '.join(nxt) if nxt else '(EMPTY: must propose new tasks)'}")
-    print(f"\nClaimable: {len(claimable)} ({len(hot)} at P0/P1) · awaiting a verifier: {len(review)} · "
-          f"stale claims: {len(stale)}")
+    print(
+        f"\nClaimable: {len(claimable)} ({len(hot)} at P0/P1) · awaiting a verifier: {len(review)} · "
+        f"stale claims: {len(stale)}"
+    )
     print("\nACTIONS")
     if idle and hot:
         for a in idle:
-            lane_match = sorted(hot, key=lambda t: (0 if t.get("lane") in prefer.get(a, []) else 1,
-                                                   t.get("priority", "P3"), t.get("id", "")))[0]
-            print(f"  nudge {a}: claim {lane_match['id']} [{lane_match.get('priority')}] "
-                  f"{lane_match.get('lane', '')} — {lane_match.get('title', '')[:80]}")
-            print(f"        python scripts/team.py msg --from {cfg['leader']} --to {a} "
-                  f"--text \"Claim {lane_match['id']} ({lane_match.get('title', '')[:70]}) and start.\"")
+            lane_match = sorted(
+                hot,
+                key=lambda t: (
+                    0 if t.get("lane") in prefer.get(a, []) else 1,
+                    t.get("priority", "P3"),
+                    t.get("id", ""),
+                ),
+            )[0]
+            print(
+                f"  nudge {a}: claim {lane_match['id']} [{lane_match.get('priority')}] "
+                f"{lane_match.get('lane', '')} — {lane_match.get('title', '')[:80]}"
+            )
+            print(
+                f"        python scripts/team.py msg --from {cfg['leader']} --to {a} "
+                f'--text "Claim {lane_match["id"]} ({lane_match.get("title", "")[:70]}) and start."'
+            )
     elif idle:
-        print(f"  IDLE agents with nothing P0/P1 claimable: {', '.join(idle)} — "
-              f"review {len(review)} items or propose a task (`team.py task add`).")
+        print(
+            f"  IDLE agents with nothing P0/P1 claimable: {', '.join(idle)} — "
+            f"review {len(review)} items or propose a task (`team.py task add`)."
+        )
     for t in review:
-        print(f"  verifier needed for {t['id']} (author {t.get('owner')}, handoff {t.get('handoff')})")
+        print(
+            f"  verifier needed for {t['id']} (author {t.get('owner')}, handoff {t.get('handoff')})"
+        )
     for c in stale:
-        print(f"  stale claim {c['claim_id']} ({c.get('agent')}) — takeover: team.py claim --steal {c['claim_id']}")
+        print(
+            f"  stale claim {c['claim_id']} ({c.get('agent')}) — takeover: team.py claim --steal {c['claim_id']}"
+        )
     if not idle and not review and not stale:
         print("  everyone is working; nothing waiting on the leader.")
     return 0
 
 
-PLACEHOLDERS = {"tbd", "n/a", "na", "none", "-", "--", "todo", "see above",
-               "same as above", "no spec change", "none needed",
-               "no doc-sync needed", "docs-only: no behaviour change"}
+PLACEHOLDERS = {
+    "tbd",
+    "n/a",
+    "na",
+    "none",
+    "-",
+    "--",
+    "todo",
+    "see above",
+    "same as above",
+    "no spec change",
+    "none needed",
+    "no doc-sync needed",
+    "docs-only: no behaviour change",
+}
 
 # Extensions a `## Changed` entry may name. It is an allowlist so a version string or a
 # section number cannot masquerade as a path. It must cover what the lanes actually
@@ -894,7 +1081,7 @@ def _expand_braces(tok: str) -> list[str]:
     m = re.search(r"\{([^{}]*)\}", tok)
     if not m:
         return [tok]
-    head, tail = tok[: m.start()], tok[m.end():]
+    head, tail = tok[: m.start()], tok[m.end() :]
     out: list[str] = []
     for part in m.group(1).split(","):
         out.extend(_expand_braces(head + part.strip() + tail))
@@ -922,12 +1109,12 @@ def _add_declared(found: set[str], tok: str) -> None:
     if not tok or tok.startswith("http"):
         return
     if "/" in tok and not EXT_RE.search(tok):
-        return          # looks like a path but has no code/doc extension
+        return  # looks like a path but has no code/doc extension
     if not EXT_RE.search(tok):
         # dotfiles have no code extension (.nvmrc, .python-version) - accept them
         # only when they really exist, so a version string still cannot pass
         if not (tok.startswith(".") and "/" not in tok and (ROOT / tok).exists()):
-            return      # version, section number, count, flag name
+            return  # version, section number, count, flag name
     found.add(norm(tok))
 
 
@@ -965,17 +1152,36 @@ def _window_edits(start, end, scopes: list[str] | None = None) -> list[str]:
         if not p.is_file():
             continue
         rel = p.relative_to(ROOT).as_posix()
-        if rel.startswith((".git/", "scratch/", "team/", "memory/", "vendor/",
-                           "node_modules/", "ui/node_modules/", "ui/dist/",
-                           ".ruff_cache/", ".mypy_cache/", ".pytest_cache/", ".vite/",
-                           "dist/", "build/", "coverage/", "htmlcov/")) or rel == ".coverage":
+        if (
+            rel.startswith(
+                (
+                    ".git/",
+                    "scratch/",
+                    "team/",
+                    "memory/",
+                    "vendor/",
+                    "node_modules/",
+                    "ui/node_modules/",
+                    "ui/dist/",
+                    ".ruff_cache/",
+                    ".mypy_cache/",
+                    ".pytest_cache/",
+                    ".vite/",
+                    "dist/",
+                    "build/",
+                    "coverage/",
+                    "htmlcov/",
+                )
+            )
+            or rel == ".coverage"
+        ):
             continue
         if rel.endswith((".pyc", ".log")) or "__pycache__" in rel:
             continue
         # scopes=None means the whole tree: that is how out-of-scope writes are found
         if scopes is not None and not _scope_hit(rel, scopes):
             continue
-        m = datetime.fromtimestamp(p.stat().st_mtime, tz=timezone.utc)
+        m = datetime.fromtimestamp(p.stat().st_mtime, tz=UTC)
         if start <= m <= end + timedelta(minutes=2):
             hits.append(rel)
     return sorted(hits)
@@ -1001,8 +1207,11 @@ def handoff_index() -> dict[str, tuple[int, str, Path]]:
 
 def rejected_handoffs() -> set[str]:
     """Handoffs that carry a rejection block, i.e. that a reviewer sent back."""
-    return {hid for hid, (_n, _t, f) in handoff_index().items()
-            if "### Rejected by" in read_handoff_text(f)}
+    return {
+        hid
+        for hid, (_n, _t, f) in handoff_index().items()
+        if "### Rejected by" in read_handoff_text(f)
+    }
 
 
 def read_handoff_text(path: Path) -> str:
@@ -1030,7 +1239,7 @@ def cmd_check(args: argparse.Namespace) -> int:
         if c.get("agent") not in known:
             fails.append(f"claim {c['claim_id']} uses unknown agent {c.get('agent')!r}")
     for i, a in enumerate(act):
-        for b in act[i + 1:]:
+        for b in act[i + 1 :]:
             for s1 in a.get("scopes", []):
                 for s2 in b.get("scopes", []):
                     if scopes_overlap(s1, s2):
@@ -1039,8 +1248,10 @@ def cmd_check(args: argparse.Namespace) -> int:
                         # already bounds how many tasks that agent may hold at once.
                         if a.get("agent") == b.get("agent"):
                             continue
-                        fails.append(f"OVERLAP: {s1} ({a['claim_id']}, {a.get('agent')}) vs "
-                                     f"{s2} ({b['claim_id']}, {b.get('agent')})")
+                        fails.append(
+                            f"OVERLAP: {s1} ({a['claim_id']}, {a.get('agent')}) vs "
+                            f"{s2} ({b['claim_id']}, {b.get('agent')})"
+                        )
     per: dict[str, int] = {}
     for c in act:
         per[c["agent"]] = per.get(c["agent"], 0) + 1
@@ -1051,13 +1262,17 @@ def cmd_check(args: argparse.Namespace) -> int:
         for s in c.get("scopes", []):
             for p in cfg.get("do_not_claim", []):
                 if scopes_overlap(s, p):
-                    fails.append(f"off-limits: {c['agent']} claims {s} ({p} belongs to the owner, not the team)")
+                    fails.append(
+                        f"off-limits: {c['agent']} claims {s} ({p} belongs to the owner, not the team)"
+                    )
     for c in act:
         if c.get("agent") != cfg["leader"]:
             for s in c.get("scopes", []):
                 for p in cfg["leader_only_paths"]:
                     if scopes_overlap(s, p):
-                        fails.append(f"leader-only: {c['agent']} claims {s} ({p} is {cfg['leader']}-only)")
+                        fails.append(
+                            f"leader-only: {c['agent']} claims {s} ({p} is {cfg['leader']}-only)"
+                        )
     for c in act:
         for field in ("task",):
             v = c.get(field)
@@ -1073,17 +1288,24 @@ def cmd_check(args: argparse.Namespace) -> int:
         # verifiable and is not: the board is green over work nobody can accept.
         if t.get("status") == "review" and t.get("handoff") in rej:
             tid_l = str(t.get("id", "")).lower()
-            newer = [h for h, (n, suf, _f) in hidx.items()
-                     if suf.startswith(tid_l) and n > hidx[str(t["handoff"])][0]
-                     and h not in rej]
+            newer = [
+                h
+                for h, (n, suf, _f) in hidx.items()
+                if suf.startswith(tid_l) and n > hidx[str(t["handoff"])][0] and h not in rej
+            ]
             if not newer:
                 fails.append(
                     f"task {t.get('id')} is in review on `{t['handoff']}`, which was "
-                    f"rejected and has no successor handoff - it is not verifiable")
+                    f"rejected and has no successor handoff - it is not verifiable"
+                )
     for t in ts.values():
         for d in t.get("deps", []):
-            if re.fullmatch(r"TB-\d{3}", d) and d in ts and ts[d].get("status") != "done" \
-                    and t.get("status") in ("in-progress", "review", "done"):
+            if (
+                re.fullmatch(r"TB-\d{3}", d)
+                and d in ts
+                and ts[d].get("status") != "done"
+                and t.get("status") in ("in-progress", "review", "done")
+            ):
                 warns.append(f"{t['id']} is {t['status']} while dep {d} is {ts[d].get('status')}")
     for f in sorted(HANDOFFS.glob("HO-*.md")):
         text = f.read_text(encoding="utf-8", errors="replace")
@@ -1095,8 +1317,10 @@ def cmd_check(args: argparse.Namespace) -> int:
                 if len(content) < 12 or content.lower() in PLACEHOLDERS:
                     # Present but empty is a rubber stamp: each section exists to carry a
                     # claim a peer can falsify, so a header or a stub must not pass.
-                    fails.append(f"{f.name}: section {sec} is present but empty "
-                                 f"({len(content)} chars of content)")
+                    fails.append(
+                        f"{f.name}: section {sec} is present but empty "
+                        f"({len(content)} chars of content)"
+                    )
         claim_blk = _section(text, "## Claim")
         cm = re.search(r"claim:\s*`([^`]+)`", claim_blk)
         claim = claim_by_id(cm.group(1)) if cm else None
@@ -1110,31 +1334,44 @@ def cmd_check(args: argparse.Namespace) -> int:
             if undeclared:
                 (fails if args.strict else warns).append(
                     f"{f.name}: {len(undeclared)} file(s) changed inside the claim window but not "
-                    f"declared under '## Changed': {', '.join(undeclared[:6])}")
+                    f"declared under '## Changed': {', '.join(undeclared[:6])}"
+                )
             ver = _body(text, "## Verification").lower()
-            if touched and not [w for w in touched if w.endswith((".py", ".ts", ".tsx", ".js"))] \
-                    and "team.py" in ver and "pytest" not in ver:
-                warns.append(f"{f.name}: docs-only handoff verified only by the coordination command "
-                             f"(`team.py check`); the deliverable's own content was not re-checked")
+            if (
+                touched
+                and not [w for w in touched if w.endswith((".py", ".ts", ".tsx", ".js"))]
+                and "team.py" in ver
+                and "pytest" not in ver
+            ):
+                warns.append(
+                    f"{f.name}: docs-only handoff verified only by the coordination command "
+                    f"(`team.py check`); the deliverable's own content was not re-checked"
+                )
         # A write inside the claim window but OUTSIDE the claimed paths is worse than an
         # undeclared one: it is nobody's work, so no guard can see it. (hermes' UX-03 wrote
         # two scripts in scripts/ under a claim scoped to evidence/.)
         allowed = [s.rstrip("/") for s in claim.get("scopes", [])]
         # files another live claim already covers are that agent's work, not a stray
-        others = [s.rstrip("/")
-                 for c in cs if c.get("claim_id") != claim.get("claim_id")
-                 for s in c.get("scopes", []) if not has_glob(s)]
+        others = [
+            s.rstrip("/")
+            for c in cs
+            if c.get("claim_id") != claim.get("claim_id")
+            for s in c.get("scopes", [])
+            if not has_glob(s)
+        ]
         leader_paths = [s.rstrip("/") for s in cfg.get("leader_only_paths", [])]
         covered_scopes = allowed + others + leader_paths
         stray = sorted(
-            w for w in _window_edits(start, end, None)
+            w
+            for w in _window_edits(start, end, None)
             if w not in declared
             and not any(w == s or w.startswith(s + "/") for s in covered_scopes)
         )
         if stray:
             (fails if args.strict else warns).append(
                 f"""{f.name}: {len(stray)} file(s) written inside the claim window but OUTSIDE the claimed"""
-                f" scopes: {', '.join(stray[:5])}")
+                f" scopes: {', '.join(stray[:5])}"
+            )
 
         for pth in sorted(_declared_changed(text)):
             # A bare file name carries no directory, so it cannot be resolved from the
@@ -1145,7 +1382,7 @@ def cmd_check(args: argparse.Namespace) -> int:
                 fails.append(f"{f.name}: declared changed path does not exist: {pth}")
         # Evidence paths (only inside ## Evidence) must exist on disk.
         for ev in re.findall(r"(evidence/[\w./-]+)", _section(text, "## Evidence")):
-            if not (ROOT / ev.rstrip(".") ).exists():
+            if not (ROOT / ev.rstrip(".")).exists():
                 fails.append(f"{f.name}: evidence path does not exist: {ev}")
         # The first back-ticked path of every ## Changed bullet must exist (unless marked removed).
         for line in _section(text, "## Changed").splitlines():
@@ -1164,25 +1401,42 @@ def cmd_check(args: argparse.Namespace) -> int:
     orphans = [p for p in git_changed_paths() if not covered(p, act, cfg)]
     if orphans:
         (fails if args.strict else warns).append(
-            f"{len(orphans)} working-tree edit(s) not covered by an active claim: {', '.join(orphans[:8])}")
-    claimable_hot = [t for t in ts.values() if t.get("status", "todo") == "todo" and deps_ok(t, ts)
-                     and t.get("priority") in ("P0", "P1")]
+            f"{len(orphans)} working-tree edit(s) not covered by an active claim: {', '.join(orphans[:8])}"
+        )
+    claimable_hot = [
+        t
+        for t in ts.values()
+        if t.get("status", "todo") == "todo"
+        and deps_ok(t, ts)
+        and t.get("priority") in ("P0", "P1")
+    ]
     without_claim = [a for a in cfg["agents"] if not any(c.get("agent") == a for c in act)]
     # an agent with unclaimed work in its own stream is not starving, however few
     # unclaimed P0/P1 tasks exist on the whole board
     for a in list(without_claim):
-        if [i for i in cfg.get("streams", {}).get(a, [])
-                if ts.get(i, {}).get("status") not in (None, "done")]:
+        if [
+            i
+            for i in cfg.get("streams", {}).get(a, [])
+            if ts.get(i, {}).get("status") not in (None, "done")
+        ]:
             without_claim.remove(a)
     if without_claim and len(claimable_hot) < len(without_claim):
-        warns.append(f"STARVATION: {len(without_claim)} agent(s) without a claim "
-                     f"({', '.join(without_claim)}) but only {len(claimable_hot)} P0/P1 task(s) claimable "
-                     f"— run `python scripts/team.py leader` for the action list")
+        warns.append(
+            f"STARVATION: {len(without_claim)} agent(s) without a claim "
+            f"({', '.join(without_claim)}) but only {len(claimable_hot)} P0/P1 task(s) claimable "
+            f"— run `python scripts/team.py leader` for the action list"
+        )
     dig = TEAM / "digest.md"
-    if dig.exists() and (ROOT / "STATE.md").exists() and (ROOT / "STATE.md").stat().st_mtime > dig.stat().st_mtime:
+    if (
+        dig.exists()
+        and (ROOT / "STATE.md").exists()
+        and (ROOT / "STATE.md").stat().st_mtime > dig.stat().st_mtime
+    ):
         warns.append("team/digest.md is older than STATE.md — run `python scripts/team.py digest`")
-    print(f"team check — {'FAIL' if fails else 'PASS'} ({len(act)} active claims, {len(ts)} tasks, "
-          f"{len(fails)} fail, {len(warns)} warn)")
+    print(
+        f"team check — {'FAIL' if fails else 'PASS'} ({len(act)} active claims, {len(ts)} tasks, "
+        f"{len(fails)} fail, {len(warns)} warn)"
+    )
     for x in fails:
         print(f"  FAIL {x}")
     for x in warns:
@@ -1204,15 +1458,27 @@ def cmd_sync(args: argparse.Namespace) -> int:
         if tid in ts:
             continue
         deps = re.findall(r"TB-\d{3}", depcell)
-        ts[tid] = {"id": tid, "title": title.strip(), "source": "docs/33", "priority": args.default_priority,
-                   "status": status_map.get(st, "todo"), "owner": None, "claim_id": None, "deps": deps,
-                   "lane": "", "created_utc": stamp(), "updated_utc": stamp(),
-                   "history": [{"utc": stamp(), "agent": "sync", "event": "imported from docs/33"}]}
+        ts[tid] = {
+            "id": tid,
+            "title": title.strip(),
+            "source": "docs/33",
+            "priority": args.default_priority,
+            "status": status_map.get(st, "todo"),
+            "owner": None,
+            "claim_id": None,
+            "deps": deps,
+            "lane": "",
+            "created_utc": stamp(),
+            "updated_utc": stamp(),
+            "history": [{"utc": stamp(), "agent": "sync", "event": "imported from docs/33"}],
+        }
         write_json(TASKS / f"{tid}.json", ts[tid])
         added += 1
     print(f"sync: {added} new task(s) imported from docs/33; queue now {len(tasks())}.")
     if added:
-        print("review priorities/owners with `team.py tasks`; rows the leader has not triaged stay P3.")
+        print(
+            "review priorities/owners with `team.py tasks`; rows the leader has not triaged stay P3."
+        )
     return 0
 
 
@@ -1220,7 +1486,7 @@ def cmd_preflight(args: argparse.Namespace) -> int:
     cap = args.capability
     words = [w for w in re.split(r"[^A-Za-z0-9_]+", cap) if len(w) > 3]
     print(f"== preflight: {cap} ==")
-    reg = (ROOT / "docs" / "32_REUSE_AND_PROVENANCE.md")
+    reg = ROOT / "docs" / "32_REUSE_AND_PROVENANCE.md"
     hits = []
     if reg.exists():
         for i, line in enumerate(reg.read_text(encoding="utf-8").splitlines(), 1):
@@ -1232,9 +1498,14 @@ def cmd_preflight(args: argparse.Namespace) -> int:
     code = []
     for w in words:
         try:
-            r = subprocess.run(["git", "-c", "core.quotePath=false", "grep", "-n", "-i", "--", w],
-                               cwd=ROOT, capture_output=True,
-                               text=True, encoding="utf-8", errors="replace")
+            r = subprocess.run(
+                ["git", "-c", "core.quotePath=false", "grep", "-n", "-i", "--", w],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
             for line in r.stdout.splitlines()[:6]:
                 code.append(line)
         except OSError:
@@ -1244,63 +1515,119 @@ def cmd_preflight(args: argparse.Namespace) -> int:
         print("   " + c[:160])
     print("-- Addon 6 §1 decision tree (in order):")
     print("   1) is the capability already implemented here? → R12: wire it, do not re-write")
-    print("   2) does the catalog (ADDON_6 §3, WS-01…WS-X) cover it with a GO license? → REUSE (S0–S10, ADP row)")
-    print("   3) nothing fits → BUILD, but write the BD row in docs/32 §2 first: capability, spec quote,")
+    print(
+        "   2) does the catalog (ADDON_6 §3, WS-01…WS-X) cover it with a GO license? → REUSE (S0–S10, ADP row)"
+    )
+    print(
+        "   3) nothing fits → BUILD, but write the BD row in docs/32 §2 first: capability, spec quote,"
+    )
     print("      sources searched, why none fit, chosen approach")
-    print("   rails: licence gate before any copy · ≤10 files (R13) · no new dep without R9 ·"
-          " no spec edit to fit code (R1) · records before code (R5)")
+    print(
+        "   rails: licence gate before any copy · ≤10 files (R13) · no new dep without R9 ·"
+        " no spec edit to fit code (R1) · records before code (R5)"
+    )
     return 0
 
 
 # --------------------------------------------------------------------------- main
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="team", description="Four-agent coordination (see team/README.md)")
+    p = argparse.ArgumentParser(
+        prog="team", description="Four-agent coordination (see team/README.md)"
+    )
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    s = sub.add_parser("status"); s.set_defaults(fn=cmd_status)
-    s = sub.add_parser("tasks"); s.add_argument("--all", action="store_true"); s.set_defaults(fn=cmd_tasks)
-    s = sub.add_parser("task"); ts = s.add_subparsers(dest="task_cmd", required=True)
+    s = sub.add_parser("status")
+    s.set_defaults(fn=cmd_status)
+    s = sub.add_parser("tasks")
+    s.add_argument("--all", action="store_true")
+    s.set_defaults(fn=cmd_tasks)
+    s = sub.add_parser("task")
+    ts = s.add_subparsers(dest="task_cmd", required=True)
     a = ts.add_parser("add")
-    a.add_argument("--title", required=True); a.add_argument("--tb"); a.add_argument("--priority", default="P3")
-    a.add_argument("--deps"); a.add_argument("--lane"); a.add_argument("--by"); a.set_defaults(fn=cmd_task_add)
+    a.add_argument("--title", required=True)
+    a.add_argument("--tb")
+    a.add_argument("--priority", default="P3")
+    a.add_argument("--deps")
+    a.add_argument("--lane")
+    a.add_argument("--by")
+    a.set_defaults(fn=cmd_task_add)
     a = ts.add_parser("set")
-    a.add_argument("id"); a.add_argument("--status", choices=TASK_STATUSES); a.add_argument("--priority")
-    a.add_argument("--lane"); a.add_argument("--note"); a.add_argument("--by"); a.set_defaults(fn=cmd_task_set)
+    a.add_argument("id")
+    a.add_argument("--status", choices=TASK_STATUSES)
+    a.add_argument("--priority")
+    a.add_argument("--lane")
+    a.add_argument("--note")
+    a.add_argument("--by")
+    a.set_defaults(fn=cmd_task_set)
     a = ts.add_parser("show")
-    a.add_argument("id"); a.set_defaults(fn=lambda ns: (print(json.dumps(tasks().get(ns.id, {}), indent=2)), 0)[1])
+    a.add_argument("id")
+    a.set_defaults(fn=lambda ns: (print(json.dumps(tasks().get(ns.id, {}), indent=2)), 0)[1])
 
     s = sub.add_parser("claim")
-    s.add_argument("--agent", required=True); s.add_argument("--task"); s.add_argument("--title")
-    s.add_argument("--scope", action="append"); s.add_argument("--kind"); s.add_argument("--ttl", type=int)
-    s.add_argument("--note"); s.add_argument("--steal"); s.add_argument("--force", action="store_true")
+    s.add_argument("--agent", required=True)
+    s.add_argument("--task")
+    s.add_argument("--title")
+    s.add_argument("--scope", action="append")
+    s.add_argument("--kind")
+    s.add_argument("--ttl", type=int)
+    s.add_argument("--note")
+    s.add_argument("--steal")
+    s.add_argument("--force", action="store_true")
     s.set_defaults(fn=cmd_claim)
-    s = sub.add_parser("touch"); s.add_argument("--claim", required=True); s.add_argument("--agent")
+    s = sub.add_parser("touch")
+    s.add_argument("--claim", required=True)
+    s.add_argument("--agent")
     s.set_defaults(fn=cmd_touch)
     s = sub.add_parser("release")
-    s.add_argument("--claim", required=True); s.add_argument("--handoff"); s.add_argument("--done", action="store_true")
-    s.add_argument("--note"); s.add_argument("--agent"); s.set_defaults(fn=cmd_release)
+    s.add_argument("--claim", required=True)
+    s.add_argument("--handoff")
+    s.add_argument("--done", action="store_true")
+    s.add_argument("--note")
+    s.add_argument("--agent")
+    s.set_defaults(fn=cmd_release)
     s = sub.add_parser("handoff")
-    s.add_argument("--claim", required=True); s.add_argument("--summary", default="")
+    s.add_argument("--claim", required=True)
+    s.add_argument("--summary", default="")
     for opt in ("changed", "tests", "docsync", "evidence", "next"):
         s.add_argument(f"--{opt}", default="")
-    s.add_argument("--agent"); s.set_defaults(fn=cmd_handoff)
+    s.add_argument("--agent")
+    s.set_defaults(fn=cmd_handoff)
     s = sub.add_parser("verify")
-    s.add_argument("--task", required=True); s.add_argument("--by", required=True); s.add_argument("--handoff")
-    s.add_argument("--note"); s.set_defaults(fn=cmd_verify)
+    s.add_argument("--task", required=True)
+    s.add_argument("--by", required=True)
+    s.add_argument("--handoff")
+    s.add_argument("--note")
+    s.set_defaults(fn=cmd_verify)
     s = sub.add_parser("reject")
-    s.add_argument("--task", required=True); s.add_argument("--by", required=True); s.add_argument("--handoff")
-    s.add_argument("--actions", required=True); s.set_defaults(fn=cmd_reject)
+    s.add_argument("--task", required=True)
+    s.add_argument("--by", required=True)
+    s.add_argument("--handoff")
+    s.add_argument("--actions", required=True)
+    s.set_defaults(fn=cmd_reject)
     s = sub.add_parser("msg")
-    s.add_argument("--from", dest="from_", required=True); s.add_argument("--to", required=True)
-    s.add_argument("--text", required=True); s.set_defaults(fn=cmd_msg)
-    s = sub.add_parser("note"); s.add_argument("--text", required=True); s.add_argument("--agent")
+    s.add_argument("--from", dest="from_", required=True)
+    s.add_argument("--to", required=True)
+    s.add_argument("--text", required=True)
+    s.set_defaults(fn=cmd_msg)
+    s = sub.add_parser("note")
+    s.add_argument("--text", required=True)
+    s.add_argument("--agent")
     s.set_defaults(fn=cmd_note)
-    s = sub.add_parser("board"); s.set_defaults(fn=cmd_board)
-    s = sub.add_parser("leader"); s.set_defaults(fn=cmd_leader)
-    s = sub.add_parser("digest"); s.set_defaults(fn=cmd_digest)
-    s = sub.add_parser("check"); s.add_argument("--strict", action="store_true"); s.set_defaults(fn=cmd_check)
-    s = sub.add_parser("sync"); s.add_argument("--default-priority", default="P3"); s.set_defaults(fn=cmd_sync)
-    s = sub.add_parser("preflight"); s.add_argument("--capability", required=True); s.set_defaults(fn=cmd_preflight)
+    s = sub.add_parser("board")
+    s.set_defaults(fn=cmd_board)
+    s = sub.add_parser("leader")
+    s.set_defaults(fn=cmd_leader)
+    s = sub.add_parser("digest")
+    s.set_defaults(fn=cmd_digest)
+    s = sub.add_parser("check")
+    s.add_argument("--strict", action="store_true")
+    s.set_defaults(fn=cmd_check)
+    s = sub.add_parser("sync")
+    s.add_argument("--default-priority", default="P3")
+    s.set_defaults(fn=cmd_sync)
+    s = sub.add_parser("preflight")
+    s.add_argument("--capability", required=True)
+    s.set_defaults(fn=cmd_preflight)
     return p
 
 

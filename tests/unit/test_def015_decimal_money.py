@@ -450,6 +450,7 @@ def test_def015_falsification_injected_float_fails_precision():
     # Float representation loses the final cent:
     float_val = float(CENT_CRITICAL)
     coerced_back = Decimal(str(float_val))
-    assert coerced_back != CENT_CRITICAL, "Float conversion must fail on 16-digit cent-critical money"
+    assert coerced_back != CENT_CRITICAL, (
+        "Float conversion must fail on 16-digit cent-critical money"
+    )
     assert coerced_back == Decimal("99999999999999.98")
-

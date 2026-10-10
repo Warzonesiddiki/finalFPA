@@ -6,7 +6,7 @@ Proves pre-scan row and file-size estimation using synthetic CSV fixtures.
 from __future__ import annotations
 
 from pathlib import Path
-import pytest
+
 from app.engine.imports import prescan_file
 
 

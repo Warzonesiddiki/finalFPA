@@ -12,6 +12,7 @@ can make it lie, and each gets a test:
 A register that quietly drifts is worse than no register, so
 `test_unclassified_rejection_is_a_hard_error` is the load-bearing one.
 """
+
 from __future__ import annotations
 
 import sys

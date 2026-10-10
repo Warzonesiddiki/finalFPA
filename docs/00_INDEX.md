@@ -234,6 +234,32 @@ still landing · `INTEGRATED` = requirement present in the owning doc + CHANGELO
 | A5-G | Oracle procedure & spec-derived reconciliations | `30`, `05`, `14` | INTEGRATED (`30` §8, `05` §12 golden fixtures) |
 | A5-M | Phase-0 Addon 5 checklist, provisional `GATE-05B` (8 checks; Addon 5 contract pending, see `F-015`) | `00`, `14` | INTEGRATED (`14` §15.6 `GATE-05B`, all green; `GATE-06` stays the packaging spike per `16`/registry) |
 
+### 4.7 Supplementary docs authored 2026-10-09 (trust & acceptance layer)
+
+| Ref | Requirement | Owning doc(s) | Status |
+|---|---|---|---|
+| D-01 | Card acceptance standard — the 5 invariants every card must satisfy (`card_acceptance_standard.md`) | `card_acceptance_standard.md` | INTEGRATED (written 2026-10-09; feeds SPEC-08) |
+| D-02 | Project acceptance standard — 5 criteria every deliverable must satisfy (`SPEC-08_ACCEPTANCE_STANDARD.md`) | `SPEC-08_ACCEPTANCE_STANDARD.md` | INTEGRATED (written 2026-10-09; C1–C5 satisfied by this doc's existence + card_acceptance_standard.md) |
+| D-03 | Client audit Q&A — 20 questions a controller/auditor will ask, each with evidence path (`DOC-07_CLIENT_AUDIT_QnA.md`) | `DOC-07_CLIENT_AUDIT_QnA.md` | INTEGRATED (written 2026-10-09; 20 questions, each with short answer + evidence + limit) |
+| D-04 | Analyst maths audit — 12 numbers an FP&A analyst must never get wrong, each with proof chain (`UX-09_ANALYST_MATHS_AUDIT.md`) | `UX-09_ANALYST_MATHS_AUDIT.md` | INTEGRATED (written 2026-10-09; 12 numbers, each with definition + wrong-look + proof + evidence) |
+| D-05 | Human README — what the tool does, how to run it, where sample data/templates live (`DOC-04_HUMAN_README.md`) | `DOC-04_HUMAN_README.md` | INTEGRATED (written 2026-10-09; plain-language, analyst-facing) |
+| D-06 | Audit trail — why should anyone believe this? 5-link chain from number to source (`DOC-06_AUDIT_TRAIL_WHY_BELIEVE.md`) | `DOC-06_AUDIT_TRAIL_WHY_BELIEVE.md` | INTEGRATED (written 2026-10-09; 5 links, each with proof + evidence + limits) |
+| D-07 | Open-decision sweep — one row per still-open OQ: question, decision needed, who decides, blast radius (`SPEC-04_OPEN_DECISION_SWEEP.md`) | `SPEC-04_OPEN_DECISION_SWEEP.md` | INTEGRATED (written 2026-10-09; 24 open decisions swept, 2 flagged Blocking) |
+| D-08 | Spec-every-row-proven — every spec row must carry a 'Verified by' clause (`SPEC-07_PROVING_EVERY_ROW.md`) | `SPEC-07_PROVING_EVERY_ROW.md` | INTEGRATED (written 2026-10-09; 7 proof types, clause format, gap inventory) |
+
+**Gate rule:** any row not `INTEGRATED` fails the Phase 0 gate.
+
+| Ref | Requirement | Owning doc(s) | Status |
+|---|---|---|---|
+| A5-A | How this addon works + Divergence notice (§A.4) | `00`, `19` | INTEGRATED (`00` §6.3, `19` §5.5) |
+| A5-B | Document updates: new document `30_DOCUMENTATION_SET_REVIEW_GUIDE.md` | `30` | INTEGRATED (`30` complete with all sections) |
+| A5-C | Evidence matrix & retention policy (Level 1–3 standards) | `30`, `14`, `evidence/` | INTEGRATED (`30` §4, `evidence/` directory live) |
+| A5-D | Red-flag list & 5-tier response ladder | `30`, `19` | INTEGRATED (`30` §5) |
+| A5-E | Phase 0 review guide & spot-check sampling procedure | `30`, `audit/` | INTEGRATED (`30` §6, `audit/SAMPLING.md`) |
+| A5-F | Stuck options & escalation protocol (OQ template) | `30`, `18` | INTEGRATED (`30` §7, `18` §4.3) |
+| A5-G | Oracle procedure & spec-derived reconciliations | `30`, `05`, `14` | INTEGRATED (`30` §8, `05` §12 golden fixtures) |
+| A5-M | Phase-0 Addon 5 checklist, provisional `GATE-05B` (8 checks; Addon 5 contract pending, see `F-015`) | `00`, `14` | INTEGRATED (`14` §15.6 `GATE-05B`, all green; `GATE-06` stays the packaging spike per `16`/registry) |
+
 ## 5. Source-of-Truth Matrix (Addon 4 §C)
 
 **Each fact lives in full in exactly one owning document; everywhere else it is a one-line

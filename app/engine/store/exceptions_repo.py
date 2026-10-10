@@ -18,24 +18,22 @@ Implements:
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
-from app.engine.calc.math import quantize_money, ZERO
+from app.engine.calc.math import ZERO, quantize_money
 from app.engine.imports.models import ParsedTransaction
 from app.engine.rules import (
+    ApprovalThresholdRuleItem,
+    RecurringCostRuleItem,
+    RuleContext,
     build_full_rule_batch,
     catalog_rule_coverage,
-    Finding,
-    RecurringCostRuleItem,
-    ApprovalThresholdRuleItem,
-    RuleContext,
 )
 from app.engine.rules.batch import evaluate_all_rules_detailed
 from app.engine.store.db import DatabaseManager
-
 
 # Severity SLA targets in days per 06 §2.4 and FR-EXC-009
 SEVERITY_SLA_DAYS = {
@@ -47,9 +45,17 @@ SEVERITY_SLA_DAYS = {
     "low": 45,
 }
 
-EXCEPTION_STATUSES = frozenset({
-    "open", "in_review", "explained", "corrected", "closed", "reopened", "not_applicable",
-})
+EXCEPTION_STATUSES = frozenset(
+    {
+        "open",
+        "in_review",
+        "explained",
+        "corrected",
+        "closed",
+        "reopened",
+        "not_applicable",
+    }
+)
 
 # Human workflow from doc 06 §2.3. Reopening is an explicit state, not a direct
 # jump back to `open`, so every re-entry into review remains visible in history.
@@ -82,7 +88,7 @@ class ExceptionStatusEvidenceRequired(ExceptionWorkflowError):
     """Raised when a status requiring a reason or correction note lacks one."""
 
 
-def _normalize_exception_status(status: Optional[str]) -> Optional[str]:
+def _normalize_exception_status(status: str | None) -> str | None:
     if status is None:
         return None
     normalized = str(status).strip().lower()
@@ -91,7 +97,7 @@ def _normalize_exception_status(status: Optional[str]) -> Optional[str]:
     return normalized
 
 
-def _validate_exception_transition(current: str, target: str, note: Optional[str]) -> None:
+def _validate_exception_transition(current: str, target: str, note: str | None) -> None:
     """Enforce legal, evidence-backed human status transitions."""
     if current not in EXCEPTION_STATUSES:
         raise InvalidExceptionStatus(f"Stored exception status is invalid: {current!r}")
@@ -108,6 +114,7 @@ def _validate_exception_transition(current: str, target: str, note: Optional[str
         raise ExceptionStatusEvidenceRequired(
             f"A non-empty {evidence} is required when changing status to {target!r}"
         )
+
 
 # Standard recurring cost seeds for rule evaluation
 DEFAULT_RECURRING_COSTS = [
@@ -154,7 +161,7 @@ class ExceptionListItem:
     owner_name: str
     owner_role: str
     period_code: str
-    period_id: Optional[int]
+    period_id: int | None
     subject_key: str
     subject_display: str
     amount_at_risk: str
@@ -170,8 +177,8 @@ class ExceptionListItem:
     last_seen_date: str
     created_at: str
     updated_at: str
-    correlation_id: Optional[str] = None
-    claim_id: Optional[str] = None
+    correlation_id: str | None = None
+    claim_id: str | None = None
 
 
 @dataclass
@@ -179,10 +186,10 @@ class ExceptionDetailView:
     """Detailed exception view for drawer SCR-024."""
 
     exception: ExceptionListItem
-    sample_rows: List[Dict[str, Any]]
-    evidence_refs: List[str]
-    notes: List[Dict[str, Any]]
-    events: List[Dict[str, Any]]
+    sample_rows: list[dict[str, Any]]
+    evidence_refs: list[str]
+    notes: list[dict[str, Any]]
+    events: list[dict[str, Any]]
 
 
 class ExceptionsRepository:
@@ -191,7 +198,9 @@ class ExceptionsRepository:
     def __init__(self, db_manager: DatabaseManager):
         self.db = db_manager
 
-    def build_rule_context(self, period_code: str = "FY26-P09", as_of_date: Optional[str] = None) -> RuleContext:
+    def build_rule_context(
+        self, period_code: str = "FY26-P09", as_of_date: str | None = None
+    ) -> RuleContext:
         """Construct deterministic RuleContext from DuckDB actuals and budgets.
 
         `as_of_date=None` means "derive the run date from the period under
@@ -203,12 +212,11 @@ class ExceptionsRepository:
         try:
             # 1. Fetch transactions
             # Map period_code to period_id
-            period_num = 9
             if "-P" in period_code:
                 try:
-                    period_num = int(period_code.split("-P")[1])
+                    _period_num = int(period_code.split("-P")[1])
                 except Exception:
-                    period_num = 9
+                    _period_num = 9
 
             query_tx = """
                 SELECT 
@@ -228,7 +236,7 @@ class ExceptionsRepository:
             """
             rows = duck_conn.execute(query_tx).fetchall()
 
-            tx_list: List[ParsedTransaction] = []
+            tx_list: list[ParsedTransaction] = []
             for r in rows:
                 tx = ParsedTransaction(
                     source_row_ref=r[14] or f"row_{r[0]}",
@@ -266,8 +274,8 @@ class ExceptionsRepository:
                 LEFT JOIN DimPeriod p ON b.period_id = p.period_id
             """
             bgt_rows = duck_conn.execute(query_bgt).fetchall()
-            budgets: Dict[Tuple[str, str, str, str], Decimal] = {}
-            annual_budgets: Dict[Tuple[str, str, str], Decimal] = {}
+            budgets: dict[tuple[str, str, str, str], Decimal] = {}
+            annual_budgets: dict[tuple[str, str, str], Decimal] = {}
 
             for br in bgt_rows:
                 co = br[0] or "IN01"
@@ -283,8 +291,10 @@ class ExceptionsRepository:
                     annual_budgets[key_ann] = annual_budgets.get(key_ann, ZERO) + amt
 
             # 3. DimAccounts metadata
-            dim_accounts: Dict[str, Dict[str, Any]] = {}
-            for ac_row in duck_conn.execute("SELECT account_code, account_name, account_type FROM DimAccount").fetchall():
+            dim_accounts: dict[str, dict[str, Any]] = {}
+            for ac_row in duck_conn.execute(
+                "SELECT account_code, account_name, account_type FROM DimAccount"
+            ).fetchall():
                 dim_accounts[str(ac_row[0])] = {
                     "account_code": str(ac_row[0]),
                     "account_name": ac_row[1],
@@ -294,9 +304,11 @@ class ExceptionsRepository:
                 }
 
             # 4. DimCostCenter metadata
-            dim_cost_centers: Dict[str, Dict[str, Any]] = {}
-            inactive_cost_centers: Set[str] = {"CC-950"}
-            for cc_row in duck_conn.execute("SELECT cost_center_code, cost_center_name, department_name, owner_name, is_active FROM DimCostCenter").fetchall():
+            dim_cost_centers: dict[str, dict[str, Any]] = {}
+            inactive_cost_centers: set[str] = {"CC-950"}
+            for cc_row in duck_conn.execute(
+                "SELECT cost_center_code, cost_center_name, department_name, owner_name, is_active FROM DimCostCenter"
+            ).fetchall():
                 cc_code = cc_row[0]
                 is_act = bool(cc_row[4])
                 dim_cost_centers[cc_code] = {
@@ -352,7 +364,7 @@ class ExceptionsRepository:
                     """
                 ).fetchall()
             ]
-            control_totals: List[Dict[str, Any]] = []
+            control_totals: list[dict[str, Any]] = []
             control_rows = sqlite_conn.execute(
                 """
                 SELECT import_batch_id, sample_rows, detail
@@ -373,11 +385,13 @@ class ExceptionsRepository:
                 for total in decoded:
                     if not isinstance(total, dict):
                         continue
-                    control_totals.append({
-                        **total,
-                        "batch_id": total.get("batch_id", control_row["import_batch_id"]),
-                        "detail": total.get("detail", control_row["detail"]),
-                    })
+                    control_totals.append(
+                        {
+                            **total,
+                            "batch_id": total.get("batch_id", control_row["import_batch_id"]),
+                            "detail": total.get("detail", control_row["detail"]),
+                        }
+                    )
         finally:
             sqlite_conn.close()
 
@@ -399,18 +413,12 @@ class ExceptionsRepository:
             config={},
         )
 
-    def _dim_period_end_dates(self) -> Dict[str, str]:
+    def _dim_period_end_dates(self) -> dict[str, str]:
         """Load the real fiscal calendar per doc 05 CALC-001 ("calendar is data")."""
         duck_conn = self.db.get_duckdb_connection()
         try:
-            rows = duck_conn.execute(
-                "SELECT period_code, end_date FROM DimPeriod"
-            ).fetchall()
-            return {
-                str(r[0]): str(r[1])
-                for r in rows
-                if r[0] is not None and r[1] is not None
-            }
+            rows = duck_conn.execute("SELECT period_code, end_date FROM DimPeriod").fetchall()
+            return {str(r[0]): str(r[1]) for r in rows if r[0] is not None and r[1] is not None}
         except Exception:
             return {}
         finally:
@@ -419,10 +427,10 @@ class ExceptionsRepository:
     def run_rules(
         self,
         period_code: str = "FY26-P09",
-        as_of_date: Optional[str] = None,
-        correlation_id: Optional[str] = None,
-        claim_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        as_of_date: str | None = None,
+        correlation_id: str | None = None,
+        claim_id: str | None = None,
+    ) -> dict[str, Any]:
         """Run the full de-duplicated catalog (EXC-001..EXC-024) and record atomically.
 
         Uses `build_full_rule_batch()` rather than concatenating the 01-08 and
@@ -431,6 +439,7 @@ class ExceptionsRepository:
         raises duplicate findings. See app/engine/rules/batch.py.
         """
         import uuid
+
         run_corr_id = correlation_id or f"run-{uuid.uuid4().hex[:12]}"
         run_claim_id = claim_id or "claim-unspecified"
         context = self.build_rule_context(period_code=period_code, as_of_date=as_of_date)
@@ -600,21 +609,21 @@ class ExceptionsRepository:
 
     def list_exceptions(
         self,
-        period_code: Optional[str] = None,
-        severity: Optional[str] = None,
-        status: Optional[str] = None,
-        owner: Optional[str] = None,
-        rule_id: Optional[str] = None,
-        aging_bucket: Optional[str] = None,
-        q: Optional[str] = None,
+        period_code: str | None = None,
+        severity: str | None = None,
+        status: str | None = None,
+        owner: str | None = None,
+        rule_id: str | None = None,
+        aging_bucket: str | None = None,
+        q: str | None = None,
         page: int = 1,
         page_size: int = 50,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Fetch filtered and paginated exceptions with aging metrics per FR-EXC-002/009."""
         sqlite_conn = self.db.get_sqlite_connection()
         try:
             where_clauses = ["1=1"]
-            params: List[Any] = []
+            params: list[Any] = []
 
             if period_code:
                 where_clauses.append("period_code = ?")
@@ -630,7 +639,9 @@ class ExceptionsRepository:
 
             if owner and owner.lower() != "all":
                 if owner.lower() == "unassigned":
-                    where_clauses.append("(owner_name IS NULL OR owner_name = '' OR owner_name = 'Unassigned')")
+                    where_clauses.append(
+                        "(owner_name IS NULL OR owner_name = '' OR owner_name = 'Unassigned')"
+                    )
                 else:
                     where_clauses.append("owner_name = ?")
                     params.append(owner)
@@ -640,7 +651,9 @@ class ExceptionsRepository:
                 params.append(rule_id)
 
             if q:
-                where_clauses.append("(rule_name LIKE ? OR subject_display LIKE ? OR subject_key LIKE ? OR identity_hash LIKE ?)")
+                where_clauses.append(
+                    "(rule_name LIKE ? OR subject_display LIKE ? OR subject_key LIKE ? OR identity_hash LIKE ?)"
+                )
                 q_wild = f"%{q}%"
                 params.extend([q_wild, q_wild, q_wild, q_wild])
 
@@ -658,7 +671,7 @@ class ExceptionsRepository:
             cursor = sqlite_conn.execute(query, params)
             rows = cursor.fetchall()
 
-            items: List[ExceptionListItem] = []
+            items: list[ExceptionListItem] = []
             today_d = date.today()
 
             for r in rows:
@@ -745,7 +758,7 @@ class ExceptionsRepository:
         finally:
             sqlite_conn.close()
 
-    def get_exception_detail(self, exception_id: int) -> Optional[ExceptionDetailView]:
+    def get_exception_detail(self, exception_id: int) -> ExceptionDetailView | None:
         """Fetch full exception detail including sample rows, notes, and audit events per SCR-024."""
         sqlite_conn = self.db.get_sqlite_connection()
         try:
@@ -879,11 +892,11 @@ class ExceptionsRepository:
     def update_exception(
         self,
         exception_id: int,
-        status: Optional[str] = None,
-        owner: Optional[str] = None,
-        note: Optional[str] = None,
+        status: str | None = None,
+        owner: str | None = None,
+        note: str | None = None,
         actor: str = "session_user",
-    ) -> Optional[ExceptionDetailView]:
+    ) -> ExceptionDetailView | None:
         """Update exception status, owner, or add note per FR-EXC-006/007/008."""
         requested_status = _normalize_exception_status(status)
         clean_note = str(note).strip() if note is not None else None
@@ -941,7 +954,14 @@ class ExceptionsRepository:
                             exception_id, event_type, from_value, to_value, note_text, actor, occurred_at
                         ) VALUES (?, 'owner_changed', ?, ?, ?, ?, ?)
                         """,
-                        (exception_id, row["owner_name"], owner, f"Owner changed to {owner}", actor, now_str),
+                        (
+                            exception_id,
+                            row["owner_name"],
+                            owner,
+                            f"Owner changed to {owner}",
+                            actor,
+                            now_str,
+                        ),
                     )
 
                 # Handle note addition (FR-EXC-008: append-only)
@@ -969,12 +989,12 @@ class ExceptionsRepository:
 
     def bulk_update(
         self,
-        ids: List[int],
-        status: Optional[str] = None,
-        owner: Optional[str] = None,
-        note: Optional[str] = None,
+        ids: list[int],
+        status: str | None = None,
+        owner: str | None = None,
+        note: str | None = None,
         actor: str = "session_user",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Bulk update exceptions, reporting missing rows and illegal transitions."""
         requested_status = _normalize_exception_status(status)
         clean_owner = str(owner).strip() if owner is not None else None
@@ -982,8 +1002,8 @@ class ExceptionsRepository:
             clean_owner = "Unassigned"
         clean_note = str(note).strip() if note is not None else None
         updated = 0
-        skipped: List[Dict[str, Any]] = []
-        audit_ids: List[int] = []
+        skipped: list[dict[str, Any]] = []
+        audit_ids: list[int] = []
 
         sqlite_conn = self.db.get_sqlite_connection()
         try:
@@ -1015,7 +1035,9 @@ class ExceptionsRepository:
                             "UPDATE FactException SET status = ?, updated_at = ? WHERE exception_id = ?",
                             (requested_status, now_str, exc_id),
                         )
-                        event_type = "reopened" if requested_status == "reopened" else "status_changed"
+                        event_type = (
+                            "reopened" if requested_status == "reopened" else "status_changed"
+                        )
                         cur = sqlite_conn.execute(
                             """
                             INSERT INTO FactExceptionEvent (
@@ -1061,8 +1083,8 @@ class ExceptionsRepository:
 
                     if clean_note:
                         sqlite_conn.execute(
-                            "INSERT INTO ExceptionNote (exception_id, author, note_text, created_at) VALUES (?, ?, ?, ?)",
-                            (exc_id, actor, clean_note, now_str),
+                            "INSERT INTO ExceptionNote (exception_id, note_text, author, created_at) VALUES (?, ?, ?, ?)",
+                            (exc_id, clean_note, actor, now_str),
                         )
                         cur = sqlite_conn.execute(
                             """
@@ -1088,12 +1110,12 @@ class ExceptionsRepository:
             "auditIds": audit_ids,
         }
 
-    def get_owner_distribution(self, period_code: Optional[str] = None) -> Dict[str, Any]:
+    def get_owner_distribution(self, period_code: str | None = None) -> dict[str, Any]:
         """Generate owner-wise exception distribution report (CSV grouped per owner + Teams summary) per FR-EXC-017."""
         res = self.list_exceptions(period_code=period_code, page=1, page_size=10000)
         items = res["items"]
 
-        groups: Dict[str, List[Dict[str, Any]]] = {}
+        groups: dict[str, list[dict[str, Any]]] = {}
         for it in items:
             owner = it["owner_name"] or "Unassigned"
             if owner not in groups:
@@ -1101,26 +1123,36 @@ class ExceptionsRepository:
             groups[owner].append(it)
 
         owner_summaries = []
-        csv_lines = ["Owner,RuleID,RuleName,Severity,Status,Subject,AmountAtRisk,DaysOpen,IsOverdue"]
-        teams_text_blocks = [f"📋 Exception Ownership Distribution Report (Period: {period_code or 'All Periods'})"]
+        csv_lines = [
+            "Owner,RuleID,RuleName,Severity,Status,Subject,AmountAtRisk,DaysOpen,IsOverdue"
+        ]
+        teams_text_blocks = [
+            f"📋 Exception Ownership Distribution Report (Period: {period_code or 'All Periods'})"
+        ]
 
         for owner, owner_items in sorted(groups.items()):
             total_amt = sum(Decimal(i["amount_at_risk"]) for i in owner_items)
             open_cnt = sum(1 for i in owner_items if i["status"] == "open")
             overdue_cnt = sum(1 for i in owner_items if i["is_overdue"])
 
-            owner_summaries.append({
-                "ownerName": owner,
-                "totalExceptions": len(owner_items),
-                "openExceptions": open_cnt,
-                "overdueExceptions": overdue_cnt,
-                "amountAtRisk": str(total_amt),
-                "items": owner_items,
-            })
+            owner_summaries.append(
+                {
+                    "ownerName": owner,
+                    "totalExceptions": len(owner_items),
+                    "openExceptions": open_cnt,
+                    "overdueExceptions": overdue_cnt,
+                    "amountAtRisk": str(total_amt),
+                    "items": owner_items,
+                }
+            )
 
-            teams_text_blocks.append(f"\n👤 Owner: {owner}\n  • Exceptions: {len(owner_items)} (Open: {open_cnt}, Overdue: {overdue_cnt})\n  • Total Amount at Risk: ₹{total_amt:,.2f}")
+            teams_text_blocks.append(
+                f"\n👤 Owner: {owner}\n  • Exceptions: {len(owner_items)} (Open: {open_cnt}, Overdue: {overdue_cnt})\n  • Total Amount at Risk: ₹{total_amt:,.2f}"
+            )
             for it in owner_items:
-                csv_lines.append(f'"{owner}","{it["rule_id"]}","{it["rule_name"]}","{it["severity"]}","{it["status"]}","{it["subject_display"]}","{it["amount_at_risk"]}",{it["days_open"]},{it["is_overdue"]}')
+                csv_lines.append(
+                    f'"{owner}","{it["rule_id"]}","{it["rule_name"]}","{it["severity"]}","{it["status"]}","{it["subject_display"]}","{it["amount_at_risk"]}",{it["days_open"]},{it["is_overdue"]}'
+                )
 
         csv_content = "\n".join(csv_lines)
         teams_summary = "\n".join(teams_text_blocks)
@@ -1133,7 +1165,7 @@ class ExceptionsRepository:
             "teamsSummary": teams_summary,
         }
 
-    def generate_evidence_bundle(self, exception_id: int) -> Optional[str]:
+    def generate_evidence_bundle(self, exception_id: int) -> str | None:
         """Generate one-click evidence bundle workbook (.xlsx) per exception (FR-EXC-016, FR-XL-007).
 
         Includes: Exception Summary, Subject Rows, Validation Report, Mapping Version, Audit Trail.
@@ -1143,6 +1175,7 @@ class ExceptionsRepository:
             return None
 
         import openpyxl
+
         wb = openpyxl.Workbook()
 
         # Sheet 1: Summary
@@ -1191,18 +1224,21 @@ class ExceptionsRepository:
         ws5 = wb.create_sheet(title="Audit Trail")
         ws5.append(["Event ID", "Event Type", "From", "To", "Note", "Actor", "Occurred At"])
         for ev in detail.events:
-            ws5.append([
-                ev.get("eventId"),
-                ev.get("eventType"),
-                ev.get("fromValue"),
-                ev.get("toValue"),
-                ev.get("noteText"),
-                ev.get("actor"),
-                ev.get("occurredAt"),
-            ])
+            ws5.append(
+                [
+                    ev.get("eventId"),
+                    ev.get("eventType"),
+                    ev.get("fromValue"),
+                    ev.get("toValue"),
+                    ev.get("noteText"),
+                    ev.get("actor"),
+                    ev.get("occurredAt"),
+                ]
+            )
 
         # Save to temp file
         import tempfile
+
         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx")
         tmp.close()
         wb.save(tmp.name)

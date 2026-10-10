@@ -102,8 +102,7 @@ def test_crash_does_not_cost_other_rules_their_findings():
     result = evaluate_all_rules_detailed(RuleContext(), batch=(good_a, boom, good_b))
 
     assert len(result.findings) == 2, (
-        "the two healthy rules must still produce their findings; got "
-        f"{len(result.findings)}"
+        f"the two healthy rules must still produce their findings; got {len(result.findings)}"
     )
     assert {e.rule_name for e in result.ran_rules} == {"a", "b"}
 
@@ -130,9 +129,7 @@ def test_one_recorded_failure_is_not_hidden_by_a_green_batch():
     most dangerous form of the fix because it converts a visible crash into
     invisible partial coverage.
     """
-    result = evaluate_all_rules_detailed(
-        RuleContext(), batch=(_ok_rule("a"), _boom_rule())
-    )
+    result = evaluate_all_rules_detailed(RuleContext(), batch=(_ok_rule("a"), _boom_rule()))
 
     assert result.findings, "healthy rules did produce findings"
     assert result.failed_rules, (

@@ -18,12 +18,12 @@ from __future__ import annotations
 
 import json
 from decimal import Decimal
-from pathlib import Path
 
 import httpx
 import pytest
 
 from app.engine.ai.client import (
+    BANNED_PHRASES,
     AIClient,
     AIConfig,
     AIDraftResult,
@@ -32,13 +32,12 @@ from app.engine.ai.client import (
     PromptTemplateLoader,
     RedactionEngine,
     RuleBasedNarrativeGenerator,
-    BANNED_PHRASES,
 )
-
 
 # =========================================================================
 # RedactionEngine - sanitize_text
 # =========================================================================
+
 
 def test_sanitize_text_returns_empty_for_empty_input():
     assert RedactionEngine().sanitize_text("") == ""
@@ -50,8 +49,8 @@ def test_sanitize_text_strips_html():
 
 def test_sanitize_text_strips_zero_width_and_rtl_and_control_chars():
     eng = RedactionEngine()
-    assert eng.sanitize_text("a\u200Bb") == "ab"
-    assert eng.sanitize_text("a\u202Eb") == "ab"
+    assert eng.sanitize_text("a\u200bb") == "ab"
+    assert eng.sanitize_text("a\u202eb") == "ab"
     assert eng.sanitize_text("a\x00b") == "ab"
 
 
@@ -72,6 +71,7 @@ def test_sanitize_text_leaves_short_text_untruncated():
 # =========================================================================
 # RedactionEngine - mask_description
 # =========================================================================
+
 
 def test_mask_description_masks_email_url_phone_and_long_digits():
     out = RedactionEngine().mask_description(
@@ -104,6 +104,7 @@ def test_mask_description_caps_length():
 # RedactionEngine - mask_vendors
 # =========================================================================
 
+
 def test_mask_vendors_leaves_plain_names_when_no_vendor_list_is_known():
     """`mask_vendors` only masks what it can identify.
 
@@ -112,9 +113,7 @@ def test_mask_vendors_leaves_plain_names_when_no_vendor_list_is_known():
     redaction engine is deterministic and never invents a match, so a caller
     must pass `known_vendors` for names to be masked.
     """
-    text, mapping = RedactionEngine().mask_vendors(
-        "Paid Acme Supplies and Zenith Services"
-    )
+    text, mapping = RedactionEngine().mask_vendors("Paid Acme Supplies and Zenith Services")
     assert text == "Paid Acme Supplies and Zenith Services"
     assert mapping == {}
 
@@ -138,10 +137,10 @@ def test_mask_vendors_reuses_pseudonym_across_calls():
     """The same vendor must get the same pseudonym in every prompt."""
     eng = RedactionEngine()
     vmap: dict[str, str] = {}
-    t1, vmap = eng.mask_vendors("Acme Supplies", vendor_map=vmap,
-                                known_vendors=["Acme Supplies"])
-    t2, vmap = eng.mask_vendors("Acme Supplies again", vendor_map=vmap,
-                                known_vendors=["Acme Supplies"])
+    t1, vmap = eng.mask_vendors("Acme Supplies", vendor_map=vmap, known_vendors=["Acme Supplies"])
+    t2, vmap = eng.mask_vendors(
+        "Acme Supplies again", vendor_map=vmap, known_vendors=["Acme Supplies"]
+    )
     assert t1 == "Vendor A"
     assert "Vendor A" in t2
     assert "Vendor B" not in t2
@@ -154,9 +153,7 @@ def test_mask_vendors_masks_explicit_vendor_codes():
 
 
 def test_mask_vendors_skips_blank_and_one_char_known_vendors():
-    text, mapping = RedactionEngine().mask_vendors(
-        "nothing to do", known_vendors=["", " ", "X"]
-    )
+    text, mapping = RedactionEngine().mask_vendors("nothing to do", known_vendors=["", " ", "X"])
     assert text == "nothing to do"
     assert mapping == {}
 
@@ -178,14 +175,14 @@ def test_mask_vendors_generates_multi_letter_pseudonyms_past_z():
     """The 27th distinct pseudonym is 'Vendor AA', not a repeat of 'Vendor A'."""
     eng = RedactionEngine()
     vmap = {f"V{i}": f"Vendor {chr(65 + i)}" for i in range(26)}
-    _, vmap = eng.mask_vendors("fresh one", vendor_map=vmap,
-                               known_vendors=["fresh one"])
+    _, vmap = eng.mask_vendors("fresh one", vendor_map=vmap, known_vendors=["fresh one"])
     assert vmap["fresh one"] == "Vendor AA"
 
 
 # =========================================================================
 # RedactionEngine - confidential amounts, custom patterns, reverse
 # =========================================================================
+
 
 def test_mask_confidential_amounts_returns_text_when_no_amounts_given():
     assert RedactionEngine().mask_confidential_amounts("keep", None) == "keep"
@@ -209,17 +206,13 @@ def test_mask_confidential_amounts_skips_blank_entries():
 
 
 def test_apply_custom_patterns_masks_matches():
-    out = RedactionEngine().apply_custom_patterns(
-        "secret word here", patterns=[r"secret\s+word"]
-    )
+    out = RedactionEngine().apply_custom_patterns("secret word here", patterns=[r"secret\s+word"])
     assert out == "[REDACTED] here"
 
 
 def test_apply_custom_patterns_skips_invalid_regex_and_keeps_going():
     """A bad user pattern must not crash the import or lose the good one."""
-    out = RedactionEngine().apply_custom_patterns(
-        "alpha beta", patterns=["[unclosed", r"beta"]
-    )
+    out = RedactionEngine().apply_custom_patterns("alpha beta", patterns=["[unclosed", r"beta"])
     assert out == "alpha [REDACTED]"
 
 
@@ -237,6 +230,7 @@ def test_reverse_mask_vendors_restores_originals():
 # RedactionEngine - redact_payload_value
 # =========================================================================
 
+
 def test_redact_payload_value_walks_lists_and_dicts():
     """A vendor name only masks when the caller supplies the known list."""
     eng = RedactionEngine()
@@ -250,9 +244,7 @@ def test_redact_payload_value_walks_lists_and_dicts():
 
 
 def test_redact_payload_value_handles_description_field():
-    out = RedactionEngine().redact_payload_value(
-        {"description": "reach us at a@b.com"}, {}
-    )
+    out = RedactionEngine().redact_payload_value({"description": "reach us at a@b.com"}, {})
     assert "[EMAIL]" in out["description"]
 
 
@@ -263,9 +255,7 @@ def test_redact_payload_value_leaves_vendor_unmasked_when_disabled():
 
 
 def test_redact_payload_value_masks_amount_when_confidential_enabled():
-    cfg = AIConfig(
-        mask_confidential_amounts=True, confidential_amounts=["5000"]
-    )
+    cfg = AIConfig(mask_confidential_amounts=True, confidential_amounts=["5000"])
     out = RedactionEngine(cfg).redact_payload_value({"amount": "5000"}, {})
     assert out["amount"] == "[CONFIDENTIAL_AMOUNT]"
 
@@ -280,6 +270,7 @@ def test_redact_payload_value_passes_through_scalars():
 # =========================================================================
 # OutputValidator
 # =========================================================================
+
 
 def test_extract_numbers_from_numeric_scalars_adds_multiple_representations():
     got = OutputValidator.extract_numbers_from_obj({"v": 1000})
@@ -357,9 +348,7 @@ def test_validate_numbers_strips_mismatching_sentence():
 
 def test_validate_numbers_accepts_decimal_equivalent_forms():
     """'120000.00' in the data must validate a '1,20,000' in the prose."""
-    text, flag = OutputValidator.validate_and_sanitize_numbers(
-        "Spend was 1,20,000.", {"120000.00"}
-    )
+    text, flag = OutputValidator.validate_and_sanitize_numbers("Spend was 1,20,000.", {"120000.00"})
     assert flag is False
 
 
@@ -397,12 +386,11 @@ def test_validate_numbers_only_strips_the_offending_sentence():
 # and are kept as regression tests. The tokenizer assertions below pin the
 # grammar directly, which is what makes a future regression obvious.
 
+
 def test_plain_four_digit_integer_is_not_mistaken_for_a_mismatch():
     """The headline regression: numeric data, integer with 4+ digits."""
     valid = OutputValidator.extract_numbers_from_obj({"v": 5000})
-    text, flag = OutputValidator.validate_and_sanitize_numbers(
-        "Spend was 5000 this month.", valid
-    )
+    text, flag = OutputValidator.validate_and_sanitize_numbers("Spend was 5000 this month.", valid)
     assert flag is False, "5000 IS in the data, so the sentence must survive"
     assert text == "Spend was 5000 this month."
 
@@ -488,6 +476,7 @@ def test_grouped_and_ungrouped_forms_agree_after_normalisation():
 # PromptTemplate
 # =========================================================================
 
+
 def _template(**over) -> PromptTemplate:
     base = dict(
         prompt_id="PROMPT-99",
@@ -507,9 +496,7 @@ def _template(**over) -> PromptTemplate:
 
 
 def test_render_payload_substitutes_tokens():
-    assert _template().render_payload({"name": "Aarti", "period": "P09"}) == (
-        "Hello Aarti for P09"
-    )
+    assert _template().render_payload({"name": "Aarti", "period": "P09"}) == ("Hello Aarti for P09")
 
 
 def test_render_payload_rejects_missing_required_variable():
@@ -527,6 +514,7 @@ def test_render_payload_refuses_unresolved_placeholder():
 # =========================================================================
 # PromptTemplateLoader
 # =========================================================================
+
 
 def test_loader_parses_a_template_file(tmp_path):
     (tmp_path / "PROMPT-99.v1.md").write_text(
@@ -733,17 +721,17 @@ def test_rule_based_covers_every_prompt(prompt_id, variables):
 # AIClient - configuration and request construction
 # =========================================================================
 
+
 def test_is_configured_requires_provider_key_and_url():
     assert AIClient(AIConfig()).is_configured() is False
     assert AIClient(AIConfig(provider="openai_compatible")).is_configured() is False
-    assert AIClient(
-        AIConfig(provider="openai_compatible", api_key="k")
-    ).is_configured() is False
-    assert AIClient(
-        AIConfig(
-            provider="openai_compatible", api_key="k", base_url="https://x"
-        )
-    ).is_configured() is True
+    assert AIClient(AIConfig(provider="openai_compatible", api_key="k")).is_configured() is False
+    assert (
+        AIClient(
+            AIConfig(provider="openai_compatible", api_key="k", base_url="https://x")
+        ).is_configured()
+        is True
+    )
 
 
 def test_get_http_client_uses_injected_client():
@@ -756,9 +744,7 @@ def test_get_http_client_builds_one_when_not_injected():
 
 
 def test_build_request_params_openai_compatible():
-    cfg = AIConfig(
-        provider="openai_compatible", api_key="sk-1", base_url="https://api.x/"
-    )
+    cfg = AIConfig(provider="openai_compatible", api_key="sk-1", base_url="https://api.x/")
     url, headers, body = AIClient(cfg)._build_request_params("s", "u")
     assert url == "https://api.x/chat/completions"
     assert headers["Authorization"] == "Bearer sk-1"
@@ -777,9 +763,7 @@ def test_build_request_params_respects_explicit_completions_url():
 
 
 def test_build_request_params_azure_uses_deployment_path():
-    cfg = AIConfig(
-        provider="azure_openai", api_key="k", base_url="https://az.x/", model="gpt4o"
-    )
+    cfg = AIConfig(provider="azure_openai", api_key="k", base_url="https://az.x/", model="gpt4o")
     url, headers, _ = AIClient(cfg)._build_request_params("s", "u")
     assert "/openai/deployments/gpt4o/chat/completions" in url
     assert "api-version=" in url
@@ -789,6 +773,7 @@ def test_build_request_params_azure_uses_deployment_path():
 # =========================================================================
 # AIClient - test_connection
 # =========================================================================
+
 
 class _Resp:
     def __init__(self, status_code=200, payload=None, text=""):
@@ -851,9 +836,7 @@ def test_test_connection_reports_rejected_key():
 
 def test_test_connection_reports_other_http_status():
     cfg = AIConfig(provider="openai_compatible", api_key="k", base_url="https://x")
-    res = AIClient(
-        cfg, http_client=_StubTransport([_Resp(500, text="boom")])
-    ).test_connection()
+    res = AIClient(cfg, http_client=_StubTransport([_Resp(500, text="boom")])).test_connection()
     assert "HTTP 500" in res["message"]
 
 
@@ -871,7 +854,6 @@ def test_test_connection_reports_unreachable_endpoint():
 # =========================================================================
 
 
-
 # PROMPT-01's commentary fixture.
 #
 # Every figure here is present in P01_VARS' data_block_json, because DEC-026
@@ -886,8 +868,7 @@ VALID_P01_OUTPUT = json.dumps(
             "driven by one vendor line, pending owner review before sign-off."
         ),
         "drivers": [
-            {"label": "Vendor line", "direction": "unfavourable",
-             "evidence_ids": ["EXC-001"]}
+            {"label": "Vendor line", "direction": "unfavourable", "evidence_ids": ["EXC-001"]}
         ],
         "confidence": "medium",
         "caveats": ["Draft for review."],
@@ -937,9 +918,7 @@ def test_generate_strips_unknown_evidence_ids():
     """
     out = json.loads(VALID_P01_OUTPUT)
     out["drivers"][0]["evidence_ids"] = ["EXC-001", "EXC-999"]
-    res = _ai_client([_ok_response(json.dumps(out))], retries=0).generate(
-        "PROMPT-01", P01_VARS
-    )
+    res = _ai_client([_ok_response(json.dumps(out))], retries=0).generate("PROMPT-01", P01_VARS)
     assert res.is_ai_draft is True
     assert "EXC-999" not in res.content["drivers"][0]["evidence_ids"]
 
@@ -982,17 +961,20 @@ def test_generate_falls_back_on_empty_choices_refusal():
 
     retries=0: the client does not retry a refusal, it falls back immediately.
     """
-    res = _ai_client([_Resp(200, {"choices": []})], retries=0).generate(
-        "PROMPT-01", P01_VARS
-    )
+    res = _ai_client([_Resp(200, {"choices": []})], retries=0).generate("PROMPT-01", P01_VARS)
     assert res.is_ai_draft is False
     assert res.outcome == "refused"
 
 
 @pytest.mark.parametrize(
     "status,expected",
-    [(401, "unauthorized"), (403, "unauthorized"), (400, "http_400"),
-     (500, "server_error"), (429, "rate_limit")],
+    [
+        (401, "unauthorized"),
+        (403, "unauthorized"),
+        (400, "http_400"),
+        (500, "server_error"),
+        (429, "rate_limit"),
+    ],
 )
 def test_generate_maps_http_failures_to_outcomes(status, expected):
     """A single failing response must be classified, not silently retried.
@@ -1000,9 +982,7 @@ def test_generate_maps_http_failures_to_outcomes(status, expected):
     retries=0 so exactly one scripted response is consumed; the outcome recorded
     is the one for THAT response.
     """
-    res = _ai_client([_Resp(status, text="err")], retries=0).generate(
-        "PROMPT-01", P01_VARS
-    )
+    res = _ai_client([_Resp(status, text="err")], retries=0).generate("PROMPT-01", P01_VARS)
     assert res.is_ai_draft is False
     assert res.outcome == expected
     assert "fell back" in res.warning
@@ -1012,8 +992,10 @@ def test_generate_retries_on_429_then_succeeds():
     stub = _StubTransport([_Resp(429), _ok_response(VALID_P01_OUTPUT)])
     client = AIClient(
         AIConfig(
-            provider="openai_compatible", api_key="k",
-            base_url="https://x", max_retries=2,
+            provider="openai_compatible",
+            api_key="k",
+            base_url="https://x",
+            max_retries=2,
         ),
         http_client=stub,
     )
@@ -1025,8 +1007,10 @@ def test_generate_retries_on_5xx_then_succeeds():
     stub = _StubTransport([_Resp(503), _ok_response(VALID_P01_OUTPUT)])
     client = AIClient(
         AIConfig(
-            provider="openai_compatible", api_key="k",
-            base_url="https://x", max_retries=2,
+            provider="openai_compatible",
+            api_key="k",
+            base_url="https://x",
+            max_retries=2,
         ),
         http_client=stub,
     )
@@ -1039,8 +1023,10 @@ def test_generate_gives_up_after_exhausting_retries():
     stub = _StubTransport([_Resp(503), _Resp(503)])
     client = AIClient(
         AIConfig(
-            provider="openai_compatible", api_key="k",
-            base_url="https://x", max_retries=1,
+            provider="openai_compatible",
+            api_key="k",
+            base_url="https://x",
+            max_retries=1,
         ),
         http_client=stub,
     )
@@ -1051,24 +1037,18 @@ def test_generate_gives_up_after_exhausting_retries():
 
 
 def test_generate_handles_timeout():
-    res = _ai_client([httpx.TimeoutException("slow")], retries=0).generate(
-        "PROMPT-01", P01_VARS
-    )
+    res = _ai_client([httpx.TimeoutException("slow")], retries=0).generate("PROMPT-01", P01_VARS)
     assert res.outcome == "timeout"
     assert res.is_ai_draft is False
 
 
 def test_generate_handles_network_error():
-    res = _ai_client([httpx.NetworkError("down")], retries=0).generate(
-        "PROMPT-01", P01_VARS
-    )
+    res = _ai_client([httpx.NetworkError("down")], retries=0).generate("PROMPT-01", P01_VARS)
     assert res.outcome == "network_error"
 
 
 def test_generate_handles_unexpected_exception():
-    res = _ai_client([RuntimeError("kaboom")], retries=0).generate(
-        "PROMPT-01", P01_VARS
-    )
+    res = _ai_client([RuntimeError("kaboom")], retries=0).generate("PROMPT-01", P01_VARS)
     assert res.outcome == "error_RuntimeError"
     assert res.is_ai_draft is False
 
@@ -1090,9 +1070,7 @@ def test_generate_replaces_whole_draft_when_all_figures_are_invented():
         "Charges of 98.76 reached 12.34 during the period under review for the "
         "entity in scope, and the owner must confirm before sign-off."
     )
-    res = _ai_client([_ok_response(json.dumps(out))], retries=0).generate(
-        "PROMPT-01", P01_VARS
-    )
+    res = _ai_client([_ok_response(json.dumps(out))], retries=0).generate("PROMPT-01", P01_VARS)
     assert res.is_ai_draft is False
     assert "did not match data" in res.warning
 
@@ -1102,8 +1080,10 @@ def test_generate_redacts_vendors_before_sending():
     stub = _StubTransport([_ok_response(VALID_P01_OUTPUT)])
     client = AIClient(
         AIConfig(
-            provider="openai_compatible", api_key="k",
-            base_url="https://x", max_retries=0,
+            provider="openai_compatible",
+            api_key="k",
+            base_url="https://x",
+            max_retries=0,
         ),
         http_client=stub,
     )
@@ -1111,11 +1091,8 @@ def test_generate_redacts_vendors_before_sending():
     variables["data_block_json"] = json.dumps(
         {
             "subject": {"account_name": "Rent"},
-            "measures": [{"label": "Variance", "value": "1,20,000.00",
-                          "currency": "INR"}],
-            "contributors": [
-                {"label": "Zenith Services Ltd", "amount": "900.00", "id": "EXC-001"}
-            ],
+            "measures": [{"label": "Variance", "value": "1,20,000.00", "currency": "INR"}],
+            "contributors": [{"label": "Zenith Services Ltd", "amount": "900.00", "id": "EXC-001"}],
         }
     )
     client.generate("PROMPT-01", variables, known_vendors=["Zenith Services Ltd"])
@@ -1129,8 +1106,10 @@ def test_generate_redacts_json_encoded_string_variables():
     stub = _StubTransport([_ok_response(VALID_P01_OUTPUT)])
     client = AIClient(
         AIConfig(
-            provider="openai_compatible", api_key="k",
-            base_url="https://x", max_retries=0,
+            provider="openai_compatible",
+            api_key="k",
+            base_url="https://x",
+            max_retries=0,
         ),
         http_client=stub,
     )
@@ -1150,8 +1129,10 @@ def test_generate_survives_variable_that_looks_like_json_but_is_not():
     stub = _StubTransport([_ok_response(VALID_P01_OUTPUT)])
     client = AIClient(
         AIConfig(
-            provider="openai_compatible", api_key="k",
-            base_url="https://x", max_retries=0,
+            provider="openai_compatible",
+            api_key="k",
+            base_url="https://x",
+            max_retries=0,
         ),
         http_client=stub,
     )
@@ -1163,6 +1144,7 @@ def test_generate_survives_variable_that_looks_like_json_but_is_not():
 # =========================================================================
 # AIClient private helpers
 # =========================================================================
+
 
 def test_parse_json_strictly_handles_plain_and_fenced():
     assert AIClient._parse_json_strictly('{"a": 1}') == ({"a": 1}, None)
@@ -1208,8 +1190,9 @@ def test_apply_number_checks_reports_false_when_all_valid():
 
 
 def test_is_wholly_stripped_detects_placeholder_only_text():
-    assert AIClient._is_wholly_stripped(
-        {"commentary": "[figure removed — not from your data]"}
-    ) is True
+    assert (
+        AIClient._is_wholly_stripped({"commentary": "[figure removed — not from your data]"})
+        is True
+    )
     assert AIClient._is_wholly_stripped({"commentary": "real text"}) is False
     assert AIClient._is_wholly_stripped({}) is False

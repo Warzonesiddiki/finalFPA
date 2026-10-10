@@ -14,7 +14,7 @@ upper-case, strip leading zeros and non-alphanumeric separators."*
 from __future__ import annotations
 
 import re
-from typing import Any, Optional
+from typing import Any
 
 #: Anything that is not an ASCII letter or digit is a separator for key purposes.
 _SEPARATOR_RE = re.compile(r"[^A-Z0-9]")
@@ -34,7 +34,7 @@ def normalise_alnum_upper(value: Any) -> str:
     return _SEPARATOR_RE.sub("", text)
 
 
-def normalise_invoice_no(invoice_no: Optional[str]) -> str:
+def normalise_invoice_no(invoice_no: str | None) -> str:
     """Normalise an invoice number to its blocking key (`06` `EXC-007`).
 
     Applies :func:`normalise_alnum_upper`, then strips leading zeros, so ``"INV-88213"``,

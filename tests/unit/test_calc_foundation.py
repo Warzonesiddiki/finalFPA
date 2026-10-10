@@ -14,59 +14,42 @@ Tests trace to:
 """
 
 from decimal import Decimal
+
 import pytest
 
 from app.engine.calc import (
-    ZERO,
-    TWO_PLACES,
-    SIX_PLACES,
-    ONE_PLACE,
-    RatioState,
-    Direction,
-    Favourability,
-    DisplayScale,
-    NegativeFormat,
-    GroupingFormat,
     KPI,
-    RatioResult,
+    Direction,
+    DisplayScale,
+    Favourability,
+    GroupingFormat,
     PeriodFact,
-    quantize_money,
-    quantize_ratio,
-    quantize_percent,
-    safe_divide,
-    calculate_variance,
-    calculate_variance_pct,
-    calculate_variance_pct_ratio,
-    calculate_pp_variance,
-    calculate_percentage_point_variance,
-    get_account_direction,
-    calculate_favourability,
-    format_favourability,
+    RatioResult,
+    RatioState,
     aggregate_mtd,
-    aggregate_ytd,
     aggregate_py_mtd,
     aggregate_py_ytd,
     aggregate_ttm,
-    calculate_period_aggregations,
-    calculate_gross_margin_pct,
-    calculate_opex_ratio,
+    aggregate_ytd,
     calculate_budget_burn_pct,
-    calculate_revenue_growth_pct,
-    calculate_line_variance_pct,
-    calculate_forecast_accuracy_ratio,
-    calculate_mape_lite,
-    calculate_operating_margin_pct,
-    calculate_net_profit_margin_pct,
-    calculate_cogs_ratio,
-    calculate_expense_growth_pct,
-    calculate_forecast_variance_pct,
+    calculate_favourability,
+    calculate_gross_margin_pct,
     calculate_kpi,
-    format_number,
-    format_currency,
-    format_parentheses,
-    format_percent,
-    format_percentage_points,
+    calculate_mape_lite,
+    calculate_opex_ratio,
+    calculate_percentage_point_variance,
+    calculate_pp_variance,
+    calculate_revenue_growth_pct,
+    calculate_variance,
+    calculate_variance_pct_ratio,
     check_sum_of_rounded_discrepancy,
+    format_currency,
+    format_favourability,
+    format_number,
+    format_parentheses,
+    format_percentage_points,
+    get_account_direction,
+    quantize_money,
 )
 
 
@@ -186,23 +169,98 @@ class TestPeriodAggregations:
         """Sample periods from F6, F7, and F8."""
         return [
             # FY25
-            PeriodFact(fiscal_year=2025, period_number=7, net_amount=Decimal("950000.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2025, period_number=8, net_amount=Decimal("960000.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2025, period_number=9, net_amount=Decimal("970000.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2025, period_number=10, net_amount=Decimal("900000.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2025, period_number=11, net_amount=Decimal("920000.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2025, period_number=12, net_amount=Decimal("1010000.00"), account_code="4000"),
+            PeriodFact(
+                fiscal_year=2025,
+                period_number=7,
+                net_amount=Decimal("950000.00"),
+                account_code="4000",
+            ),
+            PeriodFact(
+                fiscal_year=2025,
+                period_number=8,
+                net_amount=Decimal("960000.00"),
+                account_code="4000",
+            ),
+            PeriodFact(
+                fiscal_year=2025,
+                period_number=9,
+                net_amount=Decimal("970000.00"),
+                account_code="4000",
+            ),
+            PeriodFact(
+                fiscal_year=2025,
+                period_number=10,
+                net_amount=Decimal("900000.00"),
+                account_code="4000",
+            ),
+            PeriodFact(
+                fiscal_year=2025,
+                period_number=11,
+                net_amount=Decimal("920000.00"),
+                account_code="4000",
+            ),
+            PeriodFact(
+                fiscal_year=2025,
+                period_number=12,
+                net_amount=Decimal("1010000.00"),
+                account_code="4000",
+            ),
             # FY26
-            PeriodFact(fiscal_year=2026, period_number=1, net_amount=Decimal("880000.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2026, period_number=2, net_amount=Decimal("890000.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2026, period_number=3, net_amount=Decimal("940000.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2026, period_number=4, net_amount=Decimal("960000.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2026, period_number=5, net_amount=Decimal("975000.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2026, period_number=6, net_amount=Decimal("985000.00"), account_code="4000"),
+            PeriodFact(
+                fiscal_year=2026,
+                period_number=1,
+                net_amount=Decimal("880000.00"),
+                account_code="4000",
+            ),
+            PeriodFact(
+                fiscal_year=2026,
+                period_number=2,
+                net_amount=Decimal("890000.00"),
+                account_code="4000",
+            ),
+            PeriodFact(
+                fiscal_year=2026,
+                period_number=3,
+                net_amount=Decimal("940000.00"),
+                account_code="4000",
+            ),
+            PeriodFact(
+                fiscal_year=2026,
+                period_number=4,
+                net_amount=Decimal("960000.00"),
+                account_code="4000",
+            ),
+            PeriodFact(
+                fiscal_year=2026,
+                period_number=5,
+                net_amount=Decimal("975000.00"),
+                account_code="4000",
+            ),
+            PeriodFact(
+                fiscal_year=2026,
+                period_number=6,
+                net_amount=Decimal("985000.00"),
+                account_code="4000",
+            ),
             # F6 / F7 FY26-P07, P08, P09
-            PeriodFact(fiscal_year=2026, period_number=7, net_amount=Decimal("1080000.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2026, period_number=8, net_amount=Decimal("1020500.55"), account_code="4000"),
-            PeriodFact(fiscal_year=2026, period_number=9, net_amount=Decimal("995300.45"), account_code="4000"),
+            PeriodFact(
+                fiscal_year=2026,
+                period_number=7,
+                net_amount=Decimal("1080000.00"),
+                account_code="4000",
+            ),
+            PeriodFact(
+                fiscal_year=2026,
+                period_number=8,
+                net_amount=Decimal("1020500.55"),
+                account_code="4000",
+            ),
+            PeriodFact(
+                fiscal_year=2026,
+                period_number=9,
+                net_amount=Decimal("995300.45"),
+                account_code="4000",
+            ),
         ]
 
     def test_aggregate_mtd(self, sample_facts):
@@ -316,7 +374,9 @@ class TestRatioAndKPILibrary:
     def test_extended_kpis_007_to_012(self):
         """Verify KPI-007 through KPI-012 execution."""
         # KPI-007: Operating margin %
-        kpi7 = calculate_kpi(KPI.KPI_007, operating_income=Decimal("200000"), revenue=Decimal("1000000"))
+        kpi7 = calculate_kpi(
+            KPI.KPI_007, operating_income=Decimal("200000"), revenue=Decimal("1000000")
+        )
         assert isinstance(kpi7, RatioResult)
         assert kpi7.value == Decimal("0.200000")
         assert kpi7.display == "20.0%"
@@ -396,15 +456,21 @@ class TestFormattingAndDisplayHelpers:
         val = Decimal("3095801.00")
 
         # Whole units: ₹ 30,95,801.00
-        whole = format_currency(val, currency_symbol="₹", scale=DisplayScale.WHOLE, grouping=GroupingFormat.INDIAN)
+        whole = format_currency(
+            val, currency_symbol="₹", scale=DisplayScale.WHOLE, grouping=GroupingFormat.INDIAN
+        )
         assert whole == "₹ 30,95,801.00"
 
         # Thousands: ₹ in thousands 3,095.80
-        thousands = format_currency(val, currency_symbol="₹", scale=DisplayScale.THOUSANDS, grouping=GroupingFormat.INDIAN)
+        thousands = format_currency(
+            val, currency_symbol="₹", scale=DisplayScale.THOUSANDS, grouping=GroupingFormat.INDIAN
+        )
         assert thousands == "₹ in thousands 3,095.80"
 
         # Lakhs: ₹ in lakhs 30.96
-        lakhs = format_currency(val, currency_symbol="₹", scale=DisplayScale.LAKHS, grouping=GroupingFormat.INDIAN)
+        lakhs = format_currency(
+            val, currency_symbol="₹", scale=DisplayScale.LAKHS, grouping=GroupingFormat.INDIAN
+        )
         assert lakhs == "₹ in lakhs 30.96"
 
     def test_sum_of_rounded_footnote_trigger(self):

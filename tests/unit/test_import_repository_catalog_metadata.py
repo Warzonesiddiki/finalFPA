@@ -44,9 +44,7 @@ def test_import_metadata_survives_commit_and_reaches_rule_context(tmp_path):
         "loaded_total": "18399650.00",
         "tolerance": "0.00",
         "accepted": True,
-        "acceptance_reason": (
-            "Controller accepted the documented 350.00 tie-out variance"
-        ),
+        "acceptance_reason": ("Controller accepted the documented 350.00 tie-out variance"),
         "accepted_by": "controller.test",
     }
     batch = ImportBatchResult(
@@ -88,9 +86,7 @@ def test_import_metadata_survives_commit_and_reaches_rule_context(tmp_path):
     assert stored_tx.vendor_code == "V-00931"
     assert stored_tx.invoice_no == "INV-88213"
 
-    stored_batch = next(
-        row for row in context.import_batches if row["batch_id"] == batch_id
-    )
+    stored_batch = next(row for row in context.import_batches if row["batch_id"] == batch_id)
     assert stored_batch["status"] == "committed"
     assert Decimal(str(stored_batch["balance_tolerance"])) == Decimal("500.00")
     assert len(context.control_totals) == 1

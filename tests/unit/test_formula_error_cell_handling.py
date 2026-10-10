@@ -7,9 +7,11 @@ and merged/title/banner rows handling using synthetic .xlsx fixtures created via
 from __future__ import annotations
 
 from pathlib import Path
+
 import pytest
+
 openpyxl = pytest.importorskip("openpyxl")
-from app.engine.imports import load_hardened_excel_sheet, verify_cached_formulas
+from app.engine.imports import load_hardened_excel_sheet
 
 
 def test_formula_and_error_cell_handling(tmp_path: Path):
@@ -28,7 +30,16 @@ def test_formula_and_error_cell_handling(tmp_path: Path):
     ws.append([])
 
     # Header row
-    headers = ["Company", "Voucher", "Line", "PostingDate", "AccountCode", "Debit", "Credit", "Period"]
+    headers = [
+        "Company",
+        "Voucher",
+        "Line",
+        "PostingDate",
+        "AccountCode",
+        "Debit",
+        "Credit",
+        "Period",
+    ]
     ws.append(headers)
 
     # Data rows with normal values and error cell representation

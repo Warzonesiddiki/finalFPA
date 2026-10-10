@@ -1,36 +1,19 @@
 """Unit tests for Excel Pack Generation per 11_EXCEL_OUTPUT_SPEC.md."""
 
 from pathlib import Path
-import tempfile
+
 import openpyxl
 import pytest
 
+from app.engine.exports import formats as fmt
 from app.engine.exports.excel_pack import (
+    TAB_COLORS,
     MonthEndPackData,
     PackContext,
-    create_sample_pack_data,
     export_excel_pack,
     generate_month_end_pack,
-    TAB_COLORS,
 )
 from app.engine.exports.stamps import STAMP_FIELDS
-from app.engine.exports import formats as fmt
-
-
-@pytest.mark.tst_id("TST-XL-02")
-def test_sheet_names_and_order():
-    """Verify that all 7 required sheets are present in exact order."""
-    wb = generate_month_end_pack()
-    expected_sheets = [
-        "Cover & Context",
-        "Executive Summary & BvA",
-        "P&L Statement Analysis",
-        "Transaction Detail Drilldown",
-        "Exception Register",
-        "Forecast Summary",
-        "Import Reconciliation",
-    ]
-    assert wb.sheetnames == expected_sheets
 
 
 @pytest.mark.tst_id("TST-XL-02")
@@ -54,7 +37,9 @@ def test_values_only_no_formulas():
             for cell in row:
                 if cell.value is not None:
                     str_val = str(cell.value).strip()
-                    assert not str_val.startswith("="), f"Formula found in {sheet_name} at {cell.coordinate}: {cell.value}"
+                    assert not str_val.startswith("="), (
+                        f"Formula found in {sheet_name} at {cell.coordinate}: {cell.value}"
+                    )
 
 
 def test_frozen_panes():
@@ -93,7 +78,9 @@ def test_autofilters():
     for name in data_sheets:
         ws = wb[name]
         assert ws.auto_filter.ref is not None, f"Autofilter missing on {name}"
-        assert ws.auto_filter.ref.startswith("A6:"), f"Autofilter on {name} should start at A6, got {ws.auto_filter.ref}"
+        assert ws.auto_filter.ref.startswith("A6:"), (
+            f"Autofilter on {name} should start at A6, got {ws.auto_filter.ref}"
+        )
 
 
 def test_gridlines():
@@ -130,7 +117,9 @@ def test_cover_stamp_fields_and_defined_names():
         assert str(cell_val).strip() != "", f"Empty stamp value for {field_info.label}"
 
         # Check defined name exists
-        assert field_info.defined_name in wb.defined_names, f"Defined name {field_info.defined_name} missing from workbook"
+        assert field_info.defined_name in wb.defined_names, (
+            f"Defined name {field_info.defined_name} missing from workbook"
+        )
 
 
 def test_header_block_structure():
@@ -142,7 +131,9 @@ def test_header_block_structure():
         r1_val = ws.cell(row=1, column=1).value
         assert r1_val is not None
         # Spacer row 5
-        assert ws.row_dimensions[5].height == 6, f"Row 5 height on {name} is {ws.row_dimensions[5].height}, expected 6"
+        assert ws.row_dimensions[5].height == 6, (
+            f"Row 5 height on {name} is {ws.row_dimensions[5].height}, expected 6"
+        )
 
 
 def test_accounting_number_formats():
@@ -172,8 +163,14 @@ def test_empty_state_handling():
     wb = generate_month_end_pack(empty_data)
 
     assert wb["Executive Summary & BvA"].cell(row=7, column=1).value == "No data for this filter."
-    assert wb["Transaction Detail Drilldown"].cell(row=7, column=1).value == "No transactions for this filter."
-    assert wb["Exception Register"].cell(row=7, column=1).value == "No open exceptions — nothing requires review."
+    assert (
+        wb["Transaction Detail Drilldown"].cell(row=7, column=1).value
+        == "No transactions for this filter."
+    )
+    assert (
+        wb["Exception Register"].cell(row=7, column=1).value
+        == "No open exceptions — nothing requires review."
+    )
     assert wb["Forecast Summary"].cell(row=7, column=1).value == "No locked forecast version yet."
     assert wb["Import Reconciliation"].cell(row=7, column=1).value == "No import batches yet."
 

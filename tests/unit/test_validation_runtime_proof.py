@@ -4,9 +4,9 @@ For each check, proves behavior (fires on violation, passes on clean input)
 using synthetic test cases per docs/04_SOURCE_MAPPING_AND_IMPORT_SPEC.md §10.
 """
 
-import pytest
 from pathlib import Path
-from app.engine.imports import parse_and_validate_csv, prescan_file
+
+from app.engine.imports import parse_and_validate_csv
 
 
 def test_validation_family_file_and_headers_imp_001_to_011(tmp_path: Path):
@@ -30,7 +30,7 @@ def test_validation_family_file_and_headers_imp_001_to_011(tmp_path: Path):
     clean_csv.write_text(
         "Company,Voucher,Line,PostingDate,AccountCode,Debit,Credit,Period\n"
         "COMP,V001,1,2026-04-01,1001,100.00,0.00,FY26-P01\n",
-        encoding="utf-8"
+        encoding="utf-8",
     )
     batch_clean = parse_and_validate_csv(clean_csv)
     assert batch_clean.rejected_count == 0
@@ -59,7 +59,7 @@ def test_validation_family_row_parsing_imp_012_to_022(tmp_path: Path):
     bad_date_csv.write_text(
         "Company,Voucher,Line,PostingDate,AccountCode,Debit,Credit,Period\n"
         "COMP,V002,1,NOT-A-DATE,1001,100.00,0.00,FY26-P01\n",
-        encoding="utf-8"
+        encoding="utf-8",
     )
     batch_date = parse_and_validate_csv(bad_date_csv)
     assert batch_date.quarantined_count > 0
@@ -70,7 +70,7 @@ def test_validation_family_row_parsing_imp_012_to_022(tmp_path: Path):
     zero_csv.write_text(
         "Company,Voucher,Line,PostingDate,AccountCode,Debit,Credit,Period\n"
         "COMP,V003,1,2026-04-01,1001,0.00,0.00,FY26-P01\n",
-        encoding="utf-8"
+        encoding="utf-8",
     )
     batch_zero = parse_and_validate_csv(zero_csv)
     assert any(c.check_code == "IMP-021" for c in batch_zero.checks)
@@ -90,10 +90,13 @@ def test_validation_family_balance_reconciliation_imp_023_to_026(tmp_path: Path)
     clean_csv.write_text(
         "Company,Voucher,Line,PostingDate,AccountCode,Debit,Credit,Period\n"
         "COMP,V004,1,2026-04-01,1001,100.00,100.00,FY26-P01\n",
-        encoding="utf-8"
+        encoding="utf-8",
     )
     batch = parse_and_validate_csv(clean_csv)
-    assert batch.total_source_rows == batch.loaded_count + batch.quarantined_count + batch.rejected_count
+    assert (
+        batch.total_source_rows
+        == batch.loaded_count + batch.quarantined_count + batch.rejected_count
+    )
     assert any(c.check_code == "IMP-024" and c.status == "pass" for c in batch.checks)
 
 
@@ -110,7 +113,7 @@ def test_validation_family_duplicates_checksums_imp_027_to_030(tmp_path: Path):
     clean_csv.write_text(
         "Company,Voucher,Line,PostingDate,AccountCode,Debit,Credit,Period\n"
         "COMP,V005,1,2026-04-01,1001,100.00,100.00,FY26-P01\n",
-        encoding="utf-8"
+        encoding="utf-8",
     )
     batch = parse_and_validate_csv(clean_csv)
     assert batch.file_checksum is not None
@@ -128,7 +131,7 @@ def test_validation_family_budget_coverage_imp_031_to_032(tmp_path: Path):
     clean_csv.write_text(
         "Company,Voucher,Line,PostingDate,AccountCode,Debit,Credit,Period\n"
         "COMP,B001,1,2026-04-01,7001,0.00,1000.00,FY26-P01\n",
-        encoding="utf-8"
+        encoding="utf-8",
     )
     batch = parse_and_validate_csv(clean_csv)
     assert batch.total_source_rows == 1

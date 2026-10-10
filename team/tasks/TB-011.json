@@ -3,13 +3,13 @@
   "title": "Make P1/P9 plantings reachable per the `OQ-025` ruling (load path + EXC-001/009 behaviour)",
   "source": "docs/33",
   "priority": "P0",
-  "status": "review",
+  "status": "done",
   "owner": "freebuff2",
   "claim_id": "freebuff2-20261005T1510Z-4ca5",
   "deps": [],
   "lane": "corpus",
   "created_utc": "2026-10-05T10:12:06Z",
-  "updated_utc": "2026-10-05T15:27:13Z",
+  "updated_utc": "2026-10-09T14:05:16Z",
   "history": [
     {
       "utc": "2026-10-05T10:12:06Z",
@@ -40,6 +40,11 @@
       "utc": "2026-10-05T15:27:13Z",
       "agent": "freebuff2",
       "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-09T14:05:16Z",
+      "agent": "opencode",
+      "event": "verified via HO-038"
     }
   ],
   "handoff": "HO-038"

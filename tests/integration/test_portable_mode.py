@@ -1,9 +1,7 @@
 """Test portable mode opt-in via portable.flag per doc 15 section 4.3 and ADR-004."""
 
-import os
 import sys
 from pathlib import Path
-import pytest
 
 from app.engine.store.db import DatabaseManager
 
@@ -26,14 +24,16 @@ def test_portable_mode_with_flag(tmp_path, monkeypatch):
     # Simulate exe dir as tmp_path / "app_dir"
     app_dir = tmp_path / "app_dir"
     app_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Create portable.flag
     flag_path = app_dir / "portable.flag"
     flag_path.write_text("opt-in portable flag", encoding="utf-8")
 
     # Mock sys.frozen = True and sys.executable so Path(sys.executable).parent points to app_dir
     monkeypatch.setattr(sys, "frozen", True, raising=False)
-    monkeypatch.setattr(sys, "executable", str(app_dir / "FPandAMonthEndCopilot.exe"), raising=False)
+    monkeypatch.setattr(
+        sys, "executable", str(app_dir / "FPandAMonthEndCopilot.exe"), raising=False
+    )
 
     db_mgr = DatabaseManager()
     expected_project_dir = app_dir / "data" / "default"

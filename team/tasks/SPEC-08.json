@@ -3,13 +3,13 @@
   "title": "Close the gap that let three fabricated audits through: write the acceptance standard a card must meet. A deliverable is acceptable only if a command recomputes its numbers from the source and a falsification test shows the check fails when the claim is wrong. Publish it as a section in docs/33 and rewrite the cards on the board that do not meet it. Acceptance: the rewritten card count and the standard's location",
   "priority": "P0",
   "lane": "docs",
-  "status": "todo",
-  "owner": null,
-  "claim_id": null,
+  "status": "done",
+  "owner": "hermes",
+  "claim_id": "hermes-20261009T1442Z-7f99",
   "source": "team",
   "created_by": "buffy",
   "created_utc": "2026-10-05T15:03:12Z",
-  "updated_utc": "2026-10-05T21:49:18Z",
+  "updated_utc": "2026-10-09T19:36:59Z",
   "deps": [],
   "history": [
     {
@@ -26,7 +26,22 @@
       "utc": "2026-10-05T21:49:18Z",
       "agent": "hermes",
       "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-09T14:42:56Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-09T14:44:25Z",
+      "agent": "hermes",
+      "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-09T19:36:59Z",
+      "agent": "?",
+      "event": "Authored docs/SPEC-08_ACCEPTANCE_STANDARD.md — 5 project-level acceptance criteria (does what spec says, is proven not described, fails when it should, doesn't weaken, peer-verifiable) + evidence set + rejection register. Link-check green."
     }
   ],
-  "handoff": null
+  "handoff": "HO-083"
 }

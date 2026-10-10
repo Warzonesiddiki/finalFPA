@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
-from app.engine.calc.math import quantize_money, ZERO
+from app.engine.calc.math import ZERO, quantize_money
 from app.engine.store.db import DatabaseManager
 
 
@@ -39,7 +39,7 @@ class ApprovalThresholdRepository:
     def __init__(self, db_manager: DatabaseManager):
         self.db = db_manager
 
-    def list_approval_thresholds(self) -> List[Dict[str, Any]]:
+    def list_approval_thresholds(self) -> list[dict[str, Any]]:
         """Return every active and inactive version with resolved business codes."""
         conn = self.db.get_duckdb_connection()
         try:
@@ -86,11 +86,11 @@ class ApprovalThresholdRepository:
         effective_from: str | date,
         change_note: str,
         is_active: bool = True,
-        company_code: Optional[str] = None,
-        account_code: Optional[str] = None,
-        cost_center_code: Optional[str] = None,
+        company_code: str | None = None,
+        account_code: str | None = None,
+        cost_center_code: str | None = None,
         actor: str = "session_user",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Append one immutable, unambiguous threshold version."""
         clean_id = str(threshold_id or "").strip()
         clean_scope = str(scope or "").strip().lower()
@@ -99,17 +99,21 @@ class ApprovalThresholdRepository:
                 "thresholdId must be 1–80 characters and must not contain '|'"
             )
         if clean_scope not in self._SCOPE_FIELDS:
-            raise ApprovalThresholdValidationError(
-                "scope must be company, account, or cost_center"
-            )
+            raise ApprovalThresholdValidationError("scope must be company, account, or cost_center")
         try:
             amount = quantize_money(Decimal(str(amount_threshold)))
         except (InvalidOperation, TypeError, ValueError) as exc:
-            raise ApprovalThresholdValidationError("amountThreshold must be a valid amount") from exc
+            raise ApprovalThresholdValidationError(
+                "amountThreshold must be a valid amount"
+            ) from exc
         if not amount.is_finite() or amount <= ZERO:
-            raise ApprovalThresholdValidationError("amountThreshold must be a finite value greater than zero")
+            raise ApprovalThresholdValidationError(
+                "amountThreshold must be a finite value greater than zero"
+            )
         if amount > Decimal("9999999999999999.99"):
-            raise ApprovalThresholdValidationError("amountThreshold exceeds DECIMAL(18,2) storage range")
+            raise ApprovalThresholdValidationError(
+                "amountThreshold exceeds DECIMAL(18,2) storage range"
+            )
         try:
             effective_date = (
                 effective_from
@@ -124,15 +128,21 @@ class ApprovalThresholdRepository:
             "account_code": str(account_code or "").strip(),
             "cost_center_code": str(cost_center_code or "").strip(),
         }
-        target_code_field, target_id_field, target_table, target_column = self._SCOPE_FIELDS[clean_scope]
-        unexpected = [field for field, value in supplied_codes.items() if value and field != target_code_field]
+        target_code_field, target_id_field, target_table, target_column = self._SCOPE_FIELDS[
+            clean_scope
+        ]
+        unexpected = [
+            field for field, value in supplied_codes.items() if value and field != target_code_field
+        ]
         if unexpected:
             raise ApprovalThresholdValidationError(
                 f"scope {clean_scope!r} accepts only {target_code_field}"
             )
         target_code = supplied_codes[target_code_field]
         if not target_code:
-            raise ApprovalThresholdValidationError(f"{target_code_field} is required for {clean_scope!r} scope")
+            raise ApprovalThresholdValidationError(
+                f"{target_code_field} is required for {clean_scope!r} scope"
+            )
 
         clean_note = str(change_note or "").strip()
         if not clean_note or len(clean_note) > 500:
@@ -153,7 +163,7 @@ class ApprovalThresholdRepository:
             dimension_id = int(dimension[0])
             canonical_code = str(dimension[1])
 
-            scope_ids: Tuple[Optional[int], Optional[int], Optional[int]] = (
+            scope_ids: tuple[int | None, int | None, int | None] = (
                 dimension_id if clean_scope == "company" else None,
                 dimension_id if clean_scope == "account" else None,
                 dimension_id if clean_scope == "cost_center" else None,

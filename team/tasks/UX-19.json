@@ -3,19 +3,40 @@
   "title": "Two truths is the failure mode of this product: the board pack and the exceptions register must never disagree about the same finding, the same owner or the same status. Write down the single source of truth for each field, then state the screen where a disagreement is resolved. Acceptance: a field-by-field table naming the authority for each, and the reconciliation rule for the ones that have none",
   "priority": "P0",
   "lane": "product",
-  "status": "todo",
-  "owner": null,
-  "claim_id": null,
+  "status": "review",
+  "owner": "buffy",
+  "claim_id": "buffy-20261010T0447Z-af31",
   "source": "team",
   "created_by": "buffy",
   "created_utc": "2026-10-05T15:22:06Z",
-  "updated_utc": "2026-10-05T15:22:06Z",
+  "updated_utc": "2026-10-10T05:00:48Z",
   "deps": [],
   "history": [
     {
       "utc": "2026-10-05T15:22:06Z",
       "agent": "buffy",
       "event": "created"
+    },
+    {
+      "utc": "2026-10-10T02:47:31Z",
+      "agent": "buffy",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-10T04:47:46Z",
+      "agent": "buffy",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-10T04:47:46Z",
+      "agent": "buffy",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-10T05:00:48Z",
+      "agent": "buffy",
+      "event": "release (review)"
     }
-  ]
+  ],
+  "handoff": "HO-091"
 }

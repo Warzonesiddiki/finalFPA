@@ -100,9 +100,7 @@ def test_enqueue_with_ai_disabled_drops_ai_proposals():
 
 def test_list_endpoint_filters():
     _enqueue(run_id=9003)
-    response = client.get(
-        "/api/v1/mapping-suggestions?importRunId=9003&origin=ai", headers=AUTH
-    )
+    response = client.get("/api/v1/mapping-suggestions?importRunId=9003&origin=ai", headers=AUTH)
     assert response.status_code == 200
     data = response.json()["data"]
     assert [i["source_column"] for i in data["items"]] == ["AI Guess"]

@@ -17,7 +17,7 @@ import re
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 import httpx
 import jsonschema
@@ -77,7 +77,7 @@ class AIDraftResult:
     outcome: str = "ok"  # ok, schema_error, timeout, network_error, refused, cap_exceeded
     latency_ms: float = 0.0
     vendor_mapping: dict[str, str] = field(default_factory=dict)
-    warning: Optional[str] = None
+    warning: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -99,9 +99,7 @@ class RedactionEngine:
 
     EMAIL_PATTERN = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
     URL_PATTERN = re.compile(r"https?://\S+|www\.\S+", re.IGNORECASE)
-    PHONE_PATTERN = re.compile(
-        r"(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}"
-    )
+    PHONE_PATTERN = re.compile(r"(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}")
     LONG_DIGIT_PATTERN = re.compile(r"\b\d{9,}\b")
 
     HTML_TAG_PATTERN = re.compile(r"<[^>]*>")
@@ -110,10 +108,10 @@ class RedactionEngine:
     RTL_OVERRIDE_PATTERN = re.compile(r"[\u202A-\u202E\u2066-\u2069]")
     CONTROL_CHAR_PATTERN = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]")
 
-    def __init__(self, config: Optional[AIConfig] = None):
+    def __init__(self, config: AIConfig | None = None):
         self.config = config or AIConfig()
 
-    def sanitize_text(self, text: str, max_length: Optional[int] = None) -> str:
+    def sanitize_text(self, text: str, max_length: int | None = None) -> str:
         """Sanitizes imported text per §7: strips HTML, control characters,
 
         zero-width chars, RTL overrides, and delimiter escapes.
@@ -150,8 +148,8 @@ class RedactionEngine:
     def mask_vendors(
         self,
         text: str,
-        vendor_map: Optional[dict[str, str]] = None,
-        known_vendors: Optional[list[str]] = None,
+        vendor_map: dict[str, str] | None = None,
+        known_vendors: list[str] | None = None,
     ) -> tuple[str, dict[str, str]]:
         """Masks vendor names and codes with stable pseudonyms (Vendor A, Vendor B...)
 
@@ -197,7 +195,7 @@ class RedactionEngine:
     def mask_confidential_amounts(
         self,
         text: str,
-        confidential_amounts: Optional[list[str]] = None,
+        confidential_amounts: list[str] | None = None,
         replacement: str = "[CONFIDENTIAL_AMOUNT]",
     ) -> str:
         """Redacts specified confidential figures or custom sensitive amounts."""
@@ -215,9 +213,7 @@ class RedactionEngine:
             result = pattern.sub(replacement, result)
         return result
 
-    def apply_custom_patterns(
-        self, text: str, patterns: Optional[list[str]] = None
-    ) -> str:
+    def apply_custom_patterns(self, text: str, patterns: list[str] | None = None) -> str:
         """Applies user-configured regex patterns to mask sensitive tokens."""
         if not patterns:
             return text
@@ -227,9 +223,7 @@ class RedactionEngine:
                 regex = re.compile(pat, re.IGNORECASE)
                 result = regex.sub("[REDACTED]", result)
             except re.error as e:
-                logger.warning(
-                    f"Invalid custom mask pattern skipped: {pat}, error: {e}"
-                )
+                logger.warning(f"Invalid custom mask pattern skipped: {pat}, error: {e}")
         return result
 
     def reverse_mask_vendors(self, text: str, vendor_map: dict[str, str]) -> str:
@@ -243,7 +237,7 @@ class RedactionEngine:
         self,
         val: Any,
         vendor_map: dict[str, str],
-        known_vendors: Optional[list[str]] = None,
+        known_vendors: list[str] | None = None,
     ) -> Any:
         """Recursively redacts dictionary, list, or string structures."""
         if isinstance(val, str):
@@ -251,21 +245,15 @@ class RedactionEngine:
             if self.config.mask_descriptions and len(res) > 20:
                 res = self.mask_description(res)
             if self.config.mask_vendors:
-                res, _ = self.mask_vendors(
-                    res, vendor_map=vendor_map, known_vendors=known_vendors
-                )
+                res, _ = self.mask_vendors(res, vendor_map=vendor_map, known_vendors=known_vendors)
             if self.config.mask_confidential_amounts:
-                res = self.mask_confidential_amounts(
-                    res, self.config.confidential_amounts
-                )
+                res = self.mask_confidential_amounts(res, self.config.confidential_amounts)
             if self.config.custom_mask_patterns:
                 res = self.apply_custom_patterns(res, self.config.custom_mask_patterns)
             return res
         elif isinstance(val, list):
             return [
-                self.redact_payload_value(
-                    item, vendor_map, known_vendors=known_vendors
-                )
+                self.redact_payload_value(item, vendor_map, known_vendors=known_vendors)
                 for item in val
             ]
         elif isinstance(val, dict):
@@ -281,9 +269,7 @@ class RedactionEngine:
                             known_vendors=known_vendors,
                         )
                     new_dict[k] = clean_v
-                elif k in ("vendor", "vendor_name", "vendor_code") and isinstance(
-                    v, str
-                ):
+                elif k in ("vendor", "vendor_name", "vendor_code") and isinstance(v, str):
                     if self.config.mask_vendors:
                         masked_v, _ = self.mask_vendors(
                             v, vendor_map=vendor_map, known_vendors=known_vendors
@@ -291,10 +277,7 @@ class RedactionEngine:
                         new_dict[k] = masked_v
                     else:
                         new_dict[k] = self.sanitize_text(v)
-                elif (
-                    k in ("amount", "value")
-                    and self.config.mask_confidential_amounts
-                ):
+                elif k in ("amount", "value") and self.config.mask_confidential_amounts:
                     v_str = str(v)
                     new_dict[k] = self.mask_confidential_amounts(
                         v_str, self.config.confidential_amounts
@@ -474,9 +457,7 @@ class OutputValidator:
                     break
 
             if sentence_mismatch:
-                cleaned_sentences.append(
-                    "[figure removed — not from your data]"
-                )
+                cleaned_sentences.append("[figure removed — not from your data]")
             else:
                 cleaned_sentences.append(sentence)
 
@@ -520,9 +501,7 @@ class PromptTemplate:
         # Check for unresolved tokens
         unresolved = re.findall(r"\{\{([A-Za-z0-9_]+)\}\}", rendered)
         if unresolved:
-            raise ValueError(
-                f"Unresolved placeholders in template {self.prompt_id}: {unresolved}"
-            )
+            raise ValueError(f"Unresolved placeholders in template {self.prompt_id}: {unresolved}")
 
         return rendered
 
@@ -532,7 +511,7 @@ class PromptTemplateLoader:
 
     _BUILTIN_PROMPTS: dict[str, PromptTemplate] = {}
 
-    def __init__(self, prompts_dir: Optional[Path] = None):
+    def __init__(self, prompts_dir: Path | None = None):
         self.prompts_dir = prompts_dir or (Path(__file__).parent / "prompts")
         self._cache: dict[str, PromptTemplate] = {}
 
@@ -541,9 +520,7 @@ class PromptTemplateLoader:
         key = f"{template.prompt_id}.{template.version}"
         cls._BUILTIN_PROMPTS[key] = template
 
-    def get_template(
-        self, prompt_id: str, version: str = "v1"
-    ) -> PromptTemplate:
+    def get_template(self, prompt_id: str, version: str = "v1") -> PromptTemplate:
         key = f"{prompt_id}.{version}"
         if key in self._cache:
             return self._cache[key]
@@ -569,9 +546,7 @@ class PromptTemplateLoader:
         # Parse YAML-like header
         header_match = re.search(r"^---\s*\n(.*?)\n---\s*\n", content, re.DOTALL)
         if not header_match:
-            raise ValueError(
-                f"Template {path.name} is missing YAML header block."
-            )
+            raise ValueError(f"Template {path.name} is missing YAML header block.")
 
         header_text = header_match.group(1)
         meta: dict[str, Any] = {}
@@ -591,9 +566,7 @@ class PromptTemplateLoader:
             parsed_sections[sec_title] = sec_content
 
         system_prompt = parsed_sections.get("System Prompt", "").strip()
-        user_template = parsed_sections.get(
-            "User Payload Template", ""
-        ).strip()
+        user_template = parsed_sections.get("User Payload Template", "").strip()
 
         input_schema_raw = parsed_sections.get("Input Schema", "")
         input_schema_json = self._extract_json_block(input_schema_raw)
@@ -634,9 +607,7 @@ class RuleBasedNarrativeGenerator:
     """
 
     @classmethod
-    def generate_prompt_01(
-        cls, variables: dict[str, Any]
-    ) -> dict[str, Any]:
+    def generate_prompt_01(cls, variables: dict[str, Any]) -> dict[str, Any]:
         """PROMPT-01: Variance commentary draft fallback."""
         data_raw = variables.get("data_block_json", "{}")
         data = json.loads(data_raw) if isinstance(data_raw, str) else data_raw
@@ -647,9 +618,7 @@ class RuleBasedNarrativeGenerator:
         period_label = variables.get("period_label", "current period")
 
         var_pct = measures.get("Variance %", {}).get("value", "0.0")
-        favourability = measures.get("Favourability", {}).get(
-            "value", "Unfavourable"
-        )
+        favourability = measures.get("Favourability", {}).get("value", "Unfavourable")
         var_amt = measures.get("Variance", {}).get("value", "0.00")
         currency = measures.get("Variance", {}).get("currency", "")
 
@@ -670,11 +639,7 @@ class RuleBasedNarrativeGenerator:
             )
             contrib_texts.append(f"{c_label} for {c_amt}")
 
-        contrib_str = (
-            ", driven by " + " and ".join(contrib_texts)
-            if contrib_texts
-            else ""
-        )
+        contrib_str = ", driven by " + " and ".join(contrib_texts) if contrib_texts else ""
         currency_prefix = f"{currency} " if currency else ""
 
         commentary = (
@@ -689,45 +654,30 @@ class RuleBasedNarrativeGenerator:
             "commentary": commentary,
             "drivers": driver_items[:3],
             "confidence": "low",
-            "caveats": [
-                "Rule-based summary assembled directly from engine numbers without AI."
-            ],
+            "caveats": ["Rule-based summary assembled directly from engine numbers without AI."],
         }
 
     @classmethod
-    def generate_prompt_02(
-        cls, variables: dict[str, Any]
-    ) -> dict[str, Any]:
+    def generate_prompt_02(cls, variables: dict[str, Any]) -> dict[str, Any]:
         """PROMPT-02: Mapping suggestion fallback using rule-based fingerprinting."""
         unmapped_raw = variables.get("unmapped_columns_json", "[]")
-        unmapped_cols = (
-            json.loads(unmapped_raw)
-            if isinstance(unmapped_raw, str)
-            else unmapped_raw
-        )
+        unmapped_cols = json.loads(unmapped_raw) if isinstance(unmapped_raw, str) else unmapped_raw
 
         accepted_raw = variables.get("accepted_mappings_json", "[]")
         accepted_mappings = (
-            json.loads(accepted_raw)
-            if isinstance(accepted_raw, str)
-            else accepted_raw
+            json.loads(accepted_raw) if isinstance(accepted_raw, str) else accepted_raw
         )
 
         target_field_list_str = variables.get("target_field_list", "")
         allowed_targets = {
             f.strip()
-            for f in target_field_list_str.replace("\n", ",")
-            .replace(";", ",")
-            .split(",")
+            for f in target_field_list_str.replace("\n", ",").replace(";", ",").split(",")
             if f.strip()
         }
         allowed_targets.add("ignore")
 
         # Map by normalized string similarity/tokens
-        accepted_dict = {
-            m.get("source_column", "").strip().lower(): m
-            for m in accepted_mappings
-        }
+        accepted_dict = {m.get("source_column", "").strip().lower(): m for m in accepted_mappings}
 
         COMMON_FIELD_PATTERNS = {
             "period": "period_code",
@@ -793,14 +743,10 @@ class RuleBasedNarrativeGenerator:
         return {"suggestions": suggestions}
 
     @classmethod
-    def generate_prompt_03(
-        cls, variables: dict[str, Any]
-    ) -> dict[str, Any]:
+    def generate_prompt_03(cls, variables: dict[str, Any]) -> dict[str, Any]:
         """PROMPT-03: Exception summary fallback."""
         exc_raw = variables.get("exceptions_json", "[]")
-        exceptions = (
-            json.loads(exc_raw) if isinstance(exc_raw, str) else exc_raw
-        )
+        exceptions = json.loads(exc_raw) if isinstance(exc_raw, str) else exc_raw
 
         period_label = variables.get("period_label", "current period")
         open_count = len(exceptions)
@@ -841,9 +787,7 @@ class RuleBasedNarrativeGenerator:
                 -x.get("age_days", 0),
             ),
         )
-        review_order = [
-            x.get("id") for x in sorted_ex if x.get("id")
-        ][:10]
+        review_order = [x.get("id") for x in sorted_ex if x.get("id")][:10]
 
         summary = (
             f"{open_count} potential exception(s) open for {period_label}. "
@@ -852,7 +796,9 @@ class RuleBasedNarrativeGenerator:
 
         return {
             "summary": summary[:800],
-            "groups": groups if groups else [
+            "groups": groups
+            if groups
+            else [
                 {
                     "theme": "Open items",
                     "count": open_count,
@@ -866,14 +812,10 @@ class RuleBasedNarrativeGenerator:
         }
 
     @classmethod
-    def generate_prompt_04(
-        cls, variables: dict[str, Any]
-    ) -> dict[str, Any]:
+    def generate_prompt_04(cls, variables: dict[str, Any]) -> dict[str, Any]:
         """PROMPT-04: Follow-up message fallback."""
         exc_raw = variables.get("owner_exceptions_json", "[]")
-        exceptions = (
-            json.loads(exc_raw) if isinstance(exc_raw, str) else exc_raw
-        )
+        exceptions = json.loads(exc_raw) if isinstance(exc_raw, str) else exc_raw
 
         owner_name = variables.get("owner_name", "Owner")
         period_label = variables.get("period_label", "current period")
@@ -944,9 +886,9 @@ class AIClient:
 
     def __init__(
         self,
-        config: Optional[AIConfig] = None,
-        prompts_dir: Optional[Path] = None,
-        http_client: Optional[httpx.Client] = None,
+        config: AIConfig | None = None,
+        prompts_dir: Path | None = None,
+        http_client: httpx.Client | None = None,
     ):
         self.config = config or AIConfig()
         self.prompt_loader = PromptTemplateLoader(prompts_dir=prompts_dir)
@@ -979,7 +921,7 @@ class AIClient:
 
         client = self._get_http_client()
         url, headers, payload = self._build_request_params(
-            system_prompt="You are a health-check responder. Output JSON only: {\"status\": \"ok\"}",
+            system_prompt='You are a health-check responder. Output JSON only: {"status": "ok"}',
             user_prompt="Respond with status ok in JSON.",
         )
         try:
@@ -1040,7 +982,7 @@ class AIClient:
         prompt_id: str,
         variables: dict[str, Any],
         version: str = "v1",
-        known_vendors: Optional[list[str]] = None,
+        known_vendors: list[str] | None = None,
     ) -> AIDraftResult:
         """Main entry point: loads template, redacts payload, calls provider,
 
@@ -1068,9 +1010,7 @@ class AIClient:
         vendor_map: dict[str, str] = {}
         redacted_vars: dict[str, Any] = {}
         for k, v in variables.items():
-            if isinstance(v, str) and (
-                v.startswith("{") or v.startswith("[")
-            ):
+            if isinstance(v, str) and (v.startswith("{") or v.startswith("[")):
                 try:
                     parsed = json.loads(v)
                     redacted = self.redaction_engine.redact_payload_value(
@@ -1093,9 +1033,7 @@ class AIClient:
         try:
             rendered_user_payload = template.render_payload(redacted_vars)
         except Exception as e:
-            logger.error(
-                f"Payload rendering error for {prompt_id}: {e}. Reverting to fallback."
-            )
+            logger.error(f"Payload rendering error for {prompt_id}: {e}. Reverting to fallback.")
             fb_content = self.fallback_generator.generate(prompt_id, variables)
             return AIDraftResult(
                 content=fb_content,
@@ -1128,9 +1066,7 @@ class AIClient:
                     resp_json = resp.json()
                     choices = resp_json.get("choices", [])
                     if choices:
-                        raw_response_text = choices[0].get("message", {}).get(
-                            "content", ""
-                        )
+                        raw_response_text = choices[0].get("message", {}).get("content", "")
                         success = True
                         break
                     else:
@@ -1195,13 +1131,9 @@ class AIClient:
             )
 
         try:
-            jsonschema.validate(
-                instance=parsed_output, schema=template.output_schema
-            )
+            jsonschema.validate(instance=parsed_output, schema=template.output_schema)
         except jsonschema.ValidationError as ve:
-            logger.info(
-                f"Output schema validation failed: {ve}. Falling back to rule-based."
-            )
+            logger.info(f"Output schema validation failed: {ve}. Falling back to rule-based.")
             fb_content = self.fallback_generator.generate(prompt_id, variables)
             return AIDraftResult(
                 content=fb_content,
@@ -1219,18 +1151,12 @@ class AIClient:
             )
 
         # Banned phrases check
-        banned_phrases_found = OutputValidator.check_banned_phrases(
-            raw_response_text
-        )
+        banned_phrases_found = OutputValidator.check_banned_phrases(raw_response_text)
         banned_flag = len(banned_phrases_found) > 0
 
         # Evidence ID check
-        valid_evidence_ids = OutputValidator.extract_evidence_ids_from_obj(
-            redacted_vars
-        )
-        evidence_flag = self._sanitize_evidence_ids(
-            parsed_output, valid_evidence_ids
-        )
+        valid_evidence_ids = OutputValidator.extract_evidence_ids_from_obj(redacted_vars)
+        evidence_flag = self._sanitize_evidence_ids(parsed_output, valid_evidence_ids)
 
         # Number mismatch check (§8.2 DEC-026)
         valid_numbers = OutputValidator.extract_numbers_from_obj(redacted_vars)
@@ -1274,12 +1200,10 @@ class AIClient:
         )
 
     @staticmethod
-    def _parse_json_strictly(text: str) -> tuple[Optional[dict], Optional[str]]:
+    def _parse_json_strictly(text: str) -> tuple[dict | None, str | None]:
         cleaned = text.strip()
         if cleaned.startswith("```"):
-            cleaned = re.sub(
-                r"^```(?:json)?\s*|\s*```$", "", cleaned, flags=re.DOTALL
-            ).strip()
+            cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", cleaned, flags=re.DOTALL).strip()
         try:
             data = json.loads(cleaned)
             return data, None
@@ -1287,9 +1211,7 @@ class AIClient:
             return None, str(e)
 
     @staticmethod
-    def _sanitize_evidence_ids(
-        output_data: dict[str, Any], valid_ids: set[str]
-    ) -> bool:
+    def _sanitize_evidence_ids(output_data: dict[str, Any], valid_ids: set[str]) -> bool:
         """Strips unknown evidence IDs and returns True if any was stripped."""
         flag = False
 
@@ -1303,33 +1225,23 @@ class AIClient:
                     flag = True
             return filtered
 
-        if "drivers" in output_data and isinstance(
-            output_data["drivers"], list
-        ):
+        if "drivers" in output_data and isinstance(output_data["drivers"], list):
             for d in output_data["drivers"]:
                 if "evidence_ids" in d and isinstance(d["evidence_ids"], list):
                     d["evidence_ids"] = clean_ids(d["evidence_ids"])
 
-        if "suggestions" in output_data and isinstance(
-            output_data["suggestions"], list
-        ):
+        if "suggestions" in output_data and isinstance(output_data["suggestions"], list):
             for s in output_data["suggestions"]:
                 if "evidence_ids" in s and isinstance(s["evidence_ids"], list):
                     s["evidence_ids"] = clean_ids(s["evidence_ids"])
 
         if "groups" in output_data and isinstance(output_data["groups"], list):
             for g in output_data["groups"]:
-                if "exception_ids" in g and isinstance(
-                    g["exception_ids"], list
-                ):
+                if "exception_ids" in g and isinstance(g["exception_ids"], list):
                     g["exception_ids"] = clean_ids(g["exception_ids"])
 
-        if "items_referenced" in output_data and isinstance(
-            output_data["items_referenced"], list
-        ):
-            output_data["items_referenced"] = clean_ids(
-                output_data["items_referenced"]
-            )
+        if "items_referenced" in output_data and isinstance(output_data["items_referenced"], list):
+            output_data["items_referenced"] = clean_ids(output_data["items_referenced"])
 
         return flag
 
@@ -1340,18 +1252,14 @@ class AIClient:
         """Applies sentence-level number validation to commentary and messages."""
         mismatch_flag = False
 
-        if "commentary" in output_data and isinstance(
-            output_data["commentary"], str
-        ):
+        if "commentary" in output_data and isinstance(output_data["commentary"], str):
             new_comm, flag = OutputValidator.validate_and_sanitize_numbers(
                 output_data["commentary"], valid_numbers
             )
             output_data["commentary"] = new_comm
             mismatch_flag = mismatch_flag or flag
 
-        if "body_markdown" in output_data and isinstance(
-            output_data["body_markdown"], str
-        ):
+        if "body_markdown" in output_data and isinstance(output_data["body_markdown"], str):
             new_body, flag = OutputValidator.validate_and_sanitize_numbers(
                 output_data["body_markdown"], valid_numbers
             )
@@ -1373,9 +1281,7 @@ class AIClient:
         target_fields = ["commentary", "body_markdown", "summary"]
         for f in target_fields:
             if f in output_data and isinstance(output_data[f], str):
-                text = output_data[f].replace(
-                    "[figure removed — not from your data]", ""
-                ).strip()
+                text = output_data[f].replace("[figure removed — not from your data]", "").strip()
                 if not text:
                     return True
         return False

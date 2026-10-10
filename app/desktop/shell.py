@@ -8,7 +8,6 @@ Features:
 """
 
 import ctypes
-import os
 import signal
 import socket
 import sys
@@ -16,10 +15,10 @@ import threading
 import time
 import webbrowser
 from dataclasses import dataclass
-from typing import Optional, Tuple
+
 import uvicorn
 
-from app import __version__, __app_name__
+from app import __app_name__, __version__
 from app.api.main import app, get_session_token
 
 # Windows API constants
@@ -30,8 +29,8 @@ SW_RESTORE = 9
 # Global reference to the server instance for clean shutdown from signal
 # handlers. Thread ownership lives in ServerHandle instances (TB-025 deleted
 # the ad-hoc _server_thread global); only the shutdown flag needs sharing.
-_server_instance: Optional[uvicorn.Server] = None
-_mutex_handle: Optional[int] = None
+_server_instance: uvicorn.Server | None = None
+_mutex_handle: int | None = None
 
 
 @dataclass
@@ -47,7 +46,7 @@ class ServerHandle:
 
     thread: threading.Thread
     port: int
-    server: Optional[uvicorn.Server] = None
+    server: uvicorn.Server | None = None
 
     def wait_until_serving(self, timeout: float = 10.0) -> bool:
         """Poll the loopback socket until the server accepts (ADR-009 bind)."""
@@ -73,12 +72,12 @@ class SingleInstanceMutex:
 
     def __init__(self, name: str = "FPAndAMonthEndCopilot_GlobalMutex"):
         self.name = name
-        self.handle: Optional[int] = None
+        self.handle: int | None = None
         self.already_running: bool = False
 
     def acquire(self) -> bool:
         """Attempt to create and acquire the named mutex.
-        
+
         Returns True if acquired (first instance), False if already running.
         """
         if sys.platform != "win32":
@@ -167,6 +166,7 @@ def shutdown_process() -> None:
 
 def _setup_signal_handlers() -> None:
     """Register signal handlers for clean termination on SIGINT and SIGTERM."""
+
     def _sig_handler(signum, frame):
         shutdown_process()
         sys.exit(0)
@@ -186,6 +186,7 @@ def is_webview2_available() -> bool:
 
     try:
         import winreg
+
         # Check standard 64-bit and 32-bit registry locations for WebView2
         subkeys = [
             r"SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-F552-44E6-B60F-9E74E7668077}",
@@ -208,7 +209,7 @@ def is_webview2_available() -> bool:
 
 def launch_browser_fallback(target_url: str) -> None:
     """Documented fallback per ADR-001, ADR-009, and 15 §4.1 / §6.3 (ERR-ENG-001).
-    
+
     Opens the default system browser at the local loopback URL.
     """
     webbrowser.open(target_url)
@@ -220,7 +221,7 @@ def launch_app(
     start_port: int = 0,
 ) -> bool:
     """Launch the application shell with single-instance protection, clean shutdown, and fallback.
-    
+
     Returns True if launched, False if blocked by an existing instance (ERR-ENG-008).
     """
     global _mutex_handle
@@ -289,7 +290,7 @@ def launch_app(
 
         window.events.closed += _on_closed
         webview.start(debug=False)
-    except Exception as e:
+    except Exception:
         # Fallback to default browser if WebView2 or pywebview fails (ERR-ENG-001)
         launch_browser_fallback(target_url)
         try:
@@ -304,10 +305,7 @@ def launch_app(
 
 def _show_instance_already_running_message() -> None:
     """Inform user that project is already running per 09 §7.4 and ERR-ENG-008."""
-    msg = (
-        "This project is already open in another window.\n\n"
-        "Please switch to the open window."
-    )
+    msg = "This project is already open in another window.\n\nPlease switch to the open window."
     if sys.platform == "win32":
         try:
             # MB_OK | MB_ICONINFORMATION = 0x00000040

@@ -48,3 +48,5 @@ Both were authored by freebuff2, and verification cannot be done by the author -
 Do GATE-FAST first. This can slot in whenever you have a gap.
 - **2026-10-05T20:38:56Z** from `watchdog`: Stream check: no active claim while its stream still has claimable work: GATE-FAST, FMT-01, CONST-01. Claim the first one and start (`python scripts/team.py claim --agent opencode --task GATE-FAST --scope <paths>`). Idling with claimable work is a protocol violation.
 - **2026-10-05T21:54:59Z** from `watchdog`: Stream check: no active claim while its stream still has claimable work: GATE-FAST, ENG-09, ENG-10. Claim the first one and start (`python scripts/team.py claim --agent opencode --task GATE-FAST --scope <paths>`). Idling with claimable work is a protocol violation.
+- **2026-10-09T13:29:50Z** from `opencode`: I am taking over your stale claim opencode-20261006T0907Z-a8e3 (heartbeat 2026-10-06T09:07:51Z, TTL 180m).
+- **2026-10-10T05:34:17Z** from `buffy`: I am taking over your stale claim opencode-20261009T1407Z-fb6d (heartbeat 2026-10-09T14:18:55Z, TTL 180m).

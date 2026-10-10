@@ -52,13 +52,23 @@ SOURCE_TYPES = ("actuals_d365", "actuals_payroll", "actuals_procurement")
 def _transactions(n: int = 3) -> list[ParsedTransaction]:
     return [
         ParsedTransaction(
-            source_row_ref=f"row_{i}", voucher_no=f"V{i}",
-            posting_date="2026-09-15", document_date=None, company_code="IN01",
-            account_code="5200", cost_center_code="CC-100", project_code=None,
-            vendor_code="V-1", invoice_no="I-1", description="def010 fixture",
-            debit=Decimal("100.00"), credit=Decimal("0.00"),
-            net_amount=Decimal("100.00"), currency_code="INR",
-            period_code="FY26-P09", raw_values={},
+            source_row_ref=f"row_{i}",
+            voucher_no=f"V{i}",
+            posting_date="2026-09-15",
+            document_date=None,
+            company_code="IN01",
+            account_code="5200",
+            cost_center_code="CC-100",
+            project_code=None,
+            vendor_code="V-1",
+            invoice_no="I-1",
+            description="def010 fixture",
+            debit=Decimal("100.00"),
+            credit=Decimal("0.00"),
+            net_amount=Decimal("100.00"),
+            currency_code="INR",
+            period_code="FY26-P09",
+            raw_values={},
         )
         for i in range(n)
     ]
@@ -68,19 +78,29 @@ def _commit(tmp_path: Path, source_type: str, is_balanced: bool, n: int = 3):
     """Import one synthetic batch and return (batch_row, facts_written)."""
     db = DatabaseManager()
     batch = ImportBatchResult(
-        batch_id=1, file_name=f"{source_type}.csv", file_checksum="c" * 64,
-        source_type=source_type, total_source_rows=n, loaded_count=n,
-        quarantined_count=0, rejected_count=0, is_balanced=is_balanced,
-        total_debit=Decimal("100.00"), total_credit=Decimal("40.00"),
+        batch_id=1,
+        file_name=f"{source_type}.csv",
+        file_checksum="c" * 64,
+        source_type=source_type,
+        total_source_rows=n,
+        loaded_count=n,
+        quarantined_count=0,
+        rejected_count=0,
+        is_balanced=is_balanced,
+        total_debit=Decimal("100.00"),
+        total_credit=Decimal("40.00"),
         net_imbalance=Decimal("60.00"),
     )
     batch_id = ImportRepository(db).commit_batch(batch, _transactions(n))
 
     sq = sqlite3.connect(str(db.sqlite_path))
     sq.row_factory = sqlite3.Row
-    row = dict(sq.execute(
-        "SELECT status, is_balanced, source_type FROM FactImportBatch "
-        "WHERE batch_id = ?", (batch_id,)).fetchone())
+    row = dict(
+        sq.execute(
+            "SELECT status, is_balanced, source_type FROM FactImportBatch WHERE batch_id = ?",
+            (batch_id,),
+        ).fetchone()
+    )
     sq.close()
 
     conn = db.get_duckdb_connection()
@@ -100,6 +120,7 @@ def _commit(tmp_path: Path, source_type: str, is_balanced: bool, n: int = 3):
 # ---------------------------------------------------------------------------
 # The invariant
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.parametrize("source_type", SOURCE_TYPES)
 @pytest.mark.parametrize("is_balanced", [True, False])
@@ -127,14 +148,13 @@ def test_rejected_batch_commits_no_rows(tmp_path, source_type):
     for is_balanced in (True, False):
         row, facts = _commit(tmp_path, source_type, is_balanced)
         if row["status"] == "rejected":
-            assert facts == 0, (
-                f"{source_type} recorded 'rejected' but wrote {facts} rows"
-            )
+            assert facts == 0, f"{source_type} recorded 'rejected' but wrote {facts} rows"
 
 
 # ---------------------------------------------------------------------------
 # The GL gate is load-bearing and unchanged
 # ---------------------------------------------------------------------------
+
 
 def test_unbalanced_general_ledger_commits_nothing_and_is_rejected(tmp_path):
     """Doc 04 §12 / IMP-023: an unbalanced GL must still commit zero rows.
@@ -161,9 +181,11 @@ def test_balanced_general_ledger_commits_and_records_committed(tmp_path):
 # The pair must stay self-describing
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.parametrize("source_type", ["actuals_payroll", "actuals_procurement"])
 def test_unbalanced_subledger_is_rejected_and_commits_nothing(
-    tmp_path, source_type,
+    tmp_path,
+    source_type,
 ):
     """TST-IMP-023-R1 (sub-ledger half): doc 04 section 12 / IMP-023 rejects
     unbalanced files unconditionally - no sub-ledger exemption.
@@ -180,14 +202,13 @@ def test_unbalanced_subledger_is_rejected_and_commits_nothing(
         "is_balanced was rewritten to agree with status; it must keep recording "
         "the measured balance fact"
     )
-    assert facts == 0, (
-        f"unbalanced {source_type} must commit zero rows per IMP-023"
-    )
+    assert facts == 0, f"unbalanced {source_type} must commit zero rows per IMP-023"
 
 
 @pytest.mark.parametrize("source_type", SOURCE_TYPES)
 def test_tst_imp_023_r1_unbalanced_file_commits_zero_rows_and_audit_agrees(
-    tmp_path, source_type,
+    tmp_path,
+    source_type,
 ):
     """TST-IMP-023-R1: an unbalanced file of EVERY source type commits 0 rows
     and the audit row agrees (`status='rejected'`, `is_balanced=0`).
@@ -200,9 +221,7 @@ def test_tst_imp_023_r1_unbalanced_file_commits_zero_rows_and_audit_agrees(
     """
     row, facts = _commit(tmp_path, source_type, is_balanced=False)
 
-    assert facts == 0, (
-        f"TST-IMP-023-R1: unbalanced {source_type} committed {facts} rows"
-    )
+    assert facts == 0, f"TST-IMP-023-R1: unbalanced {source_type} committed {facts} rows"
     assert row["status"] == "rejected", (
         f"TST-IMP-023-R1: unbalanced {source_type} recorded "
         f"status={row['status']!r}, expected 'rejected'"

@@ -98,6 +98,11 @@ excludes = [
     # sqlite3.__main__, sqlite3.dbapi2 and sqlite3.dump, and not
     # sqlite3.test. Safe to drop: never imported by application code.
     'sqlite3.test',
+
+    # torch - pulled in transitively if PyTorch happens to be installed in the build
+    # environment (e.g. by machine learning packages), but never imported or needed
+    # by the FP&A Month-End Copilot. Excluded to keep payload size well under NFR-006.
+    'torch',
 ]
 
 a = Analysis(

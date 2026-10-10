@@ -7,10 +7,9 @@ Acceptance requirement:
    must read their subjects from live app.engine packages at runtime and must FAIL
    if reverted to hard-coded dictionary/table literals.
 """
+
 import ast
-import inspect
 from pathlib import Path
-import pytest
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 
@@ -22,7 +21,9 @@ def test_deleted_generators_remain_deleted():
         ROOT / "scripts" / "generate_screen_conformance_matrix.py",
     ]
     for script_path in deleted_scripts:
-        assert not script_path.exists(), f"{script_path.name} was resurrected but must remain deleted (ENG-05)."
+        assert not script_path.exists(), (
+            f"{script_path.name} was resurrected but must remain deleted (ENG-05)."
+        )
 
 
 def test_generate_error_catalogue_reads_runtime_subject():
@@ -41,7 +42,9 @@ def test_generate_error_catalogue_reads_runtime_subject():
                 for alias in node.names:
                     if alias.name == "get_error_catalog":
                         imports_engine = True
-    assert imports_engine, "generate_error_catalogue.py must dynamically import get_error_catalog from app.engine.errors"
+    assert imports_engine, (
+        "generate_error_catalogue.py must dynamically import get_error_catalog from app.engine.errors"
+    )
 
     # 2. Must not contain the old hardcoded ERROR_CATALOGUE_DATA table variable
     for node in ast.walk(tree):
@@ -72,7 +75,9 @@ def test_generate_error_catalogue_reads_runtime_subject():
         errors.ERROR_CATALOG = [sentinel_error] + original_catalog
 
         output_md = generate_error_catalogue_markdown()
-        assert "ERR-TEST-999" in output_md, "Generator failed to dynamically pick up runtime error from app.engine.errors!"
+        assert "ERR-TEST-999" in output_md, (
+            "Generator failed to dynamically pick up runtime error from app.engine.errors!"
+        )
         assert "Dynamic sentinel test error" in output_md
     finally:
         errors.ERROR_CATALOG = original_catalog

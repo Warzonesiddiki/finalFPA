@@ -12,6 +12,7 @@ So the tests are mostly about the refusals and the spread, not the arithmetic:
   `team.py verify` requires a different agent;
 * **spread**, not FIFO — a queue that always hands work to the same two seats is the bug.
 """
+
 from __future__ import annotations
 
 import io
@@ -32,8 +33,15 @@ import team  # noqa: E402
 NOW = datetime(2026, 10, 5, 20, 0, tzinfo=UTC)
 
 
-def handoff(directory: Path, num: int, author: str, card: str, minutes_ago: int,
-            verified_by: str | None = None, rejected_by: str | None = None) -> Path:
+def handoff(
+    directory: Path,
+    num: int,
+    author: str,
+    card: str,
+    minutes_ago: int,
+    verified_by: str | None = None,
+    rejected_by: str | None = None,
+) -> Path:
     directory.mkdir(parents=True, exist_ok=True)
     at = (NOW - timedelta(minutes=minutes_ago)).strftime("%Y-%m-%dT%H:%M:%SZ")
     body = [
@@ -50,7 +58,11 @@ def handoff(directory: Path, num: int, author: str, card: str, minutes_ago: int,
     if rejected_by:
         body += [f"### Rejected by `{rejected_by}` — 2026-10-05T19:00:00Z", "Required: redo.", ""]
     if verified_by:
-        body += [f"### Verified by `{verified_by}` — 2026-10-05T19:30:00Z", "Re-ran the commands.", ""]
+        body += [
+            f"### Verified by `{verified_by}` — 2026-10-05T19:30:00Z",
+            "Re-ran the commands.",
+            "",
+        ]
     p = directory / f"HO-{num:03d}-{card.lower()}.md"
     p.write_text("\n".join(body), encoding="utf-8")
     return p
@@ -240,8 +252,9 @@ def test_cli_for_lists_only_what_that_seat_should_verify(board: Path):
     code, out, _ = _run(board, ["--for", "bob"])
     assert code == 0
     assert "verify these next" in out
-    assigned = {r["id"] for r in vq.propose(vq.waiting_handoffs(), team.config())
-                if r["verifier"] == "bob"}
+    assigned = {
+        r["id"] for r in vq.propose(vq.waiting_handoffs(), team.config()) if r["verifier"] == "bob"
+    }
     for hid in assigned:
         assert hid in out, f"{hid} is assigned to bob but absent from his list"
     for line in out.splitlines()[1:]:

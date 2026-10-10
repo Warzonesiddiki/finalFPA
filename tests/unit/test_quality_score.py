@@ -1,21 +1,15 @@
 """Unit tests for Data Quality Score engine per 05_CALCULATION_SPEC.md §8 & §12 (CALC-050)."""
 
 from decimal import Decimal
+
 import pytest
 
 from app.engine.calc.quality_score import (
-    BASE_SCORE,
-    DEFAULT_SEVERITY_WEIGHTS,
-    DEDUCTION_FACTORS,
     CHECK_CATALOGUE,
-    CheckCatalogueEntry,
-    CheckDeductionDetail,
-    SeverityBreakdown,
-    QualityScoreResult,
     calculate_quality_score,
     create_f12_fixture_checks,
 )
-from app.engine.imports.models import ValidationCheckReport, ImportBatchResult
+from app.engine.imports.models import ImportBatchResult, ValidationCheckReport
 
 
 def test_catalogue_spec_alignment():
@@ -106,11 +100,13 @@ def test_guarantee_single_high_failure_cannot_score_above_96():
         checks = []
         for c_code, c_entry in CHECK_CATALOGUE.items():
             status = "fail" if c_code == code else "pass"
-            checks.append({
-                "check_code": c_code,
-                "status": status,
-                "severity": c_entry.severity,
-            })
+            checks.append(
+                {
+                    "check_code": c_code,
+                    "status": status,
+                    "severity": c_entry.severity,
+                }
+            )
 
         result = calculate_quality_score(checks)
         # Raw score = 100 * (1 - 10/238) = 95.7983... -> rounds half-up to 96
@@ -150,13 +146,15 @@ def test_skipped_checks_excluded_from_numerator_and_denominator():
     """Skipped checks must be excluded from both numerator and denominator (§8.1)."""
     # Run 30 checks, skip 2 High checks (IMP-001 and IMP-004)
     checks = []
-    for code, entry in CHECK_CATALOGUE.items():
+    for code, _entry in CHECK_CATALOGUE.items():
         if code in ("IMP-001", "IMP-004"):
-            checks.append({
-                "check_code": code,
-                "status": "skipped",
-                "skip_reason": "Not applicable for source type",
-            })
+            checks.append(
+                {
+                    "check_code": code,
+                    "status": "skipped",
+                    "skip_reason": "Not applicable for source type",
+                }
+            )
         else:
             checks.append({"check_code": code, "status": "pass"})
 

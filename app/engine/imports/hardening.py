@@ -2,11 +2,10 @@
 
 import csv
 import io
-import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any
 
 try:
     import openpyxl
@@ -26,11 +25,11 @@ TOTAL_LABEL_PATTERN = re.compile(
 class HardeningFinding:
     slug: str
     message: str
-    sheet_name: Optional[str] = None
-    row_index: Optional[int] = None
-    cell_ref: Optional[str] = None
-    raw_values: Optional[Dict[str, Any]] = None
-    details: Optional[Dict[str, Any]] = None
+    sheet_name: str | None = None
+    row_index: int | None = None
+    cell_ref: str | None = None
+    raw_values: dict[str, Any] | None = None
+    details: dict[str, Any] | None = None
 
 
 @dataclass
@@ -39,27 +38,27 @@ class CsvDetectionResult:
     delimiter: str
     has_bom: bool
     is_ambiguous_delimiter: bool = False
-    findings: List[HardeningFinding] = field(default_factory=list)
+    findings: list[HardeningFinding] = field(default_factory=list)
 
 
 @dataclass
 class ExcelHardenedData:
     sheet_name: str
-    headers: List[str]
-    rows: List[List[Any]]
+    headers: list[str]
+    rows: list[list[Any]]
     header_row_index: int
     trimmed_trailing_rows: int
     trimmed_trailing_cols: int
-    ignored_blank_rows: List[int] = field(default_factory=list)
-    ignored_total_rows: List[Tuple[int, List[Any]]] = field(default_factory=list)
-    quarantined_rows: List[HardeningFinding] = field(default_factory=list)
-    findings: List[HardeningFinding] = field(default_factory=list)
-    hidden_sheets: List[str] = field(default_factory=list)
-    row_indices: List[int] = field(default_factory=list)
+    ignored_blank_rows: list[int] = field(default_factory=list)
+    ignored_total_rows: list[tuple[int, list[Any]]] = field(default_factory=list)
+    quarantined_rows: list[HardeningFinding] = field(default_factory=list)
+    findings: list[HardeningFinding] = field(default_factory=list)
+    hidden_sheets: list[str] = field(default_factory=list)
+    row_indices: list[int] = field(default_factory=list)
 
 
 def detect_csv_encoding_and_delimiter(
-    file_path_or_bytes: Union[str, Path, bytes],
+    file_path_or_bytes: str | Path | bytes,
     sample_size: int = 65536,
 ) -> CsvDetectionResult:
     """Detect CSV encoding (C1..C4) and delimiter (C5..C6) per 04 §9.
@@ -78,7 +77,7 @@ def detect_csv_encoding_and_delimiter(
     else:
         raw_bytes = file_path_or_bytes[:sample_size]
 
-    findings: List[HardeningFinding] = []
+    findings: list[HardeningFinding] = []
     has_bom = False
     encoding = "utf-8"
 
@@ -146,10 +145,10 @@ def detect_csv_encoding_and_delimiter(
     candidates = [",", ";", "\t", "|"]
     best_delim = ","
     best_score = -1.0
-    scores: Dict[str, float] = {}
+    scores: dict[str, float] = {}
 
     for cand in candidates:
-        counts: List[int] = []
+        counts: list[int] = []
         for line in sample_lines:
             # Simple quote-aware split count using csv.reader
             try:
@@ -210,10 +209,10 @@ def detect_csv_encoding_and_delimiter(
 
 
 def read_hardened_csv(
-    file_path: Union[str, Path],
-    delimiter: Optional[str] = None,
-    encoding: Optional[str] = None,
-) -> Tuple[List[str], List[List[str]], List[HardeningFinding]]:
+    file_path: str | Path,
+    delimiter: str | None = None,
+    encoding: str | None = None,
+) -> tuple[list[str], list[list[str]], list[HardeningFinding]]:
     """Read CSV with BOM stripping (C1), line ending normalization (C9), trailing delimiter handling (C11),
     and whitespace trimming (C12).
     """
@@ -221,7 +220,7 @@ def read_hardened_csv(
     detection = detect_csv_encoding_and_delimiter(p)
     used_encoding = encoding or detection.encoding
     used_delimiter = delimiter or detection.delimiter
-    findings: List[HardeningFinding] = list(detection.findings)
+    findings: list[HardeningFinding] = list(detection.findings)
 
     with open(p, "rb") as f:
         raw = f.read()
@@ -255,7 +254,7 @@ def read_hardened_csv(
 
     # Check for trailing delimiter (C11)
     trailing_delim_count = 0
-    cleaned_rows: List[List[str]] = []
+    cleaned_rows: list[list[str]] = []
     for r in raw_rows:
         if len(r) > 1 and r[-1] == "":
             trailing_delim_count += 1
@@ -288,7 +287,10 @@ def read_hardened_csv(
                     slug="import.raggedRow",
                     message=f"Ragged row at line {r_idx}: expected {expected_col_count} columns, found {len(cleaned_row)}.",
                     row_index=r_idx,
-                    details={"expected_columns": expected_col_count, "found_columns": len(cleaned_row)},
+                    details={
+                        "expected_columns": expected_col_count,
+                        "found_columns": len(cleaned_row),
+                    },
                 )
             )
         data_rows.append(cleaned_row)
@@ -296,10 +298,10 @@ def read_hardened_csv(
     return headers, data_rows, findings
 
 
-def detect_hidden_sheets(workbook: Any) -> Tuple[List[str], List[str]]:
+def detect_hidden_sheets(workbook: Any) -> tuple[list[str], list[str]]:
     """X7: Detect hidden and visible sheet names in an openpyxl workbook."""
-    visible: List[str] = []
-    hidden: List[str] = []
+    visible: list[str] = []
+    hidden: list[str] = []
     for sheet in workbook.worksheets:
         state = getattr(sheet, "sheet_state", "visible")
         if state == "hidden" or state == "veryHidden":
@@ -339,15 +341,19 @@ def detect_merged_data_cells(
     data_start_row: int,
     data_end_row: int,
     sheet_name: str,
-) -> Tuple[Set[int], List[HardeningFinding]]:
+) -> tuple[set[int], list[HardeningFinding]]:
     """X2: Detect merged cells in the data zone. Affected rows are marked for quarantine."""
-    quarantined_rows: Set[int] = set()
-    findings: List[HardeningFinding] = []
+    quarantined_rows: set[int] = set()
+    findings: list[HardeningFinding] = []
 
     for rng in worksheet.merged_cells.ranges:
         if rng.max_row >= data_start_row and rng.min_row <= data_end_row:
-            col_letter_start = get_column_letter(rng.min_col) if get_column_letter else str(rng.min_col)
-            col_letter_end = get_column_letter(rng.max_col) if get_column_letter else str(rng.max_col)
+            col_letter_start = (
+                get_column_letter(rng.min_col) if get_column_letter else str(rng.min_col)
+            )
+            col_letter_end = (
+                get_column_letter(rng.max_col) if get_column_letter else str(rng.max_col)
+            )
             ref_str = f"{col_letter_start}{rng.min_row}:{col_letter_end}{rng.max_row}"
             for r in range(max(data_start_row, rng.min_row), min(data_end_row, rng.max_row) + 1):
                 quarantined_rows.add(r)
@@ -370,13 +376,13 @@ def verify_cached_formulas(
     data_end_row: int,
     max_col: int,
     sheet_name: str,
-) -> Tuple[Set[int], List[HardeningFinding]]:
+) -> tuple[set[int], list[HardeningFinding]]:
     """X11: Verify formula cells. Cached values only (data_only=True).
     A formula cell with no cached value (value is None or empty) causes the row to be quarantined
     with the cell reference.
     """
-    quarantined_rows: Set[int] = set()
-    findings: List[HardeningFinding] = []
+    quarantined_rows: set[int] = set()
+    findings: list[HardeningFinding] = []
 
     for r in range(data_start_row, data_end_row + 1):
         for c in range(1, max_col + 1):
@@ -404,8 +410,8 @@ def verify_cached_formulas(
 
 
 def trim_trailing_empty(
-    grid: List[List[Any]],
-) -> Tuple[List[List[Any]], int, int]:
+    grid: list[list[Any]],
+) -> tuple[list[list[Any]], int, int]:
     """X5: Blank trailing rows and columns trimming.
     Returns (trimmed_grid, trimmed_rows_count, trimmed_cols_count).
     """
@@ -448,31 +454,31 @@ def trim_trailing_empty(
 
 
 def concatenate_multi_row_headers(
-    header_rows: List[List[Any]],
+    header_rows: list[list[Any]],
     separator: str = " / ",
-) -> List[str]:
+) -> list[str]:
     """X3: Multi-row header concatenation.
     Concatenated with " / " (e.g. Amount / Debit).
     """
     if not header_rows:
         return []
     col_count = max(len(r) for r in header_rows)
-    combined: List[str] = []
+    combined: list[str] = []
 
     for c in range(col_count):
-        tokens: List[str] = []
+        tokens: list[str] = []
         for r in header_rows:
             val = str(r[c]).strip() if c < len(r) and r[c] is not None else ""
             if val and val not in tokens:
                 tokens.append(val)
             elif val and len(tokens) == 0:
                 tokens.append(val)
-        combined.append(separator.join(tokens) if tokens else f"Column_{c+1}")
+        combined.append(separator.join(tokens) if tokens else f"Column_{c + 1}")
 
     return combined
 
 
-def is_total_subtotal_row(row_values: List[Any]) -> bool:
+def is_total_subtotal_row(row_values: list[Any]) -> bool:
     """X4: Embedded Total / Subtotal row detection.
     Matches label in text columns (e.g. 'Total', 'Subtotal', 'Grand Total')
     plus presence of numeric/money values.
@@ -501,9 +507,9 @@ def is_total_subtotal_row(row_values: List[Any]) -> bool:
 
 
 def load_hardened_excel_sheet(
-    file_path: Union[str, Path],
-    sheet_name: Optional[str] = None,
-    header_rows: Optional[List[int]] = None,  # 1-based row indices
+    file_path: str | Path,
+    sheet_name: str | None = None,
+    header_rows: list[int] | None = None,  # 1-based row indices
 ) -> ExcelHardenedData:
     """Load an Excel workbook with comprehensive hardening checks:
     - X11: openpyxl data_only=True workbook loader with cached formula verification
@@ -518,16 +524,14 @@ def load_hardened_excel_sheet(
         raise ImportError("openpyxl is required for Excel hardening loader.")
 
     p = Path(file_path)
-    findings: List[HardeningFinding] = []
+    findings: list[HardeningFinding] = []
 
     # 1. Open with data_only=True and data_only=False
     try:
         wb_data = openpyxl.load_workbook(p, data_only=True)
         wb_formula = openpyxl.load_workbook(p, data_only=False)
     except Exception as e:
-        raise ValueError(
-            f"Failed to read Excel workbook: {e}. [import.unreadableFile]"
-        ) from e
+        raise ValueError(f"Failed to read Excel workbook: {e}. [import.unreadableFile]") from e
 
     # Zip bomb / high ratio check
     if "zip_bomb" in p.name.lower():
@@ -574,7 +578,11 @@ def load_hardened_excel_sheet(
         )
 
     # X23: Hidden rows detection in Excel
-    hidden_excel_rows = [r for r, dim in getattr(ws_data, "row_dimensions", {}).items() if getattr(dim, "hidden", False)]
+    hidden_excel_rows = [
+        r
+        for r, dim in getattr(ws_data, "row_dimensions", {}).items()
+        if getattr(dim, "hidden", False)
+    ]
     if hidden_excel_rows:
         findings.append(
             HardeningFinding(
@@ -599,14 +607,13 @@ def load_hardened_excel_sheet(
     # Extract all raw grid values
     max_r = ws_data.max_row or 0
     max_c = ws_data.max_column or 0
-    raw_grid: List[List[Any]] = []
+    raw_grid: list[list[Any]] = []
     for r in range(1, max_r + 1):
         row_vals = [ws_data.cell(row=r, column=c).value for c in range(1, max_c + 1)]
         raw_grid.append(row_vals)
 
     # 4. X5: Trim trailing blank rows and columns
     # We only trim below max_header_row to avoid cutting headers
-    header_grid = raw_grid[:max_header_row]
     data_grid = raw_grid[max_header_row:]
     trimmed_data_grid, trimmed_rows, trimmed_cols = trim_trailing_empty(data_grid)
 
@@ -647,14 +654,17 @@ def load_hardened_excel_sheet(
             )
         )
     else:
-        headers = [str(val).strip() if val is not None else f"Column_{idx+1}" for idx, val in enumerate(header_slices[0])]
+        headers = [
+            str(val).strip() if val is not None else f"Column_{idx + 1}"
+            for idx, val in enumerate(header_slices[0])
+        ]
 
     # 8. Process data rows: X6 (blank ignored), X4 (Total ignored), and quarantine collection
-    processed_rows: List[List[Any]] = []
-    processed_row_indices: List[int] = []
-    ignored_blank_rows: List[int] = []
-    ignored_total_rows: List[Tuple[int, List[Any]]] = []
-    quarantined_row_findings: List[HardeningFinding] = []
+    processed_rows: list[list[Any]] = []
+    processed_row_indices: list[int] = []
+    ignored_blank_rows: list[int] = []
+    ignored_total_rows: list[tuple[int, list[Any]]] = []
+    quarantined_row_findings: list[HardeningFinding] = []
 
     for offset, row in enumerate(trimmed_data_grid):
         excel_row_num = data_start_row + offset
@@ -699,7 +709,8 @@ def load_hardened_excel_sheet(
 
     # X13 / X14: Detect serial dates and text-formatted dates
     date_header_indices = [
-        idx for idx, h in enumerate(headers)
+        idx
+        for idx, h in enumerate(headers)
         if any(term in h.lower() for term in ["date", "postingdate", "transdate", "valuedate"])
     ]
     if date_header_indices:
@@ -734,7 +745,11 @@ def load_hardened_excel_sheet(
 
     # Check for missing required columns (e.g. Voucher)
     norm_headers = [re.sub(r"\s+", "", h.lower()) for h in headers]
-    if any(h in norm_headers for h in ["postingdate", "transdate", "mainaccount"]) and "voucher" not in norm_headers and "voucher_no" not in norm_headers:
+    if (
+        any(h in norm_headers for h in ["postingdate", "transdate", "mainaccount"])
+        and "voucher" not in norm_headers
+        and "voucher_no" not in norm_headers
+    ):
         findings.append(
             HardeningFinding(
                 slug="import.missingRequiredColumns",
@@ -781,7 +796,7 @@ def load_hardened_excel_sheet(
                         break
 
     # X21: Duplicate headers check
-    header_counts: Dict[str, int] = {}
+    header_counts: dict[str, int] = {}
     for h in headers:
         header_counts[h] = header_counts.get(h, 0) + 1
     dup_headers = [h for h, count in header_counts.items() if count > 1]

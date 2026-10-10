@@ -3,19 +3,24 @@
   "title": "A written answer to 'why should anyone believe this?': the audit trail from a number on a board pack back to the row of GL that produced it, in the order a client auditor would walk it",
   "priority": "P2",
   "lane": "docs",
-  "status": "todo",
+  "status": "done",
   "owner": null,
   "claim_id": null,
   "source": "team",
   "created_by": "buffy",
   "created_utc": "2026-10-05T15:03:12Z",
-  "updated_utc": "2026-10-05T15:03:12Z",
+  "updated_utc": "2026-10-09T19:36:57Z",
   "deps": [],
   "history": [
     {
       "utc": "2026-10-05T15:03:12Z",
       "agent": "buffy",
       "event": "created"
+    },
+    {
+      "utc": "2026-10-09T19:36:57Z",
+      "agent": "?",
+      "event": "Authored docs/DOC-06_AUDIT_TRAIL_WHY_BELIEVE.md — 5-link audit trail from number on pack back to source row, with proof at each link and honest limits. Link-check green."
     }
   ]
 }

@@ -4,9 +4,9 @@ Stages a transfer bundle into TEMP per the proposal (manifest + hashes + exclusi
 computes and verifies SHA-256 round-trip hashes, then cleans up staging.
 """
 
-import tempfile
-import shutil
 import hashlib
+import shutil
+import tempfile
 from pathlib import Path
 
 TRANSFER_ITEMS = [
@@ -42,13 +42,18 @@ def rehearse_transfer() -> None:
             else:
                 if "out/0.1.0" in rel_path:
                     # Create placeholder for checksum file if not pre-compiled
-                    dst.write_text("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  Placeholder.exe", encoding="utf-8")
+                    dst.write_text(
+                        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  Placeholder.exe",
+                        encoding="utf-8",
+                    )
                     results[key] = "STAGED (Placeholder Checksums)"
                 else:
                     results[key] = "MISSING"
 
         # Exclusion check: zero sample data files (*actuals.csv, *budget*.csv) in transfer_dir
-        forbidden_found = list(transfer_dir.rglob("*actuals.csv")) + list(transfer_dir.rglob("*budget*.csv"))
+        forbidden_found = list(transfer_dir.rglob("*actuals.csv")) + list(
+            transfer_dir.rglob("*budget*.csv")
+        )
 
         print("=== TRANSFER REHEARSAL REPORT ===")
         for k, status in results.items():

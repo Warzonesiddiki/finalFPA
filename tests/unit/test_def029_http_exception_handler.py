@@ -12,8 +12,6 @@ This regression test verifies that:
 """
 
 from fastapi.testclient import TestClient
-from starlette.exceptions import HTTPException as StarletteHTTPException
-import pytest
 
 from app.api.main import create_app
 

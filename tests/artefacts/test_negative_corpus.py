@@ -28,10 +28,10 @@ from __future__ import annotations
 
 import shutil
 from pathlib import Path
+
 import pytest
 
-from app.engine.imports import prescan_file, parse_and_validate_csv
-
+from app.engine.imports import parse_and_validate_csv, prescan_file
 
 MALFORMED_FILES = [
     "truncated_gl.csv",
@@ -70,10 +70,12 @@ def test_negative_corpus_file(filename: str, tmp_path: Path):
             batch = parse_and_validate_csv(dst)
             assert batch is not None
             has_issue = (
-                batch.rejected_count > 0 or
-                batch.quarantined_count > 0 or
-                any(c.status in ("fail", "quarantine", "reject", "warning") for c in batch.checks) or
-                bool(batch.error_message_id)
+                batch.rejected_count > 0
+                or batch.quarantined_count > 0
+                or any(
+                    c.status in ("fail", "quarantine", "reject", "warning") for c in batch.checks
+                )
+                or bool(batch.error_message_id)
             )
             assert has_issue, f"CSV file {filename} was accepted without issue!"
         else:

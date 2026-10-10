@@ -8,7 +8,7 @@ with deltas) is presented before commit.
 """
 
 from decimal import Decimal
-import pytest
+
 from app.engine.store.db import DatabaseManager
 from app.engine.store.import_repo import ImportRepository
 
@@ -19,15 +19,43 @@ def test_budget_replace_diff_and_atomic():
 
     # Setup initial budget version FY26-Approved
     initial_rows = [
-        {"company_code": "IN01", "period_code": "FY26-P01", "amount": 100000, "company_id": 1, "account_id": 5000, "period_id": 1},
-        {"company_code": "IN01", "period_code": "FY26-P02", "amount": 150000, "company_id": 1, "account_id": 5000, "period_id": 2},
+        {
+            "company_code": "IN01",
+            "period_code": "FY26-P01",
+            "amount": 100000,
+            "company_id": 1,
+            "account_id": 5000,
+            "period_id": 1,
+        },
+        {
+            "company_code": "IN01",
+            "period_code": "FY26-P02",
+            "amount": 150000,
+            "company_id": 1,
+            "account_id": 5000,
+            "period_id": 2,
+        },
     ]
     repo.commit_budget_replace("FY26-Approved", initial_rows, batch_id=888)
 
     # Incoming rows for replacement (P01 changed to 120,000, P03 added)
     incoming_rows = [
-        {"company_code": "IN01", "period_code": "FY26-P01", "amount": 120000, "company_id": 1, "account_id": 5000, "period_id": 1},
-        {"company_code": "IN01", "period_code": "FY26-P03", "amount": 200000, "company_id": 1, "account_id": 5000, "period_id": 3},
+        {
+            "company_code": "IN01",
+            "period_code": "FY26-P01",
+            "amount": 120000,
+            "company_id": 1,
+            "account_id": 5000,
+            "period_id": 1,
+        },
+        {
+            "company_code": "IN01",
+            "period_code": "FY26-P03",
+            "amount": 200000,
+            "company_id": 1,
+            "account_id": 5000,
+            "period_id": 3,
+        },
     ]
 
     # Test preview diff
@@ -44,9 +72,13 @@ def test_budget_replace_diff_and_atomic():
     # Verify no orphan lines from old P02 exist and P03 is present
     conn = db.get_duckdb_connection()
     try:
-        count = conn.execute("SELECT COUNT(*) FROM FactBudget WHERE budget_version = 'FY26-Approved'").fetchone()[0]
+        count = conn.execute(
+            "SELECT COUNT(*) FROM FactBudget WHERE budget_version = 'FY26-Approved'"
+        ).fetchone()[0]
         assert count == 2
-        p02_count = conn.execute("SELECT COUNT(*) FROM FactBudget WHERE budget_version = 'FY26-Approved' AND period_id = 2").fetchone()[0]
+        p02_count = conn.execute(
+            "SELECT COUNT(*) FROM FactBudget WHERE budget_version = 'FY26-Approved' AND period_id = 2"
+        ).fetchone()[0]
         assert p02_count == 0
     finally:
         conn.close()

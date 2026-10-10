@@ -9,10 +9,10 @@ from decimal import Decimal
 import pytest
 
 from app.engine.calc.math import (
+    KPI,
     DisplayScale,
     Favourability,
     GroupingFormat,
-    KPI,
     NegativeFormat,
     PeriodFact,
     RatioResult,
@@ -20,12 +20,13 @@ from app.engine.calc.math import (
     aggregate_mtd,
     aggregate_ttm,
     aggregate_ytd,
+    calculate_expense_growth_pct,
     calculate_favourability,
     calculate_forecast_accuracy_ratio,
-    calculate_forecast_variance_pct,
     calculate_kpi,
     calculate_line_variance_pct,
     calculate_mape_lite,
+    calculate_period_aggregations,
     calculate_pp_variance,
     calculate_revenue_growth_pct,
     calculate_variance_pct_ratio,
@@ -39,8 +40,6 @@ from app.engine.calc.math import (
     quantize_percent,
     quantize_ratio,
     safe_divide,
-    calculate_expense_growth_pct,
-    calculate_period_aggregations,
 )
 
 
@@ -114,9 +113,16 @@ class TestDirectionAndFavourability:
         assert get_account_direction("mystery-xyz-999") == "neutral"
 
     def test_string_direction_inputs(self):
-        assert calculate_favourability("120", "100", "higher_is_favourable") == Favourability.FAVOURABLE
-        assert calculate_favourability("90", "100", "lower_is_favourable") == Favourability.FAVOURABLE
-        assert calculate_favourability("100", "100", "higher_is_favourable") == Favourability.NEUTRAL
+        assert (
+            calculate_favourability("120", "100", "higher_is_favourable")
+            == Favourability.FAVOURABLE
+        )
+        assert (
+            calculate_favourability("90", "100", "lower_is_favourable") == Favourability.FAVOURABLE
+        )
+        assert (
+            calculate_favourability("100", "100", "higher_is_favourable") == Favourability.NEUTRAL
+        )
 
     def test_defensive_fallback_direction_returns_neutral(self):
         # Non-enum direction falls through to the defensive neutral return
@@ -143,9 +149,15 @@ class TestAggregationAccountFilter:
     @pytest.fixture
     def mixed_facts(self):
         return [
-            PeriodFact(fiscal_year=2026, period_number=9, net_amount=Decimal("100.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2026, period_number=9, net_amount=Decimal("999.00"), account_code="5000"),
-            PeriodFact(fiscal_year=2026, period_number=8, net_amount=Decimal("200.00"), account_code="4000"),
+            PeriodFact(
+                fiscal_year=2026, period_number=9, net_amount=Decimal("100.00"), account_code="4000"
+            ),
+            PeriodFact(
+                fiscal_year=2026, period_number=9, net_amount=Decimal("999.00"), account_code="5000"
+            ),
+            PeriodFact(
+                fiscal_year=2026, period_number=8, net_amount=Decimal("200.00"), account_code="4000"
+            ),
         ]
 
     def test_mtd_account_filter(self, mixed_facts):
@@ -170,12 +182,27 @@ class TestAggregationAccountFilter:
 class TestCalculatePeriodAggregations:
     def test_all_windows_at_once(self):
         facts = [
-            PeriodFact(fiscal_year=2025, period_number=1, net_amount=Decimal("100.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2025, period_number=2, net_amount=Decimal("100.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2025, period_number=3, net_amount=Decimal("1000.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2026, period_number=1, net_amount=Decimal("100.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2026, period_number=2, net_amount=Decimal("200.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2026, period_number=3, net_amount=Decimal("300.00"), account_code="4000"),
+            PeriodFact(
+                fiscal_year=2025, period_number=1, net_amount=Decimal("100.00"), account_code="4000"
+            ),
+            PeriodFact(
+                fiscal_year=2025, period_number=2, net_amount=Decimal("100.00"), account_code="4000"
+            ),
+            PeriodFact(
+                fiscal_year=2025,
+                period_number=3,
+                net_amount=Decimal("1000.00"),
+                account_code="4000",
+            ),
+            PeriodFact(
+                fiscal_year=2026, period_number=1, net_amount=Decimal("100.00"), account_code="4000"
+            ),
+            PeriodFact(
+                fiscal_year=2026, period_number=2, net_amount=Decimal("200.00"), account_code="4000"
+            ),
+            PeriodFact(
+                fiscal_year=2026, period_number=3, net_amount=Decimal("300.00"), account_code="4000"
+            ),
         ]
         agg = calculate_period_aggregations(facts, fiscal_year=2026, period_number=3)
         assert agg.mtd == Decimal("300.00")
@@ -189,10 +216,16 @@ class TestCalculatePeriodAggregations:
 
     def test_account_scoped_aggregations(self):
         facts = [
-            PeriodFact(fiscal_year=2026, period_number=3, net_amount=Decimal("300.00"), account_code="4000"),
-            PeriodFact(fiscal_year=2026, period_number=3, net_amount=Decimal("700.00"), account_code="5000"),
+            PeriodFact(
+                fiscal_year=2026, period_number=3, net_amount=Decimal("300.00"), account_code="4000"
+            ),
+            PeriodFact(
+                fiscal_year=2026, period_number=3, net_amount=Decimal("700.00"), account_code="5000"
+            ),
         ]
-        agg = calculate_period_aggregations(facts, fiscal_year=2026, period_number=3, account_code="4000")
+        agg = calculate_period_aggregations(
+            facts, fiscal_year=2026, period_number=3, account_code="4000"
+        )
         assert agg.mtd == Decimal("300.00")
         assert agg.ytd == Decimal("300.00")
 
@@ -265,7 +298,9 @@ class TestNumberFormattingEdges:
         assert format_number(Decimal("12.50"), grouping=GroupingFormat.INDIAN) == "12.50"
 
     def test_indian_grouping_crore_scale(self):
-        assert format_number(Decimal("12345678"), grouping=GroupingFormat.INDIAN) == "1,23,45,678.00"
+        assert (
+            format_number(Decimal("12345678"), grouping=GroupingFormat.INDIAN) == "1,23,45,678.00"
+        )
 
     def test_float_input(self):
         assert format_number(3095801.456) == "3,095,801.46"

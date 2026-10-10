@@ -9,8 +9,8 @@ identically and is deliberately false.
 
 | Control | Claimed on the cited line | Verdict | Component File & Line |
 |---|---|---|---|
-| `CTL-001` | `LOCK_TIMEOUT=60.0` | Conforming | `scripts/memory.py:83` |
-| `CTL-002` | `RENDER_LIMIT=40` | Conforming | `scripts/memory.py:87` |
+| `CTL-001` | `LOCK_TIMEOUT = 60.0` | Conforming | `scripts/memory.py:84` |
+| `CTL-002` | `RENDER_LIMIT = 40` | Conforming | `scripts/memory.py:88` |
 
 Both claims were read off the cited lines before being written here, which is
 the entire difference between the two fixtures.

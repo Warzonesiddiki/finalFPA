@@ -23,11 +23,9 @@ from app.engine.imports.vendor_budget_loader import (
     BudgetCommitBlocked,
     commit_budget_csv,
     commit_vendor_csv,
-    parse_budget_csv,
     parse_vendor_csv,
 )
 from app.engine.store.db import DatabaseManager
-
 
 VENDOR_CSV = """VendorCode,VendorName,Category
 V-00276,Staffing Services Ltd,Staffing
@@ -87,7 +85,8 @@ def _batch_row(db: DatabaseManager, batch_id: int) -> dict:
     conn = db.get_sqlite_connection()
     try:
         row = conn.execute(
-            "SELECT * FROM FactImportBatch WHERE batch_id = ?", (batch_id,)).fetchone()
+            "SELECT * FROM FactImportBatch WHERE batch_id = ?", (batch_id,)
+        ).fetchone()
         assert row is not None
         return dict(row)
     finally:
@@ -95,6 +94,7 @@ def _batch_row(db: DatabaseManager, batch_id: int) -> dict:
 
 
 # --- DimVendor -------------------------------------------------------------
+
 
 def test_vendor_happy_path_populates_dim_vendor(tmp_path):
     db = DatabaseManager(project_dir=tmp_path / "proj")
@@ -104,7 +104,8 @@ def test_vendor_happy_path_populates_dim_vendor(tmp_path):
     conn = db.get_duckdb_connection()
     try:
         rows = conn.execute(
-            "SELECT vendor_code, vendor_name, source FROM DimVendor ORDER BY vendor_code").fetchall()
+            "SELECT vendor_code, vendor_name, source FROM DimVendor ORDER BY vendor_code"
+        ).fetchall()
     finally:
         conn.close()
     assert [(r[0], r[1]) for r in rows] == [
@@ -153,13 +154,15 @@ def test_vendor_keyed_rule_dependency_joinable(tmp_path):
     conn = db.get_duckdb_connection()
     try:
         row = conn.execute(
-            "SELECT vendor_id FROM DimVendor WHERE vendor_code = 'V-00276'").fetchone()
+            "SELECT vendor_id FROM DimVendor WHERE vendor_code = 'V-00276'"
+        ).fetchone()
     finally:
         conn.close()
     assert row is not None and row[0] is not None
 
 
 # --- FactBudget ------------------------------------------------------------
+
 
 def test_budget_happy_path_with_fk_resolution(tmp_path):
     db = DatabaseManager(project_dir=tmp_path / "proj")
@@ -170,7 +173,8 @@ def test_budget_happy_path_with_fk_resolution(tmp_path):
     try:
         rows = conn.execute(
             "SELECT budget_version, scenario_code, company_id, account_id, "
-            "cost_center_id, period_id, amount FROM FactBudget ORDER BY account_id").fetchall()
+            "cost_center_id, period_id, amount FROM FactBudget ORDER BY account_id"
+        ).fetchall()
     finally:
         conn.close()
     assert rows[0][:6] == ("FY26-Approved", "base", 1, 5200, 100, 9)
@@ -187,9 +191,9 @@ def test_budget_bad_rows_quarantined_per_imp016_imp018_and_unknown_dims(tmp_path
     assert res.status == "committed"
     assert res.loaded_count == 1 and res.quarantined_count == 3
     codes = {q["reason_code"] for q in res.quarantined_rows}
-    assert "import.periodNotInCalendar" in codes      # NOT-A-PERIOD (IMP-018)
-    assert "import.numberUnparsed" in codes           # not-a-number (IMP-016)
-    assert "import.unknownDimensions" in codes        # account 9999 (03 §7 I12)
+    assert "import.periodNotInCalendar" in codes  # NOT-A-PERIOD (IMP-018)
+    assert "import.numberUnparsed" in codes  # not-a-number (IMP-016)
+    assert "import.unknownDimensions" in codes  # account 9999 (03 §7 I12)
     assert _duck_counts(db, "FactBudget") == 1
 
 
@@ -220,8 +224,10 @@ def test_budget_money_exact_no_float(tmp_path):
     """docs/03 §1.2: floats forbidden in money paths -- 0.1+0.2 style values
     persist exactly."""
     db = DatabaseManager(project_dir=tmp_path / "proj")
-    csv_text = ("PeriodCode,EntityCode,CostCenterCode,AccountCode,BudgetAmount\n"
-                "FY26-P09,IN01,CC-100,5200,123456.78\n")
+    csv_text = (
+        "PeriodCode,EntityCode,CostCenterCode,AccountCode,BudgetAmount\n"
+        "FY26-P09,IN01,CC-100,5200,123456.78\n"
+    )
     res = commit_budget_csv(db, _write(tmp_path, "b.csv", csv_text))
     assert res.loaded_count == 1
     conn = db.get_duckdb_connection()

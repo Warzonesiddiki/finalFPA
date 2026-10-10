@@ -1,13 +1,15 @@
 import sqlite3
 import uuid
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Any
+
 from app.engine.store.db import DatabaseManager
+
 
 class AiProvenanceStore:
     """Manages AI draft provenance, version retention, and approval workflow per doc 10 §4, §5 & §6."""
 
-    def __init__(self, db_mgr: Optional[DatabaseManager] = None):
+    def __init__(self, db_mgr: DatabaseManager | None = None):
         self.db_mgr = db_mgr or DatabaseManager()
         self._ensure_table()
 
@@ -44,8 +46,8 @@ class AiProvenanceStore:
         model: str,
         prompt_id: str,
         prompt_version: str,
-        author: str = "Aarti"
-    ) -> Dict[str, Any]:
+        author: str = "Aarti",
+    ) -> dict[str, Any]:
         """Save a new commentary draft version while retaining all previous versions per doc 10 §5."""
         draft_id = f"aidraft_{uuid.uuid4().hex[:12]}"
         timestamp = datetime.utcnow().isoformat()
@@ -59,9 +61,16 @@ class AiProvenanceStore:
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?)
                 """,
                 (
-                    draft_id, subject_key, period_id, content, model,
-                    prompt_id, prompt_version, timestamp, author
-                )
+                    draft_id,
+                    subject_key,
+                    period_id,
+                    content,
+                    model,
+                    prompt_id,
+                    prompt_version,
+                    timestamp,
+                    author,
+                ),
             )
             conn.commit()
 
@@ -78,7 +87,7 @@ class AiProvenanceStore:
             "author": author,
         }
 
-    def list_drafts(self, subject_key: str, period_id: int = 9) -> List[Dict[str, Any]]:
+    def list_drafts(self, subject_key: str, period_id: int = 9) -> list[dict[str, Any]]:
         """List all retained draft versions for provenance auditing per doc 10 §4 & §5."""
         with self._get_conn() as conn:
             cur = conn.execute(
@@ -87,7 +96,7 @@ class AiProvenanceStore:
                 WHERE subject_key = ? AND period_id = ?
                 ORDER BY timestamp DESC
                 """,
-                (subject_key, period_id)
+                (subject_key, period_id),
             )
             rows = [dict(r) for r in cur.fetchall()]
 
@@ -107,10 +116,13 @@ class AiProvenanceStore:
             for r in rows
         ]
 
-    def approve_draft(self, draft_id: str) -> Optional[Dict[str, Any]]:
+    def approve_draft(self, draft_id: str) -> dict[str, Any] | None:
         """Approve a specific draft version for inclusion in PPT export per doc 10 §6."""
         with self._get_conn() as conn:
-            cur = conn.execute("SELECT subject_key, period_id FROM AiDraftProvenance WHERE draft_id = ?", (draft_id,))
+            cur = conn.execute(
+                "SELECT subject_key, period_id FROM AiDraftProvenance WHERE draft_id = ?",
+                (draft_id,),
+            )
             row = cur.fetchone()
             if not row:
                 return None
@@ -118,25 +130,28 @@ class AiProvenanceStore:
 
             conn.execute(
                 "UPDATE AiDraftProvenance SET status = 'draft' WHERE subject_key = ? AND period_id = ?",
-                (subject_key, period_id)
+                (subject_key, period_id),
             )
             conn.execute(
-                "UPDATE AiDraftProvenance SET status = 'approved' WHERE draft_id = ?",
-                (draft_id,)
+                "UPDATE AiDraftProvenance SET status = 'approved' WHERE draft_id = ?", (draft_id,)
             )
             conn.commit()
 
             cur = conn.execute("SELECT * FROM AiDraftProvenance WHERE draft_id = ?", (draft_id,))
             updated = cur.fetchone()
-            return {
-                "draftId": updated["draft_id"],
-                "subjectKey": updated["subject_key"],
-                "periodId": updated["period_id"],
-                "content": updated["content"],
-                "model": updated["model"],
-                "promptId": updated["prompt_id"],
-                "promptVersion": updated["prompt_version"],
-                "timestamp": updated["timestamp"],
-                "status": updated["status"],
-                "author": updated["author"],
-            } if updated else None
+            return (
+                {
+                    "draftId": updated["draft_id"],
+                    "subjectKey": updated["subject_key"],
+                    "periodId": updated["period_id"],
+                    "content": updated["content"],
+                    "model": updated["model"],
+                    "promptId": updated["prompt_id"],
+                    "promptVersion": updated["prompt_version"],
+                    "timestamp": updated["timestamp"],
+                    "status": updated["status"],
+                    "author": updated["author"],
+                }
+                if updated
+                else None
+            )

@@ -7,9 +7,9 @@ and dimension string parsing using synthetic fixtures.
 from __future__ import annotations
 
 from pathlib import Path
-import pytest
-from app.engine.imports.parser import resolve_fiscal_period
+
 from app.engine.imports import parse_and_validate_csv
+from app.engine.imports.parser import resolve_fiscal_period
 
 
 def test_resolve_fiscal_period_variants():
@@ -41,7 +41,7 @@ def test_fiscal_period_import_synthetic(tmp_path: Path):
         "COMP,V001,1,2026-09-15,1001,100.00,0.00,FY26-P09\n"
         "COMP,V002,1,2026-09-15,1001,200.00,0.00,202609\n"
         "COMP,V003,1,2026-09-15,1001,300.00,0.00,Sep-26\n",
-        encoding="utf-8"
+        encoding="utf-8",
     )
     batch = parse_and_validate_csv(csv_file)
     assert batch.loaded_count == 3

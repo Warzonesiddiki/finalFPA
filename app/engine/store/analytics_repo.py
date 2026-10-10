@@ -6,8 +6,7 @@ and docs/09_TECHNICAL_ARCHITECTURE.md §12.
 
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar
-import duckdb
+from typing import Any, Generic, TypeVar
 
 from app.engine.calc import (
     ZERO,
@@ -24,7 +23,7 @@ T = TypeVar("T")
 class PagedResult(Generic[T]):
     """Standard paged result envelope per 26_API_CONTRACT.md §2.4 and 09 §12."""
 
-    items: List[T]
+    items: list[T]
     total: int
     page: int
     page_size: int
@@ -44,7 +43,7 @@ class BvaSummaryRow:
     actual_amount: Decimal
     budget_amount: Decimal
     variance_amount: Decimal
-    variance_pct: Optional[Decimal]
+    variance_pct: Decimal | None
     favourability: str
 
 
@@ -56,7 +55,7 @@ class StatementLineSummaryRow:
     actual_amount: Decimal
     budget_amount: Decimal
     variance_amount: Decimal
-    variance_pct: Optional[Decimal]
+    variance_pct: Decimal | None
     favourability: str
     account_count: int
 
@@ -69,11 +68,11 @@ class EntityRollupRow:
     company_code: str
     company_name: str
     entity_type: str
-    parent_company_id: Optional[int]
+    parent_company_id: int | None
     actual_amount: Decimal
     budget_amount: Decimal
     variance_amount: Decimal
-    variance_pct: Optional[Decimal]
+    variance_pct: Decimal | None
     favourability: str
 
 
@@ -81,16 +80,16 @@ class EntityRollupRow:
 class CostCenterRollupRow:
     """Cost center aggregation row per 03_DATA_DICTIONARY §3.3."""
 
-    cost_center_id: Optional[int]
+    cost_center_id: int | None
     cost_center_code: str
     cost_center_name: str
     department_name: str
-    owner_name: Optional[str]
-    company_id: Optional[int]
+    owner_name: str | None
+    company_id: int | None
     actual_amount: Decimal
     budget_amount: Decimal
     variance_amount: Decimal
-    variance_pct: Optional[Decimal]
+    variance_pct: Decimal | None
     favourability: str
 
 
@@ -107,14 +106,14 @@ class DrillRow:
     posting_date: str
     voucher_no: str
     line_no: int
-    invoice_no: Optional[str]
-    document_no: Optional[str]
-    description: Optional[str]
+    invoice_no: str | None
+    document_no: str | None
+    description: str | None
     debit: Decimal
     credit: Decimal
     net_amount: Decimal
     currency_code: str
-    journal_category: Optional[str]
+    journal_category: str | None
     company_id: int
     company_code: str
     company_name: str
@@ -123,12 +122,12 @@ class DrillRow:
     account_name: str
     account_type: str
     statement_line: str
-    cost_center_id: Optional[int]
-    cost_center_code: Optional[str]
-    cost_center_name: Optional[str]
-    department_name: Optional[str]
+    cost_center_id: int | None
+    cost_center_code: str | None
+    cost_center_name: str | None
+    department_name: str | None
     period_id: int
-    period_code: Optional[str]
+    period_code: str | None
 
 
 def compute_favourability(direction: str, actual: Decimal, budget: Decimal) -> str:
@@ -159,7 +158,7 @@ class AnalyticsRepository:
     def __init__(self, db_manager: DatabaseManager):
         self.db = db_manager
 
-    def _normalize_pagination(self, page: int, page_size: int) -> Tuple[int, int, int]:
+    def _normalize_pagination(self, page: int, page_size: int) -> tuple[int, int, int]:
         """Normalize page and page_size per 09 §12 (cap at 200)."""
         valid_page = max(1, page)
         valid_page_size = min(max(1, page_size), 200)
@@ -168,10 +167,10 @@ class AnalyticsRepository:
 
     def get_bva_summary(
         self,
-        period_id: Optional[int] = None,
-        company_id: Optional[int] = None,
-        cost_center_id: Optional[int] = None,
-        statement_line: Optional[str] = None,
+        period_id: int | None = None,
+        company_id: int | None = None,
+        cost_center_id: int | None = None,
+        statement_line: str | None = None,
         page: int = 1,
         page_size: int = 100,
         window: str = "MTD",
@@ -184,17 +183,28 @@ class AnalyticsRepository:
         Variance = actual - budget per CALC-010.
         """
         valid_page, valid_page_size, offset = self._normalize_pagination(page, page_size)
-        is_ytd = (window.upper() == "YTD")
-        period_filter_clause = "(? IS NULL OR (fa.period_id <= ? AND fa.period_id >= 1))" if is_ytd else "(? IS NULL OR fa.period_id = ?)"
-        budget_period_filter_clause = "(? IS NULL OR (fb.period_id <= ? AND fb.period_id >= 1))" if is_ytd else "(? IS NULL OR fb.period_id = ?)"
+        is_ytd = window.upper() == "YTD"
+        period_filter_clause = (
+            "(? IS NULL OR (fa.period_id <= ? AND fa.period_id >= 1))"
+            if is_ytd
+            else "(? IS NULL OR fa.period_id = ?)"
+        )
+        budget_period_filter_clause = (
+            "(? IS NULL OR (fb.period_id <= ? AND fb.period_id >= 1))"
+            if is_ytd
+            else "(? IS NULL OR fb.period_id = ?)"
+        )
 
         conn = self.db.get_duckdb_connection()
         try:
             # Common filter parameters (each query uses them twice for actuals and budget)
             base_params = [
-                period_id, period_id,
-                company_id, company_id,
-                cost_center_id, cost_center_id,
+                period_id,
+                period_id,
+                company_id,
+                company_id,
+                cost_center_id,
+                cost_center_id,
             ]
 
             # 1. Count query for pagination total
@@ -281,18 +291,24 @@ class AnalyticsRepository:
             ORDER BY statement_line ASC, account_code ASC
             LIMIT ? OFFSET ?;
             """
-            query_params = base_params + base_params + [statement_line, statement_line, valid_page_size, offset]
+            query_params = (
+                base_params
+                + base_params
+                + [statement_line, statement_line, valid_page_size, offset]
+            )
             cursor = conn.execute(query_sql, query_params)
             columns = [desc[0] for desc in cursor.description]
 
-            items: List[BvaSummaryRow] = []
+            items: list[BvaSummaryRow] = []
             for row in cursor.fetchall():
                 row_dict = dict(zip(columns, row))
                 actual_val = quantize_money(row_dict["actual_amount"])
                 budget_val = quantize_money(row_dict["budget_amount"])
                 var_val = calculate_variance(actual_val, budget_val)
                 var_pct = calculate_variance_pct(actual_val, budget_val)
-                fav = compute_favourability(row_dict["favourability_direction"], actual_val, budget_val)
+                fav = compute_favourability(
+                    row_dict["favourability_direction"], actual_val, budget_val
+                )
 
                 items.append(
                     BvaSummaryRow(
@@ -323,11 +339,11 @@ class AnalyticsRepository:
 
     def get_bva_statement_line_summary(
         self,
-        period_id: Optional[int] = None,
-        company_id: Optional[int] = None,
-        cost_center_id: Optional[int] = None,
+        period_id: int | None = None,
+        company_id: int | None = None,
+        cost_center_id: int | None = None,
         window: str = "MTD",
-    ) -> List[StatementLineSummaryRow]:
+    ) -> list[StatementLineSummaryRow]:
         """Roll up statement lines. Guarantee: parent = sum(children) per FR-BVA-009 / CALC-042."""
         # Query all accounts without pagination to perform exact rollup
         bva_result = self.get_bva_summary(
@@ -338,7 +354,7 @@ class AnalyticsRepository:
             page_size=200,
             window=window,
         )
-        
+
         # If there are more accounts, gather all pages
         all_accounts = list(bva_result.items)
         curr_page = 2
@@ -370,7 +386,7 @@ class AnalyticsRepository:
             grouped[line]["budget"] += acct.budget_amount
             grouped[line]["count"] += 1
 
-        results: List[StatementLineSummaryRow] = []
+        results: list[StatementLineSummaryRow] = []
         for line in sorted(grouped.keys()):
             act = quantize_money(grouped[line]["actual"])
             bud = quantize_money(grouped[line]["budget"])
@@ -394,8 +410,8 @@ class AnalyticsRepository:
 
     def get_entity_rollups(
         self,
-        period_id: Optional[int] = None,
-        company_id: Optional[int] = None,
+        period_id: int | None = None,
+        company_id: int | None = None,
         page: int = 1,
         page_size: int = 100,
     ) -> PagedResult[EntityRollupRow]:
@@ -405,9 +421,12 @@ class AnalyticsRepository:
         conn = self.db.get_duckdb_connection()
         try:
             filter_params = [
-                period_id, period_id,
-                period_id, period_id,
-                company_id, company_id,
+                period_id,
+                period_id,
+                period_id,
+                period_id,
+                company_id,
+                company_id,
             ]
 
             count_sql = """
@@ -487,7 +506,7 @@ class AnalyticsRepository:
             cursor = conn.execute(query_sql, query_params)
             columns = [desc[0] for desc in cursor.description]
 
-            items: List[EntityRollupRow] = []
+            items: list[EntityRollupRow] = []
             for row in cursor.fetchall():
                 row_dict = dict(zip(columns, row))
                 act = quantize_money(row_dict["actual_amount"])
@@ -523,7 +542,9 @@ class AnalyticsRepository:
         finally:
             conn.close()
 
-    def get_three_way_summary(self, period_id: Optional[int] = None, window: str = "MTD") -> List[Dict[str, Any]]:
+    def get_three_way_summary(
+        self, period_id: int | None = None, window: str = "MTD"
+    ) -> list[dict[str, Any]]:
         """Get Three-Way Actual vs Budget vs Forecast summary with signed-error accuracy columns per FR-BVA-008 and CALC-066..069."""
         duck_conn = self.db.get_duckdb_connection()
         p_filter = f"AND fa.period_id = {period_id}" if period_id else ""
@@ -554,29 +575,31 @@ class AnalyticsRepository:
             forecast = Decimal(str(r[8] or 0))
             var_ab = actual - budget
             signed_err = actual - forecast  # CALC-066
-            abs_err = abs(signed_err)         # CALC-067
+            abs_err = abs(signed_err)  # CALC-067
 
-            result.append({
-                "statementLine": r[0],
-                "accountId": r[1],
-                "accountCode": r[2],
-                "accountName": r[3],
-                "accountType": r[4],
-                "favourabilityDirection": r[5],
-                "actual": str(actual),
-                "budget": str(budget),
-                "forecast": str(forecast),
-                "varianceActualBudget": str(var_ab),
-                "signedError": str(signed_err),
-                "absoluteError": str(abs_err),
-            })
+            result.append(
+                {
+                    "statementLine": r[0],
+                    "accountId": r[1],
+                    "accountCode": r[2],
+                    "accountName": r[3],
+                    "accountType": r[4],
+                    "favourabilityDirection": r[5],
+                    "actual": str(actual),
+                    "budget": str(budget),
+                    "forecast": str(forecast),
+                    "varianceActualBudget": str(var_ab),
+                    "signedError": str(signed_err),
+                    "absoluteError": str(abs_err),
+                }
+            )
         return result
 
     def get_cost_center_aggregations(
         self,
-        period_id: Optional[int] = None,
-        company_id: Optional[int] = None,
-        department_name: Optional[str] = None,
+        period_id: int | None = None,
+        company_id: int | None = None,
+        department_name: str | None = None,
         page: int = 1,
         page_size: int = 100,
     ) -> PagedResult[CostCenterRollupRow]:
@@ -586,8 +609,10 @@ class AnalyticsRepository:
         conn = self.db.get_duckdb_connection()
         try:
             base_filters = [
-                period_id, period_id,
-                company_id, company_id,
+                period_id,
+                period_id,
+                company_id,
+                company_id,
             ]
             filter_params = base_filters + base_filters + [department_name, department_name]
 
@@ -674,7 +699,7 @@ class AnalyticsRepository:
             cursor = conn.execute(query_sql, query_params)
             columns = [desc[0] for desc in cursor.description]
 
-            items: List[CostCenterRollupRow] = []
+            items: list[CostCenterRollupRow] = []
             for row in cursor.fetchall():
                 row_dict = dict(zip(columns, row))
                 act = quantize_money(row_dict["actual_amount"])
@@ -713,13 +738,13 @@ class AnalyticsRepository:
 
     def get_transaction_drill(
         self,
-        period_id: Optional[int] = None,
-        account_id: Optional[int] = None,
-        account_code: Optional[str] = None,
-        company_id: Optional[int] = None,
-        cost_center_id: Optional[int] = None,
-        statement_line: Optional[str] = None,
-        voucher_no: Optional[str] = None,
+        period_id: int | None = None,
+        account_id: int | None = None,
+        account_code: str | None = None,
+        company_id: int | None = None,
+        cost_center_id: int | None = None,
+        statement_line: str | None = None,
+        voucher_no: str | None = None,
         page: int = 1,
         page_size: int = 100,
     ) -> PagedResult[DrillRow]:
@@ -729,13 +754,20 @@ class AnalyticsRepository:
         conn = self.db.get_duckdb_connection()
         try:
             filter_params = [
-                period_id, period_id,
-                account_id, account_id,
-                account_code, account_code,
-                statement_line, statement_line,
-                company_id, company_id,
-                cost_center_id, cost_center_id,
-                voucher_no, voucher_no,
+                period_id,
+                period_id,
+                account_id,
+                account_id,
+                account_code,
+                account_code,
+                statement_line,
+                statement_line,
+                company_id,
+                company_id,
+                cost_center_id,
+                cost_center_id,
+                voucher_no,
+                voucher_no,
             ]
 
             count_sql = """
@@ -804,7 +836,7 @@ class AnalyticsRepository:
             cursor = conn.execute(query_sql, query_params)
             columns = [desc[0] for desc in cursor.description]
 
-            items: List[DrillRow] = []
+            items: list[DrillRow] = []
             for row in cursor.fetchall():
                 row_dict = dict(zip(columns, row))
                 items.append(
@@ -939,7 +971,7 @@ class AnalyticsRepository:
             )
             columns = [desc[0] for desc in cursor.description]
 
-            items: List[DrillRow] = []
+            items: list[DrillRow] = []
             for row in cursor.fetchall():
                 row_dict = dict(zip(columns, row))
                 items.append(

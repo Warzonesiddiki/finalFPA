@@ -39,6 +39,7 @@ SAMPLE_DIR = Path("sample-data")
 # Fast, unmarked: the harness and the corpus it depends on
 # ---------------------------------------------------------------------------
 
+
 def test_answer_key_has_the_counts_doc_14_section_5_1_states():
     """Doc 14 §5.1: 32 expected raises (P1..P24) and 8 controls (P25..P32)."""
     raises, controls, other = acc.load_answer_key(SAMPLE_DIR)
@@ -98,6 +99,7 @@ def test_corpus_files_are_present():
 # number as if it were a §5.3 result, still fails here.
 # ---------------------------------------------------------------------------
 
+
 def test_gl_corpus_precondition_is_evaluated_and_reported():
     """Every corpus file is checked for balance and the outcome is recorded."""
     corpus = acc.corpus_integrity(SAMPLE_DIR)
@@ -127,8 +129,7 @@ def test_data_quality_score_is_computed_not_the_pre_def009_literal():
         )
         # The harness must report the ENGINE's rounded score, not truncate
         # raw_score itself: raw is 83.6065... while the engine's score is 84.
-        assert gl["data_quality_score"] == round(
-            float(gl["data_quality_raw_score"])), (
+        assert gl["data_quality_score"] == round(float(gl["data_quality_raw_score"])), (
             "DQ score was re-derived from raw_score instead of using the engine's "
             f"score ({gl['data_quality_score']} vs raw {gl['data_quality_raw_score']})"
         )
@@ -142,15 +143,23 @@ def test_unbalanced_general_ledger_marks_the_run_blocked_not_passed():
     corpus is currently balanced.
     """
     report = acc.AcceptanceReport()
-    report.bars = [acc.BarResult("Planted-exception recall", ">= 29 of 32",
-                                 "0/32", False)]
-    corpus = [{
-        "file": "d365_gl_actuals.csv", "source_type": "actuals_d365",
-        "is_general_ledger": True, "balanced": False, "rows": 250037,
-        "total_debit": "24626607267.80", "total_credit": "6682091688.47",
-        "net_imbalance": "17944515579.33", "recorded_status": "rejected",
-        "failed_checks": ["IMP-023"], "checks_run": 9, "data_quality_score": 84,
-    }]
+    report.bars = [acc.BarResult("Planted-exception recall", ">= 29 of 32", "0/32", False)]
+    corpus = [
+        {
+            "file": "d365_gl_actuals.csv",
+            "source_type": "actuals_d365",
+            "is_general_ledger": True,
+            "balanced": False,
+            "rows": 250037,
+            "total_debit": "24626607267.80",
+            "total_credit": "6682091688.47",
+            "net_imbalance": "17944515579.33",
+            "recorded_status": "rejected",
+            "failed_checks": ["IMP-023"],
+            "checks_run": 9,
+            "data_quality_score": 84,
+        }
+    ]
     acc.attach_corpus_gate(report, corpus, committed_rows={"d365_gl_actuals.csv": 0})
     acc.apply_blocked_state(report)
 
@@ -169,13 +178,23 @@ def test_unbalanced_general_ledger_marks_the_run_blocked_not_passed():
 def test_balanced_corpus_leaves_the_run_measurable():
     """The gate must not block a healthy corpus - otherwise it is noise."""
     report = acc.AcceptanceReport()
-    corpus = [{
-        "file": "d365_gl_actuals.csv", "source_type": "actuals_d365",
-        "is_general_ledger": True, "balanced": True, "rows": 250037,
-        "total_debit": "1.00", "total_credit": "1.00", "net_imbalance": "0.00",
-        "recorded_status": "committed", "failed_checks": [], "checks_run": 9,
-        "data_quality_score": 100, "checksum": "abc",
-    }]
+    corpus = [
+        {
+            "file": "d365_gl_actuals.csv",
+            "source_type": "actuals_d365",
+            "is_general_ledger": True,
+            "balanced": True,
+            "rows": 250037,
+            "total_debit": "1.00",
+            "total_credit": "1.00",
+            "net_imbalance": "0.00",
+            "recorded_status": "committed",
+            "failed_checks": [],
+            "checks_run": 9,
+            "data_quality_score": 100,
+            "checksum": "abc",
+        }
+    ]
     acc.attach_corpus_gate(report, corpus, committed_rows={"d365_gl_actuals.csv": 250037})
     acc.apply_blocked_state(report)
 
@@ -215,14 +234,14 @@ def test_live_run_reports_the_measured_imbalance(live_acceptance_report):
     engine computed it - the harness never re-derives it.
     """
     report = live_acceptance_report
-    unbalanced = [c for c in report.corpus if not c.get("balanced")
-                  and c.get("is_general_ledger")]
+    unbalanced = [c for c in report.corpus if not c.get("balanced") and c.get("is_general_ledger")]
     if not unbalanced:
         return
     assert report.verdict == "BLOCKED"
     gl = unbalanced[0]
-    assert Decimal(gl["net_imbalance"]) == (Decimal(gl["total_debit"])
-                                            - Decimal(gl["total_credit"]))
+    assert Decimal(gl["net_imbalance"]) == (
+        Decimal(gl["total_debit"]) - Decimal(gl["total_credit"])
+    )
     assert "IMP-023" in report.blocked_reasons[0]
 
 
@@ -234,16 +253,26 @@ def test_live_run_reports_the_measured_imbalance(live_acceptance_report):
 # prove the bars COMPUTE correctly without needing the 250k-row corpus.
 # ---------------------------------------------------------------------------
 
-def _finding(rule_id: str, subject_key: str, *, catalog: str | None = None,
-             severity: str = "Medium"):
+
+def _finding(
+    rule_id: str, subject_key: str, *, catalog: str | None = None, severity: str = "Medium"
+):
     from decimal import Decimal
 
     from app.engine.rules.rules_01_08 import Finding
+
     return Finding(
-        rule_id=rule_id, rule_name="crafted", severity=severity, tier="exact",
-        subject_key=subject_key, subject_display="crafted",
-        amount_at_risk=Decimal("0.00"), period_id=acc.PERIOD_CODE,
-        owner_role="Analyst", effective_threshold="n/a", detail="crafted",
+        rule_id=rule_id,
+        rule_name="crafted",
+        severity=severity,
+        tier="exact",
+        subject_key=subject_key,
+        subject_display="crafted",
+        amount_at_risk=Decimal("0.00"),
+        period_id=acc.PERIOD_CODE,
+        owner_role="Analyst",
+        effective_threshold="n/a",
+        detail="crafted",
         catalog_rule_id=catalog,
     )
 
@@ -256,8 +285,9 @@ def _perfect_findings(raises):
     for the wrong reason.
     """
     return [
-        _finding(row["rule_id"], row["subject_key"], catalog=row["rule_id"],
-                 severity=row["severity"])
+        _finding(
+            row["rule_id"], row["subject_key"], catalog=row["rule_id"], severity=row["severity"]
+        )
         for row in raises
     ]
 
@@ -292,7 +322,9 @@ def test_scoring_passes_on_a_perfect_run(monkeypatch, answer_key):
     )
     report = acc.measure(None, raises, controls, stability_runs=2)
 
-    assert report.passed, f"a perfect run must pass; got {[b.name for b in report.bars if not b.passed]}"
+    assert report.passed, (
+        f"a perfect run must pass; got {[b.name for b in report.bars if not b.passed]}"
+    )
     assert report.verdict == "PASS"
     recall = next(b for b in report.bars if b.name == "Planted-exception recall")
     assert recall.passed
@@ -327,9 +359,10 @@ def test_acceptance_rejects_catalog_gaps_even_when_all_plants_appear_to_fire(
     assert recall.passed, "the crafted findings represent a nominally perfect recall result"
     assert coverage.measured == "19/24 wired"
     assert not coverage.passed
-    assert all(rule_id in coverage.detail for rule_id in (
-        "EXC-001", "EXC-002", "EXC-003", "EXC-006", "EXC-008"
-    ))
+    assert all(
+        rule_id in coverage.detail
+        for rule_id in ("EXC-001", "EXC-002", "EXC-003", "EXC-006", "EXC-008")
+    )
     assert not zero_coverage.passed
     assert not report.passed
 
@@ -364,7 +397,8 @@ def test_high_severity_bar_fails_on_a_single_missed_high(monkeypatch, answer_key
     """Doc 14 §5.3: "a missed High is a control failure, not a statistic"."""
     raises, controls, _ = answer_key
     findings = [
-        f for f in _perfect_findings(raises)
+        f
+        for f in _perfect_findings(raises)
         if not (f.rule_id == "EXC-001" and f.severity == "High")
     ]
     monkeypatch.setattr(acc, "run_rules_detailed", lambda ctx: _batch(findings))
@@ -418,7 +452,8 @@ def test_join_prefers_catalog_rule_id_over_engine_rule_id(monkeypatch, answer_ke
     raises, controls, _ = answer_key
     target = next(r for r in raises if r["rule_id"] == "EXC-012")
     monkeypatch.setattr(
-        acc, "run_rules_detailed",
+        acc,
+        "run_rules_detailed",
         lambda ctx: _batch([_finding("EXC-005", target["subject_key"], catalog="EXC-012")]),
     )
     report = acc.measure(None, raises, controls, stability_runs=1)
@@ -432,10 +467,7 @@ def test_join_prefers_catalog_rule_id_over_engine_rule_id(monkeypatch, answer_ke
 def test_zero_coverage_gate_catches_a_rule_that_raises_nothing(monkeypatch, answer_key):
     """A planted rule that produced nothing must fail loudly, not be omitted."""
     raises, controls, _ = answer_key
-    findings = [
-        f for f in _perfect_findings(raises)
-        if f.rule_id not in {"EXC-001", "EXC-016"}
-    ]
+    findings = [f for f in _perfect_findings(raises) if f.rule_id not in {"EXC-001", "EXC-016"}]
     monkeypatch.setattr(acc, "run_rules_detailed", lambda ctx: _batch(findings))
     report = acc.measure(None, raises, controls, stability_runs=1)
 
@@ -470,8 +502,7 @@ def test_rule_execution_faults_are_named_not_scored_as_clean_zeros(monkeypatch, 
                     finding_count=0,
                     error_type="TypeError",
                     error_message=(
-                        "_transaction_period() takes 1 positional argument "
-                        "but 2 were given"
+                        "_transaction_period() takes 1 positional argument but 2 were given"
                     ),
                 )
             ],
@@ -501,13 +532,24 @@ def test_unbalanced_subledger_is_reported_but_not_scored_as_a_blocker():
     records it rather than silently accepting it or blocking the whole run.
     """
     report = acc.AcceptanceReport()
-    acc.attach_corpus_gate(report, [{
-        "file": "bank_ledger_actuals.csv", "source_type": "actuals_procurement",
-        "is_general_ledger": False, "balanced": False, "rows": 499,
-        "total_debit": "100.00", "total_credit": "40.00",
-        "net_imbalance": "60.00", "recorded_status": "rejected",
-        "failed_checks": ["IMP-023"],
-    }], committed_rows={"bank_ledger_actuals.csv": 499})
+    acc.attach_corpus_gate(
+        report,
+        [
+            {
+                "file": "bank_ledger_actuals.csv",
+                "source_type": "actuals_procurement",
+                "is_general_ledger": False,
+                "balanced": False,
+                "rows": 499,
+                "total_debit": "100.00",
+                "total_credit": "40.00",
+                "net_imbalance": "60.00",
+                "recorded_status": "rejected",
+                "failed_checks": ["IMP-023"],
+            }
+        ],
+        committed_rows={"bank_ledger_actuals.csv": 499},
+    )
     acc.apply_blocked_state(report)
 
     assert not report.blocked_reasons, "a sub-ledger must not block the whole run"
@@ -517,9 +559,7 @@ def test_unbalanced_subledger_is_reported_but_not_scored_as_a_blocker():
     # old needle expected a capital-S 'Sub-ledger' that never matched). Pin the
     # contract, not the casing: the file and its failed check must be named.
     assert any(
-        "sub-ledger" in d.casefold()
-        and "bank_ledger_actuals.csv" in d
-        and "IMP-023" in d
+        "sub-ledger" in d.casefold() and "bank_ledger_actuals.csv" in d and "IMP-023" in d
         for d in report.divergences
     ), "the rejected sub-ledger must be named with its failed check"
     assert "499 of 499" in report.divergences[0]
@@ -543,8 +583,7 @@ def test_corpus_passes_the_doc_28_import_gate():
     fail if the blocked state is not detected and reported.
     """
     corpus = acc.corpus_integrity(SAMPLE_DIR)
-    unbalanced = [c for c in corpus
-                  if not c.get("balanced") and c.get("is_general_ledger")]
+    unbalanced = [c for c in corpus if not c.get("balanced") and c.get("is_general_ledger")]
     if unbalanced:
         detail = "; ".join(
             f"{c['file']}: debit={c.get('total_debit')} credit={c.get('total_credit')} "
@@ -563,6 +602,7 @@ def test_corpus_passes_the_doc_28_import_gate():
 # Slow, `perf`-marked: the §5.3 bars themselves
 # ---------------------------------------------------------------------------
 
+
 def _require_measurable(report):
     """Skip the §5.3 bars when the corpus precondition blocks measurement.
 
@@ -573,8 +613,12 @@ def _require_measurable(report):
     """
     if not report.measurable:
         pytest.skip(
-            "BLOCKED - " + (report.blocked_reasons[0] if report.blocked_reasons
-                             else "corpus precondition not met")
+            "BLOCKED - "
+            + (
+                report.blocked_reasons[0]
+                if report.blocked_reasons
+                else "corpus precondition not met"
+            )
         )
 
 
@@ -582,8 +626,7 @@ def _require_measurable(report):
 def test_planted_exception_recall_bar(live_acceptance_report):
     """Doc 14 §5.3: "Planted-exception recall | >= 90 % of the 32 raises (>= 29)"."""
     _require_measurable(live_acceptance_report)
-    bar = next(b for b in live_acceptance_report.bars
-               if b.name == "Planted-exception recall")
+    bar = next(b for b in live_acceptance_report.bars if b.name == "Planted-exception recall")
     assert bar.passed, (
         f"{bar.requirement} - measured {bar.measured}. "
         f"Missed: {[m['planting_id'] for m in live_acceptance_report.miss_list]}"
@@ -647,8 +690,9 @@ def test_no_rule_has_zero_coverage(live_acceptance_report):
 def test_blocked_state_is_reported_when_corpus_is_unbalanced(live_acceptance_report):
     """An unbalanced GL must produce BLOCKED with a reason, never a recall result."""
     report = live_acceptance_report
-    unbalanced_gl = [c for c in report.corpus
-                     if not c.get("balanced") and c.get("is_general_ledger")]
+    unbalanced_gl = [
+        c for c in report.corpus if not c.get("balanced") and c.get("is_general_ledger")
+    ]
     if unbalanced_gl:
         assert report.verdict == "BLOCKED", (
             f"unbalanced GL but verdict is {report.verdict}; it must be BLOCKED so "
@@ -657,8 +701,7 @@ def test_blocked_state_is_reported_when_corpus_is_unbalanced(live_acceptance_rep
         assert report.blocked_reasons
         assert not report.measurable
         assert not report.passed
-        assert all(b.measurable is False and b.passed is False
-                   for b in report.bars)
+        assert all(b.measurable is False and b.passed is False for b in report.bars)
     else:
         assert not report.blocked_reasons
 
@@ -680,7 +723,8 @@ def test_report_renders_and_serialises(live_acceptance_report, tmp_path):
     for row in payload["corpus"]:
         if row.get("net_imbalance") is not None:
             assert Decimal(row["net_imbalance"]) == (
-                Decimal(row["total_debit"]) - Decimal(row["total_credit"]))
+                Decimal(row["total_debit"]) - Decimal(row["total_credit"])
+            )
 
     md = md_path.read_text(encoding="utf-8")
     assert "Per-rule recall" in md

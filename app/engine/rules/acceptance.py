@@ -76,10 +76,10 @@ import hashlib
 import json
 import os
 import tempfile
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from decimal import Decimal
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any
 
 # --------------------------------------------------------------------------
 # Corpus / answer-key locations
@@ -119,7 +119,7 @@ ACCEPTANCE_IMPORT_FILES = (
 
 #: Stable source-side identities for history fixtures; integer database keys are
 #: deliberately excluded from answer-key subject identities.
-ACCEPTANCE_BATCH_IDENTITIES: Dict[str, Tuple[str, Optional[str]]] = {
+ACCEPTANCE_BATCH_IDENTITIES: dict[str, tuple[str, str | None]] = {
     "import_history/01_bank_batch_037.csv": ("batch_037", "general_ledger"),
     "import_history/02_gl_batch_039.xlsx": ("batch_039", None),
     "import_history/03_bank_batch_040.csv": ("batch_040", "bank_ledger"),
@@ -129,9 +129,7 @@ ACCEPTANCE_BATCH_IDENTITIES: Dict[str, Tuple[str, Optional[str]]] = {
 #: Explicitly recorded decision for the synthetic over-tolerance P3 control total.
 #: It is kept beside the fixture and supplied only by this acceptance harness.
 CONTROL_TOTAL_ACCEPTANCE_FIXTURES = {
-    "import_history/02_gl_batch_039.xlsx": (
-        "import_history/02_gl_batch_039.acceptance.json"
-    ),
+    "import_history/02_gl_batch_039.xlsx": ("import_history/02_gl_batch_039.acceptance.json"),
 }
 
 #: The period every planted case is asserted against (doc 14 §5.1 answer key
@@ -152,7 +150,7 @@ DEFAULT_AS_OF = "2026-11-12"
 #: answer key, NOT as the source of truth: doc 14 §5.1 line 221-222 states
 #: "`sample-data/expected_exceptions.csv` is the answer key". Divergences are
 #: reported, never silently reconciled.
-DOC14_SECTION_5_4_CONTROLS: Dict[str, Tuple[str, ...]] = {
+DOC14_SECTION_5_4_CONTROLS: dict[str, tuple[str, ...]] = {
     "EXC-007": ("P25",),
     "EXC-008": ("P26",),
     "EXC-012": ("P27",),
@@ -162,14 +160,14 @@ DOC14_SECTION_5_4_CONTROLS: Dict[str, Tuple[str, ...]] = {
     "EXC-021": ("P31",),
 }
 
-CATALOG_RULE_IDS: Tuple[str, ...] = tuple(f"EXC-{i:03d}" for i in range(1, 25))
+CATALOG_RULE_IDS: tuple[str, ...] = tuple(f"EXC-{i:03d}" for i in range(1, 25))
 
 #: Doc 14 §5.3, restated as code. These are the numbers; they are not derived
 #: and not negotiable at runtime.
-BAR_RECALL_MIN_HITS = 29          # ">= 90 % of the 32 raises (>= 29)"
-BAR_CONTROL_RAISES_MAX = 0        # "0 of 8 controls may raise"
-BAR_HIGH_SEVERITY_REQUIRED = 18   # "18 of 18 High plantings found"
-BAR_UNEXPLAINED_EXTRAS_PER_RULE = 3   # "a rule with > 3 unexplained findings"
+BAR_RECALL_MIN_HITS = 29  # ">= 90 % of the 32 raises (>= 29)"
+BAR_CONTROL_RAISES_MAX = 0  # "0 of 8 controls may raise"
+BAR_HIGH_SEVERITY_REQUIRED = 18  # "18 of 18 High plantings found"
+BAR_UNEXPLAINED_EXTRAS_PER_RULE = 3  # "a rule with > 3 unexplained findings"
 
 
 class AcceptanceHarnessError(RuntimeError):
@@ -183,6 +181,7 @@ class AcceptanceHarnessError(RuntimeError):
 # --------------------------------------------------------------------------
 # Result shapes
 # --------------------------------------------------------------------------
+
 
 @dataclass
 class BarResult:
@@ -200,7 +199,7 @@ class BarResult:
     detail: str = ""
     measurable: bool = True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "requirement": self.requirement,
@@ -217,17 +216,17 @@ class RuleRow:
 
     rule_id: str
     evaluator: str
-    plantings: List[str] = field(default_factory=list)
-    detected: List[str] = field(default_factory=list)
-    missed: List[str] = field(default_factory=list)
-    controls: List[str] = field(default_factory=list)
-    controls_fired: List[str] = field(default_factory=list)
+    plantings: list[str] = field(default_factory=list)
+    detected: list[str] = field(default_factory=list)
+    missed: list[str] = field(default_factory=list)
+    controls: list[str] = field(default_factory=list)
+    controls_fired: list[str] = field(default_factory=list)
     findings_raised: int = 0
     extras: int = 0
     wired: bool = True
 
     @property
-    def recall_pct(self) -> Optional[float]:
+    def recall_pct(self) -> float | None:
         expected = len(self.plantings)
         if expected == 0:
             return None
@@ -244,7 +243,7 @@ class RuleRow:
         """
         return (not self.wired) or (bool(self.plantings) and not self.detected)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "rule_id": self.rule_id,
             "evaluator": self.evaluator,
@@ -279,25 +278,25 @@ class AcceptanceReport:
     """
 
     verdict: str = "FAIL"
-    bars: List[BarResult] = field(default_factory=list)
-    rules: List[RuleRow] = field(default_factory=list)
-    corpus: List[Dict[str, Any]] = field(default_factory=list)
-    divergences: List[str] = field(default_factory=list)
-    hard_failures: List[str] = field(default_factory=list)
-    blocked_reasons: List[str] = field(default_factory=list)
+    bars: list[BarResult] = field(default_factory=list)
+    rules: list[RuleRow] = field(default_factory=list)
+    corpus: list[dict[str, Any]] = field(default_factory=list)
+    divergences: list[str] = field(default_factory=list)
+    hard_failures: list[str] = field(default_factory=list)
+    blocked_reasons: list[str] = field(default_factory=list)
     # A rule that raised inside the batch (T-009). Fault isolation records the
     # exception and the run continues (batch.py, doc-06 §2.9), but the rule's
     # zero findings are then a FAULT, not a measurement: without this list the
     # report shows a crashed rule and a correctly-silent rule identically.
-    rule_faults: List[str] = field(default_factory=list)
+    rule_faults: list[str] = field(default_factory=list)
     findings_total: int = 0
     extras_total: int = 0
-    miss_list: List[Dict[str, str]] = field(default_factory=list)
-    extras_by_rule: Dict[str, int] = field(default_factory=dict)
-    controls_fired: List[Dict[str, str]] = field(default_factory=list)
-    severity_counts: Dict[str, Dict[str, int]] = field(default_factory=dict)
-    corpus_checksum: Dict[str, str] = field(default_factory=dict)
-    checksum_scope: Dict[str, Any] = field(default_factory=dict)
+    miss_list: list[dict[str, str]] = field(default_factory=list)
+    extras_by_rule: dict[str, int] = field(default_factory=dict)
+    controls_fired: list[dict[str, str]] = field(default_factory=list)
+    severity_counts: dict[str, dict[str, int]] = field(default_factory=dict)
+    corpus_checksum: dict[str, str] = field(default_factory=dict)
+    checksum_scope: dict[str, Any] = field(default_factory=dict)
     as_of: str = DEFAULT_AS_OF
     period: str = PERIOD_CODE
     elapsed_seconds: float = 0.0
@@ -323,7 +322,7 @@ class AcceptanceReport:
             and all(b.passed for b in self.bars)
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "verdict": self.verdict,
             "passed": self.passed,
@@ -353,6 +352,7 @@ class AcceptanceReport:
 # Step 1 - the answer key and the corpus checksum
 # --------------------------------------------------------------------------
 
+
 def file_checksum(path: Path) -> str:
     """Return a SHA-256 fingerprint for a corpus data artefact.
 
@@ -376,10 +376,10 @@ CHECKSUMMED_SUFFIXES = (".csv", ".json", ".xlsx")
 #: Retained as an explicit, reportable list. The supported corpus formats above
 #: are currently fingerprinted in full, so this must remain empty unless a
 #: format is deliberately excluded with a documented and measured reason.
-NON_REPRODUCIBLE: Tuple[Tuple[str, str], ...] = ()
+NON_REPRODUCIBLE: tuple[tuple[str, str], ...] = ()
 
 
-def checksum_scope(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> Dict[str, Any]:
+def checksum_scope(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> dict[str, Any]:
     """Return an auditable SHA-256 manifest for recognized corpus data files.
 
     Paths are recorded RELATIVE to `sample_dir` and de-duplicated by path, not by
@@ -388,6 +388,7 @@ def checksum_scope(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> Dict[str, Any]:
     them and misreport the scope. The acceptance JSON sidecar is included because
     its recorded decision permits the history workbook to commit.
     """
+
     def _rel_paths(suffixes) -> list[str]:
         seen = set()
         for p in sample_dir.rglob("*"):
@@ -397,8 +398,7 @@ def checksum_scope(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> Dict[str, Any]:
 
     fingerprinted = _rel_paths(CHECKSUMMED_SUFFIXES)
     checksums = {
-        relative_path: file_checksum(sample_dir / relative_path)
-        for relative_path in fingerprinted
+        relative_path: file_checksum(sample_dir / relative_path) for relative_path in fingerprinted
     }
     excluded = _rel_paths({suffix for suffix, _ in NON_REPRODUCIBLE})
     return {
@@ -411,12 +411,14 @@ def checksum_scope(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> Dict[str, Any]:
         "exclusion_reason": {suffix: why for suffix, why in NON_REPRODUCIBLE},
         "excluded": excluded,
         "note": "paths are relative to the sample dir; test_scale/ holds second "
-                "copies of templates and malformed fixtures, counted as separate "
-                "paths; the history acceptance sidecar is included",
+        "copies of templates and malformed fixtures, counted as separate "
+        "paths; the history acceptance sidecar is included",
     }
 
 
-def load_answer_key(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> Tuple[List[Dict[str, str]], List[Dict[str, str]], List[Dict[str, str]]]:
+def load_answer_key(
+    sample_dir: Path = DEFAULT_SAMPLE_DIR,
+) -> tuple[list[dict[str, str]], list[dict[str, str]], list[dict[str, str]]]:
     """Split the answer key into (expected raises, precision controls, other rows).
 
     Doc 14 §5.1: the file is the answer key
@@ -431,14 +433,15 @@ def load_answer_key(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> Tuple[List[Dict[st
         raise AcceptanceHarnessError(f"Answer key not found: {path}")
 
     lines = [
-        line for line in path.read_text(encoding="utf-8-sig").splitlines()
+        line
+        for line in path.read_text(encoding="utf-8-sig").splitlines()
         if not line.lstrip().startswith("#")
     ]
     rows = list(csv.DictReader(lines))
     if not rows:
         raise AcceptanceHarnessError(f"Answer key {path} parsed to zero rows")
 
-    def planting_number(row: Dict[str, str]) -> Optional[int]:
+    def planting_number(row: dict[str, str]) -> int | None:
         pid = (row.get("planting_id") or "").strip()
         if not pid.startswith("P") or not pid[1:].isdigit():
             return None
@@ -468,16 +471,16 @@ def load_answer_key(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> Tuple[List[Dict[st
 
 
 def validate_answer_key(
-    raises: Sequence[Dict[str, str]],
-    controls: Sequence[Dict[str, str]],
-) -> List[str]:
+    raises: Sequence[dict[str, str]],
+    controls: Sequence[dict[str, str]],
+) -> list[str]:
     """Cross-check the answer key against doc 14 §5.4. Returns divergences.
 
     Divergences are REPORTED, never reconciled: doc 14 §5.1 makes the CSV the
     authority, so the fixture wins on content and §5.4 is used to prove the
     fixture still describes the same 24 rules and the same 7 controlled rules.
     """
-    notes: List[str] = []
+    notes: list[str] = []
 
     rules_with_raises = {r["rule_id"] for r in raises}
     unplanted = [r for r in CATALOG_RULE_IDS if r not in rules_with_raises]
@@ -487,15 +490,14 @@ def validate_answer_key(
             f"Doc 14 §5.4 maps all 24 to a planting."
         )
 
-    fixture_controls: Dict[str, set] = {}
+    fixture_controls: dict[str, set] = {}
     for row in controls:
         fixture_controls.setdefault(row["rule_id"], set()).add(row["planting_id"])
     # Compare like with like: both sides normalised to {rule_id: frozenset(ids)}.
     # Comparing a set-valued dict against a tuple-valued one would report a
     # divergence on every run.
     normalised_fixture = {k: frozenset(v) for k, v in fixture_controls.items()}
-    normalised_doc14 = {k: frozenset(v)
-                        for k, v in DOC14_SECTION_5_4_CONTROLS.items()}
+    normalised_doc14 = {k: frozenset(v) for k, v in DOC14_SECTION_5_4_CONTROLS.items()}
     if normalised_fixture != normalised_doc14:
         notes.append(
             "Control assignment diverges from doc 14 §5.4. "
@@ -507,9 +509,7 @@ def validate_answer_key(
     for row in raises:
         sev[row["severity"]] = sev.get(row["severity"], 0) + 1
     if sev.get("High") != 18 or sev.get("Medium") != 12 or sev.get("Low") != 2:
-        notes.append(
-            f"Doc 14 §5.1 states 18 High / 12 Medium / 2 Low; answer key has {sev}."
-        )
+        notes.append(f"Doc 14 §5.1 states 18 High / 12 Medium / 2 Low; answer key has {sev}.")
 
     periods = {r["period"] for r in list(raises) + list(controls)}
     unexpected = {p for p in periods if p != PERIOD_CODE}
@@ -523,7 +523,7 @@ def validate_answer_key(
 
 def _control_total_acceptance_for_fixture(
     sample_dir: Path, relative_name: str
-) -> Optional[Dict[str, str]]:
+) -> dict[str, str] | None:
     """Load a recorded synthetic acceptance decision for a named fixture only."""
     sidecar_name = CONTROL_TOTAL_ACCEPTANCE_FIXTURES.get(relative_name)
     if sidecar_name is None:
@@ -568,7 +568,7 @@ def _control_total_acceptance_for_fixture(
     return acceptance
 
 
-def corpus_integrity(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> List[Dict[str, Any]]:
+def corpus_integrity(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> list[dict[str, Any]]:
     """Parse every acceptance import in order and report its commit precondition.
 
     CSV and XLSX fixtures use the production parsers, so the report carries the
@@ -593,7 +593,7 @@ def corpus_integrity(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> List[Dict[str, An
     from app.engine.calc.quality_score import calculate_quality_score
     from app.engine.imports.parser import parse_and_validate_csv, parse_excel_transactions
 
-    rows: List[Dict[str, Any]] = []
+    rows: list[dict[str, Any]] = []
     for name in ACCEPTANCE_IMPORT_FILES:
         path = sample_dir / name
         if not path.exists():
@@ -609,9 +609,7 @@ def corpus_integrity(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> List[Dict[str, An
             )
             continue
         try:
-            control_total_acceptance = _control_total_acceptance_for_fixture(
-                sample_dir, name
-            )
+            control_total_acceptance = _control_total_acceptance_for_fixture(sample_dir, name)
             if path.suffix.lower() in {".xlsx", ".xlsm"}:
                 batch, _ = parse_excel_transactions(
                     path, control_total_acceptance=control_total_acceptance
@@ -682,7 +680,7 @@ def corpus_integrity(sample_dir: Path = DEFAULT_SAMPLE_DIR) -> List[Dict[str, An
     return rows
 
 
-def measure_committed_rows(db) -> Dict[str, int]:
+def measure_committed_rows(db) -> dict[str, int]:
     """Count rows that actually landed in FactActual, per source file.
 
     Measured rather than assumed. `commit_batch` now derives both the audit row
@@ -695,8 +693,7 @@ def measure_committed_rows(db) -> Dict[str, int]:
     conn = db.get_duckdb_connection()
     try:
         rows = conn.execute(
-            "SELECT source_file_name, COUNT(*) FROM FactActual "
-            "GROUP BY source_file_name"
+            "SELECT source_file_name, COUNT(*) FROM FactActual GROUP BY source_file_name"
         ).fetchall()
     except Exception:
         return {}
@@ -708,6 +705,7 @@ def measure_committed_rows(db) -> Dict[str, int]:
 # --------------------------------------------------------------------------
 # Step 2 - build the context the production path would build
 # --------------------------------------------------------------------------
+
 
 def build_acceptance_context(
     project_dir: Path,
@@ -759,9 +757,7 @@ def build_acceptance_context(
             prescan = prescan_file(path)
             base_profile = resolve_base_profile(db, prescan.sample_headers)
             binding = resolve_profile_for_import(db, base_profile=base_profile)
-            control_total_acceptance = _control_total_acceptance_for_fixture(
-                sample_dir, name
-            )
+            control_total_acceptance = _control_total_acceptance_for_fixture(sample_dir, name)
             if path.suffix.lower() in {".xlsx", ".xlsm"}:
                 batch, txs = parse_excel_transactions(
                     path,
@@ -783,8 +779,7 @@ def build_acceptance_context(
 #: CSV's business codes into the integer ids `commit_budget_replace` expects.
 _PERIOD_ID = {f"FY26-P{m:02d}": m for m in range(1, 13)}
 _COMPANY_ID = {"IN01": 1, "IN02": 2}
-_COST_CENTER_ID = {f"CC-{n}": n for n in
-                   (100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 999)}
+_COST_CENTER_ID = {f"CC-{n}": n for n in (100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 999)}
 _COST_CENTER_ID["CC-950"] = 950
 
 
@@ -801,7 +796,8 @@ def _load_budget(db, repo, path: Path) -> int:
     if not path.exists():
         return 0
     lines = [
-        line for line in path.read_text(encoding="utf-8-sig").splitlines()
+        line
+        for line in path.read_text(encoding="utf-8-sig").splitlines()
         if not line.lstrip().startswith("#")
     ]
     rows = list(csv.DictReader(lines))
@@ -815,24 +811,28 @@ def _load_budget(db, repo, path: Path) -> int:
             # Unmapped budget line: record it as unmapped rather than guessing
             # an id, so a budget the harness could not load is visible.
             continue
-        normalised.append({
-            "company_id": _COMPANY_ID.get(entity, 1),
-            "account_id": int(account),
-            "cost_center_id": _COST_CENTER_ID.get(cost_center),
-            "period_id": _PERIOD_ID[period],
-            "amount": r.get("BudgetAmount") or "0",
-            "currency_code": "INR",
-            "source_row_ref": f"budget_row_{i}",
-        })
+        normalised.append(
+            {
+                "company_id": _COMPANY_ID.get(entity, 1),
+                "account_id": int(account),
+                "cost_center_id": _COST_CENTER_ID.get(cost_center),
+                "period_id": _PERIOD_ID[period],
+                "amount": r.get("BudgetAmount") or "0",
+                "currency_code": "INR",
+                "source_row_ref": f"budget_row_{i}",
+            }
+        )
     if not normalised:
         return 0
     return repo.commit_budget_replace(
-        budget_version="FY26-Approved", incoming_rows=normalised, batch_id=900001)
+        budget_version="FY26-Approved", incoming_rows=normalised, batch_id=900001
+    )
 
 
 # --------------------------------------------------------------------------
 # Steps 2-4 - run, join, classify
 # --------------------------------------------------------------------------
+
 
 def _catalog_id(finding: Any) -> str:
     """Catalog rule id for a finding.
@@ -844,9 +844,10 @@ def _catalog_id(finding: Any) -> str:
     return getattr(finding, "catalog_rule_id", None) or finding.rule_id
 
 
-def run_rules(context) -> List[Any]:
+def run_rules(context) -> list[Any]:
     """Full engine run, default thresholds, every rule enabled (doc 14 §5.2 step 2)."""
     from app.engine.rules.batch import evaluate_all_rules
+
     return evaluate_all_rules(context)
 
 
@@ -859,13 +860,14 @@ def run_rules_detailed(context):
     exception, which is what lets the report say *why* a rule is at zero.
     """
     from app.engine.rules.batch import evaluate_all_rules_detailed
+
     return evaluate_all_rules_detailed(context)
 
 
 def measure(
     context,
-    raises: Sequence[Dict[str, str]],
-    controls: Sequence[Dict[str, str]],
+    raises: Sequence[dict[str, str]],
+    controls: Sequence[dict[str, str]],
     *,
     as_of: str = DEFAULT_AS_OF,
     period: str = PERIOD_CODE,
@@ -873,6 +875,7 @@ def measure(
 ) -> AcceptanceReport:
     """Steps 2-4 plus the §5.3 bars and the §5.4 per-rule table."""
     import time
+
     from app.engine.rules.batch import catalog_rule_coverage
 
     report = AcceptanceReport(as_of=as_of, period=period)
@@ -922,24 +925,32 @@ def measure(
     extras = raised_set - raise_pairs - control_pairs
 
     report.controls_fired = [
-        {"rule_id": r, "subject_key": s,
-         "planting_id": next(c["planting_id"] for c in controls
-                             if (c["rule_id"], c["subject_key"]) == (r, s)),
-         "notes": next(c["notes"] for c in controls
-                       if (c["rule_id"], c["subject_key"]) == (r, s))}
+        {
+            "rule_id": r,
+            "subject_key": s,
+            "planting_id": next(
+                c["planting_id"] for c in controls if (c["rule_id"], c["subject_key"]) == (r, s)
+            ),
+            "notes": next(
+                c["notes"] for c in controls if (c["rule_id"], c["subject_key"]) == (r, s)
+            ),
+        }
         for r, s in sorted(fired_controls)
     ]
 
     from collections import Counter
+
     report.extras_by_rule = dict(sorted(Counter(r for r, _ in extras).items()))
     report.extras_total = len(extras)
 
     report.severity_counts = {
         "expected": _severity_counts(raises),
-        "detected": _severity_counts([r for r in raises
-                                      if (r["rule_id"], r["subject_key"]) in hits]),
-        "missed": _severity_counts([r for r in raises
-                                    if (r["rule_id"], r["subject_key"]) not in hits]),
+        "detected": _severity_counts(
+            [r for r in raises if (r["rule_id"], r["subject_key"]) in hits]
+        ),
+        "missed": _severity_counts(
+            [r for r in raises if (r["rule_id"], r["subject_key"]) not in hits]
+        ),
     }
 
     # ---- per-rule table (doc 14 §5.4) -----------------------------------
@@ -949,52 +960,57 @@ def measure(
         row = RuleRow(rule_id=rule_id, evaluator=coverage.get(rule_id, "<NOT WIRED>"))
         row.wired = rule_id in coverage
         row.plantings = [r["planting_id"] for r in raises if r["rule_id"] == rule_id]
-        row.detected = [r["planting_id"] for r in raises
-                        if r["rule_id"] == rule_id
-                        and (r["rule_id"], r["subject_key"]) in raised_set]
-        row.missed = [r["planting_id"] for r in raises
-                      if r["rule_id"] == rule_id
-                      and (r["rule_id"], r["subject_key"]) not in raised_set]
+        row.detected = [
+            r["planting_id"]
+            for r in raises
+            if r["rule_id"] == rule_id and (r["rule_id"], r["subject_key"]) in raised_set
+        ]
+        row.missed = [
+            r["planting_id"]
+            for r in raises
+            if r["rule_id"] == rule_id and (r["rule_id"], r["subject_key"]) not in raised_set
+        ]
         row.controls = [r["planting_id"] for r in controls if r["rule_id"] == rule_id]
-        row.controls_fired = [r["planting_id"] for r in controls
-                              if r["rule_id"] == rule_id
-                              and (r["rule_id"], r["subject_key"]) in raised_set]
+        row.controls_fired = [
+            r["planting_id"]
+            for r in controls
+            if r["rule_id"] == rule_id and (r["rule_id"], r["subject_key"]) in raised_set
+        ]
         row.findings_raised = raised_by_rule.get(rule_id, 0)
         row.extras = extras_by_rule.get(rule_id, 0)
         report.rules.append(row)
 
     report.miss_list = [
-        {"planting_id": r["planting_id"], "rule_id": r["rule_id"],
-         "severity": r["severity"], "subject_key": r["subject_key"],
-         "notes": r["notes"]}
-        for r in raises if (r["rule_id"], r["subject_key"]) not in raised_set
+        {
+            "planting_id": r["planting_id"],
+            "rule_id": r["rule_id"],
+            "severity": r["severity"],
+            "subject_key": r["subject_key"],
+            "notes": r["notes"],
+        }
+        for r in raises
+        if (r["rule_id"], r["subject_key"]) not in raised_set
     ]
 
     # ---- the bars (doc 14 §5.3) -----------------------------------------
     high_rows = [r for r in raises if r["severity"] == "High"]
-    high_found = sum(1 for r in high_rows
-                     if (r["rule_id"], r["subject_key"]) in raised_set)
-    over_extras = {r: n for r, n in extras_by_rule.items()
-                   if n > BAR_UNEXPLAINED_EXTRAS_PER_RULE}
+    high_found = sum(1 for r in high_rows if (r["rule_id"], r["subject_key"]) in raised_set)
+    over_extras = {r: n for r, n in extras_by_rule.items() if n > BAR_UNEXPLAINED_EXTRAS_PER_RULE}
     zero_cov = [r.rule_id for r in report.rules if r.zero_coverage]
     unwired = [r.rule_id for r in report.rules if not r.wired]
 
     zero_cov_detail = f"zero coverage: {zero_cov}" if zero_cov else ""
     if report.rule_faults:
-        fault_note = (
-            "rule execution fault(s) recorded, not clean zeros: "
-            + "; ".join(report.rule_faults)
+        fault_note = "rule execution fault(s) recorded, not clean zeros: " + "; ".join(
+            report.rule_faults
         )
-        zero_cov_detail = (
-            f"{zero_cov_detail}; {fault_note}" if zero_cov_detail else fault_note
-        )
+        zero_cov_detail = f"{zero_cov_detail}; {fault_note}" if zero_cov_detail else fault_note
 
     report.bars = [
         BarResult(
             "Planted-exception recall",
-            f">= {BAR_RECALL_MIN_HITS} of {len(raises)} "
-            f"(>= 90 % of the 32 raises)",
-            f"{len(hits)}/{len(raises)} = {len(hits)/len(raises)*100:.1f} %",
+            f">= {BAR_RECALL_MIN_HITS} of {len(raises)} (>= 90 % of the 32 raises)",
+            f"{len(hits)}/{len(raises)} = {len(hits) / len(raises) * 100:.1f} %",
             len(hits) >= BAR_RECALL_MIN_HITS,
             f"{len(report.miss_list)} planted case(s) not detected",
         ),
@@ -1051,8 +1067,8 @@ def measure(
     return report
 
 
-def _severity_counts(rows: Sequence[Dict[str, str]]) -> Dict[str, int]:
-    out: Dict[str, int] = {}
+def _severity_counts(rows: Sequence[dict[str, str]]) -> dict[str, int]:
+    out: dict[str, int] = {}
     for r in rows:
         out[r["severity"]] = out.get(r["severity"], 0) + 1
     return dict(sorted(out.items()))
@@ -1060,8 +1076,8 @@ def _severity_counts(rows: Sequence[Dict[str, str]]) -> Dict[str, int]:
 
 def attach_corpus_gate(
     report: AcceptanceReport,
-    corpus: List[Dict[str, Any]],
-    committed_rows: Optional[Dict[str, int]] = None,
+    corpus: list[dict[str, Any]],
+    committed_rows: dict[str, int] | None = None,
 ) -> None:
     """Fold doc 28 §5.0 entry criterion 4 into the verdict.
 
@@ -1141,7 +1157,7 @@ def apply_blocked_state(report: AcceptanceReport) -> None:
 def run_acceptance(
     sample_dir: Path = DEFAULT_SAMPLE_DIR,
     *,
-    project_dir: Optional[Path] = None,
+    project_dir: Path | None = None,
     period: str = PERIOD_CODE,
     as_of: str = DEFAULT_AS_OF,
     load_actuals: bool = True,
@@ -1171,17 +1187,23 @@ def run_acceptance(
     corpus = corpus_integrity(sample_dir)
     scope = checksum_scope(sample_dir)
     context = build_acceptance_context(
-        project_dir, sample_dir=sample_dir, period_code=period,
-        as_of_date=as_of, load_actuals=load_actuals)
+        project_dir,
+        sample_dir=sample_dir,
+        period_code=period,
+        as_of_date=as_of,
+        load_actuals=load_actuals,
+    )
 
     # Measured, not assumed: how many rows each file actually contributed.
-    committed_rows: Dict[str, int] = {}
+    committed_rows: dict[str, int] = {}
     if load_actuals:
         from app.engine.store.db import DatabaseManager
+
         committed_rows = measure_committed_rows(DatabaseManager(project_dir))
 
-    measured = measure(context, raises, controls, as_of=as_of, period=period,
-                       stability_runs=stability_runs)
+    measured = measure(
+        context, raises, controls, as_of=as_of, period=period, stability_runs=stability_runs
+    )
 
     # Preserve ordering: corpus gate, then the measured bars.
     measured.checksum_scope = scope
@@ -1200,6 +1222,7 @@ def run_acceptance(
 # Step 5 - reports
 # --------------------------------------------------------------------------
 
+
 def _append_rule_faults(A, report: AcceptanceReport) -> None:
     """Render the T-009 fault block: a crashed rule is unmeasured, not a zero.
 
@@ -1211,10 +1234,12 @@ def _append_rule_faults(A, report: AcceptanceReport) -> None:
         return
     A("## Rule execution faults (these zeros are faults, not measurements)")
     A("")
-    A("The rule(s) below raised inside the batch. Fault isolation records the "
-      "exception and the run continues (doc-06 §2.9), so their recall rows are "
-      "**unmeasured**, not zero: read the row as a fault until the exception is "
-      "fixed. A rule that legitimately finds nothing never appears here.")
+    A(
+        "The rule(s) below raised inside the batch. Fault isolation records the "
+        "exception and the run continues (doc-06 §2.9), so their recall rows are "
+        "**unmeasured**, not zero: read the row as a fault until the exception is "
+        "fixed. A rule that legitimately finds nothing never appears here."
+    )
     A("")
     for fault in report.rule_faults:
         A(f"- {fault}")
@@ -1223,23 +1248,25 @@ def _append_rule_faults(A, report: AcceptanceReport) -> None:
 
 def render_markdown(report: AcceptanceReport) -> str:
     """Human-readable report (doc 14 §5.2 step 5)."""
-    L: List[str] = []
+    L: list[str] = []
     A = L.append
     A("# Planted-exception acceptance report")
     A("")
     A(f"**Verdict: {report.verdict}**")
     A("")
     if report.verdict == "BLOCKED":
-        A("> **The doc 14 §5.3 bars were NOT MEASURED.** The corpus precondition "
-          "(doc 28 §5.0 entry criterion 4) is not met, so no facts exist for the "
-          "rules to fire on. The figures in the per-rule table below are printed "
-          "for diagnosis only and are **not** a §5.3 result. This run is neither a "
-          "pass nor a rule-logic failure - it is BLOCKED.")
+        A(
+            "> **The doc 14 §5.3 bars were NOT MEASURED.** The corpus precondition "
+            "(doc 28 §5.0 entry criterion 4) is not met, so no facts exist for the "
+            "rules to fire on. The figures in the per-rule table below are printed "
+            "for diagnosis only and are **not** a §5.3 result. This run is neither a "
+            "pass nor a rule-logic failure - it is BLOCKED."
+        )
         A("")
     A(f"- Period: `{report.period}`  |  as_of (injected, no clock): `{report.as_of}`")
     A(f"- Findings raised: {report.findings_total}  |  elapsed: {report.elapsed_seconds:.1f}s")
     A(f"- Measurable: {'yes' if report.measurable else 'NO - see BLOCKED REASONS'}")
-    A(f"- Harness: doc 14 §5.2, run by `scripts/acceptance`")
+    A("- Harness: doc 14 §5.2, run by `scripts/acceptance`")
     A("")
 
     if report.blocked_reasons:
@@ -1268,8 +1295,10 @@ def render_markdown(report: AcceptanceReport) -> str:
             result = "_NOT MEASURED_"
         else:
             result = "PASS" if b.passed else "**FAIL**"
-        A(f"| {b.name} | {b.requirement} | "
-          f"{b.measured if b.measurable else 'NOT MEASURED'} | {result} |")
+        A(
+            f"| {b.name} | {b.requirement} | "
+            f"{b.measured if b.measurable else 'NOT MEASURED'} | {result} |"
+        )
     A("")
 
     # One heading only: an earlier version emitted this section twice, once
@@ -1283,14 +1312,18 @@ def render_markdown(report: AcceptanceReport) -> str:
     else:
         A("## Per-rule recall (doc 14 §5.4)")
         A("")
-    A("| Rule | Evaluator | Plantings | Detected | Recall | Controls | Controls fired | Findings | Extras |")
+    A(
+        "| Rule | Evaluator | Plantings | Detected | Recall | Controls | Controls fired | Findings | Extras |"
+    )
     A("|---|---|---|---|---|---|---|---|---|")
     for r in report.rules:
         recall = "n/a" if r.recall_pct is None else f"{r.recall_pct} %"
         flag = " **ZERO-COVERAGE**" if r.zero_coverage else ""
-        A(f"| {r.rule_id}{flag} | `{r.evaluator}` | {len(r.plantings)} | "
-          f"{len(r.detected)} | {recall} | {len(r.controls)} | "
-          f"{len(r.controls_fired)} | {r.findings_raised} | {r.extras} |")
+        A(
+            f"| {r.rule_id}{flag} | `{r.evaluator}` | {len(r.plantings)} | "
+            f"{len(r.detected)} | {recall} | {len(r.controls)} | "
+            f"{len(r.controls_fired)} | {r.findings_raised} | {r.extras} |"
+        )
     A("")
 
     A("## Controls result (must be 0 of 8)")
@@ -1312,8 +1345,10 @@ def render_markdown(report: AcceptanceReport) -> str:
         A("| Planting | Rule | Severity | Subject key | Notes |")
         A("|---|---|---|---|---|")
         for m in report.miss_list:
-            A(f"| {m['planting_id']} | {m['rule_id']} | {m['severity']} | "
-              f"`{m['subject_key']}` | {m['notes']} |")
+            A(
+                f"| {m['planting_id']} | {m['rule_id']} | {m['severity']} | "
+                f"`{m['subject_key']}` | {m['notes']} |"
+            )
     A("")
 
     A("## Extra findings (false-positive log reference)")
@@ -1321,28 +1356,35 @@ def render_markdown(report: AcceptanceReport) -> str:
     if not report.extras_by_rule:
         A("None.")
     else:
-        A(f"{report.extras_total} extra finding(s) by rule: "
-          f"`{report.extras_by_rule}`")
+        A(f"{report.extras_total} extra finding(s) by rule: `{report.extras_by_rule}`")
         A("")
-        A("No false-positive log is committed in this repository, so every extra "
-          "is UNEXPLAINED, not justified.")
+        A(
+            "No false-positive log is committed in this repository, so every extra "
+            "is UNEXPLAINED, not justified."
+        )
     A("")
 
     A("## Corpus integrity (doc 28 §5.0 criterion 4)")
     A("")
-    A("| File | Source type | Gate | Recorded | Rows | Loaded | Debit | Credit | Net | Failed checks | DQ score |")
+    A(
+        "| File | Source type | Gate | Recorded | Rows | Loaded | Debit | Credit | Net | Failed checks | DQ score |"
+    )
     A("|---|---|---|---|---|---|---|---|---|---|---|")
     for c in report.corpus:
-        A(f"| {c['file']} | {c.get('source_type', '-')} | {c.get('balance_gate', '-')} | "
-          f"{c.get('recorded_status', c.get('status', '-'))} | {c.get('rows', '-')} | "
-          f"{c.get('loaded_count', '-')} | "
-          f"{c.get('total_debit', '-')} | {c.get('total_credit', '-')} | "
-          f"{c.get('net_imbalance', '-')} | "
-          f"{', '.join(c.get('failed_checks') or []) or 'none'} | "
-          f"{c.get('data_quality_score', '-')} |")
+        A(
+            f"| {c['file']} | {c.get('source_type', '-')} | {c.get('balance_gate', '-')} | "
+            f"{c.get('recorded_status', c.get('status', '-'))} | {c.get('rows', '-')} | "
+            f"{c.get('loaded_count', '-')} | "
+            f"{c.get('total_debit', '-')} | {c.get('total_credit', '-')} | "
+            f"{c.get('net_imbalance', '-')} | "
+            f"{', '.join(c.get('failed_checks') or []) or 'none'} | "
+            f"{c.get('data_quality_score', '-')} |"
+        )
     A("")
-    A("`DQ score` is computed by `calculate_quality_score()` (`DEF-021`); it is no "
-      "longer the literal 100 that every batch used to report.")
+    A(
+        "`DQ score` is computed by `calculate_quality_score()` (`DEF-021`); it is no "
+        "longer the literal 100 that every batch used to report."
+    )
     A("")
 
     if report.divergences:
@@ -1358,43 +1400,59 @@ def render_markdown(report: AcceptanceReport) -> str:
         formats = ", ".join(
             f"`{suffix}`" for suffix in report.checksum_scope.get("fingerprinted_suffixes", [])
         )
-        A(f"- Fingerprinted: **{report.checksum_scope.get('fingerprinted_count', 0)} "
-          f"data artefact(s)** across {formats}.")
-        A("  SHA-256 values, keyed by relative path, are included in "
-          "`acceptance_report.json` under `checksum_scope.sha256`.")
-        A(f"- Excluded: **{report.checksum_scope.get('excluded_count', 0)} "
-          "recognized data artefact(s)**.")
+        A(
+            f"- Fingerprinted: **{report.checksum_scope.get('fingerprinted_count', 0)} "
+            f"data artefact(s)** across {formats}."
+        )
+        A(
+            "  SHA-256 values, keyed by relative path, are included in "
+            "`acceptance_report.json` under `checksum_scope.sha256`."
+        )
+        A(
+            f"- Excluded: **{report.checksum_scope.get('excluded_count', 0)} "
+            "recognized data artefact(s)**."
+        )
         A(f"  - {report.checksum_scope.get('note', '')}")
         for suffix, why in (report.checksum_scope.get("exclusion_reason") or {}).items():
             A(f"  - `{suffix}`: {why}.")
         if report.checksum_scope.get("excluded_count", 0):
-            A("  Exclusions are listed and justified; they are not silently "
-              "treated as checksummed.")
+            A(
+                "  Exclusions are listed and justified; they are not silently "
+                "treated as checksummed."
+            )
     A("")
 
     A("## Stated assumptions")
     A("")
-    A(f"- **Run date.** Doc 14 §5.2 step 2 says only \"with default thresholds, "
-      f"every rule enabled\" and names no run date. The answer key's P11 note "
-      f"(\"Posting on 30-Nov-2026 is 18 days ahead of run date\") implies "
-      f"`as_of={DEFAULT_AS_OF}`, which is used. No clock is read (doc 06 line 195).")
-    A("- **Generator checksum.** The report records the actual SHA-256 of each "
-      "recognized corpus data artifact and does not assert against a committed "
-      "golden digest, because no canonical manifest is committed. The generator "
-      "reproducibility test is separate; a recorded fingerprint is not a claim "
-      "that this acceptance run regenerated the data.")
-    A("- **Seed.** Doc 14 §5.2 step 1 was amended 2026-10-03 from `--seed "
-      "20260101` to `--seed 42`. The committed corpus was generated at seed 42 "
-      "and audit New-06 reproduced it byte-exactly; the previously documented "
-      "seed was never used.")
-    A("- **CLI name.** Doc 14 §5.2 says \"run by `scripts/acceptance`\". This "
-      "repository names scripts with a `.py` suffix (`build.py`, `check.py`), so "
-      "the entry point is `scripts/acceptance.py`.")
+    A(
+        f'- **Run date.** Doc 14 §5.2 step 2 says only "with default thresholds, '
+        f"every rule enabled\" and names no run date. The answer key's P11 note "
+        f'("Posting on 30-Nov-2026 is 18 days ahead of run date") implies '
+        f"`as_of={DEFAULT_AS_OF}`, which is used. No clock is read (doc 06 line 195)."
+    )
+    A(
+        "- **Generator checksum.** The report records the actual SHA-256 of each "
+        "recognized corpus data artifact and does not assert against a committed "
+        "golden digest, because no canonical manifest is committed. The generator "
+        "reproducibility test is separate; a recorded fingerprint is not a claim "
+        "that this acceptance run regenerated the data."
+    )
+    A(
+        "- **Seed.** Doc 14 §5.2 step 1 was amended 2026-10-03 from `--seed "
+        "20260101` to `--seed 42`. The committed corpus was generated at seed 42 "
+        "and audit New-06 reproduced it byte-exactly; the previously documented "
+        "seed was never used."
+    )
+    A(
+        '- **CLI name.** Doc 14 §5.2 says "run by `scripts/acceptance`". This '
+        "repository names scripts with a `.py` suffix (`build.py`, `check.py`), so "
+        "the entry point is `scripts/acceptance.py`."
+    )
     A("")
     return "\n".join(L)
 
 
-def write_reports(report: AcceptanceReport, out_dir: Path) -> Tuple[Path, Path]:
+def write_reports(report: AcceptanceReport, out_dir: Path) -> tuple[Path, Path]:
     """Write `acceptance_report.json` and `acceptance_report.md` (step 5)."""
     out_dir.mkdir(parents=True, exist_ok=True)
     json_path = out_dir / "acceptance_report.json"

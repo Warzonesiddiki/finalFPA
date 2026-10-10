@@ -16,6 +16,21 @@ if sys.platform == "win32":
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 
+# Exit code a bar returns when it could not produce a measurement at all. Distinct
+# from 1 ("measured, and the measurement is red"): a bar that never looked cannot be
+# reported as a shortfall, and a gate that conflates them is how a missing artefact
+# becomes a passing number or a fabricated failure.
+NOT_MEASURED = 2
+
+STATUS_FOR = {0: "PASS", 1: "FAIL", NOT_MEASURED: "NOT MEASURED"}
+
+_MISSING_MEASUREMENT_NOTE = (
+    "    This is a missing measurement, not a coverage shortfall. Run the pytest bar "
+    "(which writes .coverage) before this bar; a gate that cannot tell those two apart "
+    "reports 0.00% for a corpus it never looked at."
+)
+
+
 class BarResult(NamedTuple):
     desc: str
     cmd: str
@@ -48,8 +63,19 @@ def enforce_coverage_gates(domain_threshold: float = 90.0, backend_threshold: fl
         cov.load()
         data = cov.get_data()
     except Exception as exc:
-        print(f"FAILED: Could not load coverage data: {exc}", file=sys.stderr)
-        return 1
+        print(f"NOT MEASURED: could not load coverage data: {exc}", file=sys.stderr)
+        print(_MISSING_MEASUREMENT_NOTE)
+        return NOT_MEASURED
+
+    # Measured on this tree (coverage 7.x, Python 3.14): with no `.coverage` file at
+    # all, `cov.load()` does NOT raise - it succeeds and reports zero measured files.
+    # So an exception handler alone never fires, and the bar falls straight through to
+    # "0/0 statements, 0.00%", which is the fabricated shortfall this bar exists to
+    # stop. An empty measurement set is the missing-measurement case.
+    if not data.measured_files():
+        print("NOT MEASURED: coverage loaded, but it contains no measured files.", file=sys.stderr)
+        print(_MISSING_MEASUREMENT_NOTE)
+        return NOT_MEASURED
 
     backend_stmts = 0
     backend_miss = 0
@@ -175,7 +201,9 @@ def main() -> int:
     results.append(BarResult(desc9, cmd9, rc9))
 
     # 10. Engine-boundary import rule per doc 09 S4.1 (TB-014)
-    cmd10 = 'python -c "from importlinter.cli import lint_imports; raise SystemExit(lint_imports())"'
+    cmd10 = (
+        'python -c "from importlinter.cli import lint_imports; raise SystemExit(lint_imports())"'
+    )
     desc10 = "Engine-Boundary Import Rule (lint-imports)"
     rc10 = run_command(cmd10, desc10)
     results.append(BarResult(desc10, cmd10, rc10))
@@ -215,18 +243,33 @@ def main() -> int:
 
     # Summary reporting table
     print("\n" + "=" * 80)
-    print(f"{'CHECK BAR':<52} | {'STATUS':<8} | {'EXIT CODE':<10}")
+    print(f"{'CHECK BAR':<52} | {'STATUS':<13} | {'EXIT CODE':<10}")
     print("-" * 80)
     failed_count = 0
+    unmeasured_count = 0
     for r in results:
-        status_str = "PASS" if r.exit_code == 0 else "FAIL"
-        if r.exit_code != 0:
+        status_str = STATUS_FOR.get(r.exit_code, f"FAIL({r.exit_code})")
+        if r.exit_code == NOT_MEASURED:
+            unmeasured_count += 1
+        elif r.exit_code != 0:
             failed_count += 1
-        print(f"{r.desc:<52} | {status_str:<8} | {r.exit_code:<10}")
+        print(f"{r.desc:<52} | {status_str:<13} | {r.exit_code:<10}")
     print("=" * 80)
 
-    if failed_count > 0:
-        print(f"\n[FAIL] Validation Gate FAILED: {failed_count}/{len(results)} bars failed.\n")
+    if unmeasured_count:
+        # An unmeasured bar is never counted as a pass and never counted as a
+        # shortfall. It gets its own line so the tally cannot be read as "everything
+        # else was fine" - which is what a silent 0.00% invites.
+        print(
+            f"\n[NOT MEASURED] {unmeasured_count} of {len(results)} bars produced no "
+            "measurement. They are neither passes nor failures; the gate is not clean."
+        )
+    if failed_count or unmeasured_count:
+        print(
+            f"\n[FAIL] Validation Gate FAILED: {failed_count}/{len(results)} bars failed"
+            + (f", {unmeasured_count} not measured" if unmeasured_count else "")
+            + ".\n"
+        )
         return 1
     else:
         print("\n=== All Quality Gate Checks Passed Cleanly! ===\n")

@@ -18,7 +18,7 @@ fill is written before the label, value and comparison that sit on top of it. Th
 
 from __future__ import annotations
 
-from typing import Mapping, Sequence
+from collections.abc import Mapping, Sequence
 
 #: Layout each slide is built from (§3.6 — seven layouts).
 SLIDE_LAYOUTS: Mapping[str, str] = {

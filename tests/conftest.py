@@ -51,7 +51,7 @@ from __future__ import annotations
 import os
 import sqlite3
 from pathlib import Path
-from typing import Any, List
+from typing import Any
 
 import pytest
 
@@ -85,9 +85,7 @@ def real_project_dir() -> Path:
     if base:
         return Path(base)
     if REAL_LOCALAPPDATA:
-        return (
-            Path(REAL_LOCALAPPDATA) / "FP&A Month-End Copilot" / "Projects" / "default"
-        )
+        return Path(REAL_LOCALAPPDATA) / "FP&A Month-End Copilot" / "Projects" / "default"
     return Path.cwd() / "Projects" / "default"
 
 
@@ -171,13 +169,13 @@ def pytest_sessionfinish(session, exitstatus):  # noqa: ARG001 - pytest hook sig
         session.exitstatus = 1
 
 
-def get_batch_slugs(batch: Any) -> List[str]:
+def get_batch_slugs(batch: Any) -> list[str]:
     """Canonical slug lookup helper for import batches.
 
     Extracts message slugs from batch-level checks and quarantined rows'
     reason_codes - the two places they actually live.
     """
-    slugs: List[str] = []
+    slugs: list[str] = []
     if hasattr(batch, "checks") and batch.checks:
         for c in batch.checks:
             if hasattr(c, "message_slug") and c.message_slug:
@@ -248,9 +246,7 @@ def hermetic_project_db(
     project_path = tmp_path / "pytest_project"
     monkeypatch.setenv("FPA_PROJECT_DIR", str(project_path))
     monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
-    monkeypatch.setattr(
-        "app.engine.store.db.DEFAULT_PROJECT_DIR", project_path, raising=False
-    )
+    monkeypatch.setattr("app.engine.store.db.DEFAULT_PROJECT_DIR", project_path, raising=False)
 
     # Seed the row the API contract tests depend on.
     if request.path.stem in ("test_api", "test_api_contract"):

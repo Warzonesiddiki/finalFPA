@@ -1,16 +1,14 @@
 """Unit tests for MappingRepository per 04_SOURCE_MAPPING_AND_IMPORT_SPEC.md §5 and 03_DATA_DICTIONARY.md §3.8, §5.5."""
 
-import pytest
 from pathlib import Path
-from app.engine.store.db import DatabaseManager
-from app.engine.store.mapping_repo import MappingRepository
+
+import pytest
+
 from app.engine.imports.profiles import (
     MappingProfile,
-    MappingProfileVersion,
-    DimMapping,
-    compute_header_signature,
-    normalize_header,
 )
+from app.engine.store.db import DatabaseManager
+from app.engine.store.mapping_repo import MappingRepository
 
 
 @pytest.fixture

@@ -41,10 +41,10 @@ import subprocess
 import sys
 import time
 import zipfile
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple
 
 # --------------------------------------------------------------------------
 # Frozen constants owned by doc 15. Artefact names from section 1.2 / 10.
@@ -57,7 +57,7 @@ NFR_006_MAX_BYTES = 500 * 1024 * 1024  # doc 15 section 3.3 / doc 14 NFR-006
 
 #: Files that must sit beside the exe for the payload to be complete.
 #: Doc 15 section 3.2 step 4 and step 5.
-REQUIRED_PAYLOAD_ENTRIES: Tuple[str, ...] = (
+REQUIRED_PAYLOAD_ENTRIES: tuple[str, ...] = (
     "README.txt",
     "THIRD_PARTY_LICENSES.txt",
     "templates",
@@ -65,7 +65,7 @@ REQUIRED_PAYLOAD_ENTRIES: Tuple[str, ...] = (
 
 #: Names that must never appear in the payload. Doc 15 sections 1.2 and 3.2
 #: step 5 ("no tests/, no docs/, no sample-data/generator, no .env").
-FORBIDDEN_PAYLOAD_NAMES: Tuple[str, ...] = (
+FORBIDDEN_PAYLOAD_NAMES: tuple[str, ...] = (
     "tests",
     "test",
     "docs",
@@ -78,12 +78,17 @@ FORBIDDEN_PAYLOAD_NAMES: Tuple[str, ...] = (
 #: Key material that must never ship. Doc 15 section 3.2 step 5, SEC-031.
 #: NOTE: `.pem` is NOT blanket-forbidden because `certifi/cacert.pem` is a CA
 #: bundle, not a secret. Only *key* extensions are forbidden.
-FORBIDDEN_SUFFIXES: Tuple[str, ...] = (
-    ".pfx", ".p12", ".key", ".pem-key", ".keystore", ".jks",
+FORBIDDEN_SUFFIXES: tuple[str, ...] = (
+    ".pfx",
+    ".p12",
+    ".key",
+    ".pem-key",
+    ".keystore",
+    ".jks",
 )
 
 #: Source assets that must exist before a build (doc 15 section 3.1 #4 and 2.3).
-REQUIRED_SOURCE_ASSETS: Tuple[str, ...] = (
+REQUIRED_SOURCE_ASSETS: tuple[str, ...] = (
     "packaging/icons/app.ico",
     "packaging/installer.iss",
     "packaging/pyinstaller.spec",
@@ -93,12 +98,10 @@ REQUIRED_SOURCE_ASSETS: Tuple[str, ...] = (
 )
 
 #: The deck + input workbook templates named in doc 15 section 2.3.
-REQUIRED_TEMPLATES: Tuple[str, ...] = (
-    "FPAMonthEndCopilot_v1.pptx",
-)
+REQUIRED_TEMPLATES: tuple[str, ...] = ("FPAMonthEndCopilot_v1.pptx",)
 
 #: Layout names doc 12 section 3.6 requires in the deck template.
-REQUIRED_PPTX_LAYOUTS: Tuple[str, ...] = (
+REQUIRED_PPTX_LAYOUTS: tuple[str, ...] = (
     "FPA-PPT-001",
     "FPA-PPT-002",
     "FPA-PPT-003",
@@ -163,14 +166,17 @@ def _validate_pptx_template(path: Path) -> None:
         absent = [n for n in REQUIRED_PPTX_LAYOUTS if n not in blob]
         if absent:
             raise BuildError(
-                "doc 12 section 3.6 requires layouts " + ", ".join(REQUIRED_PPTX_LAYOUTS)
-                + "; missing " + ", ".join(absent)
+                "doc 12 section 3.6 requires layouts "
+                + ", ".join(REQUIRED_PPTX_LAYOUTS)
+                + "; missing "
+                + ", ".join(absent)
             )
 
 
 # --------------------------------------------------------------------------
 # Stage bookkeeping
 # --------------------------------------------------------------------------
+
 
 @dataclass
 class StageResult:
@@ -179,8 +185,8 @@ class StageResult:
     status: str = "pending"  # pass | fail | skip
     seconds: float = 0.0
     detail: str = ""
-    errors: List[str] = field(default_factory=list)
-    blockers: List[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
+    blockers: list[str] = field(default_factory=list)
 
     def render(self) -> str:
         mark = {"pass": "PASS", "fail": "FAIL", "skip": "SKIP"}.get(self.status, "?")
@@ -198,7 +204,7 @@ class BuildReport:
     """Collects every stage result so the run always produces one transcript."""
 
     def __init__(self) -> None:
-        self.stages: List[StageResult] = []
+        self.stages: list[StageResult] = []
         self.started = time.perf_counter()
 
     def add(self, stage: StageResult) -> StageResult:
@@ -226,11 +232,12 @@ class BuildError(RuntimeError):
 # Small helpers
 # --------------------------------------------------------------------------
 
+
 def log(msg: str) -> None:
     print(f"--> [BUILD] {msg}", flush=True)
 
 
-def run(cmd: Sequence[str], desc: str, cwd: Optional[Path] = None) -> subprocess.CompletedProcess:
+def run(cmd: Sequence[str], desc: str, cwd: Path | None = None) -> subprocess.CompletedProcess:
     """Run a command, streaming its output. Never shell=True for list commands."""
     printable = " ".join(str(c) for c in cmd)
     log(f"{desc}: {printable}")
@@ -242,7 +249,7 @@ def run(cmd: Sequence[str], desc: str, cwd: Optional[Path] = None) -> subprocess
     )
 
 
-def which(name: str) -> Optional[Path]:
+def which(name: str) -> Path | None:
     """Discover a tool on PATH.
 
     Doc 15 section 2.1: "the compiler path is discovered, never hard-coded per
@@ -288,6 +295,7 @@ SEMVER = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$")
 # Section 3.1 - Preconditions (fail fast, in this order)
 # --------------------------------------------------------------------------
 
+
 def preconditions(root: Path, args: argparse.Namespace, version: str) -> None:
     """Doc 15 section 3.1, checked in the documented order.
 
@@ -313,9 +321,7 @@ def preconditions(root: Path, args: argparse.Namespace, version: str) -> None:
         else:
             res = run([git, "-C", root, "status", "--porcelain"], "check working tree")
             if res.returncode == 0 and res.stdout.strip():
-                raise BuildError(
-                    "The repository has uncommitted changes - commit or use --dev."
-                )
+                raise BuildError("The repository has uncommitted changes - commit or use --dev.")
             log("precondition 1 (clean tree): pass")
     else:
         log("precondition 1 (clean tree): SKIPPED - not a git checkout")
@@ -357,27 +363,22 @@ def preconditions(root: Path, args: argparse.Namespace, version: str) -> None:
         present = {p.name for p in tpl_dir.iterdir()}
         missing_templates = [t for t in REQUIRED_TEMPLATES if t not in present]
         if missing_templates:
-            missing.append(
-                "packaging/templates/" + ", ".join(missing_templates)
-            )
+            missing.append("packaging/templates/" + ", ".join(missing_templates))
     if missing:
         for item in missing:
             log(f"MISSING ASSET: {item}")
-        raise BuildError(
-            "Required build assets are missing: " + "; ".join(missing)
-        )
+        raise BuildError("Required build assets are missing: " + "; ".join(missing))
 
     # --- 4b. Required assets are VALID, not merely present (DEF-011) -----------
     # DEF-011: the gate above passed on filename alone, so 15-byte and 16-byte
     # ASCII placeholder files ("ICO_PLACEHOLDER", "PPTX_PLACEHOLDER") satisfied
     # doc 15 section 3.1 #4 and shipped inside a 76 MB installer. Presence is not
     # asset validation; a real build must refuse a stub.
-    invalid: List[str] = []
+    invalid: list[str] = []
     ico_path = root / "packaging" / "icons" / "app.ico"
     if not _is_valid_ico(ico_path):
         invalid.append(
-            f"packaging/icons/app.ico is not a valid ICO "
-            f"({ico_path.stat().st_size} bytes)"
+            f"packaging/icons/app.ico is not a valid ICO ({ico_path.stat().st_size} bytes)"
         )
     for tpl_name in REQUIRED_TEMPLATES:
         tpl_path = tpl_dir / tpl_name
@@ -388,9 +389,7 @@ def preconditions(root: Path, args: argparse.Namespace, version: str) -> None:
     if invalid:
         for item in invalid:
             log(f"INVALID ASSET: {item}")
-        raise BuildError(
-            "Required build assets are present but invalid: " + "; ".join(invalid)
-        )
+        raise BuildError("Required build assets are present but invalid: " + "; ".join(invalid))
     log("precondition 4b (asset validity): pass")
     log("precondition 4 (required assets): pass")
 
@@ -399,13 +398,11 @@ def preconditions(root: Path, args: argparse.Namespace, version: str) -> None:
         log("precondition 5 (Inno Setup): waived by --skip-installer")
         return
     if find_iscc() is None:
-        raise BuildError(
-            "Inno Setup not found - install it or pass --skip-installer."
-        )
+        raise BuildError("Inno Setup not found - install it or pass --skip-installer.")
     log("precondition 5 (Inno Setup): pass")
 
 
-def find_iscc() -> Optional[Path]:
+def find_iscc() -> Path | None:
     """Discover ISCC.exe - discovered, never hard-coded (doc 15 section 2.1)."""
     on_path = which("ISCC")
     if on_path:
@@ -424,43 +421,46 @@ def find_iscc() -> Optional[Path]:
 # Section 2.2 - Version stamping
 # --------------------------------------------------------------------------
 
+
 def generate_version_info(root: Path, version: str) -> Path:
     """Step: `packaging/version_info.txt` - "Same version + product name +
     company", "Written by: scripts/build" (doc 15 section 2.2)."""
     out = root / "packaging" / "version_info.txt"
     major, minor, patch = (version.split(".") + ["0", "0"])[:3]
     out.write_text(
-        "\n".join([
-            f"# Generated by scripts/build - do not edit by hand (doc 15 section 2.2).",
-            f"VSVersionInfo(",
-            f'  ffi=FixedFileInfo(',
-            f"    filevers={major}.{minor}.{patch}.0,",
-            f"    prodvers={major}.{minor}.{patch}.0,",
-            f"    flags=0x0,",
-            f'    OS=0x40004,"',
-            f'    fileType=0x1,"',
-            f'    subtype=0x0,"',
-            f'    date=(0, 0)',
-            f"  ),",
-            f'  kids=[',
-            f"    StringFileInfo(['",
-            f"      '040904B0',",
-            f"      ['CompanyName', '{PUBLISHER}'],",
-            f"      ['FileDescription', '{DISPLAY_NAME}'],",
-            f"      ['FileVersion', '{version}'],",
-            f"      ['InternalName', '{APP_NAME}'],",
-            f"      ['LegalCopyright', '{PUBLISHER}'],",
-            f"      ['OriginalFilename', '{APP_NAME}.exe'],",
-            f"      ['ProductName', '{DISPLAY_NAME}'],",
-            f"      ['ProductVersion', '{version}']",
-            f"    ]",
-            f"  ]),",
-            f'  VarFileInfo([',
-            f"    ['Translation', 0x409, 1200]",
-            f"  ])",
-            f")",
-            "",
-        ]),
+        "\n".join(
+            [
+                "# Generated by scripts/build - do not edit by hand (doc 15 section 2.2).",
+                "VSVersionInfo(",
+                "  ffi=FixedFileInfo(",
+                f"    filevers={major}.{minor}.{patch}.0,",
+                f"    prodvers={major}.{minor}.{patch}.0,",
+                "    flags=0x0,",
+                '    OS=0x40004,"',
+                '    fileType=0x1,"',
+                '    subtype=0x0,"',
+                "    date=(0, 0)",
+                "  ),",
+                "  kids=[",
+                "    StringFileInfo(['",
+                "      '040904B0',",
+                f"      ['CompanyName', '{PUBLISHER}'],",
+                f"      ['FileDescription', '{DISPLAY_NAME}'],",
+                f"      ['FileVersion', '{version}'],",
+                f"      ['InternalName', '{APP_NAME}'],",
+                f"      ['LegalCopyright', '{PUBLISHER}'],",
+                f"      ['OriginalFilename', '{APP_NAME}.exe'],",
+                f"      ['ProductName', '{DISPLAY_NAME}'],",
+                f"      ['ProductVersion', '{version}']",
+                "    ]",
+                "  ]),",
+                "  VarFileInfo([",
+                "    ['Translation', 0x409, 1200]",
+                "  ])",
+                ")",
+                "",
+            ]
+        ),
         encoding="utf-8",
     )
     return out
@@ -470,17 +470,18 @@ def generate_version_info(root: Path, version: str) -> Path:
 # Step 4 - Payload staging
 # --------------------------------------------------------------------------
 
-def stage_payload(root: Path, payload: Path, version: str) -> Tuple[List[str], List[str]]:
+
+def stage_payload(root: Path, payload: Path, version: str) -> tuple[list[str], list[str]]:
     """Doc 15 section 3.2 step 4:
 
-        "Stage the payload beside the exe: `templates/` (deck + input `.xlsx`),
-        `THIRD_PARTY_LICENSES.txt` (Python **and** UI dependencies), `README.txt`
-        (first-run pointer, portable-mode note), the EULA/disclaimer text"
+    "Stage the payload beside the exe: `templates/` (deck + input `.xlsx`),
+    `THIRD_PARTY_LICENSES.txt` (Python **and** UI dependencies), `README.txt`
+    (first-run pointer, portable-mode note), the EULA/disclaimer text"
     """
     log("staging payload beside the exe")
     payload.mkdir(parents=True, exist_ok=True)
-    staged: List[str] = []
-    blockers: List[str] = []
+    staged: list[str] = []
+    blockers: list[str] = []
 
     # templates/ - copied if present, never invented. Presence is validated
     # properly by the step 5 audit; staging only reports what it could copy.
@@ -544,7 +545,7 @@ def build_licence_text(root: Path, payload: Path) -> str:
         "-" * 60,
     ]
     internal = payload / "_internal"
-    py_entries: List[Tuple[str, str, str]] = []
+    py_entries: list[tuple[str, str, str]] = []
     if internal.is_dir():
         for dist in sorted(internal.glob("*.dist-info")):
             name, _, version = dist.name[: -len(".dist-info")].partition("-")
@@ -580,7 +581,6 @@ def build_licence_text(root: Path, payload: Path) -> str:
         "file in _internal/*.dist-info/licenses/. UI dependency licences are",
         "published with each npm package and listed above by name and version.",
         "",
-
         "",
         "Part 3 - Adopted source (copy-edit) notices",
         "------------------------------------------------------------",
@@ -598,8 +598,10 @@ def _adopted_source_notices(root: Path) -> list[str]:
     """The `## WS-nn ... (ADP-nnn)` sections of THIRD_PARTY_NOTICES.md, verbatim."""
     notices = root / "THIRD_PARTY_NOTICES.md"
     if not notices.exists():
-        return ["  (THIRD_PARTY_NOTICES.md is missing - this payload would ship",
-                "   copied source with no notice. See docs/15 step 4a.)"]
+        return [
+            "  (THIRD_PARTY_NOTICES.md is missing - this payload would ship",
+            "   copied source with no notice. See docs/15 step 4a.)",
+        ]
     out: list[str] = []
     keep = False
     for line in notices.read_text(encoding="utf-8").splitlines():
@@ -614,71 +616,74 @@ def _adopted_source_notices(root: Path) -> list[str]:
 
 def build_readme_text(version: str) -> str:
     """README.txt - first-run pointer + portable-mode note (doc 15 section 4.3)."""
-    return "\n".join([
-        f"{DISPLAY_NAME} {version} - portable package",
-        "=" * 60,
-        "",
-        "WHAT THIS IS",
-        "",
-        "This is the no-install variant of the application, intended for",
-        "locked-down machines and demos. Unzip it anywhere you can write and run",
-        f"{APP_NAME}.exe.",
-        "",
-        "WHAT PORTABLE MODE DOES",
-        "",
-        "  * Installs nothing. No Start-menu entry, no uninstall entry, no",
-        "    Windows Installer record.",
-        "  * Writes nothing to the registry.",
-        "",
-        "WHAT PORTABLE MODE DOES NOT DO",
-        "",
-        '  * "Portable" means "no install", NOT "no trace". By default your data',
-        f"    still lives in %LOCALAPPDATA%\\{DISPLAY_NAME}\\ and is NOT stored",
-        "    inside this folder.",
-        "  * You still need somewhere writable for that data directory.",
-        "",
-        "OPTIONAL SELF-CONTAINED MODE",
-        "",
-        "  Create an empty file named portable.flag beside the executable and the",
-        "  application will instead keep its data in a data\\ subfolder next to",
-        "  itself, travelling with this folder.",
-        "",
-        "  WARNING: if you enable this, do not put the application in a synced",
-        "  or shared folder. The database is a single file, and concurrent sync",
-        "  can corrupt it. The application shows a persistent banner when this",
-        "  mode is active.",
-        "",
-        "LIMITATIONS",
-        "",
-        "  * No Start-menu shortcut and no uninstall entry.",
-        "  * Explorer shows no file-version metadata for the executable.",
-        "  * The synced-folder warning above applies in self-contained mode.",
-        "",
-        "FIRST RUN",
-        "",
-        f"  On first launch the application creates its data directory and",
-        "  offers the bundled synthetic sample project so you can see a complete",
-        "  month-end run before importing anything of your own.",
-        "",
-        "UPDATING",
-        "",
-        "  Replace this folder with the new version. The database schema migrates",
-        "  forward automatically on first open, taking a mandatory backup first.",
-        "  Downgrades are not supported.",
-        "",
-        "VERIFYING THIS PACKAGE",
-        "",
-        "  This package ships with a SHA-256 checksum file. Compare it before",
-        "  first use - see the delivery notes for the expected value.",
-        "",
-    ])
+    return "\n".join(
+        [
+            f"{DISPLAY_NAME} {version} - portable package",
+            "=" * 60,
+            "",
+            "WHAT THIS IS",
+            "",
+            "This is the no-install variant of the application, intended for",
+            "locked-down machines and demos. Unzip it anywhere you can write and run",
+            f"{APP_NAME}.exe.",
+            "",
+            "WHAT PORTABLE MODE DOES",
+            "",
+            "  * Installs nothing. No Start-menu entry, no uninstall entry, no",
+            "    Windows Installer record.",
+            "  * Writes nothing to the registry.",
+            "",
+            "WHAT PORTABLE MODE DOES NOT DO",
+            "",
+            '  * "Portable" means "no install", NOT "no trace". By default your data',
+            f"    still lives in %LOCALAPPDATA%\\{DISPLAY_NAME}\\ and is NOT stored",
+            "    inside this folder.",
+            "  * You still need somewhere writable for that data directory.",
+            "",
+            "OPTIONAL SELF-CONTAINED MODE",
+            "",
+            "  Create an empty file named portable.flag beside the executable and the",
+            "  application will instead keep its data in a data\\ subfolder next to",
+            "  itself, travelling with this folder.",
+            "",
+            "  WARNING: if you enable this, do not put the application in a synced",
+            "  or shared folder. The database is a single file, and concurrent sync",
+            "  can corrupt it. The application shows a persistent banner when this",
+            "  mode is active.",
+            "",
+            "LIMITATIONS",
+            "",
+            "  * No Start-menu shortcut and no uninstall entry.",
+            "  * Explorer shows no file-version metadata for the executable.",
+            "  * The synced-folder warning above applies in self-contained mode.",
+            "",
+            "FIRST RUN",
+            "",
+            "  On first launch the application creates its data directory and",
+            "  offers the bundled synthetic sample project so you can see a complete",
+            "  month-end run before importing anything of your own.",
+            "",
+            "UPDATING",
+            "",
+            "  Replace this folder with the new version. The database schema migrates",
+            "  forward automatically on first open, taking a mandatory backup first.",
+            "  Downgrades are not supported.",
+            "",
+            "VERIFYING THIS PACKAGE",
+            "",
+            "  This package ships with a SHA-256 checksum file. Compare it before",
+            "  first use - see the delivery notes for the expected value.",
+            "",
+        ]
+    )
 
 
 # --------------------------------------------------------------------------
 # Step 5 - Payload audit
 # --------------------------------------------------------------------------
 
-def audit_payload(root: Path, payload: Path) -> Tuple[List[str], List[str], Dict[str, int]]:
+
+def audit_payload(root: Path, payload: Path) -> tuple[list[str], list[str], dict[str, int]]:
     """Doc 15 section 3.2 step 5:
 
         "**Payload audit** (automated): required files present; no `tests/`, no
@@ -690,8 +695,8 @@ def audit_payload(root: Path, payload: Path) -> Tuple[List[str], List[str], Dict
     comment.
     """
     log("auditing payload")
-    errors: List[str] = []
-    blockers: List[str] = []
+    errors: list[str] = []
+    blockers: list[str] = []
 
     if not payload.is_dir():
         return ([f"payload directory does not exist: {payload}"], [], {})
@@ -751,7 +756,9 @@ def audit_payload(root: Path, payload: Path) -> Tuple[List[str], List[str], Dict
     else:
         spec_excludes = parse_spec_excludes(root)
         if not spec_excludes:
-            blockers.append("pyinstaller.spec defines no excludes list or failed to parse (doc 15 section 3.4)")
+            blockers.append(
+                "pyinstaller.spec defines no excludes list or failed to parse (doc 15 section 3.4)"
+            )
         else:
             for name in spec_excludes:
                 if not exclude_has_comment(root, name):
@@ -762,7 +769,7 @@ def audit_payload(root: Path, payload: Path) -> Tuple[List[str], List[str], Dict
                     )
 
     # -- payload size breakdown for step 10 ------------------------------------
-    breakdown: Dict[str, int] = {}
+    breakdown: dict[str, int] = {}
     for child in sorted(payload.iterdir()):
         if child.is_dir():
             breakdown[child.name] = dir_size(child)
@@ -774,7 +781,7 @@ def audit_payload(root: Path, payload: Path) -> Tuple[List[str], List[str], Dict
     return errors, blockers, breakdown
 
 
-def parse_spec_excludes(root: Path) -> List[str]:
+def parse_spec_excludes(root: Path) -> list[str]:
     """Read the `excludes = [...]` list out of packaging/pyinstaller.spec.
 
     Comments are stripped BEFORE the module names are extracted. Without that,
@@ -816,13 +823,12 @@ def exclude_has_comment(root: Path, module: str) -> bool:
 # Step 7 - Portable zip
 # --------------------------------------------------------------------------
 
-def build_portable_zip(
-    root: Path, payload: Path, out_dir: Path, version: str
-) -> Optional[Path]:
+
+def build_portable_zip(root: Path, payload: Path, out_dir: Path, version: str) -> Path | None:
     """Doc 15 section 3.2 step 7:
 
-        "Build the portable zip from the same payload directory (with
-        `portable.flag` documentation inside)"
+    "Build the portable zip from the same payload directory (with
+    `portable.flag` documentation inside)"
     """
     log("building portable zip")
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -833,25 +839,27 @@ def build_portable_zip(
     # opt-in.
     flag_doc = payload / "portable.flag.README.txt"
     flag_doc.write_text(
-        "\n".join([
-            "portable.flag - opt-in self-contained data mode (ADR-004)",
-            "=" * 60,
-            "",
-            "This directory intentionally contains a DOCUMENTATION file named",
-            "portable.flag.README.txt, not a live portable.flag.",
-            "",
-            "To enable self-contained mode, create an EMPTY file named exactly",
-            f"'portable.flag' beside {APP_NAME}.exe. The application then keeps",
-            "its data in a data\\ subfolder that travels with this folder.",
-            "",
-            "Why the flag is not shipped live: enabling it by default would move",
-            "the database next to the executable, so every copy, backup and sync",
-            "would duplicate it. See doc 15 section 4.3.",
-            "",
-            "WARNING: never place this folder in a synced or shared location",
-            "while self-contained mode is active.",
-            "",
-        ]),
+        "\n".join(
+            [
+                "portable.flag - opt-in self-contained data mode (ADR-004)",
+                "=" * 60,
+                "",
+                "This directory intentionally contains a DOCUMENTATION file named",
+                "portable.flag.README.txt, not a live portable.flag.",
+                "",
+                "To enable self-contained mode, create an EMPTY file named exactly",
+                f"'portable.flag' beside {APP_NAME}.exe. The application then keeps",
+                "its data in a data\\ subfolder that travels with this folder.",
+                "",
+                "Why the flag is not shipped live: enabling it by default would move",
+                "the database next to the executable, so every copy, backup and sync",
+                "would duplicate it. See doc 15 section 4.3.",
+                "",
+                "WARNING: never place this folder in a synced or shared location",
+                "while self-contained mode is active.",
+                "",
+            ]
+        ),
         encoding="utf-8",
     )
 
@@ -879,6 +887,7 @@ def build_portable_zip(
 # Step 8 - SHA-256 + SBOM
 # --------------------------------------------------------------------------
 
+
 def write_checksums(out_dir: Path, version: str, artefacts: Sequence[Path]) -> Path:
     """Doc 15 section 3.2 step 8: "Compute SHA-256 of both artefacts; write
     `SHA256SUMS-<version>.txt`; attach the SBOM snapshot (`pip freeze`)".
@@ -891,7 +900,7 @@ def write_checksums(out_dir: Path, version: str, artefacts: Sequence[Path]) -> P
     lines = [
         f"# SHA-256 checksums for {DISPLAY_NAME} {version}",
         "# Verify before first use (doc 15 section 8.3):",
-        f'#   certutil -hashfile "<file>" SHA256',
+        '#   certutil -hashfile "<file>" SHA256',
         "# The digest below must match the one Windows reports, character for",
         "# character, or the package is not ours - stop and contact support.",
         "",
@@ -903,7 +912,7 @@ def write_checksums(out_dir: Path, version: str, artefacts: Sequence[Path]) -> P
     return sums
 
 
-def write_sbom(root: Path, out_dir: Path, version: str) -> Optional[Path]:
+def write_sbom(root: Path, out_dir: Path, version: str) -> Path | None:
     """The `sbom/py-<version>.txt` supply-chain artefact (doc 15 section 1.2,
     SEC-029 / SEC-047): a `pip freeze` snapshot of the frozen environment."""
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -922,15 +931,15 @@ def write_sbom(root: Path, out_dir: Path, version: str) -> Optional[Path]:
 # Step 6 - Inno Setup
 # --------------------------------------------------------------------------
 
-def build_installer(root: Path, version: str) -> Optional[Path]:
+
+def build_installer(root: Path, version: str) -> Path | None:
     """Doc 15 section 3.2 step 6: "Inno Setup compile with
     `/DMyAppVersion=<version>`" -> `Setup-FPandAMonthEndCopilot-<version>.exe`."""
     iscc = find_iscc()
     if iscc is None:
         return None
     res = run(
-        [iscc, f"/DMyAppVersion={version}",
-         str(root / "packaging" / "installer.iss")],
+        [iscc, f"/DMyAppVersion={version}", str(root / "packaging" / "installer.iss")],
         "Inno Setup compile",
         cwd=root / "packaging",
     )
@@ -946,16 +955,19 @@ def build_installer(root: Path, version: str) -> Optional[Path]:
 # Main
 # --------------------------------------------------------------------------
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
+
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build the release artefacts.")
-    parser.add_argument("--dev", action="store_true",
-                        help="waive the clean-working-tree precondition")
-    parser.add_argument("--skip-installer", action="store_true",
-                        help="skip step 6 (Inno Setup)")
-    parser.add_argument("--skip-check", action="store_true",
-                        help="waive precondition 2 (scripts/check)")
-    parser.add_argument("--no-smoke", action="store_true",
-                        help="skip step 9 (smoke test on the build host)")
+    parser.add_argument(
+        "--dev", action="store_true", help="waive the clean-working-tree precondition"
+    )
+    parser.add_argument("--skip-installer", action="store_true", help="skip step 6 (Inno Setup)")
+    parser.add_argument(
+        "--skip-check", action="store_true", help="waive precondition 2 (scripts/check)"
+    )
+    parser.add_argument(
+        "--no-smoke", action="store_true", help="skip step 9 (smoke test on the build host)"
+    )
     args = parser.parse_args(argv)
 
     root = Path(__file__).resolve().parent.parent
@@ -985,8 +997,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     log("step 1: build the UI")
     npm = which("npm")
     if npm is None:
-        report.add(StageResult(1, "UI build", "fail", 0.0,
-                               errors=["npm is not on PATH"]))
+        report.add(StageResult(1, "UI build", "fail", 0.0, errors=["npm is not on PATH"]))
         print(report.render())
         return 1
     ci = run([npm, "ci", "--prefix", "ui"], "npm ci")
@@ -995,12 +1006,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if not ok:
         print((build.stdout or "")[-3000:])
         print((build.stderr or "")[-3000:])
-    report.add(StageResult(
-        1, "UI build (npm ci + npm run build)",
-        "pass" if ok else "fail", time.perf_counter() - t0,
-        detail=f"ui/dist = {human(dir_size(root / 'ui' / 'dist'))}",
-        errors=[] if ok else ["npm build failed; see transcript above"],
-    ))
+    report.add(
+        StageResult(
+            1,
+            "UI build (npm ci + npm run build)",
+            "pass" if ok else "fail",
+            time.perf_counter() - t0,
+            detail=f"ui/dist = {human(dir_size(root / 'ui' / 'dist'))}",
+            errors=[] if ok else ["npm build failed; see transcript above"],
+        )
+    )
 
     # -- Step 2: copy ui/dist into app/static ---------------------------------
     t0 = time.perf_counter()
@@ -1009,9 +1024,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if app_static.exists():
         shutil.rmtree(app_static)
     shutil.copytree(ui_dist, app_static)
-    report.add(StageResult(2, "stage ui/dist into app/static", "pass",
-                           time.perf_counter() - t0,
-                           detail=f"{len(list(app_static.rglob('*')))} entries"))
+    report.add(
+        StageResult(
+            2,
+            "stage ui/dist into app/static",
+            "pass",
+            time.perf_counter() - t0,
+            detail=f"{len(list(app_static.rglob('*')))} entries",
+        )
+    )
     log(f"rebuilt app/static ({dir_size(app_static):,} bytes)")
 
     # -- Step 3: PyInstaller onedir -------------------------------------------
@@ -1019,99 +1040,158 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     log("step 3: PyInstaller onedir packaging")
     if payload.exists():
         shutil.rmtree(payload)
-    pyi = run([sys.executable, "-m", "PyInstaller", "--noconfirm",
-               str(root / "packaging" / "pyinstaller.spec")], "PyInstaller")
+    pyi = run(
+        [
+            sys.executable,
+            "-m",
+            "PyInstaller",
+            "--noconfirm",
+            str(root / "packaging" / "pyinstaller.spec"),
+        ],
+        "PyInstaller",
+    )
     if pyi.returncode != 0 or not payload.is_dir():
         print((pyi.stdout or "")[-3000:])
         print((pyi.stderr or "")[-3000:])
-        report.add(StageResult(3, "PyInstaller onedir", "fail",
-                               time.perf_counter() - t0,
-                               errors=["PyInstaller failed; see transcript above"]))
+        report.add(
+            StageResult(
+                3,
+                "PyInstaller onedir",
+                "fail",
+                time.perf_counter() - t0,
+                errors=["PyInstaller failed; see transcript above"],
+            )
+        )
         print(report.render())
         return 1
-    report.add(StageResult(3, "PyInstaller onedir", "pass",
-                           time.perf_counter() - t0,
-                           detail=f"{human(dir_size(payload))} at dist/{APP_NAME}"))
+    report.add(
+        StageResult(
+            3,
+            "PyInstaller onedir",
+            "pass",
+            time.perf_counter() - t0,
+            detail=f"{human(dir_size(payload))} at dist/{APP_NAME}",
+        )
+    )
 
     # -- Step 4: stage the payload ---------------------------------------------
     t0 = time.perf_counter()
     staged, step4_blockers = stage_payload(root, payload, version)
-    report.add(StageResult(
-        4, "stage payload beside the exe",
-        "fail" if step4_blockers else "pass", time.perf_counter() - t0,
-        detail="staged: " + ", ".join(staged),
-        blockers=step4_blockers,
-    ))
+    report.add(
+        StageResult(
+            4,
+            "stage payload beside the exe",
+            "fail" if step4_blockers else "pass",
+            time.perf_counter() - t0,
+            detail="staged: " + ", ".join(staged),
+            blockers=step4_blockers,
+        )
+    )
 
     # -- Step 5: PAYLOAD AUDIT --------------------------------------------------
     t0 = time.perf_counter()
     audit_errors, audit_blockers, breakdown = audit_payload(root, payload)
-    report.add(StageResult(
-        5, "PAYLOAD AUDIT",
-        "fail" if audit_errors else "pass", time.perf_counter() - t0,
-        detail=(f"{len(REQUIRED_PAYLOAD_ENTRIES)} required entries checked; "
-                f"{len(list(payload.rglob('*')))} payload paths scanned"),
-        errors=audit_errors,
-        blockers=audit_blockers,
-    ))
+    report.add(
+        StageResult(
+            5,
+            "PAYLOAD AUDIT",
+            "fail" if audit_errors else "pass",
+            time.perf_counter() - t0,
+            detail=(
+                f"{len(REQUIRED_PAYLOAD_ENTRIES)} required entries checked; "
+                f"{len(list(payload.rglob('*')))} payload paths scanned"
+            ),
+            errors=audit_errors,
+            blockers=audit_blockers,
+        )
+    )
 
     # -- Step 6: Inno Setup -----------------------------------------------------
     t0 = time.perf_counter()
     if args.skip_installer:
-        report.add(StageResult(6, "Inno Setup compile", "skip",
-                               time.perf_counter() - t0,
-                               detail="--skip-installer"))
+        report.add(
+            StageResult(
+                6, "Inno Setup compile", "skip", time.perf_counter() - t0, detail="--skip-installer"
+            )
+        )
         installer = None
     else:
         installer = build_installer(root, version)
-        report.add(StageResult(
-            6, "Inno Setup compile",
-            "pass" if installer else "fail", time.perf_counter() - t0,
-            detail=f"{human(installer.stat().st_size)}" if installer
-                   else "compile failed",
-            errors=[] if installer else ["Inno Setup compile failed"],
-        ))
+        report.add(
+            StageResult(
+                6,
+                "Inno Setup compile",
+                "pass" if installer else "fail",
+                time.perf_counter() - t0,
+                detail=f"{human(installer.stat().st_size)}" if installer else "compile failed",
+                errors=[] if installer else ["Inno Setup compile failed"],
+            )
+        )
 
     # -- Step 7: portable zip ---------------------------------------------------
     t0 = time.perf_counter()
     zip_path = build_portable_zip(root, payload, out_dir, version)
-    report.add(StageResult(
-        7, "portable zip", "pass" if zip_path else "fail",
-        time.perf_counter() - t0,
-        detail=f"{zip_path.name} ({human(zip_path.stat().st_size)})" if zip_path else "",
-    ))
+    report.add(
+        StageResult(
+            7,
+            "portable zip",
+            "pass" if zip_path else "fail",
+            time.perf_counter() - t0,
+            detail=f"{zip_path.name} ({human(zip_path.stat().st_size)})" if zip_path else "",
+        )
+    )
 
     # -- Step 8: SHA-256 + SBOM -------------------------------------------------
     t0 = time.perf_counter()
     artefacts = [a for a in (installer, zip_path) if a]
     sums = write_checksums(out_dir, version, artefacts)
     sbom = write_sbom(root, out_dir, version)
-    report.add(StageResult(
-        8, "SHA-256 + SBOM", "pass" if sums else "fail",
-        time.perf_counter() - t0,
-        detail=(f"{sums.name} ({len(artefacts)} artefact(s)); "
-                f"SBOM {sbom.name if sbom else 'NOT WRITTEN'}"),
-    ))
+    report.add(
+        StageResult(
+            8,
+            "SHA-256 + SBOM",
+            "pass" if sums else "fail",
+            time.perf_counter() - t0,
+            detail=(
+                f"{sums.name} ({len(artefacts)} artefact(s)); "
+                f"SBOM {sbom.name if sbom else 'NOT WRITTEN'}"
+            ),
+        )
+    )
 
     # -- Step 9: smoke test -----------------------------------------------------
     t0 = time.perf_counter()
     smoke_ok, smoke_note = run_smoke(payload, skip=args.no_smoke)
-    report.add(StageResult(
-        9, "smoke test on the build host",
-        "skip" if args.no_smoke else ("pass" if smoke_ok else "fail"),
-        time.perf_counter() - t0, detail=smoke_note,
-    ))
+    report.add(
+        StageResult(
+            9,
+            "smoke test on the build host",
+            "skip" if args.no_smoke else ("pass" if smoke_ok else "fail"),
+            time.perf_counter() - t0,
+            detail=smoke_note,
+        )
+    )
 
     # -- Step 10: size and time report vs NFR-006 -------------------------------
     t0 = time.perf_counter()
     size_report = write_size_report(
-        out_dir, version, breakdown, dir_size(payload), installer, zip_path,
+        out_dir,
+        version,
+        breakdown,
+        dir_size(payload),
+        installer,
+        zip_path,
         report.stages,
     )
-    report.add(StageResult(
-        10, "size and time report vs NFR-006", "pass",
-        time.perf_counter() - t0, detail=size_report.name,
-    ))
+    report.add(
+        StageResult(
+            10,
+            "size and time report vs NFR-006",
+            "pass",
+            time.perf_counter() - t0,
+            detail=size_report.name,
+        )
+    )
 
     print()
     print(report.render())
@@ -1125,7 +1205,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     return 0
 
 
-def run_smoke(payload: Path, skip: bool) -> Tuple[bool, str]:
+def run_smoke(payload: Path, skip: bool) -> tuple[bool, str]:
     """Doc 15 section 3.2 step 9: "Smoke test on the build host (install ->
     launch -> sample project -> generate one pack -> uninstall)".
 
@@ -1151,11 +1231,11 @@ def run_smoke(payload: Path, skip: bool) -> Tuple[bool, str]:
 def write_size_report(
     out_dir: Path,
     version: str,
-    breakdown: Dict[str, int],
+    breakdown: dict[str, int],
     payload_bytes: int,
-    installer: Optional[Path],
-    zip_path: Optional[Path],
-    stages: List[StageResult],
+    installer: Path | None,
+    zip_path: Path | None,
+    stages: list[StageResult],
 ) -> Path:
     """Doc 15 section 3.2 step 10: "Size and time report: installer size vs
     `NFR-006`, build duration, payload breakdown by component"."""
@@ -1179,8 +1259,7 @@ def write_size_report(
     lines = [
         f"# Build report - {DISPLAY_NAME} {version}",
         "",
-        f"Generated by `scripts/build` at "
-        f"{datetime.now(timezone.utc).isoformat(timespec='seconds')}.",
+        f"Generated by `scripts/build` at {datetime.now(UTC).isoformat(timespec='seconds')}.",
         "",
         "## NFR-006 (installer <= 500 MB)",
         "",

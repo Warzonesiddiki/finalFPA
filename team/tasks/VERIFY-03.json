@@ -9,12 +9,23 @@
   "deps": [],
   "lane": "verification",
   "created_utc": "2026-10-05T20:35:04Z",
-  "updated_utc": "2026-10-05T20:35:04Z",
+  "updated_utc": "2026-10-09T14:05:34Z",
   "history": [
     {
       "utc": "2026-10-05T20:35:04Z",
       "agent": "buffy",
       "event": "created"
+    },
+    {
+      "utc": "2026-10-09T13:57:06Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-09T14:05:34Z",
+      "agent": "opencode",
+      "event": "release (todo)"
     }
-  ]
+  ],
+  "handoff": null
 }

@@ -19,8 +19,6 @@ import csv
 from dataclasses import dataclass, field
 from decimal import Decimal
 from pathlib import Path
-from typing import Dict, List, Optional
-
 
 ZERO = Decimal("0.00")
 
@@ -80,9 +78,9 @@ class TrialBalanceResult:
     total_rows: int = 0
     total_debit: Decimal = field(default_factory=lambda: Decimal("0.00"))
     total_credit: Decimal = field(default_factory=lambda: Decimal("0.00"))
-    by_entity: Dict[str, EntityBalance] = field(default_factory=dict)
-    by_period: Dict[str, PeriodBalance] = field(default_factory=dict)
-    by_voucher: Dict[tuple, VoucherBalance] = field(default_factory=dict)
+    by_entity: dict[str, EntityBalance] = field(default_factory=dict)
+    by_period: dict[str, PeriodBalance] = field(default_factory=dict)
+    by_voucher: dict[tuple, VoucherBalance] = field(default_factory=dict)
 
     @property
     def net_residual(self) -> Decimal:
@@ -101,13 +99,13 @@ class TrialBalanceResult:
         return sum(1 for vb in self.by_voucher.values() if vb.is_balanced)
 
     @property
-    def imbalanced_vouchers(self) -> List[VoucherBalance]:
+    def imbalanced_vouchers(self) -> list[VoucherBalance]:
         bad = [vb for vb in self.by_voucher.values() if not vb.is_balanced]
         bad.sort(key=lambda vb: abs(vb.net_residual), reverse=True)
         return bad
 
     def format_report(self) -> str:
-        lines: List[str] = [
+        lines: list[str] = [
             "=" * 70,
             f"GL TRIAL BALANCE VERIFICATION REPORT: {self.file_path.name}",
             "=" * 70,
@@ -153,7 +151,9 @@ class TrialBalanceResult:
                 f"  ... and {len(self.imbalanced_vouchers) - 20:,} further imbalanced vouchers (not shown)"
             )
         lines.append("-" * 70)
-        lines.append(f"OVERALL VERDICT: {'PASS - PERFECT BALANCE' if self.is_balanced else 'FAIL - IMBALANCED'}")
+        lines.append(
+            f"OVERALL VERDICT: {'PASS - PERFECT BALANCE' if self.is_balanced else 'FAIL - IMBALANCED'}"
+        )
         lines.append("=" * 70)
         return "\n".join(lines)
 
@@ -174,7 +174,7 @@ def verify_gl_trial_balance(file_path: str | Path) -> TrialBalanceResult:
 
     res = TrialBalanceResult(file_path=path)
 
-    with open(path, "r", encoding="utf-8-sig", newline="") as f:
+    with open(path, encoding="utf-8-sig", newline="") as f:
         reader = csv.reader(f)
         header = None
         for row in reader:
@@ -199,10 +199,16 @@ def verify_gl_trial_balance(file_path: str | Path) -> TrialBalanceResult:
             if not row:
                 continue
             res.total_rows += 1
-            comp = row[comp_idx].strip() if comp_idx is not None and comp_idx < len(row) else "UNKNOWN"
+            comp = (
+                row[comp_idx].strip() if comp_idx is not None and comp_idx < len(row) else "UNKNOWN"
+            )
             date_str = row[date_idx].strip() if date_idx is not None and date_idx < len(row) else ""
             period = date_str[:7] if len(date_str) >= 7 else "UNKNOWN"
-            voucher = row[voucher_idx].strip() if voucher_idx is not None and voucher_idx < len(row) else "UNKNOWN"
+            voucher = (
+                row[voucher_idx].strip()
+                if voucher_idx is not None and voucher_idx < len(row)
+                else "UNKNOWN"
+            )
 
             debit_str = row[debit_idx] if debit_idx < len(row) else "0"
             credit_str = row[credit_idx] if credit_idx < len(row) else "0"
@@ -240,8 +246,12 @@ def verify_gl_trial_balance(file_path: str | Path) -> TrialBalanceResult:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Verify GL trial balance debit == credit.")
-    parser.add_argument("file", nargs="?", default="sample-data/d365_gl_actuals.csv",
-                        help="GL actuals CSV file (default: sample-data/d365_gl_actuals.csv)")
+    parser.add_argument(
+        "file",
+        nargs="?",
+        default="sample-data/d365_gl_actuals.csv",
+        help="GL actuals CSV file (default: sample-data/d365_gl_actuals.csv)",
+    )
     args = parser.parse_args()
 
     result = verify_gl_trial_balance(args.file)
@@ -251,4 +261,5 @@ def main() -> int:
 
 if __name__ == "__main__":
     import sys
+
     sys.exit(main())

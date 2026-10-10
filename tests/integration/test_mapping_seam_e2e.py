@@ -18,20 +18,19 @@ to the run that raised it, and re-resolving on later runs is idempotent.
 
 from __future__ import annotations
 
-from decimal import Decimal
 from pathlib import Path
 
 import pytest
 
 from app.engine.imports.mapping_suggestions import build_suggestion_queue
 from app.engine.imports.parser import parse_csv_transactions
-from app.engine.imports.profiles import BUILTIN_PROFILES, normalize_header
 from app.engine.imports.profile_binding import (
     next_import_run_id,
     resolve_profile_for_import,
     unmapped_columns_for_headers,
     verify_run_id_prediction,
 )
+from app.engine.imports.profiles import BUILTIN_PROFILES, normalize_header
 from app.engine.store.db import DatabaseManager
 from app.engine.store.import_repo import ImportRepository
 from app.engine.store.mapping_repo import MappingRepository
@@ -79,6 +78,7 @@ def _accept_suggestion(db: DatabaseManager, run_id: int, column: str, target: st
 # Trigger: the queue is surfaced only for files with unmapped columns
 # ---------------------------------------------------------------------------
 
+
 def test_unmapped_column_is_detected(csv_file):
     """FR-IMP-008: "When a file has unmapped columns ..."."""
     headers = CSV_BODY.splitlines()[0].split(",")
@@ -100,6 +100,7 @@ def test_column_is_actually_unmapped_before_acceptance(csv_file):
 # ---------------------------------------------------------------------------
 # THE ACCEPTANCE CRITERION: accepted in N, applied in N+1
 # ---------------------------------------------------------------------------
+
 
 def test_suggestion_accepted_in_run_n_applies_in_run_n_plus_one(db, csv_file):
     run_n = next_import_run_id(db)
@@ -165,15 +166,14 @@ def test_normalized_header_is_used_as_the_map_key(db):
 # THE SAFETY PROPERTY: never applied to the run that raised it
 # ---------------------------------------------------------------------------
 
+
 def test_suggestion_is_not_applied_to_its_own_run(db):
     """FR-IMP-008: "Suggestions are never auto-applied in the same run"."""
     run_n = next_import_run_id(db)
     suggestion = _accept_suggestion(db, run_n, UNMAPPED_COLUMN, TARGET_FIELD)
 
     # Resolving for run N itself must find nothing to apply...
-    same_run = resolve_profile_for_import(
-        db, base_profile=BUILTIN_PROFILES[0], import_run_id=run_n
-    )
+    same_run = resolve_profile_for_import(db, base_profile=BUILTIN_PROFILES[0], import_run_id=run_n)
     assert same_run.applied == []
     assert same_run.version_no is None
     assert same_run.changed is False
@@ -183,9 +183,9 @@ def test_suggestion_is_not_applied_to_its_own_run(db):
     assert same_run.profile.column_map.get(normalize_header(UNMAPPED_COLUMN)) is None
 
     # The suggestion is still pending, not consumed.
-    assert MappingSuggestionRepository(db).get_suggestion(
-        suggestion.suggestion_id
-    ).state == "accepted"
+    assert (
+        MappingSuggestionRepository(db).get_suggestion(suggestion.suggestion_id).state == "accepted"
+    )
 
 
 def test_full_import_sequence_n_then_n_plus_one(db, csv_file):
@@ -221,6 +221,7 @@ def test_full_import_sequence_n_then_n_plus_one(db, csv_file):
 # ---------------------------------------------------------------------------
 # Idempotence: re-resolving must not churn the profile history
 # ---------------------------------------------------------------------------
+
 
 def test_repeated_imports_do_not_create_new_versions(db):
     """A suggestion is applied once, not once per subsequent import.
@@ -271,12 +272,30 @@ def test_undecided_and_rejected_suggestions_never_apply(db):
     run_n = next_import_run_id(db)
     repo = MappingSuggestionRepository(db)
 
-    suggested_only = repo.enqueue(build_suggestion_queue(
-        run_n, [{"source_column": "Still Pending", "target_field": "project_code",
-                 "confidence": "0.5"}]))[0]
-    rejected = repo.enqueue(build_suggestion_queue(
-        run_n, [{"source_column": "Rejected Col", "target_field": "project_code",
-                 "confidence": "0.6"}]))[0]
+    suggested_only = repo.enqueue(
+        build_suggestion_queue(
+            run_n,
+            [
+                {
+                    "source_column": "Still Pending",
+                    "target_field": "project_code",
+                    "confidence": "0.5",
+                }
+            ],
+        )
+    )[0]
+    rejected = repo.enqueue(
+        build_suggestion_queue(
+            run_n,
+            [
+                {
+                    "source_column": "Rejected Col",
+                    "target_field": "project_code",
+                    "confidence": "0.6",
+                }
+            ],
+        )
+    )[0]
     repo.decide(rejected.suggestion_id, "reject", "Aarti")
 
     binding = resolve_profile_for_import(
@@ -290,9 +309,18 @@ def test_edited_suggestion_applies_the_human_choice_not_the_proposal(db, csv_fil
     """FR-IMP-008 `suggested -> edited`: the human's target wins."""
     run_n = next_import_run_id(db)
     repo = MappingSuggestionRepository(db)
-    stored = repo.enqueue(build_suggestion_queue(
-        run_n, [{"source_column": UNMAPPED_COLUMN, "target_field": "project_code",
-                 "confidence": "0.4"}]))[0]
+    stored = repo.enqueue(
+        build_suggestion_queue(
+            run_n,
+            [
+                {
+                    "source_column": UNMAPPED_COLUMN,
+                    "target_field": "project_code",
+                    "confidence": "0.4",
+                }
+            ],
+        )
+    )[0]
     repo.decide(stored.suggestion_id, "edit", "Aarti", new_target_field=TARGET_FIELD)
 
     binding = resolve_profile_for_import(
@@ -308,6 +336,7 @@ def test_edited_suggestion_applies_the_human_choice_not_the_proposal(db, csv_fil
 # ---------------------------------------------------------------------------
 # Built-in profiles are read-only; the apply path clones rather than failing
 # ---------------------------------------------------------------------------
+
 
 def test_builtin_profile_is_cloned_not_edited(db):
     """doc 04 section 5.4: "Built-in profiles are read-only; clone to edit"."""
@@ -355,6 +384,7 @@ def test_builtin_clone_is_reused_not_recreated(db):
 # ---------------------------------------------------------------------------
 # Committed facts reflect the applied mapping
 # ---------------------------------------------------------------------------
+
 
 def test_committed_actual_carries_the_applied_cost_center(db, csv_file):
     run_n = next_import_run_id(db)

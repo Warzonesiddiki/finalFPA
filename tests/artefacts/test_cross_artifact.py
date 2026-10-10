@@ -45,24 +45,20 @@ same numbers must appear in five places. This is the strongest guard against dis
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 
 import openpyxl
-from pptx import Presentation
-import pytest
 
 from app.engine.exports.excel_pack import (
+    PackContext,
     create_sample_pack_data,
     export_excel_pack,
-    generate_month_end_pack,
-    PackContext,
 )
 from app.engine.exports.ppt_pack import (
     DeckContext,
     generate_powerpoint_deck,
-    CANONICAL_DISCLAIMER,
 )
 
 
@@ -91,11 +87,13 @@ def test_cross_artifact_consistency(tmp_path: Path):
     export_excel_pack(excel_path, pack_data)
     assert excel_path.exists()
 
-    prs = generate_powerpoint_deck(DeckContext(
-        project_name=context.project_name,
-        period=context.periods[0],
-        scenario=context.scenario,
-    ))
+    prs = generate_powerpoint_deck(
+        DeckContext(
+            project_name=context.project_name,
+            period=context.periods[0],
+            scenario=context.scenario,
+        )
+    )
     assert len(prs.slides) == 6
 
     # 3. Parse Excel pack back with openpyxl (data_only=True)
@@ -111,7 +109,9 @@ def test_cross_artifact_consistency(tmp_path: Path):
             for cell in row:
                 if cell.value is not None:
                     val_str = str(cell.value).strip()
-                    assert not val_str.startswith("="), f"Formula cell found in {sheet_name} at {cell.coordinate}: {cell.value}"
+                    assert not val_str.startswith("="), (
+                        f"Formula cell found in {sheet_name} at {cell.coordinate}: {cell.value}"
+                    )
 
     # Check Sheet 2 (Executive Summary & BvA) numbers match sample data / engine authority
     ws_bva = wb["Executive Summary & BvA"]
@@ -125,7 +125,7 @@ def test_cross_artifact_consistency(tmp_path: Path):
     s1 = prs.slides[0]
     title_shape = next(
         (s for s in s1.shapes if s.name == "PPT-001_title"),
-        next(s for s in s1.slide_layout.shapes if s.name == "PPT-001_title")
+        next(s for s in s1.slide_layout.shapes if s.name == "PPT-001_title"),
     )
     assert title_shape.text_frame.text == context.project_name
 
@@ -149,7 +149,7 @@ def test_cross_artifact_consistency(tmp_path: Path):
     # 5. Compile cross-artifact comparison report
     report = {
         "schema": "fpa.cross_artifact.v1",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "filter_state": json.loads(context.filter_json),
         "surfaces": {
             "engine_authority": {"status": "ok", "revenue": "12500000.00", "cogs": "6800000.00"},
@@ -157,9 +157,24 @@ def test_cross_artifact_consistency(tmp_path: Path):
             "ppt_deck": {"slide_count": len(prs.slides), "status": "ok"},
         },
         "comparisons": [
-            {"metric": "Revenue Actual", "engine": "12500000.00", "excel": str(rev_actual), "status": "match"},
-            {"metric": "Revenue Budget", "engine": "12000000.00", "excel": str(rev_budget), "status": "match"},
-            {"metric": "PPT Slide Count", "expected": 6, "actual": len(prs.slides), "status": "match"},
+            {
+                "metric": "Revenue Actual",
+                "engine": "12500000.00",
+                "excel": str(rev_actual),
+                "status": "match",
+            },
+            {
+                "metric": "Revenue Budget",
+                "engine": "12000000.00",
+                "excel": str(rev_budget),
+                "status": "match",
+            },
+            {
+                "metric": "PPT Slide Count",
+                "expected": 6,
+                "actual": len(prs.slides),
+                "status": "match",
+            },
         ],
         "verdict": "PASS",
     }

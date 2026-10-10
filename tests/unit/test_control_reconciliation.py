@@ -1,7 +1,6 @@
 """Unit test for control-total reconciliation per docs 02/04 (FR-IMP-005, IMP-06)."""
 
 from decimal import Decimal
-import pytest
 
 
 def test_control_total_reconciliation_math_and_acceptance():
@@ -35,5 +34,7 @@ def test_control_total_reconciliation_math_and_acceptance():
     explicit_acceptance = True
     audit_reason = "Imbalance accepted by Controller due to legacy rounding."
     assert len(audit_reason) >= 10
-    can_commit_with_acceptance = (var_diff == Decimal("0.00")) or (explicit_acceptance and bool(audit_reason))
+    can_commit_with_acceptance = (var_diff == Decimal("0.00")) or (
+        explicit_acceptance and bool(audit_reason)
+    )
     assert can_commit_with_acceptance is True

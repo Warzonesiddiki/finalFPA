@@ -5,28 +5,43 @@ and docs/09_TECHNICAL_ARCHITECTURE.md §12.
 """
 
 from decimal import Decimal
-import pytest
 
-from app.engine.store.db import DatabaseManager
 from app.engine.store.analytics_repo import (
     AnalyticsRepository,
     compute_favourability,
-    BvaSummaryRow,
-    StatementLineSummaryRow,
 )
+from app.engine.store.db import DatabaseManager
 
 
 def test_compute_favourability():
     """Verify favourability per direction (CALC-012)."""
     # Higher is favourable (revenue)
-    assert compute_favourability("higher_is_favourable", Decimal("120.00"), Decimal("100.00")) == "favourable"
-    assert compute_favourability("higher_is_favourable", Decimal("90.00"), Decimal("100.00")) == "unfavourable"
-    assert compute_favourability("higher_is_favourable", Decimal("100.00"), Decimal("100.00")) == "neutral"
+    assert (
+        compute_favourability("higher_is_favourable", Decimal("120.00"), Decimal("100.00"))
+        == "favourable"
+    )
+    assert (
+        compute_favourability("higher_is_favourable", Decimal("90.00"), Decimal("100.00"))
+        == "unfavourable"
+    )
+    assert (
+        compute_favourability("higher_is_favourable", Decimal("100.00"), Decimal("100.00"))
+        == "neutral"
+    )
 
     # Lower is favourable (expense)
-    assert compute_favourability("lower_is_favourable", Decimal("90.00"), Decimal("100.00")) == "favourable"
-    assert compute_favourability("lower_is_favourable", Decimal("110.00"), Decimal("100.00")) == "unfavourable"
-    assert compute_favourability("lower_is_favourable", Decimal("100.00"), Decimal("100.00")) == "neutral"
+    assert (
+        compute_favourability("lower_is_favourable", Decimal("90.00"), Decimal("100.00"))
+        == "favourable"
+    )
+    assert (
+        compute_favourability("lower_is_favourable", Decimal("110.00"), Decimal("100.00"))
+        == "unfavourable"
+    )
+    assert (
+        compute_favourability("lower_is_favourable", Decimal("100.00"), Decimal("100.00"))
+        == "neutral"
+    )
 
     # Neutral
     assert compute_favourability("neutral", Decimal("110.00"), Decimal("100.00")) == "neutral"

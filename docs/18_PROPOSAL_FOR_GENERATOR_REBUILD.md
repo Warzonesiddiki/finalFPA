@@ -75,6 +75,7 @@ Per project coding standards (`docs/17_CODING_STANDARDS.md`), floating-point typ
 
      CENTS = Decimal("0.01")
 
+
      def quantize_amount(val: Decimal) -> Decimal:
          return val.quantize(CENTS, rounding=ROUND_HALF_UP)
      ```

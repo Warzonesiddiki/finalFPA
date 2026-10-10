@@ -30,7 +30,7 @@ second implementation of it. Set ``FPA_PPT_OVERFLOW_CASCADE=1`` to enable it.
 from __future__ import annotations
 
 import os
-from typing import Any, NamedTuple, Optional
+from typing import Any, NamedTuple
 
 from pptx.util import Pt
 
@@ -59,7 +59,7 @@ class CascadeResult(NamedTuple):
     """What the cascade did to one shape."""
 
     shape_name: str
-    font_pt: Optional[float]
+    font_pt: float | None
     overflowed: bool
     split_needed: bool
 

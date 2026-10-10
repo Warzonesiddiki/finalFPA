@@ -43,9 +43,30 @@ EXCLUDE_DIRS = {
     "out",
 }
 SCAN_SUFFIXES = {
-    ".py", ".pyi", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".json",
-    ".css", ".html", ".htm", ".md", ".yml", ".yaml", ".toml", ".cfg", ".ini",
-    ".spec", ".iss", ".bat", ".ps1", ".sh", ".txt",
+    ".py",
+    ".pyi",
+    ".ts",
+    ".tsx",
+    ".js",
+    ".jsx",
+    ".mjs",
+    ".cjs",
+    ".json",
+    ".css",
+    ".html",
+    ".htm",
+    ".md",
+    ".yml",
+    ".yaml",
+    ".toml",
+    ".cfg",
+    ".ini",
+    ".spec",
+    ".iss",
+    ".bat",
+    ".ps1",
+    ".sh",
+    ".txt",
 }
 
 FORBIDDEN_PATTERNS = [
@@ -81,9 +102,7 @@ RUNTIME_NOT_GO = re.compile(
 DT_TOOLS = ("pip-licenses", "faker", "hypothesis")
 ADP_RE = re.compile(r"ADP-\d{3}")
 # E8: Adapted from <url-ish> @ <7-40 hex> (<license>) — ADP-nnn — …
-HEADER_RE = re.compile(
-    r"Adapted from \S+ @ [0-9a-f]{7,40} \([^)]+\) — ADP-\d{3} —"
-)
+HEADER_RE = re.compile(r"Adapted from \S+ @ [0-9a-f]{7,40} \([^)]+\) — ADP-\d{3} —")
 
 
 def iter_shipped_files():
@@ -170,12 +189,12 @@ def check_3_upstream_hygiene(violations: list[str]) -> None:
         )
         tracked = [ln for ln in res.stdout.splitlines() if ln.strip()]
         if res.returncode != 0:
-            violations.append(
-                f"CHECK 3: git ls-files failed: {res.stderr.strip()[:200]}"
-            )
+            violations.append(f"CHECK 3: git ls-files failed: {res.stderr.strip()[:200]}")
         for ln in tracked:
             violations.append(f"CHECK 3: upstream file tracked in git: {ln}")
-        print(f"  gitignored: {'vendor/_upstream/' in gitignore}; tracked upstream files: {len(tracked)}")
+        print(
+            f"  gitignored: {'vendor/_upstream/' in gitignore}; tracked upstream files: {len(tracked)}"
+        )
     except OSError as exc:
         violations.append(f"CHECK 3: could not run git: {exc}")
 
@@ -302,7 +321,9 @@ def check_6_payload_notices(violations: list[str], root: Path = ROOT) -> int:
     missing = sorted(a for a in cited if a not in text)
     if missing:
         violations.append(
-            "CHECK 6: adopted source(s) " + ", ".join(missing) + " ship code in the binary but their notice is absent from the generated payload THIRD_PARTY_LICENSES.txt (doc 15 step 4a)"
+            "CHECK 6: adopted source(s) "
+            + ", ".join(missing)
+            + " ship code in the binary but their notice is absent from the generated payload THIRD_PARTY_LICENSES.txt (doc 15 step 4a)"
         )
     return 1 if missing else 0
 

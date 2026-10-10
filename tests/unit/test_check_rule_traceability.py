@@ -4,12 +4,11 @@ Validates that rule traceability is computed dynamically from codebase parsing,
 reports missing legs, and regenerates with one command.
 """
 
-from pathlib import Path
 from scripts.check_rule_traceability import (
+    ALL_RULE_IDS,
+    RuleTraceabilityRow,
     build_traceability_matrix,
     generate_traceability_report,
-    RuleTraceabilityRow,
-    ALL_RULE_IDS,
 )
 
 

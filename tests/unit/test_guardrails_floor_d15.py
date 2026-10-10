@@ -4,7 +4,7 @@ Targets previously uncovered lines/branches with concrete spec values
 (AI spec §5, §8, §9, §10, §12).
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 import pytest
@@ -12,9 +12,9 @@ import pytest
 from app.engine.ai.guardrails import (
     AI_DRAFT_STAMP,
     NUMBER_REMOVED_PLACEHOLDER,
+    AICapConfig,
     AIDraftProvenance,
     AIGuardrailPipeline,
-    AICapConfig,
     AISchemaValidationError,
     AIUsageTracker,
     CapExceededException,
@@ -270,7 +270,11 @@ class TestReconcileNumbersFields:
         data = {
             "commentary": "Spend is 450000 for the period.",
             "drivers": [
-                {"label": "Posting of 450000 confirmed", "direction": "unfavourable", "evidence_ids": ["c-1"]}
+                {
+                    "label": "Posting of 450000 confirmed",
+                    "direction": "unfavourable",
+                    "evidence_ids": ["c-1"],
+                }
             ],
         }
         updated, res = reconcile_numbers(data, payload)
@@ -304,13 +308,13 @@ class TestUsageTrackerEdges:
         tracker = AIUsageTracker(AICapConfig(calls_per_hour=100))
         tracker.record_usage("PROMPT-01", "v1", "m", "azure", 1, 10, 5, 50)
         tracker.logs[0].occurred_at = "not-a-timestamp"
-        stale_ts = (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat()
+        stale_ts = (datetime.now(UTC) - timedelta(hours=2)).isoformat()
         tracker.record_usage("PROMPT-01", "v1", "m", "azure", 1, 10, 5, 50, timestamp=stale_ts)
         assert tracker.get_hourly_call_count() == 0
 
     def test_monthly_excludes_prior_month_and_malformed(self):
         tracker = AIUsageTracker()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         first_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         prior_ts = (first_of_month - timedelta(days=1)).isoformat()
         tracker.record_usage("PROMPT-01", "v1", "m", "azure", 1, 800, 300, 200, timestamp=prior_ts)
@@ -322,13 +326,13 @@ class TestUsageTrackerEdges:
 
     def test_december_reset_date_rolls_year(self):
         tracker = AIUsageTracker()
-        dec = datetime(2026, 12, 15, 12, 0, 0, tzinfo=timezone.utc)
+        dec = datetime(2026, 12, 15, 12, 0, 0, tzinfo=UTC)
         res = tracker.check_caps("PROMPT-01", now=dec)
         assert res.allowed is True
         assert res.outcome == "ok"
         # Force the monthly-tokens branch in December to observe the rolled reset date
         tight = AIUsageTracker(AICapConfig(monthly_tokens=1))
-        dec_ts = datetime(2026, 12, 2, 10, 0, 0, tzinfo=timezone.utc).isoformat()
+        dec_ts = datetime(2026, 12, 2, 10, 0, 0, tzinfo=UTC).isoformat()
         tight.record_usage("PROMPT-01", "v1", "m", "azure", 1, 800, 300, 200, timestamp=dec_ts)
         blocked = tight.check_caps("PROMPT-01", now=dec)
         assert blocked.allowed is False
@@ -378,7 +382,11 @@ class TestPipelineBranches:
         raw = _valid_p1_commentary(
             commentary="Variance is 10 against budget 90 and this looks wrong in timing.",
             drivers=[
-                {"label": "Variance driver", "direction": "unfavourable", "evidence_ids": ["ev-1", "ghost-9"]}
+                {
+                    "label": "Variance driver",
+                    "direction": "unfavourable",
+                    "evidence_ids": ["ev-1", "ghost-9"],
+                }
             ],
         )
         stamped, prov, usage = pipeline.process_ai_output(

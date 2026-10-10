@@ -14,12 +14,13 @@ state machine transition.
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from collections.abc import Sequence
+from typing import Any
 
 from app.engine.imports.mapping_suggestions import (
+    STATE_SUGGESTED,
     InvalidSuggestionTransition,
     MappingSuggestion,
-    STATE_SUGGESTED,
 )
 from app.engine.store.db import DatabaseManager
 
@@ -32,7 +33,7 @@ class MappingSuggestionRepository:
 
     # -- writes -----------------------------------------------------------
 
-    def enqueue(self, suggestions: Sequence[MappingSuggestion]) -> List[MappingSuggestion]:
+    def enqueue(self, suggestions: Sequence[MappingSuggestion]) -> list[MappingSuggestion]:
         """Persist a run's suggestions, deduplicating on identity_hash.
 
         FR-IMP-008 edge case: "the same column suggested twice (deduplicated)".
@@ -40,7 +41,7 @@ class MappingSuggestionRepository:
         row rather than a duplicate.
         """
         conn = self.db.get_sqlite_connection()
-        stored: List[MappingSuggestion] = []
+        stored: list[MappingSuggestion] = []
         try:
             with conn:
                 for s in suggestions:
@@ -86,8 +87,8 @@ class MappingSuggestionRepository:
         suggestion_id: int,
         action: str,
         actor: str,
-        new_target_field: Optional[str] = None,
-        reason: Optional[str] = None,
+        new_target_field: str | None = None,
+        reason: str | None = None,
     ) -> MappingSuggestion:
         """Apply one FR-IMP-008 transition and write an audit row atomically.
 
@@ -154,9 +155,9 @@ class MappingSuggestionRepository:
         suggestion_ids: Sequence[int],
         action: str,
         actor: str,
-        new_targets: Optional[Dict[int, str]] = None,
-        reason: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        new_targets: dict[int, str] | None = None,
+        reason: str | None = None,
+    ) -> dict[str, Any]:
         """Bulk accept/edit with an audit trail (FR-IMP-008).
 
         Per-item outcome is reported. A single illegal item is recorded as skipped
@@ -164,8 +165,8 @@ class MappingSuggestionRepository:
         should not lose the 38 valid ones to one bad row.
         """
         new_targets = new_targets or {}
-        applied: List[int] = []
-        skipped: List[Dict[str, Any]] = []
+        applied: list[int] = []
+        skipped: list[dict[str, Any]] = []
 
         for sid in suggestion_ids:
             try:
@@ -190,7 +191,7 @@ class MappingSuggestionRepository:
         to_state: str,
         actor: str,
         action: str,
-        detail: Dict[str, Any],
+        detail: dict[str, Any],
     ) -> None:
         conn.execute(
             """
@@ -212,12 +213,12 @@ class MappingSuggestionRepository:
 
     def list_suggestions(
         self,
-        import_run_id: Optional[int] = None,
-        state: Optional[str] = None,
-        origin: Optional[str] = None,
+        import_run_id: int | None = None,
+        state: str | None = None,
+        origin: str | None = None,
         limit: int = 200,
         offset: int = 0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Read the queue, newest state first, for the review UI.
 
         FR-IMP-008: "the queue shows rule-based suggestions only" when AI is
@@ -225,8 +226,8 @@ class MappingSuggestionRepository:
         """
         conn = self.db.get_sqlite_connection()
         try:
-            where: List[str] = []
-            params: List[Any] = []
+            where: list[str] = []
+            params: list[Any] = []
             if import_run_id is not None:
                 where.append("import_run_id = ?")
                 params.append(import_run_id)
@@ -260,7 +261,7 @@ class MappingSuggestionRepository:
 
     def record_applications(
         self,
-        applications: Sequence[Dict[str, Any]],
+        applications: Sequence[dict[str, Any]],
     ) -> int:
         """Log which suggestions were baked into which profile version.
 
@@ -311,7 +312,7 @@ class MappingSuggestionRepository:
         finally:
             conn.close()
 
-    def get_applications(self, suggestion_id: int) -> List[Dict[str, Any]]:
+    def get_applications(self, suggestion_id: int) -> list[dict[str, Any]]:
         """Where a suggestion was applied - the profile-history link."""
         conn = self.db.get_sqlite_connection()
         try:
@@ -324,7 +325,7 @@ class MappingSuggestionRepository:
         finally:
             conn.close()
 
-    def get_suggestion(self, suggestion_id: int) -> Optional[MappingSuggestion]:
+    def get_suggestion(self, suggestion_id: int) -> MappingSuggestion | None:
         conn = self.db.get_sqlite_connection()
         try:
             row = conn.execute(
@@ -335,7 +336,7 @@ class MappingSuggestionRepository:
         finally:
             conn.close()
 
-    def get_audit_trail(self, suggestion_id: int) -> List[Dict[str, Any]]:
+    def get_audit_trail(self, suggestion_id: int) -> list[dict[str, Any]]:
         conn = self.db.get_sqlite_connection()
         try:
             rows = conn.execute(
@@ -352,7 +353,7 @@ class MappingSuggestionRepository:
         finally:
             conn.close()
 
-    def count_by_state(self, import_run_id: Optional[int] = None) -> Dict[str, int]:
+    def count_by_state(self, import_run_id: int | None = None) -> dict[str, int]:
         """Queue summary counts for the review screen."""
         conn = self.db.get_sqlite_connection()
         try:
@@ -370,7 +371,7 @@ class MappingSuggestionRepository:
         finally:
             conn.close()
 
-    def applyable_for_run(self, import_run_id: int) -> List[MappingSuggestion]:
+    def applyable_for_run(self, import_run_id: int) -> list[MappingSuggestion]:
         """Accepted/edited suggestions from EARLIER runs that this run may apply.
 
         FR-IMP-008: "accepted mappings apply to future imports", so anything raised by

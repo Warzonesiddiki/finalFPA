@@ -65,6 +65,7 @@ def test_two_rule_runs_agree_in_content_and_order(rule_context):
 
 def test_finding_amounts_and_severities_are_stable(rule_context):
     """A stable subject key with a drifting amount would still pass the set test."""
+
     def fingerprint(findings):
         return sorted(
             (
@@ -77,9 +78,7 @@ def test_finding_amounts_and_severities_are_stable(rule_context):
             for f in findings
         )
 
-    assert fingerprint(acc.run_rules(rule_context)) == fingerprint(
-        acc.run_rules(rule_context)
-    )
+    assert fingerprint(acc.run_rules(rule_context)) == fingerprint(acc.run_rules(rule_context))
 
 
 def test_extra_counts_are_hash_seed_independent_in_content(rule_context):
@@ -89,6 +88,7 @@ def test_extra_counts_are_hash_seed_independent_in_content(rule_context):
     `app/engine/rules/acceptance.py` and is owned by another agent's claim.
     This test pins the CONTENT so a real regression still fails here.
     """
+
     def content_extras() -> dict[str, int]:
         findings = acc.run_rules(rule_context)
         counts: dict[str, int] = {}

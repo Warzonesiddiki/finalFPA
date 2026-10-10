@@ -315,7 +315,6 @@ class ForecastRow:
     updated_at: str = "2026-09-30 18:00"
 
 
-
 @dataclass
 class AccountingActionLogRow:
     voucher_no: str
@@ -327,7 +326,6 @@ class AccountingActionLogRow:
     description: str
     exception_id: int
     rule_id: str
-
 
     def __post_init__(self) -> None:
         self.debit = _coerce_money(self.debit)

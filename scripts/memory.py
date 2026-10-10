@@ -32,6 +32,7 @@ Commands
 Stdlib only, no runtime dependency (R9 untouched). Windows-safe: every write pins
 encoding="utf-8" and newline="\n".
 """
+
 from __future__ import annotations
 
 import argparse
@@ -202,8 +203,10 @@ def _lock(name: str, timeout: float = LOCK_TIMEOUT) -> Iterator[None]:
                     path.unlink()
                 continue
             if time.monotonic() > deadline:
-                die(f"memory lock {name!r} is held; {path} - "
-                    f"delete it by hand if you are sure no other agent is mid-write")
+                die(
+                    f"memory lock {name!r} is held; {path} - "
+                    f"delete it by hand if you are sure no other agent is mid-write"
+                )
             # Back off instead of polling flat: a dozen agents contending on one
             # lock made every loser re-stat the file 20x a second, which on Windows
             # (each stat scanned) was slower than the write being protected.
@@ -359,7 +362,8 @@ def _resume_body(agent: str, limit: int) -> str:
         "",
         "### Live team state",
         "",
-        f"- Cards: {len(ts)} total — " + ", ".join(f"{k} {v}" for k, v in sorted(by_status.items())),
+        f"- Cards: {len(ts)} total — "
+        + ", ".join(f"{k} {v}" for k, v in sorted(by_status.items())),
         f"- Live claims: {len(active)}",
         f"- **You are {'AWAY' if agent in away else 'active'}.**"
         + (f" Reason recorded: {away[agent]}" if agent in away else ""),
@@ -420,8 +424,9 @@ REQUIRED_RESUME_SECTIONS = (
 )
 
 
-def _check_journal(path: Path, prefix: str, field: str, allowed: tuple[str, ...],
-                   known: set[str]) -> tuple[list[str], list[str]]:
+def _check_journal(
+    path: Path, prefix: str, field: str, allowed: tuple[str, ...], known: set[str]
+) -> tuple[list[str], list[str]]:
     """Shape check for one journal. Split out of verify() to keep each branch testable."""
     fails: list[str] = []
     warns: list[str] = []
@@ -480,9 +485,12 @@ def _check_resume_sections() -> list[str]:
     resume = read_text(RESUME_MD)
     if not resume:
         return []
-    return [f"memory/RESUME.md is missing the section '{sec}' - a cold agent needs it to "
-            f"resume without asking"
-            for sec in REQUIRED_RESUME_SECTIONS if sec not in resume]
+    return [
+        f"memory/RESUME.md is missing the section '{sec}' - a cold agent needs it to "
+        f"resume without asking"
+        for sec in REQUIRED_RESUME_SECTIONS
+        if sec not in resume
+    ]
 
 
 def _check_freshness() -> list[str]:
@@ -493,14 +501,43 @@ def _check_freshness() -> list[str]:
             continue
         fresh = _splice(read_text(path), _render_block(_entries(journal), RENDER_LIMIT))
         if read_text(path) != fresh:
-            warns.append(f"{_rel(path)} is behind its journal - "
-                         f"run `python scripts/memory.py render`")
+            warns.append(
+                f"{_rel(path)} is behind its journal - run `python scripts/memory.py render`"
+            )
     return warns
+
+
+def known_agents() -> set[str]:
+    """Every seat this layer will accept an attribution from.
+
+    `team/config.json`'s `agents` list is the *current* roster, but a seat that has
+    already recorded entries is history the layer must not invalidate. ENG-14 / T-008:
+    `verify()` read only `agents`, so parking or removing a seat (config.json was edited
+    to `agents=[opencode, hermes]`) turned 73 of the 77 recorded entries into
+    "attributed to unknown agent" failures - the continuity layer reported itself broken
+    because the roster moved, not because anything was wrong.
+
+    The known set is therefore the UNION of:
+      * the current roster and the leader from team/config.json;
+      * any seat that owns a `memory/agents/<seat>.md` log - a file that exists only
+        because `render()` wrote it for that seat.
+
+    A journal entry attributed to a seat in neither set is still an error, which is what
+    `test_verify_fails_on_unknown_agent` pins.
+    """
+    cfg = team_config()
+    known = {str(a) for a in cfg.get("agents", [])}
+    leader = str(cfg.get("leader", "")).strip()
+    if leader:
+        known.add(leader)
+    if AGENTS_DIR.is_dir():
+        known |= {p.stem for p in AGENTS_DIR.glob("*.md") if p.stem}
+    return known
 
 
 def verify() -> tuple[list[str], list[str]]:
     """The gate. Returns (fails, warns); every check below is falsifiable."""
-    known = {str(a) for a in team_config()["agents"]}
+    known = known_agents()
     fails: list[str] = []
     warns: list[str] = []
     for path, prefix, field, allowed in (
@@ -518,7 +555,11 @@ def verify() -> tuple[list[str], list[str]]:
 # --------------------------------------------------------------------------- renderers
 def _print_brief(agent: str, limit: int) -> int:
     body = read_text(RESUME_MD)
-    print(body if body.strip() else "memory/RESUME.md is empty - run `python scripts/memory.py render`")
+    print(
+        body
+        if body.strip()
+        else "memory/RESUME.md is empty - run `python scripts/memory.py render`"
+    )
     print("\n" + "=" * 78)
     print(f"LIVE BRIEF for seat '{agent}' (regenerated now, never stale)")
     print("=" * 78)
@@ -541,11 +582,20 @@ def cmd_add(args: argparse.Namespace) -> int:
         die(f"--kind must be one of {list(MEMORY_KINDS)}")
     if not args.text.strip():
         die("--text must not be empty")
-    e = _append(MEMORY_JOURNAL, "M", {
-        "agent": agent, "kind": args.kind, "text": args.text.strip(),
-        "task": args.task, "ref": args.ref,
-    })
-    print(f"{e['id']} recorded ({agent}/{args.kind}) - run `python scripts/memory.py render` to publish")
+    e = _append(
+        MEMORY_JOURNAL,
+        "M",
+        {
+            "agent": agent,
+            "kind": args.kind,
+            "text": args.text.strip(),
+            "task": args.task,
+            "ref": args.ref,
+        },
+    )
+    print(
+        f"{e['id']} recorded ({agent}/{args.kind}) - run `python scripts/memory.py render` to publish"
+    )
     return 0
 
 
@@ -555,10 +605,19 @@ def cmd_learn(args: argparse.Namespace) -> int:
         die(f"--topic must be one of {list(KNOWLEDGE_TOPICS)}")
     if not args.text.strip():
         die("--text must not be empty")
-    e = _append(KNOWLEDGE_JOURNAL, "K", {
-        "agent": agent, "topic": args.topic, "text": args.text.strip(), "ref": args.ref,
-    })
-    print(f"{e['id']} recorded ({agent}/{args.topic}) - run `python scripts/memory.py render` to publish")
+    e = _append(
+        KNOWLEDGE_JOURNAL,
+        "K",
+        {
+            "agent": agent,
+            "topic": args.topic,
+            "text": args.text.strip(),
+            "ref": args.ref,
+        },
+    )
+    print(
+        f"{e['id']} recorded ({agent}/{args.topic}) - run `python scripts/memory.py render` to publish"
+    )
     return 0
 
 
@@ -597,7 +656,7 @@ def cmd_prompt(args: argparse.Namespace) -> int:
     i, j = text.find(PROMPT_FROM), text.find(PROMPT_TO)
     if i == -1 or j == -1 or j < i:
         die(f"{_rel(PROMPT_MD)} lost its '{PROMPT_FROM}' / '{PROMPT_TO}' delimiters")
-    print(text[i + len(PROMPT_FROM):j].strip())
+    print(text[i + len(PROMPT_FROM) : j].strip())
     return 0
 
 
@@ -608,8 +667,9 @@ def cmd_ids(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="memory.py", description=__doc__,
-                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    p = argparse.ArgumentParser(
+        prog="memory.py", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     sub = p.add_subparsers(dest="cmd", required=True)
 
     s = sub.add_parser("add", help="record one memory entry")

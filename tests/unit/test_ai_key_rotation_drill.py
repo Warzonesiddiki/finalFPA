@@ -9,7 +9,7 @@ Quoting docs/13_SECURITY_PRIVACY.md §5.3 (Lifecycle: set -> test -> rotate -> r
 """
 
 import os
-import pytest
+
 from fastapi.testclient import TestClient
 
 from app.api.main import app
@@ -40,7 +40,7 @@ def test_ai_key_rotation_and_purge_drill(tmp_path):
             "endpoint": "https://api.openai.com/v1",
             "model": "gpt-4o",
             "api_key": new_key,
-        }
+        },
     )
     assert resp.status_code == 200
 
@@ -58,7 +58,7 @@ def test_ai_key_rotation_and_purge_drill(tmp_path):
             "endpoint": "",
             "model": "gpt-4o",
             "api_key": "",
-        }
+        },
     )
     assert resp_remove.status_code == 200
     assert old_key not in os.environ.get("FPA_AI_API_KEY", "")

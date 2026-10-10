@@ -3,13 +3,13 @@
   "title": "SPEC-08: Author the acceptance standard for a card: Define the evidence set, verification command, and human-readability requirement for any deliverable, to be applied across the team's dashboard. Acceptance: a doc/ file recording the mandatory handoff components and the 'reviewer's duty' standard.",
   "source": "team",
   "priority": "P0",
-  "status": "review",
+  "status": "done",
   "owner": "hermes",
   "claim_id": "hermes-20261005T2149Z-1d34",
   "deps": [],
   "lane": "docs",
   "created_utc": "2026-10-05T21:49:04Z",
-  "updated_utc": "2026-10-05T21:50:08Z",
+  "updated_utc": "2026-10-09T19:37:00Z",
   "history": [
     {
       "utc": "2026-10-05T21:49:04Z",
@@ -25,6 +25,11 @@
       "utc": "2026-10-05T21:50:08Z",
       "agent": "hermes",
       "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-09T19:37:00Z",
+      "agent": "?",
+      "event": "SPEC-08 authored (docs/SPEC-08_ACCEPTANCE_STANDARD.md) + DOC-05 authored (docs/card_acceptance_standard.md). Together they close the gap that let three fabricated audits through. Evidence: both docs exist, link-check green, memory verify 0 fail."
     }
   ],
   "handoff": "HO-071"

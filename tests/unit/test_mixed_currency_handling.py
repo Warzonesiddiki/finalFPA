@@ -9,7 +9,7 @@ Quoting docs/02_FUNCTIONAL_SPEC.md E10 & docs/04_SOURCE_MAPPING_AND_IMPORT_SPEC.
 from __future__ import annotations
 
 from pathlib import Path
-import pytest
+
 from app.engine.imports.parser import parse_csv_transactions
 
 
@@ -25,7 +25,7 @@ def test_mixed_currency_quarantined_with_message(tmp_path: Path):
         "COMP,V001,1,2026-04-01,1001,100.00,0.00,INR,FY26-P01\n"
         "COMP,V002,1,2026-04-01,1001,250.00,0.00,USD,FY26-P01\n"
         "COMP,V003,1,2026-04-01,1001,500.00,0.00,EUR,FY26-P01\n",
-        encoding="utf-8"
+        encoding="utf-8",
     )
 
     # Parse with project_currency="INR"
@@ -41,6 +41,7 @@ def test_mixed_currency_quarantined_with_message(tmp_path: Path):
 
     # Verify canonical slug lookup via get_batch_slugs helper
     from conftest import get_batch_slugs
+
     slugs = get_batch_slugs(batch)
     assert "import.mixedCurrency" in slugs
 

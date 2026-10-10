@@ -12,30 +12,30 @@ Owns:
 
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 from enum import Enum
-from typing import Any, Callable, Iterable, Sequence
+from typing import Any
 
 from app.engine.calc.math import (
-    quantize_money,
-    quantize_ratio,
-    calculate_mape_lite,
+    ZERO,
     RatioResult,
     RatioState,
-    ZERO,
-    TWO_PLACES,
-    SIX_PLACES,
+    calculate_mape_lite,
+    quantize_money,
+    quantize_ratio,
 )
-
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
 
+
 class ScenarioType(str, Enum):
     """Scenario identifiers per 07_FORECAST_METHODS_SPEC §6."""
+
     BASE = "base"
     BEST = "best"
     WORST = "worst"
@@ -44,6 +44,7 @@ class ScenarioType(str, Enum):
 
 class ForecastVersionStatus(str, Enum):
     """Lifecycle states of FactForecastVersion per 07 §7."""
+
     DRAFT = "draft"
     LOCKED = "locked"
     SUPERSEDED = "superseded"
@@ -51,6 +52,7 @@ class ForecastVersionStatus(str, Enum):
 
 class AccuracyStatus(str, Enum):
     """Accuracy report state per line or period per 07 §8.1."""
+
     GENERATED = "generated"
     NOT_GENERATED = "not_generated"
     DRAFT_BASIS = "draft_basis"
@@ -61,33 +63,40 @@ class AccuracyStatus(str, Enum):
 # Exceptions
 # ---------------------------------------------------------------------------
 
+
 class ForecastError(Exception):
     """Base exception for forecast engine errors."""
+
     pass
 
 
 class LockedVersionError(ForecastError):
     """Raised when attempting to mutate or delete a locked or superseded version."""
+
     pass
 
 
 class ImmutabilityViolationError(LockedVersionError):
     """Raised when attempting an operation that violates forecast immutability guarantees."""
+
     pass
 
 
 class InvalidOverrideError(ForecastError):
     """Raised when an override does not fulfill mandatory validation (e.g. missing reason)."""
+
     pass
 
 
 class VersionTransitionError(ForecastError):
     """Raised when an illegal version status transition is attempted."""
+
     pass
 
 
 class UnissuedVersionError(ForecastError):
     """Raised when an issued pack attempts to reference an unlocked forecast version."""
+
     pass
 
 
@@ -95,9 +104,11 @@ class UnissuedVersionError(ForecastError):
 # Models
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class FactForecastRow:
     """A single forecast line per 03_DATA_DICTIONARY §4.3 and 07 §10 (G3)."""
+
     period_id: int
     account_id: int
     company_id: int = 1
@@ -122,17 +133,22 @@ class FactForecastRow:
         # Mandatory override reason check per 07 §9 & FR-FC-006
         if self.is_manual_override:
             if not self.override_reason or not str(self.override_reason).strip():
-                raise InvalidOverrideError("A mandatory non-empty reason is required for manual overrides.")
+                raise InvalidOverrideError(
+                    "A mandatory non-empty reason is required for manual overrides."
+                )
         # Ensure Decimal type for amount
         if isinstance(self.amount, (int, str, float)):
             self.amount = quantize_money(self.amount)
-        if self.amount_unrounded is not None and isinstance(self.amount_unrounded, (int, str, float)):
+        if self.amount_unrounded is not None and isinstance(
+            self.amount_unrounded, (int, str, float)
+        ):
             self.amount_unrounded = Decimal(str(self.amount_unrounded))
 
 
 @dataclass
 class FactForecastVersion:
     """Forecast version record per 03 §4.4 and 07 §7."""
+
     forecast_version_id: str | int
     period_generated_for: int
     scenario_id: str
@@ -195,7 +211,9 @@ class FactForecastVersion:
         """Apply a manual override with mandatory reason per 07 §9."""
         self.assert_writable()
         if not reason or not reason.strip():
-            raise InvalidOverrideError("A mandatory non-empty reason is required for manual overrides.")
+            raise InvalidOverrideError(
+                "A mandatory non-empty reason is required for manual overrides."
+            )
 
         quantized = quantize_money(amount)
         for line in self.lines:
@@ -231,7 +249,9 @@ class FactForecastVersion:
         if self.status == ForecastVersionStatus.LOCKED:
             return  # Already locked
         if self.status == ForecastVersionStatus.SUPERSEDED:
-            raise VersionTransitionError("Cannot lock a superseded version; superseded is terminal.")
+            raise VersionTransitionError(
+                "Cannot lock a superseded version; superseded is terminal."
+            )
 
         if not locked_by or not locked_by.strip():
             raise ValueError("Locked version must record locked_by user.")
@@ -249,6 +269,7 @@ class FactForecastVersion:
 # Scenario Configuration and Generator
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ScenarioAdjustmentConfig:
     """Configurable scenario adjustment percentages per 07 §6 & §13.
@@ -259,6 +280,7 @@ class ScenarioAdjustmentConfig:
     - Worst: -5% revenue, +3% discretionary cost
     Note: defaults are unconfirmed starting point per Q-008.
     """
+
     # Mapping of scenario_id -> {account_group/category: adjustment_pct}
     adjustments: dict[str, dict[str, Decimal]] = field(
         default_factory=lambda: {
@@ -338,7 +360,11 @@ class ScenarioGenerator:
 
             # Calculation per CALC-065 & F14c:
             # Use full unrounded precision if available, otherwise quantized amount
-            basis = base_line.amount_unrounded if base_line.amount_unrounded is not None else base_line.amount
+            basis = (
+                base_line.amount_unrounded
+                if base_line.amount_unrounded is not None
+                else base_line.amount
+            )
             multiplier = Decimal("1.00") + adj_pct
             adjusted_unrounded = basis * multiplier
             adjusted_amount = quantize_money(adjusted_unrounded)
@@ -414,6 +440,7 @@ class ScenarioGenerator:
 # ---------------------------------------------------------------------------
 # Forecast Version Manager (Lifecycle, Locking, Immutability)
 # ---------------------------------------------------------------------------
+
 
 class ForecastVersionManager:
     """Manages forecast version state, locking, and pack-issue verification.
@@ -528,9 +555,11 @@ class ForecastVersionManager:
 # Forecast Accuracy Evaluation (CALC-066 .. CALC-069)
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class PeriodAccuracyRow:
     """Accuracy metrics for a single period comparison per CALC-066..069."""
+
     period_id: int
     actual_amount: Decimal
     forecast_amount: Decimal
@@ -548,6 +577,7 @@ class PeriodAccuracyRow:
 @dataclass(frozen=True)
 class ForecastAccuracyReport:
     """Aggregated forecast accuracy report per 07 §8.1 and 05 §9.2."""
+
     periods_compared: int
     signed_bias: Decimal  # CALC-068: mean(signed error)
     mape_lite: RatioResult  # CALC-069: mean MAPE term over non-zero actual periods
@@ -597,7 +627,9 @@ def calculate_signed_bias(signed_errors: Sequence[Decimal | str | int | float]) 
 
 
 def evaluate_forecast_accuracy(
-    period_pairs: Sequence[tuple[int | str, Decimal | str | int | float, Decimal | str | int | float]],
+    period_pairs: Sequence[
+        tuple[int | str, Decimal | str | int | float, Decimal | str | int | float]
+    ],
     account_group: str | None = None,
     method_id: str | None = None,
     is_draft_basis: bool = False,
@@ -642,7 +674,7 @@ def evaluate_forecast_accuracy(
         signed_errors.append(signed_err)
         pairs_for_mape.append((act, fc))
 
-        is_zero = (act == ZERO)
+        is_zero = act == ZERO
         mape_term = None
         if not is_zero:
             # Stored at 6 decimal places per CALC-030

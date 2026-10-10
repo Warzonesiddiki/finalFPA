@@ -8,10 +8,9 @@ Quoted from docs/26_API_CONTRACT.md §5 & docs/08_UI_UX_SPEC.md §16:
 
 from __future__ import annotations
 
-from typing import List, Dict, Any
+from typing import Any
 
-
-ERROR_CATALOG: List[Dict[str, Any]] = [
+ERROR_CATALOG: list[dict[str, Any]] = [
     # VAL family
     {
         "code": "ERR-VAL-001",
@@ -793,6 +792,6 @@ ERROR_CATALOG: List[Dict[str, Any]] = [
 ]
 
 
-def get_error_catalog() -> List[Dict[str, Any]]:
+def get_error_catalog() -> list[dict[str, Any]]:
     """Return the full centralized error catalog."""
     return ERROR_CATALOG

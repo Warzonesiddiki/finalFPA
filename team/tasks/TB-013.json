@@ -3,7 +3,7 @@
   "title": "Close out `evidence/acceptance_remediation_2026-10-04.md`: every miss/extra row marked fixed / answered / documented-tuning",
   "source": "docs/33",
   "priority": "P0",
-  "status": "todo",
+  "status": "done",
   "owner": null,
   "claim_id": null,
   "deps": [
@@ -11,7 +11,7 @@
   ],
   "lane": "verification",
   "created_utc": "2026-10-05T10:12:06Z",
-  "updated_utc": "2026-10-05T10:14:18Z",
+  "updated_utc": "2026-10-09T19:37:31Z",
   "history": [
     {
       "utc": "2026-10-05T10:12:06Z",
@@ -22,6 +22,11 @@
       "utc": "2026-10-05T10:14:18Z",
       "agent": "buffy",
       "event": "triaged P0 / lane verification by leader"
+    },
+    {
+      "utc": "2026-10-09T19:37:31Z",
+      "agent": "?",
+      "event": "Remediation map closed: every row in evidence/acceptance_remediation_2026-10-04.md is now FIXED per the PASS verdict in evidence/acceptance_report.json (32/32 detected, 0 controls fired, 0 zero-coverage, 17 extras all under threshold). The '21 misses' classification all resolved: sub-ledger sources now commit (DEC-056), answer-key keys now match (OQ-026), import-history fixture exists (OQ-027), per-rule work done (24/24 wired). Evidence: evidence/acceptance_report.json + evidence/acceptance_report.md."
     }
   ]
 }

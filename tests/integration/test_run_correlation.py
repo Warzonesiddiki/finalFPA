@@ -1,6 +1,5 @@
 """Integration tests for ENG-10: Run correlation ID threading and export presence."""
 
-from pathlib import Path
 import openpyxl
 from starlette.testclient import TestClient
 
@@ -46,6 +45,7 @@ def test_exported_pack_carries_run_correlation_id_in_exception_register(tmp_path
     )
 
     from decimal import Decimal
+
     exc_row = ExceptionRow(
         exception_id=1,
         rule_id="EXC-001",

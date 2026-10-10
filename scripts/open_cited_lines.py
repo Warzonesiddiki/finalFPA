@@ -25,6 +25,7 @@ citations at all has measured nothing, and this command says so by failing.
 
 Stdlib only. No network. Reads files under the repository root.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -325,7 +326,9 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     )
     ap.add_argument("report", nargs="?", help="report .md to audit")
     ap.add_argument("--handoff", help="audit the evidence files named by a handoff id, e.g. HO-031")
-    ap.add_argument("--limit", type=int, default=4, help="open at most N citations (default 4; 0 = all)")
+    ap.add_argument(
+        "--limit", type=int, default=4, help="open at most N citations (default 4; 0 = all)"
+    )
     ap.add_argument("--context", type=int, default=0, help="also show N lines either side")
     ap.add_argument("--json", action="store_true", help="machine-readable output")
     args = ap.parse_args(argv)
@@ -393,9 +396,13 @@ def _verdict(all_cites: list[Citation], checked: int, bad: list[Citation]) -> in
             print("VERDICT: FAIL — a cited line does not say what the report says it says.")
         return 1
     if checked == 0:
-        print("VERDICT: INCONCLUSIVE — every citation resolved, but no line carried a checkable claim.")
+        print(
+            "VERDICT: INCONCLUSIVE — every citation resolved, but no line carried a checkable claim."
+        )
         return 1
-    print("VERDICT: OK — every sampled citation resolved and every claim token is on its cited line.")
+    print(
+        "VERDICT: OK — every sampled citation resolved and every claim token is on its cited line."
+    )
     return 0
 
 

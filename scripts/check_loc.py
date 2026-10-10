@@ -4,8 +4,8 @@ Enforces that no Python source file under app/ exceeds 500 LOC without an explic
 justification note in its header or entry in the named allowlist.
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 MAX_LOC = 500
 
@@ -54,7 +54,9 @@ def check_line_counts(app_dir: Path) -> int:
                 violations.append((rel_path, loc))
 
     if violations:
-        print(f"FAILED: {len(violations)} file(s) exceed {MAX_LOC} LOC without justification header or allowlist reason:")
+        print(
+            f"FAILED: {len(violations)} file(s) exceed {MAX_LOC} LOC without justification header or allowlist reason:"
+        )
         for path, loc in violations:
             print(f"  - {path}: {loc} LOC")
         return 1

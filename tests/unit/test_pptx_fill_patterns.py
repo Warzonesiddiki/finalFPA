@@ -388,9 +388,7 @@ def test_fill_table_header_row_uses_header_style():
         header_style=TextStyle(bold=True),
         cell_style=TextStyle(bold=False),
     )
-    runs = [
-        shape.table.rows[i].cells[0].text_frame.paragraphs[0].runs[0] for i in (0, 1)
-    ]
+    runs = [shape.table.rows[i].cells[0].text_frame.paragraphs[0].runs[0] for i in (0, 1)]
     assert runs[0].font.bold is True
     assert runs[1].font.bold is False
 
@@ -399,7 +397,9 @@ def test_set_cell_text_applies_a_fill_colour():
     prs = open_template()
     slide = add_slide_from_layout(prs, SLIDE_LAYOUTS["PPT-004"])
     cell = resolve_shape(slide, "PPT-004_table").table.cell(1, 0)
-    set_cell_text(cell, "5600 Repairs", style=TextStyle(bold=True), fill_color=RGBColor(0xEE, 0xEE, 0xEE))
+    set_cell_text(
+        cell, "5600 Repairs", style=TextStyle(bold=True), fill_color=RGBColor(0xEE, 0xEE, 0xEE)
+    )
     assert cell.text == "5600 Repairs"
     assert cell.text_frame.paragraphs[0].runs[0].font.bold is True
     assert cell.fill.fore_color.rgb == RGBColor(0xEE, 0xEE, 0xEE)
@@ -559,7 +559,8 @@ def test_promoted_deck_survives_save_and_reopen_with_its_parts(tmp_path):
                 replace_chart_data(
                     shape,
                     ["c1", "c2"],
-                    [("base", (0, 1)), ("amount", (1, 2))] if "003" in slide_id
+                    [("base", (0, 1)), ("amount", (1, 2))]
+                    if "003" in slide_id
                     else [("Actual", (1, 2)), ("Forecast", (None, 2)), ("Budget", (3, 4))],
                 )
             elif shape.has_text_frame:
@@ -615,7 +616,11 @@ def test_two_runs_from_the_same_context_produce_identical_slide_xml():
                         ["c1", "c2", "c3"],
                         [("base", (0, 1, 2)), ("amount", (1, 2, 3))]
                         if "003" in slide_id
-                        else [("Actual", (1, 2, 3)), ("Forecast", (None, 2, 3)), ("Budget", (4, 5, 6))],
+                        else [
+                            ("Actual", (1, 2, 3)),
+                            ("Forecast", (None, 2, 3)),
+                            ("Budget", (4, 5, 6)),
+                        ],
                         title="t",
                         legend=False,
                     )

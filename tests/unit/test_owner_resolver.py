@@ -3,7 +3,6 @@ Unit tests for Exception Owner Auto-Assign Resolver (per doc 06 & task requireme
 Covers mapping hits, misses (unassigned without false guessing), and manual override precedence.
 """
 
-import pytest
 from app.engine.exceptions.owner_resolver import resolve_exception_owner
 
 

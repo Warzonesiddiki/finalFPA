@@ -18,15 +18,14 @@ import ast
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TESTS_DIR = REPO_ROOT / "tests"
 
 
-def load_authoritative_catalogue() -> Set[str]:
+def load_authoritative_catalogue() -> set[str]:
     """Extract all valid TST-* identifiers declared in project docs."""
-    catalogue: Set[str] = set()
+    catalogue: set[str] = set()
     docs = [
         REPO_ROOT / "docs" / "14_TESTING_QA_PLAN.md",
         REPO_ROOT / "docs" / "20_REQUIREMENTS_TRACEABILITY.md",
@@ -54,14 +53,14 @@ def load_authoritative_catalogue() -> Set[str]:
     return catalogue
 
 
-def harvest_test_markers() -> Tuple[Dict[str, List[Tuple[str, str]]], List[str]]:
+def harvest_test_markers() -> tuple[dict[str, list[tuple[str, str]]], list[str]]:
     """Scan all test files in tests/ and harvest tst_id / tst markers.
 
     Returns:
         (mapped_ids: dict[tst_id -> [(file, func_name), ...]], errors: list[str])
     """
-    mapped: Dict[str, List[Tuple[str, str]]] = {}
-    errors: List[str] = []
+    mapped: dict[str, list[tuple[str, str]]] = {}
+    errors: list[str] = []
 
     for py_file in TESTS_DIR.glob("**/*.py"):
         try:
@@ -85,9 +84,9 @@ def harvest_test_markers() -> Tuple[Dict[str, List[Tuple[str, str]]], List[str]]
     return mapped, errors
 
 
-def extract_tst_from_decorator(decorator: ast.expr) -> List[str]:
+def extract_tst_from_decorator(decorator: ast.expr) -> list[str]:
     """Extract string arguments from pytest mark decorators."""
-    res: List[str] = []
+    res: list[str] = []
     # AST Call: pytest.mark.tst_id("TST-...") or tst_id("TST-...")
     if isinstance(decorator, ast.Call):
         func = decorator.func
@@ -125,7 +124,9 @@ def main() -> int:
 
     total_mappings = sum(len(locs) for locs in mapped.values())
     unique_mapped = set(mapped.keys())
-    print(f"Harvested {total_mappings} marker references covering {len(unique_mapped)} distinct TST IDs.")
+    print(
+        f"Harvested {total_mappings} marker references covering {len(unique_mapped)} distinct TST IDs."
+    )
 
     # 1. Unknown TST IDs check
     unknown_ids = unique_mapped - catalogue
@@ -144,7 +145,9 @@ def main() -> int:
     missing_rules = rule_ids - unique_mapped
 
     if missing_rules:
-        print(f"\n[ERROR] Missing test mapping for core exception rules ({len(missing_rules)} missing):")
+        print(
+            f"\n[ERROR] Missing test mapping for core exception rules ({len(missing_rules)} missing):"
+        )
         for rid in sorted(missing_rules):
             print(f"  - {rid}")
         return 1
@@ -152,9 +155,7 @@ def main() -> int:
         print("[PASS] 100% coverage for Exception Rules TST-RUL-01 through TST-RUL-24.")
 
     # Core Import requirements
-    imp_core = {
-        "TST-IMP-01", "TST-IMP-02", "TST-IMP-03"
-    }
+    imp_core = {"TST-IMP-01", "TST-IMP-02", "TST-IMP-03"}
     missing_imp = imp_core - unique_mapped
     if missing_imp:
         print(f"\n[ERROR] Missing test mapping for core imports ({len(missing_imp)} missing):")

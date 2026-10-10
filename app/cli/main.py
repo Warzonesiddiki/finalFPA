@@ -2,7 +2,6 @@
 
 import argparse
 import sys
-from decimal import Decimal
 
 from app import __app_name__, __version__
 from app.engine.calc import calculate_variance, calculate_variance_pct, quantize_money
@@ -41,8 +40,10 @@ def _cmd_exceptions(args: argparse.Namespace) -> None:
             print(json.dumps(summary, default=str))
         else:
             print(f"Exception run for {summary['period']}")
-            print(f"  Rules run        : {summary['rulesRun']} evaluators "
-                  f"({summary.get('catalogRulesCovered', '?')} catalog rules)")
+            print(
+                f"  Rules run        : {summary['rulesRun']} evaluators "
+                f"({summary.get('catalogRulesCovered', '?')} catalog rules)"
+            )
             print(f"  Findings         : {summary['totalFindings']}")
             print(f"  Raised           : {summary['raised']}")
             print(f"  Updated          : {summary['updated']}")
@@ -61,17 +62,24 @@ def _cmd_exceptions(args: argparse.Namespace) -> None:
 
 def _cmd_validate(args: argparse.Namespace) -> None:
     """Run prescan + full parse/validate without committing."""
-    import json as _json
-    from app.engine.imports import prescan_file, parse_and_validate_csv
+    from app.engine.imports import parse_and_validate_csv, prescan_file
 
     try:
         pre = prescan_file(args.file)
         batch = parse_and_validate_csv(args.file)
     except FileNotFoundError:
-        _emit(args.json, {"status": "error", "error": f"file not found: {args.file}"}, text=f"File not found: {args.file}")
+        _emit(
+            args.json,
+            {"status": "error", "error": f"file not found: {args.file}"},
+            text=f"File not found: {args.file}",
+        )
         sys.exit(2)
     except Exception as exc:
-        _emit(args.json, {"status": "error", "error": f"{type(exc).__name__}: {exc}"}, text=f"Parse error: {exc}")
+        _emit(
+            args.json,
+            {"status": "error", "error": f"{type(exc).__name__}: {exc}"},
+            text=f"Parse error: {exc}",
+        )
         sys.exit(2)
 
     if batch.is_balanced:
@@ -112,10 +120,18 @@ def _cmd_import(args: argparse.Namespace) -> None:
     try:
         batch, rows = parse_csv_transactions(args.file)
     except FileNotFoundError:
-        _emit(args.json, {"status": "error", "error": f"file not found: {args.file}"}, text=f"File not found: {args.file}")
+        _emit(
+            args.json,
+            {"status": "error", "error": f"file not found: {args.file}"},
+            text=f"File not found: {args.file}",
+        )
         sys.exit(2)
     except Exception as exc:
-        _emit(args.json, {"status": "error", "error": f"{type(exc).__name__}: {exc}"}, text=f"Parse error: {exc}")
+        _emit(
+            args.json,
+            {"status": "error", "error": f"{type(exc).__name__}: {exc}"},
+            text=f"Parse error: {exc}",
+        )
         sys.exit(2)
 
     if not batch.is_balanced:
@@ -145,7 +161,11 @@ def _cmd_forecast(args: argparse.Namespace) -> None:
     try:
         ws = repo.generate_forecast(scenario_id=args.scenario, default_method=args.method)
     except Exception as exc:
-        _emit(args.json, {"status": "error", "error": f"{type(exc).__name__}: {exc}"}, text=f"Forecast failed: {exc}")
+        _emit(
+            args.json,
+            {"status": "error", "error": f"{type(exc).__name__}: {exc}"},
+            text=f"Forecast failed: {exc}",
+        )
         sys.exit(2)
     _emit(
         args.json,
@@ -157,6 +177,7 @@ def _cmd_forecast(args: argparse.Namespace) -> None:
 
 def _cmd_export_xlsx(args: argparse.Namespace) -> None:
     from pathlib import Path
+
     from app.engine.exports.excel_pack import create_sample_pack_data, export_excel_pack
 
     out = Path(args.out)
@@ -171,6 +192,7 @@ def _cmd_export_xlsx(args: argparse.Namespace) -> None:
 
 def _cmd_export_ppt(args: argparse.Namespace) -> None:
     from pathlib import Path
+
     from app.engine.exports.ppt_pack import generate_powerpoint_deck
 
     out = Path(args.out)
@@ -188,7 +210,11 @@ def _cmd_migrate(args: argparse.Namespace) -> None:
 
     # Constructing the manager applies schema_duckdb.sql + seeds (idempotent).
     DatabaseManager()
-    _emit(args.json, {"status": "ok", "schemaStatus": "current"}, text="Schema current (idempotent init ran).")
+    _emit(
+        args.json,
+        {"status": "ok", "schemaStatus": "current"},
+        text="Schema current (idempotent init ran).",
+    )
     sys.exit(0)
 
 
@@ -200,7 +226,13 @@ def _cmd_report(args: argparse.Namespace) -> None:
     try:
         conn = db.get_duckdb_connection()
         try:
-            for table in ("FactActual", "FactBudget", "FactForecast", "FactImportBatch", "FactException"):
+            for table in (
+                "FactActual",
+                "FactBudget",
+                "FactForecast",
+                "FactImportBatch",
+                "FactException",
+            ):
                 try:
                     row = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()
                     counts[table] = row[0] if row else 0
@@ -236,8 +268,12 @@ def main() -> None:
     subparsers = parser.add_subparsers(dest="command", help="Available subcommands")
 
     # doctor command
-    doctor_parser = subparsers.add_parser("doctor", help="Check system environment and dependencies")
-    doctor_parser.add_argument("--json", action="store_true", help="Output health diagnostic as JSON")
+    doctor_parser = subparsers.add_parser(
+        "doctor", help="Check system environment and dependencies"
+    )
+    doctor_parser.add_argument(
+        "--json", action="store_true", help="Output health diagnostic as JSON"
+    )
 
     # bva command
     bva_parser = subparsers.add_parser("bva", help="Run budget vs actual calculations")
@@ -278,13 +314,17 @@ def main() -> None:
     import_parser.add_argument("file", help="CSV or XLSX source file")
     import_parser.add_argument("--json", action="store_true", help="Output summary as JSON")
 
-    validate_parser = subparsers.add_parser("validate", help="Parse + validate a file without committing")
+    validate_parser = subparsers.add_parser(
+        "validate", help="Parse + validate a file without committing"
+    )
     validate_parser.add_argument("file", help="CSV or XLSX source file")
     validate_parser.add_argument("--json", action="store_true", help="Output summary as JSON")
 
     forecast_parser = subparsers.add_parser("forecast", help="Generate the forecast workspace")
     forecast_parser.add_argument("--scenario", default="base", help="Scenario id (default: base)")
-    forecast_parser.add_argument("--method", default="run_rate", help="Default method for unmapped accounts")
+    forecast_parser.add_argument(
+        "--method", default="run_rate", help="Default method for unmapped accounts"
+    )
     forecast_parser.add_argument("--json", action="store_true", help="Output summary as JSON")
 
     xlsx_parser = subparsers.add_parser("export-xlsx", help="Build the Excel month-end pack")
@@ -332,6 +372,7 @@ def main() -> None:
         _cmd_report(args)
     elif args.command == "launch" or args.command is None:
         from app.desktop.shell import launch_app
+
         launch_app()
 
 

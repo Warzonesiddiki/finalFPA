@@ -12,31 +12,31 @@ Verifies:
 """
 
 from decimal import Decimal
+
 import pytest
 
 from app.engine.forecast.methods import (
     ForecastMethod,
-    Scenario,
-    PeriodActual,
     ManualOverride,
+    PeriodActual,
+    Scenario,
+    apply_scenario_adjustment,
+    calc_absolute_error,
+    calc_avg_3m,
     calc_locked_actuals,
+    calc_manual_override,
+    calc_mape_lite,
     calc_remaining_budget,
     calc_run_rate,
-    calc_avg_3m,
-    calc_manual_override,
-    apply_scenario_adjustment,
-    calc_signed_error,
-    calc_absolute_error,
     calc_signed_bias,
-    calc_mape_lite,
-    check_method_eligibility,
+    calc_signed_error,
     resolve_method,
 )
-
 
 # -----------------------------------------------------------------------------
 # Golden Fixture F14a: Remaining-budget spread (CALC-061)
 # -----------------------------------------------------------------------------
+
 
 def test_f14a_remaining_budget_spread():
     """Verify Fixture F14a: Annual budget 12M, actuals P01-P09 9.3M, remaining 2.7M / 3 = 900,000.00."""
@@ -78,6 +78,7 @@ def test_remaining_budget_guards():
 # Golden Fixture F14b: Run-rate last 3 actual months (CALC-062)
 # -----------------------------------------------------------------------------
 
+
 def test_f14b_run_rate_last_3_months():
     """Verify Fixture F14b: Last 3 actuals sum 3,095,801.00 / 3 -> 1,031,933.67 per period."""
     actuals = [
@@ -105,7 +106,10 @@ def test_f14b_run_rate_last_3_months():
 def test_run_rate_guards_and_clamping():
     """Verify run-rate clamping when loaded periods < N, and rejection when N <= 0 or no actuals."""
     # N > loaded periods: clamped with visible notice
-    actuals = [PeriodActual("FY26-P01", Decimal("100.00")), PeriodActual("FY26-P02", Decimal("200.00"))]
+    actuals = [
+        PeriodActual("FY26-P01", Decimal("100.00")),
+        PeriodActual("FY26-P02", Decimal("200.00")),
+    ]
     results, notice = calc_run_rate(actuals, n=3, remaining_periods=["FY26-P03"], clamp=True)
     assert notice is not None
     assert "clamped from 3 to 2" in notice
@@ -127,6 +131,7 @@ def test_run_rate_guards_and_clamping():
 # -----------------------------------------------------------------------------
 # Golden Fixture F14c: Scenario adjustment (CALC-065)
 # -----------------------------------------------------------------------------
+
 
 def test_f14c_scenario_adjustment():
     """Verify Fixture F14c: Base forecast 1,031,933.666... adjusted by +5% revenue -> 1,083,530.35."""
@@ -153,6 +158,7 @@ def test_f14c_scenario_adjustment():
 # -----------------------------------------------------------------------------
 # Golden Fixture F14d: Forecast accuracy metrics (CALC-066 … CALC-069)
 # -----------------------------------------------------------------------------
+
 
 def test_f14d_accuracy_metrics():
     """Verify Fixture F14d: Signed error, absolute error, signed bias +8,000.00, MAPE-lite 1.5%."""
@@ -194,7 +200,7 @@ def test_mape_lite_zero_actual_exclusion():
     """Verify that periods with actual == 0 are excluded and counted per CALC-069."""
     pairs = [
         (Decimal("1000.00"), Decimal("900.00")),  # 10% error
-        (Decimal("0.00"), Decimal("500.00")),     # zero actual -> excluded
+        (Decimal("0.00"), Decimal("500.00")),  # zero actual -> excluded
     ]
     mape_lite, excluded = calc_mape_lite(pairs)
     assert excluded == 1
@@ -204,6 +210,7 @@ def test_mape_lite_zero_actual_exclusion():
 # -----------------------------------------------------------------------------
 # Golden Fixture F14e: Locked actuals (CALC-060)
 # -----------------------------------------------------------------------------
+
 
 def test_f14e_locked_actuals():
     """Verify Fixture F14e: Closed periods P07-P09 locked to actuals; P10 forecast = last locked actual (P09) -> 995,300.45."""
@@ -227,7 +234,9 @@ def test_f14e_locked_actuals():
 
 def test_locked_actuals_no_actuals_flag():
     """Verify closed period with no actuals is treated as 0 and flagged as 'no actuals' per CALC-060."""
-    period_no_actuals = [PeriodActual("FY26-P01", Decimal("0.00"), is_closed=True, has_actuals=False)]
+    period_no_actuals = [
+        PeriodActual("FY26-P01", Decimal("0.00"), is_closed=True, has_actuals=False)
+    ]
     res = calc_locked_actuals(period_no_actuals, target_period="FY26-P01")
     assert res.amount == Decimal("0.00")
     assert res.flag == "no actuals"
@@ -236,6 +245,7 @@ def test_locked_actuals_no_actuals_flag():
 # -----------------------------------------------------------------------------
 # Golden Fixture F14f: 3-month trailing average (CALC-063)
 # -----------------------------------------------------------------------------
+
 
 def test_f14f_avg_3m():
     """Verify Fixture F14f: (1,080,000.00 + 1,020,500.55 + 995,300.45) / 3 = 1,031,933.67."""
@@ -256,6 +266,7 @@ def test_f14f_avg_3m():
 # -----------------------------------------------------------------------------
 # Golden Fixture F14g: Manual override (CALC-064)
 # -----------------------------------------------------------------------------
+
 
 def test_f14g_manual_override():
     """Verify Fixture F14g: User enters 1,100,000.00 for P10 with mandatory reason."""
@@ -290,6 +301,7 @@ def test_manual_override_mandatory_reason_enforced():
 # -----------------------------------------------------------------------------
 # Resolution Cascade and Eligibility (doc 07 §4.1, §5)
 # -----------------------------------------------------------------------------
+
 
 def test_resolution_cascade_priorities():
     """Verify 3-level resolution: Line pin > Account group > Project default > Fallback."""

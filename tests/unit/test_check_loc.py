@@ -1,6 +1,5 @@
 """Unit test for scripts/check_loc.py (TB-029)."""
 
-from pathlib import Path
 from scripts.check_loc import check_line_counts
 
 

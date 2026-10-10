@@ -20,7 +20,8 @@ and evidence rows are the rule's business and stay in the rule, because they dep
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Any, Callable, Hashable, Iterable, Iterator, Optional, Sequence, TypeVar
+from collections.abc import Callable, Hashable, Iterable, Iterator, Sequence
+from typing import Any, TypeVar
 
 K = TypeVar("K", bound=Hashable)
 R = TypeVar("R")
@@ -52,7 +53,7 @@ def iter_candidate_groups(
     rows: Iterable[R],
     key_of: Callable[[R], K],
     is_candidate: CandidatePredicate[R],
-    order_by: Optional[Callable[[Group[R]], Any]] = None,
+    order_by: Callable[[Group[R]], Any] | None = None,
 ) -> Iterator[Group[R]]:
     """Yield ``(key, rows)`` for the groups that pass ``is_candidate``.
 
@@ -93,4 +94,3 @@ def count_distinct(rows: Iterable[R], value_of: Callable[[R], Any]) -> int:
     """
     seen = {value for value in (value_of(row) for row in rows) if value not in (None, "")}
     return len(seen)
-

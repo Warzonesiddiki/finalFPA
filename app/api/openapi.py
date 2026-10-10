@@ -10,7 +10,9 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+
 from fastapi.openapi.utils import get_openapi
+
 from app.api.main import app
 
 

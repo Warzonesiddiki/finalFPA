@@ -36,6 +36,7 @@ Rules it enforces, each because breaking it produced a real failure here:
 
 Stdlib only. Reuses `team.py`'s loaders rather than re-reading the board.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -160,8 +161,11 @@ def propose(queue: list[Row], cfg: Cfg, sla_min: float = DEFAULT_SLA_MIN) -> lis
     load = {a: len(hist.get(a, [])) for a in seats}
     out: list[Row] = []
     for row in queue:
-        candidates = [(last_used[a] is not None, last_used[a] or datetime.min.replace(tzinfo=UTC), a)
-                      for a in seats if not eligible(a, row, cfg)]
+        candidates = [
+            (last_used[a] is not None, last_used[a] or datetime.min.replace(tzinfo=UTC), a)
+            for a in seats
+            if not eligible(a, row, cfg)
+        ]
         if not candidates:
             out.append({**row, "verifier": None, "reason": "no eligible seat"})
             continue
@@ -258,14 +262,22 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.json:
-        print(json.dumps({
-            "stats": stats(cfg),
-            "queue": [
-                {k: (v.isoformat() if isinstance(v, datetime) else v)
-                 for k, v in r.items() if k != "path"}
-                for r in rows
-            ],
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "stats": stats(cfg),
+                    "queue": [
+                        {
+                            k: (v.isoformat() if isinstance(v, datetime) else v)
+                            for k, v in r.items()
+                            if k != "path"
+                        }
+                        for r in rows
+                    ],
+                },
+                indent=2,
+            )
+        )
         return 0
 
     if args.stats:
@@ -277,8 +289,10 @@ def main(argv: list[str] | None = None) -> int:
         print()
         print(f"seats: {s['seats']}  away: {', '.join(s['away']) or 'none'}")
         print(f"distinct verifiers:            {s['distinct_verifiers']}")
-        print(f"load concentration:            {s['load_concentration']:.0%} "
-              f"({'CONCENTRATED' if s['load_concentration'] > 0.6 else 'ok'})")
+        print(
+            f"load concentration:            {s['load_concentration']:.0%} "
+            f"({'CONCENTRATED' if s['load_concentration'] > 0.6 else 'ok'})"
+        )
         print()
         print("load:")
         for who, n in s["load"].items():
@@ -290,8 +304,10 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     print(render_queue(rows, args.sla))
-    print(f"seats: {len(cfg.get('agents') or [])}  away: "
-          f"{', '.join(sorted(cfg.get('away') or {})) or 'none'}")
+    print(
+        f"seats: {len(cfg.get('agents') or [])}  away: "
+        f"{', '.join(sorted(cfg.get('away') or {})) or 'none'}"
+    )
     return 0
 
 

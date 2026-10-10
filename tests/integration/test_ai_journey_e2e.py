@@ -18,16 +18,14 @@ Proves the complete AI journey:
 7. Guardrails verification (no AI-computed numbers, no send paths)
 """
 
-from decimal import Decimal
-import pytest
 from fastapi.testclient import TestClient
 
 from app.api.main import app
-from app.engine.ai.client import AIClient, AIConfig, RedactionEngine, RuleBasedNarrativeGenerator
+from app.engine.ai.client import RedactionEngine
+from app.engine.ai.guardrails import validate_evidence_ids
+from app.engine.ai.pinning import get_model_pinning_config, validate_model_selection
 from app.engine.ai.provenance import AiProvenanceStore
 from app.engine.ai.usage import AIUsageStore
-from app.engine.ai.pinning import get_model_pinning_config, validate_model_selection
-from app.engine.ai.guardrails import validate_json_schema, validate_evidence_ids
 
 
 def test_ai_journey_e2e_complete_workflow(tmp_path):
@@ -123,16 +121,22 @@ def test_ai_journey_e2e_complete_workflow(tmp_path):
             "endpoint": "https://api.openai.com/v1",
             "model": "gpt-4o",
             "api_key": "sk-rotated-test-key-12345",
-        }
+        },
     )
     assert resp.status_code in (200, 401, 403, 422, 500)
 
     # 7. Guardrails verification: no AI-computed numbers, no send paths (§2.3)
     sample_res = {
         "commentary": "This is a test commentary explaining the financial variance and drivers.",
-        "drivers": [{"label": "Revenue growth", "direction": "favourable", "evidence_ids": ["EV-01", "INVALID-ID"]}],
+        "drivers": [
+            {
+                "label": "Revenue growth",
+                "direction": "favourable",
+                "evidence_ids": ["EV-01", "INVALID-ID"],
+            }
+        ],
         "confidence": "high",
-        "caveats": ["Subject to revision."]
+        "caveats": ["Subject to revision."],
     }
     updated_data, mismatch_found, stripped = validate_evidence_ids(sample_res, {"EV-01", "EV-02"})
     assert mismatch_found is True

@@ -1,7 +1,7 @@
 import sqlite3
-import uuid
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Any
+
 from app.engine.store.db import DatabaseManager
 
 SHIP_PROMPTS = {
@@ -35,10 +35,11 @@ SHIP_PROMPTS = {
     },
 }
 
+
 class PromptTemplateStore:
     """Manages versioned prompt templates, immutability, 5-step edit process, and CHANGELOG audit per doc 10 §5."""
 
-    def __init__(self, db_mgr: Optional[DatabaseManager] = None):
+    def __init__(self, db_mgr: DatabaseManager | None = None):
         self.db_mgr = db_mgr or DatabaseManager()
         self._ensure_table()
 
@@ -65,7 +66,7 @@ class PromptTemplateStore:
             )
             conn.commit()
 
-    def list_prompts(self) -> List[Dict[str, Any]]:
+    def list_prompts(self) -> list[dict[str, Any]]:
         """List all prompt template families, shipped immutable versions, and user-created versions per doc 10 §5.1."""
         with self._get_conn() as conn:
             cur = conn.execute("SELECT * FROM AiPromptVersion ORDER BY timestamp DESC")
@@ -102,34 +103,38 @@ class PromptTemplateStore:
                         }
                     )
 
-            results.append({
-                "promptId": pid,
-                "name": base["name"],
-                "versions": versions,
-            })
+            results.append(
+                {
+                    "promptId": pid,
+                    "name": base["name"],
+                    "versions": versions,
+                }
+            )
 
         return results
 
     def edit_prompt(
-        self,
-        prompt_id: str,
-        new_template_text: str,
-        changelog_note: str,
-        author: str = "Aarti"
-    ) -> Dict[str, Any]:
+        self, prompt_id: str, new_template_text: str, changelog_note: str, author: str = "Aarti"
+    ) -> dict[str, Any]:
         """Execute 5-step edit process: requires CHANGELOG note first, creates new version (never mutates baseline), runs eval diff per doc 10 §5.2."""
         if not changelog_note or not changelog_note.strip():
-            raise ValueError("CHANGELOG-first discipline required: mandatory changelog rationale note cannot be empty.")
+            raise ValueError(
+                "CHANGELOG-first discipline required: mandatory changelog rationale note cannot be empty."
+            )
 
         with self._get_conn() as conn:
-            cur = conn.execute("SELECT COUNT(*) as cnt FROM AiPromptVersion WHERE prompt_id = ?", (prompt_id,))
+            cur = conn.execute(
+                "SELECT COUNT(*) as cnt FROM AiPromptVersion WHERE prompt_id = ?", (prompt_id,)
+            )
             row = cur.fetchone()
             count = (row["cnt"] if row else 0) + 2
 
         version_id = f"{prompt_id}.v{count}"
         version_name = f"v{count} (Custom Edit)"
         timestamp = datetime.utcnow().isoformat()
-        eval_diff_summary = f"Eval fixture re-run: 0 regressions detected against baseline {prompt_id}.v1."
+        eval_diff_summary = (
+            f"Eval fixture re-run: 0 regressions detected against baseline {prompt_id}.v1."
+        )
 
         with self._get_conn() as conn:
             conn.execute(
@@ -140,9 +145,15 @@ class PromptTemplateStore:
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
-                    version_id, prompt_id, version_name, new_template_text,
-                    changelog_note, eval_diff_summary, timestamp, author
-                )
+                    version_id,
+                    prompt_id,
+                    version_name,
+                    new_template_text,
+                    changelog_note,
+                    eval_diff_summary,
+                    timestamp,
+                    author,
+                ),
             )
             conn.commit()
 

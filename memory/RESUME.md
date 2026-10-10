@@ -172,11 +172,11 @@ fails on a duplicate id, an unknown agent, an unrecognised kind/topic, an empty 
 missing section in this file, a missing per-seat log, or an empty journal.
 
 <!-- BEGIN GENERATED:memory.py -->
-<!-- seat: hermes (leader: hermes) -->
+<!-- seat: buffy (leader: buffy) -->
 
 ### Live team state
 
-- Cards: 146 total — done 16, in-progress 3, review 48, todo 79
+- Cards: 147 total — done 33, in-progress 4, review 44, todo 66
 - Live claims: 0
 - **You are active.**
 - `antigravity` — quota ended for 2026-10-05; stream parked, verification lane reassigned to hermes/buffy
@@ -192,40 +192,38 @@ _(no live claims — every seat is idle; take the top of your stream)_
 ### Dependency-blocked cards
 
 - `RV-90` waits on RV-01
-- `TB-009` waits on TB-006
-- `TB-012` waits on TB-006
-- `TB-013` waits on TB-012
 - `TB-019` waits on TB-018
-- `TB-020` waits on TB-012
 - `TB-022` waits on TB-014
 - `TB-023` waits on TB-022
 - `TB-035` waits on TB-022
 - `TB-037` waits on TB-036
 - `TB-038` waits on TB-035
 - `TB-039` waits on TB-037
+- `TB-041` waits on TB-022
+- `TB-042` waits on TB-038
+- `TB-043` waits on TB-037
+- `TB-044` waits on TB-043
 
-### hermes's stream (in order)
+### buffy's stream (in order)
 
-- `UX-22` [P0] review — Make the citation checker resolve a file:line code citation, because the only
-thing that stopped UX-08 was a c
-- `UX-08` [P0] review — Interaction-design audit: for every screen in the 43-screen matrix, the keyboard path, focus order, focus trap
-- `UX-09` [P0] review — Analyst maths audit: pick the twelve numbers an FP&A analyst must never get wrong (Tb, coverage, variance, bri
-- `UX-10` [P1] todo — Error-message catalogue: every user-visible error the tool can show, mapped to cause, who acts, and the recove
-- `UX-14` [P0] done — Make the citation checker able to fail. scripts/verify_audit_citations.py only greps SCR/FR/CALC id strings ou
-- `UX-19` [P0] todo — Two truths is the failure mode of this product: the board pack and the exceptions register must never disagree
-- `UX-15` [P1] review — Ground the 43-screen matrix in code. For every SCR-nnn in docs/08, find the component that implements it and t
-- `SPEC-08` [P0] todo — Close the gap that let three fabricated audits through: write the acceptance standard a card must meet. A deli
-- `UX-20` [P1] todo — The very first run: a clean install with no data at all. What the analyst sees in the first sixty seconds, and
-- `SPEC-09` [P1] todo — Make the user-facing language come from one place: every term the UI shows should resolve through docs/18 rath
-- `UX-21` [P1] todo — What the analyst does when a rule is wrong. Findings get challenged in a real close; the product needs a docum
-- `UX-16` [P1] review — The analyst's month, not the analyst's day. A controller-level journey across the whole close: opening the per
-- `UX-18` [P1] todo — The three states that are usually missing. For every screen in the matrix, what it shows while loading, when i
-- `SPEC-07` [P1] todo — Make every spec row state how it will be proven. Go through docs/02 and docs/08 and add a 'verified by' clause
-- `UX-17` [P2] todo — Every user-visible string, audited for plain language: no jargon, no blame, no error text that does not say wh
-- `SPEC-05` [P1] todo — Test-spec authorship: write the missing test specifications for the 14 zero-coverage exception rules listed by
+- `LEAD-03` [P1] review — The audit that caught the three fabricated audits was *reading four cited lines
+by hand*, not any machine chec
+- `LEAD-01` [P0] review — The false-evidence register: one row per rejected handoff with the pattern it failed on, so the pattern is vis
+- `LEAD-02` [P0] review — Verification is the bottleneck: 20 handoffs were waiting for a verifier while seats had claimable work. Design
+- `DOC-03` [P1] review — Release-readiness dossier: one page the owner can read to decide ship or not - every gate with its real exit s
+- `DOC-08` [P1] todo — Close the unsigned gate: docs/28 GATE-13 carries an approval nobody has given. Assemble the packet the signer 
+- `DOC-05` [P1] done — The acceptance standard for a card: what makes a deliverable acceptable, stated once and applied to the whole 
+- `RV-05` [P1] todo — Guard-hunting: try to break each of the six licence-gate checks and each team.py claim guard (overlap, leader-
+- `DOC-04` [P2] done — Human README: what the tool does for an FP&A analyst, how to run it from a clean clone, where the sample data 
+- `DOC-07` [P1] done — The client's audit Q&A, anticipated: the twenty questions a finance controller or auditor will ask about this 
+- `DOC-06` [P2] done — A written answer to 'why should anyone believe this?': the audit trail from a number on a board pack back to t
+- `INT-01` [P1] review — Reconcile the two boards: every TB row in docs/33 with a live team card, and every team card with a docs/33 ro
+- `DOC-02` [P2] todo — EULA / disclaimer decision packet for the payload: build.py reports a blocker because the repo ships no EULA s
 
 ### Traps that have already cost time
 
+- **K-0055** `2026-10-09T14:18:56Z` — opencode — *trap*: A boolean compared against a budget is a fabricated measurement: 'tsc_errors = 0 if returncode == 0 else 1' printed 'TypeScript Errors : 1' for a run with 34 real errors. The same shape is a placeholder count plus an explicit 'count is not trustworthy' flag, and the budget check must consult the flag - otherwise raising the budget later silently converts an undecidable result into a pass. (see `scripts/check_ui_gate.py`)
+- **K-0051** `2026-10-09T13:55:41Z` — opencode — *trap*: An attribution check keyed on a MUTABLE roster will report the layer broken when the roster moves. Known-set for recorded history must include anything that already owns an artefact, and the union needs its own falsification test or it decays into accepting anything. (see `tests/unit/test_memory.py`)
 - **K-0049** `2026-10-08T22:13:45Z` — hermes — *trap*: tests/unit/test_acceptance_determinism.py and tests/unit/test_acceptance_cli_utf8.py are NOT marked perf but carry the full acceptance corpus ingest in a module-scoped fixture. Measured 2026-10-08 (2 CPU, 4 GB): pytest tests/unit/test_acceptance_determinism.py -m 'not perf' -> 3 passed in 722.28s, of which 648.35s is the module setup alone. That is why a combined tests/unit batch looks like a hang: pytest -q prints nothing during setup, and the earlier 'inconsistent standalone run' was a timeout, not a flake. Run these files alone, budget 12 min, and prefer -m 'not perf' over -o addopts= (which re-enables the perf suite). (see `tests/unit/test_acceptance_determinism.py`)
 - **K-0048** `2026-10-08T17:13:56Z` — opencode — *trap*: A rule that crashes and a rule that correctly finds nothing produce the same acceptance artefact: zero findings. If the gate consumes findings only, the crash is invisible and its red bar reads as a corpus gap - this one cost 20 minutes of hand diagnosis. Fault isolation must be *reported*, not just recorded: surface status=error in the gate output, and make an unmeasured rule fail the run rather than pass it quietly. (see `app/engine/rules/acceptance.py`)
 - **K-0039** `2026-10-05T19:44:20Z` — buffy — *trap*: A captured command result goes stale the moment a teammate edits the file it measured. evidence/ops/lead-03-citation-audit.md quoted HO-031's four mismatched citations; hermes then rewrote evidence/ux/a11y-keyboard.md, the run no longer reproduces, and the doc was asserting something untrue. Check that a quoted result still reproduces before shipping a document that quotes one.

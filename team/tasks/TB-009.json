@@ -3,15 +3,15 @@
   "title": "Author P30's control case per `06` §7.2 F13c so precision lands at 0/8 by construction, not by random draw",
   "source": "docs/33",
   "priority": "P0",
-  "status": "todo",
-  "owner": null,
-  "claim_id": null,
+  "status": "done",
+  "owner": "hermes",
+  "claim_id": "hermes-20261009T1445Z-569a",
   "deps": [
     "TB-006"
   ],
   "lane": "rules",
   "created_utc": "2026-10-05T10:12:06Z",
-  "updated_utc": "2026-10-05T10:14:18Z",
+  "updated_utc": "2026-10-09T20:16:39Z",
   "history": [
     {
       "utc": "2026-10-05T10:12:06Z",
@@ -22,6 +22,16 @@
       "utc": "2026-10-05T10:14:18Z",
       "agent": "buffy",
       "event": "triaged P0 / lane rules by leader"
+    },
+    {
+      "utc": "2026-10-09T14:45:46Z",
+      "agent": "hermes",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-09T20:16:39Z",
+      "agent": "?",
+      "event": "P30 control case now verified closed per acceptance PASS: 0/8 controls fired (was 1 — P30 EXC-018 fired). The corpus coherence (PROP-001) means P30's numbers are now authored exactly as 06 §7.2 describes rather than arriving at random. Evidence: evidence/acceptance_report.json controls_fired=[]; per_rule EXC-018 controls_fired=0."
     }
   ]
 }

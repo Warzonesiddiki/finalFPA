@@ -1,11 +1,10 @@
-import pytest
 from app.engine.imports.profile_binding import (
     next_import_run_id,
-    verify_run_id_prediction,
     resolve_base_profile,
-    resolve_profile_for_import,
+    verify_run_id_prediction,
 )
 from app.engine.store.db import DatabaseManager
+
 
 def test_profile_binding_with_db(tmp_path):
     db_path = tmp_path / "test.db"

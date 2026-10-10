@@ -43,7 +43,6 @@ import datetime as _dt
 import io
 import re
 import struct
-import sys
 import zipfile
 import zlib
 from pathlib import Path
@@ -53,8 +52,8 @@ from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, MSO_AUTO_SIZE, PP_ALIGN
-from pptx.oxml.ns import qn
 from pptx.opc.constants import RELATIONSHIP_TYPE as RT
+from pptx.oxml.ns import qn
 from pptx.util import Emu, Inches, Pt
 
 # ---------------------------------------------------------------------------
@@ -141,26 +140,103 @@ def _logo_png() -> bytes:
 # kind: "text" | "rect" | "roundrect"
 # ---------------------------------------------------------------------------
 def _t(name, kind, x, y, w, h, size, bold, colour, single, src):
-    return dict(name=name, kind=kind, x=x, y=y, w=w, h=h, size=size,
-                bold=bold, colour=colour, single=single, src=src)
+    return dict(
+        name=name,
+        kind=kind,
+        x=x,
+        y=y,
+        w=w,
+        h=h,
+        size=size,
+        bold=bold,
+        colour=colour,
+        single=single,
+        src=src,
+    )
 
 
 def _cover_spec() -> list[dict[str, Any]]:
     """doc 12 section 4.1 (lines 428-434)."""
     s = [
         # Accent bar first -> renders behind everything (z-order, lead req 5).
-        _t("PPT-001_accent", "rect", 0.0, 0.0, SLIDE_W_IN, 0.08, 10, False,
-           BRAND_PRIMARY, True, "L434 accent bar, h=0.08in, full width"),
-        _t("PPT-001_title", "text", 0.45, 2.20, 12.43, 0.80, 32, True,
-           BRAND_PRIMARY, True, "L428 32pt bold brand.primary"),
-        _t("PPT-001_packline", "text", 0.45, 3.05, 12.43, 0.50, 20, False,
-           TEXT_PRIMARY, True, "L429 20pt text.primary"),
-        _t("PPT-001_periodline", "text", 0.45, 3.60, 12.43, 0.35, 14, False,
-           TEXT_SECONDARY, True, "L430 14pt text.secondary"),
-        _t("PPT-001_sources", "text", 0.45, 4.15, 7.50, 1.60, 10, False,
-           TEXT_PRIMARY, False, "L431 10pt, 8 lines, header 'SOURCES'"),
-        _t("PPT-001_stamp", "text", 8.38, 4.15, 4.50, 2.40, 9, False,
-           TEXT_PRIMARY, False, "L432 9pt, header 'STAMP' + 12 fields"),
+        _t(
+            "PPT-001_accent",
+            "rect",
+            0.0,
+            0.0,
+            SLIDE_W_IN,
+            0.08,
+            10,
+            False,
+            BRAND_PRIMARY,
+            True,
+            "L434 accent bar, h=0.08in, full width",
+        ),
+        _t(
+            "PPT-001_title",
+            "text",
+            0.45,
+            2.20,
+            12.43,
+            0.80,
+            32,
+            True,
+            BRAND_PRIMARY,
+            True,
+            "L428 32pt bold brand.primary",
+        ),
+        _t(
+            "PPT-001_packline",
+            "text",
+            0.45,
+            3.05,
+            12.43,
+            0.50,
+            20,
+            False,
+            TEXT_PRIMARY,
+            True,
+            "L429 20pt text.primary",
+        ),
+        _t(
+            "PPT-001_periodline",
+            "text",
+            0.45,
+            3.60,
+            12.43,
+            0.35,
+            14,
+            False,
+            TEXT_SECONDARY,
+            True,
+            "L430 14pt text.secondary",
+        ),
+        _t(
+            "PPT-001_sources",
+            "text",
+            0.45,
+            4.15,
+            7.50,
+            1.60,
+            10,
+            False,
+            TEXT_PRIMARY,
+            False,
+            "L431 10pt, 8 lines, header 'SOURCES'",
+        ),
+        _t(
+            "PPT-001_stamp",
+            "text",
+            8.38,
+            4.15,
+            4.50,
+            2.40,
+            9,
+            False,
+            TEXT_PRIMARY,
+            False,
+            "L432 9pt, header 'STAMP' + 12 fields",
+        ),
     ]
     return s
 
@@ -168,34 +244,152 @@ def _cover_spec() -> list[dict[str, Any]]:
 def _exec_spec() -> list[dict[str, Any]]:
     """doc 12 section 4.2 (lines 468-476). 6 KPI cards x (bg, signal, label, value, compare)."""
     s = [
-        _t("PPT-002_title", "text", 0.45, 0.35, 12.43, 0.60, 24, True,
-           BRAND_PRIMARY, True, "L468 24pt bold"),
-        _t("PPT-002_kicker", "text", 0.45, 0.95, 12.43, 0.30, 12, False,
-           TEXT_SECONDARY, True, "L469 12pt text.secondary"),
+        _t(
+            "PPT-002_title",
+            "text",
+            0.45,
+            0.35,
+            12.43,
+            0.60,
+            24,
+            True,
+            BRAND_PRIMARY,
+            True,
+            "L468 24pt bold",
+        ),
+        _t(
+            "PPT-002_kicker",
+            "text",
+            0.45,
+            0.95,
+            12.43,
+            0.30,
+            12,
+            False,
+            TEXT_SECONDARY,
+            True,
+            "L469 12pt text.secondary",
+        ),
     ]
     n = 0
     for cy in KPI_CARD_YS:
         for cx in KPI_CARD_XS:
             n += 1
-            s.append(_t(f"PPT-002_kpi{n}_card", "roundrect", cx, cy, 3.97, 1.45, 10, False,
-                        SURFACE_CARD, False,
-                        f"L470 card bg at x={cx} y={cy} 3.97x1.45, + left signal chip 0.06in"))
-            s.append(_t(f"PPT-002_kpi{n}_signal", "rect", cx, cy, 0.06, 1.45, 10, False,
-                        BRAND_SECONDARY, False,
-                        "L470 'the left signal chip (0.06in wide)' - separate shape, name assumed"))
-            s.append(_t(f"PPT-002_kpi{n}_label", "text", cx + 0.16, cy + 0.10, 3.77, 0.22, 10, True,
-                        TEXT_SECONDARY, True, "L471 10pt bold text.secondary"))
-            s.append(_t(f"PPT-002_kpi{n}_value", "text", cx + 0.16, cy + 0.34, 3.77, 0.45, 24, True,
-                        BRAND_PRIMARY, True, "L472 24pt bold brand.primary"))
-            s.append(_t(f"PPT-002_kpi{n}_compare", "text", cx + 0.16, cy + 0.86, 3.77, 0.22, 10, False,
-                        TEXT_SECONDARY, True, "L473 10pt text.secondary"))
+            s.append(
+                _t(
+                    f"PPT-002_kpi{n}_card",
+                    "roundrect",
+                    cx,
+                    cy,
+                    3.97,
+                    1.45,
+                    10,
+                    False,
+                    SURFACE_CARD,
+                    False,
+                    f"L470 card bg at x={cx} y={cy} 3.97x1.45, + left signal chip 0.06in",
+                )
+            )
+            s.append(
+                _t(
+                    f"PPT-002_kpi{n}_signal",
+                    "rect",
+                    cx,
+                    cy,
+                    0.06,
+                    1.45,
+                    10,
+                    False,
+                    BRAND_SECONDARY,
+                    False,
+                    "L470 'the left signal chip (0.06in wide)' - separate shape, name assumed",
+                )
+            )
+            s.append(
+                _t(
+                    f"PPT-002_kpi{n}_label",
+                    "text",
+                    cx + 0.16,
+                    cy + 0.10,
+                    3.77,
+                    0.22,
+                    10,
+                    True,
+                    TEXT_SECONDARY,
+                    True,
+                    "L471 10pt bold text.secondary",
+                )
+            )
+            s.append(
+                _t(
+                    f"PPT-002_kpi{n}_value",
+                    "text",
+                    cx + 0.16,
+                    cy + 0.34,
+                    3.77,
+                    0.45,
+                    24,
+                    True,
+                    BRAND_PRIMARY,
+                    True,
+                    "L472 24pt bold brand.primary",
+                )
+            )
+            s.append(
+                _t(
+                    f"PPT-002_kpi{n}_compare",
+                    "text",
+                    cx + 0.16,
+                    cy + 0.86,
+                    3.77,
+                    0.22,
+                    10,
+                    False,
+                    TEXT_SECONDARY,
+                    True,
+                    "L473 10pt text.secondary",
+                )
+            )
     s += [
-        _t("PPT-002_narrative_label", "text", 0.45, 4.30, 12.43, 0.22, 9, False,
-           TEXT_SECONDARY, True, "L474 provenance strip, 9pt"),
-        _t("PPT-002_narrative", "text", 0.45, 4.64, 12.43, 1.88, 12, False,
-           TEXT_PRIMARY, False, "L475 12pt, budget 894"),
-        _t("PPT-002_footnote", "text", 0.45, 6.64, 12.43, 0.24, 9, False,
-           TEXT_SECONDARY, True, "L475/L196 9pt footnote"),
+        _t(
+            "PPT-002_narrative_label",
+            "text",
+            0.45,
+            4.30,
+            12.43,
+            0.22,
+            9,
+            False,
+            TEXT_SECONDARY,
+            True,
+            "L474 provenance strip, 9pt",
+        ),
+        _t(
+            "PPT-002_narrative",
+            "text",
+            0.45,
+            4.64,
+            12.43,
+            1.88,
+            12,
+            False,
+            TEXT_PRIMARY,
+            False,
+            "L475 12pt, budget 894",
+        ),
+        _t(
+            "PPT-002_footnote",
+            "text",
+            0.45,
+            6.64,
+            12.43,
+            0.24,
+            9,
+            False,
+            TEXT_SECONDARY,
+            True,
+            "L475/L196 9pt footnote",
+        ),
     ]
     return s
 
@@ -204,11 +398,45 @@ def _bridge_spec() -> list[dict[str, Any]]:
     """doc 12 section 4.3 (lines 507-511)."""
     return [
         _t("PPT-003_title", "text", 0.45, 0.35, 12.43, 0.60, 24, True, BRAND_PRIMARY, True, "L507"),
-        _t("PPT-003_kicker", "text", 0.45, 0.95, 12.43, 0.30, 12, False, TEXT_SECONDARY, True, "L508"),
-        _t("PPT-003_drivers", "text", 9.30, 1.45, 3.58, 4.95, 10, False, TEXT_PRIMARY, False,
-           "L510 header 'TOP DRIVERS' + 6 entries, 0.40in pitch"),
-        _t("PPT-003_tieout", "text", 0.45, 6.54, 12.43, 0.28, 9, False, TEXT_SECONDARY, True,
-           "L511 'Opening + sum drivers = Closing'"),
+        _t(
+            "PPT-003_kicker",
+            "text",
+            0.45,
+            0.95,
+            12.43,
+            0.30,
+            12,
+            False,
+            TEXT_SECONDARY,
+            True,
+            "L508",
+        ),
+        _t(
+            "PPT-003_drivers",
+            "text",
+            9.30,
+            1.45,
+            3.58,
+            4.95,
+            10,
+            False,
+            TEXT_PRIMARY,
+            False,
+            "L510 header 'TOP DRIVERS' + 6 entries, 0.40in pitch",
+        ),
+        _t(
+            "PPT-003_tieout",
+            "text",
+            0.45,
+            6.54,
+            12.43,
+            0.28,
+            9,
+            False,
+            TEXT_SECONDARY,
+            True,
+            "L511 'Opening + sum drivers = Closing'",
+        ),
     ]
 
 
@@ -216,11 +444,45 @@ def _variance_spec() -> list[dict[str, Any]]:
     """doc 12 section 4.4 (lines 539-543)."""
     return [
         _t("PPT-004_title", "text", 0.45, 0.35, 12.43, 0.60, 24, True, BRAND_PRIMARY, True, "L539"),
-        _t("PPT-004_kicker", "text", 0.45, 0.95, 12.43, 0.30, 12, False, TEXT_SECONDARY, True, "L540"),
-        _t("PPT-004_provenance", "text", 0.45, 5.20, 12.43, 0.30, 9, False, TEXT_SECONDARY, True,
-           "L542 commentary provenance strip"),
-        _t("PPT-004_notes_line", "text", 0.45, 5.62, 12.43, 0.90, 9, False, TEXT_SECONDARY, False,
-           "L543 driver summary + retrieval line, 3 lines"),
+        _t(
+            "PPT-004_kicker",
+            "text",
+            0.45,
+            0.95,
+            12.43,
+            0.30,
+            12,
+            False,
+            TEXT_SECONDARY,
+            True,
+            "L540",
+        ),
+        _t(
+            "PPT-004_provenance",
+            "text",
+            0.45,
+            5.20,
+            12.43,
+            0.30,
+            9,
+            False,
+            TEXT_SECONDARY,
+            True,
+            "L542 commentary provenance strip",
+        ),
+        _t(
+            "PPT-004_notes_line",
+            "text",
+            0.45,
+            5.62,
+            12.43,
+            0.90,
+            9,
+            False,
+            TEXT_SECONDARY,
+            False,
+            "L543 driver summary + retrieval line, 3 lines",
+        ),
     ]
 
 
@@ -228,20 +490,93 @@ def _exception_spec() -> list[dict[str, Any]]:
     """doc 12 section 4.5 (lines 573-580). 4 count chips x (bg, label, value)."""
     s = [
         _t("PPT-005_title", "text", 0.45, 0.35, 12.43, 0.60, 24, True, BRAND_PRIMARY, True, "L573"),
-        _t("PPT-005_kicker", "text", 0.45, 0.95, 12.43, 0.30, 12, False, TEXT_SECONDARY, True, "L574"),
+        _t(
+            "PPT-005_kicker",
+            "text",
+            0.45,
+            0.95,
+            12.43,
+            0.30,
+            12,
+            False,
+            TEXT_SECONDARY,
+            True,
+            "L574",
+        ),
     ]
     for i, cx in enumerate(CHIP_XS, start=1):
-        s.append(_t(f"PPT-005_chip{i}", "rect", cx, 1.45, 3.00, 0.75, 10, False, SURFACE_CARD, False,
-                    "L576 chip background at x=%s 3.00x0.75" % cx))
-        s.append(_t(f"PPT-005_chip{i}_label", "text", cx + 0.16, 1.55, 2.68, 0.28, 10, True,
-                    TEXT_SECONDARY, True, "L577 10pt bold"))
-        s.append(_t(f"PPT-005_chip{i}_value", "text", cx + 0.16, 1.80, 2.68, 0.34, 18, True,
-                    TEXT_PRIMARY, True, "L578 18pt bold"))
+        s.append(
+            _t(
+                f"PPT-005_chip{i}",
+                "rect",
+                cx,
+                1.45,
+                3.00,
+                0.75,
+                10,
+                False,
+                SURFACE_CARD,
+                False,
+                "L576 chip background at x=%s 3.00x0.75" % cx,
+            )
+        )
+        s.append(
+            _t(
+                f"PPT-005_chip{i}_label",
+                "text",
+                cx + 0.16,
+                1.55,
+                2.68,
+                0.28,
+                10,
+                True,
+                TEXT_SECONDARY,
+                True,
+                "L577 10pt bold",
+            )
+        )
+        s.append(
+            _t(
+                f"PPT-005_chip{i}_value",
+                "text",
+                cx + 0.16,
+                1.80,
+                2.68,
+                0.34,
+                18,
+                True,
+                TEXT_PRIMARY,
+                True,
+                "L578 18pt bold",
+            )
+        )
     s += [
-        _t("PPT-005_risknote", "text", 0.45, 2.24, 12.43, 0.22, 9, False, TEXT_SECONDARY, True,
-           "L575 'Potential exception - requires accounting review'"),
-        _t("PPT-005_summary", "text", 0.45, 5.94, 12.43, 0.94, 11, False, TEXT_PRIMARY, False,
-           "L580 approved exception summary, budget 648"),
+        _t(
+            "PPT-005_risknote",
+            "text",
+            0.45,
+            2.24,
+            12.43,
+            0.22,
+            9,
+            False,
+            TEXT_SECONDARY,
+            True,
+            "L575 'Potential exception - requires accounting review'",
+        ),
+        _t(
+            "PPT-005_summary",
+            "text",
+            0.45,
+            5.94,
+            12.43,
+            0.94,
+            11,
+            False,
+            TEXT_PRIMARY,
+            False,
+            "L580 approved exception summary, budget 648",
+        ),
     ]
     return s
 
@@ -250,23 +585,108 @@ def _forecast_spec() -> list[dict[str, Any]]:
     """doc 12 section 4.6 (lines 609-617). 3 outlook cards x (bg, label, value, compare)."""
     s = [
         _t("PPT-006_title", "text", 0.45, 0.35, 12.43, 0.60, 24, True, BRAND_PRIMARY, True, "L609"),
-        _t("PPT-006_scenario", "text", 0.45, 0.95, 12.43, 0.35, 12, False, TEXT_SECONDARY, True,
-           "L610 scenario + version line"),
+        _t(
+            "PPT-006_scenario",
+            "text",
+            0.45,
+            0.95,
+            12.43,
+            0.35,
+            12,
+            False,
+            TEXT_SECONDARY,
+            True,
+            "L610 scenario + version line",
+        ),
     ]
     for i, cx in enumerate(KPI_CARD_XS, start=1):
-        s.append(_t(f"PPT-006_card{i}", "roundrect", cx, 1.45, 3.97, 1.35, 10, False,
-                    SURFACE_CARD, False, "L611 card background x=%s 3.97x1.35" % cx))
-        s.append(_t(f"PPT-006_card{i}_label", "text", cx + 0.16, 1.55, 3.77, 0.22, 10, True,
-                    TEXT_SECONDARY, True, "L612 10pt bold"))
-        s.append(_t(f"PPT-006_card{i}_value", "text", cx + 0.16, 1.79, 3.77, 0.42, 22, True,
-                    BRAND_PRIMARY, True, "L613 22pt bold"))
-        s.append(_t(f"PPT-006_card{i}_compare", "text", cx + 0.16, 2.27, 3.77, 0.22, 10, False,
-                    TEXT_SECONDARY, True, "L614 10pt text.secondary"))
+        s.append(
+            _t(
+                f"PPT-006_card{i}",
+                "roundrect",
+                cx,
+                1.45,
+                3.97,
+                1.35,
+                10,
+                False,
+                SURFACE_CARD,
+                False,
+                "L611 card background x=%s 3.97x1.35" % cx,
+            )
+        )
+        s.append(
+            _t(
+                f"PPT-006_card{i}_label",
+                "text",
+                cx + 0.16,
+                1.55,
+                3.77,
+                0.22,
+                10,
+                True,
+                TEXT_SECONDARY,
+                True,
+                "L612 10pt bold",
+            )
+        )
+        s.append(
+            _t(
+                f"PPT-006_card{i}_value",
+                "text",
+                cx + 0.16,
+                1.79,
+                3.77,
+                0.42,
+                22,
+                True,
+                BRAND_PRIMARY,
+                True,
+                "L613 22pt bold",
+            )
+        )
+        s.append(
+            _t(
+                f"PPT-006_card{i}_compare",
+                "text",
+                cx + 0.16,
+                2.27,
+                3.77,
+                0.22,
+                10,
+                False,
+                TEXT_SECONDARY,
+                True,
+                "L614 10pt text.secondary",
+            )
+        )
     s += [
-        _t("PPT-006_outlook", "text", 8.30, 2.98, 4.58, 3.10, 11, False, TEXT_PRIMARY, False,
-           "L616 methods line + provenance + narrative, budget 708"),
-        _t("PPT-006_disclaimer", "text", 0.45, 6.26, 12.43, 0.62, 8, False, TEXT_SECONDARY, False,
-           "L617 FULL canonical disclaimer verbatim, 8pt, budget 669"),
+        _t(
+            "PPT-006_outlook",
+            "text",
+            8.30,
+            2.98,
+            4.58,
+            3.10,
+            11,
+            False,
+            TEXT_PRIMARY,
+            False,
+            "L616 methods line + provenance + narrative, budget 708",
+        ),
+        _t(
+            "PPT-006_disclaimer",
+            "text",
+            0.45,
+            6.26,
+            12.43,
+            0.62,
+            8,
+            False,
+            TEXT_SECONDARY,
+            False,
+            "L617 FULL canonical disclaimer verbatim, 8pt, budget 669",
+        ),
     ]
     return s
 
@@ -281,12 +701,45 @@ def _disclaimer_spec() -> list[dict[str, Any]]:
     and are flagged in the evidence report as an assumption, not a spec quote.
     """
     return [
-        _t("PPT-00D_accent", "rect", 0.0, 0.0, SLIDE_W_IN, 0.08, 10, False,
-           BRAND_PRIMARY, True, "ASSUMED - mirror of PPT-001_accent"),
-        _t("PPT-00D_title", "text", 0.45, 1.20, 12.43, 0.60, 24, True, BRAND_PRIMARY, True,
-           "ASSUMED - full canonical disclaimer heading"),
-        _t("PPT-00D_disclaimer", "text", 0.45, 2.00, 12.43, 4.40, 11, False, TEXT_PRIMARY, False,
-           "ASSUMED - doc 12 L270 full canonical disclaimer verbatim (01 s15.1)"),
+        _t(
+            "PPT-00D_accent",
+            "rect",
+            0.0,
+            0.0,
+            SLIDE_W_IN,
+            0.08,
+            10,
+            False,
+            BRAND_PRIMARY,
+            True,
+            "ASSUMED - mirror of PPT-001_accent",
+        ),
+        _t(
+            "PPT-00D_title",
+            "text",
+            0.45,
+            1.20,
+            12.43,
+            0.60,
+            24,
+            True,
+            BRAND_PRIMARY,
+            True,
+            "ASSUMED - full canonical disclaimer heading",
+        ),
+        _t(
+            "PPT-00D_disclaimer",
+            "text",
+            0.45,
+            2.00,
+            12.43,
+            4.40,
+            11,
+            False,
+            TEXT_PRIMARY,
+            False,
+            "ASSUMED - doc 12 L270 full canonical disclaimer verbatim (01 s15.1)",
+        ),
     ]
 
 
@@ -295,10 +748,17 @@ def _disclaimer_spec() -> list[dict[str, Any]]:
 #: leave a chart/table covering body text if the engine later reflows a box.
 TABLES = {
     "FPA-PPT-004": dict(
-        name="PPT-004_table", x=0.45, y=1.45, w=12.43, h=3.60, insert_at=2,
+        name="PPT-004_table",
+        x=0.45,
+        y=1.45,
+        w=12.43,
+        h=3.60,
+        insert_at=2,
         header=("Account", "Actual", "Budget", "Variance", "Var %", "Sig.", "Driver"),
         widths=(3.20, 1.50, 1.50, 1.65, 1.15, 1.00, 2.43),  # L541, sums to 12.43
-        body_pt=10, header_pt=10, rows=6,
+        body_pt=10,
+        header_pt=10,
+        rows=6,
         # L541 states "7 rows x 0.60in" against a declared frame of 3.60in, which
         # cannot both hold (7 x 0.60 = 4.20). The content rule in the same row --
         # "header + top 5, never blank rows" -- fixes the row count at 6, and 6 x 0.60
@@ -307,26 +767,56 @@ TABLES = {
         source="L541 frame 3.60in = 6 rows x 0.60in (header + top 5, never blank rows)",
     ),
     "FPA-PPT-005": dict(
-        name="PPT-005_table", x=0.45, y=2.58, w=12.43, h=3.24, insert_at=15,
+        name="PPT-005_table",
+        x=0.45,
+        y=2.58,
+        w=12.43,
+        h=3.24,
+        insert_at=15,
         header=("Rule", "Subject", "At risk", "Sev.", "Owner", "Status / Age"),
         widths=(2.30, 3.40, 1.50, 1.00, 1.40, 2.83),  # L579, sums to 12.43
-        body_pt=9, header_pt=9, rows=6, source="L579 6 rows x 0.54in (= 3.24in, consistent)",
+        body_pt=9,
+        header_pt=9,
+        rows=6,
+        source="L579 6 rows x 0.54in (= 3.24in, consistent)",
     ),
 }
 
 #: Native charts. (name, x, y, w, h, chart_type, source)
 CHARTS = {
-    "FPA-PPT-003": dict(name="PPT-003_chart_bridge", x=0.45, y=1.45, w=8.60, h=4.95,
-                       kind="column_stacked", insert_at=2,
-                       source="L509 native bridge chart, doc 12 s5.2 fallback (SPK-08: no WATERFALL in pinned python-pptx)"),
-    "FPA-PPT-006": dict(name="PPT-006_chart_forecast", x=0.45, y=2.98, w=7.60, h=3.10,
-                        kind="line", insert_at=14, source="L615 native line chart, doc 12 s5.3"),
+    "FPA-PPT-003": dict(
+        name="PPT-003_chart_bridge",
+        x=0.45,
+        y=1.45,
+        w=8.60,
+        h=4.95,
+        kind="column_stacked",
+        insert_at=2,
+        source="L509 native bridge chart, doc 12 s5.2 fallback (SPK-08: no WATERFALL in pinned python-pptx)",
+    ),
+    "FPA-PPT-006": dict(
+        name="PPT-006_chart_forecast",
+        x=0.45,
+        y=2.98,
+        w=7.60,
+        h=3.10,
+        kind="line",
+        insert_at=14,
+        source="L615 native line chart, doc 12 s5.3",
+    ),
 }
 
 #: The one picture in the deck (doc 12 section 3.2 / 4.1).
 PICTURE = {
-    "FPA-PPT-001": dict(name="PPT-001_logo", x=10.83, y=0.35, w=2.05, h=0.90, insert_at=6,
-                        source="L433 cap 2.05in x 0.90in, aspect preserved"),
+    "FPA-PPT-001": dict(
+        name="PPT-001_logo",
+        x=10.83,
+        y=0.35,
+        w=2.05,
+        h=0.90,
+        insert_at=6,
+        source="L433 cap 2.05in x 0.90in, aspect preserved",
+    ),
 }
 
 #: Shape spec per layout, in z-order (backgrounds first -> text last).
@@ -349,10 +839,32 @@ def _footer_spec(slide_id: str) -> list[dict[str, Any]]:
     convention by analogy; flagged in the evidence report.
     """
     return [
-        _t(f"{slide_id}_footer_left", "text", 0.45, FOOTER_Y_IN, 9.00, FOOTER_H_IN, 8, False,
-           TEXT_SECONDARY, True, "L269 short-form disclaimer verbatim, 134 chars, 8pt"),
-        _t(f"{slide_id}_footer_right", "text", 9.60, FOOTER_Y_IN, 3.28, FOOTER_H_IN, 8, False,
-           TEXT_SECONDARY, True, "L269 'Slide N of 6 - Pack vN - FY26-P09', 8pt"),
+        _t(
+            f"{slide_id}_footer_left",
+            "text",
+            0.45,
+            FOOTER_Y_IN,
+            9.00,
+            FOOTER_H_IN,
+            8,
+            False,
+            TEXT_SECONDARY,
+            True,
+            "L269 short-form disclaimer verbatim, 134 chars, 8pt",
+        ),
+        _t(
+            f"{slide_id}_footer_right",
+            "text",
+            9.60,
+            FOOTER_Y_IN,
+            3.28,
+            FOOTER_H_IN,
+            8,
+            False,
+            TEXT_SECONDARY,
+            True,
+            "L269 'Slide N of 6 - Pack vN - FY26-P09', 8pt",
+        ),
     ]
 
 
@@ -385,8 +897,9 @@ def _make_textbox(slide, sp: dict[str, Any]):
         Inches(sp["x"]), Inches(sp["y"]), Inches(sp["w"]), Inches(sp["h"])
     )
     box.name = sp["name"]
-    _style_text_frame(box.text_frame, size=sp["size"], bold=sp["bold"],
-                      colour=sp["colour"], single=sp["single"])
+    _style_text_frame(
+        box.text_frame, size=sp["size"], bold=sp["bold"], colour=sp["colour"], single=sp["single"]
+    )
     return box
 
 
@@ -516,14 +1029,18 @@ def _make_chart(slide, cfg: dict[str, Any]):
     else:
         from pptx.enum.chart import XL_LEGEND_POSITION
         from pptx.enum.dml import MSO_LINE_DASH_STYLE
+
         chart.has_legend = True
         chart.legend.position = XL_LEGEND_POSITION.BOTTOM
         chart.legend.include_in_layout = False
         budget_line = RGBColor(0x9C, 0xA3, 0xAF)
         for series, (rgb, dash) in zip(
             chart.series,
-            ((BRAND_PRIMARY, None), (BRAND_SECONDARY, None),
-             (budget_line, MSO_LINE_DASH_STYLE.ROUND_DOT)),
+            (
+                (BRAND_PRIMARY, None),
+                (BRAND_SECONDARY, None),
+                (budget_line, MSO_LINE_DASH_STYLE.ROUND_DOT),
+            ),
         ):
             series.format.line.color.rgb = rgb
             if dash is not None:
@@ -535,8 +1052,11 @@ def _make_picture(slide, cfg: dict[str, Any]):
     import io
 
     pic = slide.shapes.add_picture(
-        io.BytesIO(_logo_png()), Inches(cfg["x"]), Inches(cfg["y"]),
-        width=Inches(cfg["w"]), height=Inches(cfg["h"]),
+        io.BytesIO(_logo_png()),
+        Inches(cfg["x"]),
+        Inches(cfg["y"]),
+        width=Inches(cfg["w"]),
+        height=Inches(cfg["h"]),
     )
     pic.name = cfg["name"]
     # doc 12 section 4.1: alt text = project name, set by the engine at render time.
@@ -580,8 +1100,12 @@ _ZIP_EPOCH = (1980, 1, 1, 0, 0, 0)
 
 #: openpyxl stamps the chart workbooks it writes with wall-clock created/modified
 #: times. They are the ONLY non-deterministic bytes in the package, so we pin them.
-_FIXED_CREATED = b'<dcterms:created xsi:type="dcterms:W3CDTF">2026-01-01T00:00:00Z</dcterms:created>'
-_FIXED_MODIFIED = b'<dcterms:modified xsi:type="dcterms:W3CDTF">2026-01-01T00:00:00Z</dcterms:modified>'
+_FIXED_CREATED = (
+    b'<dcterms:created xsi:type="dcterms:W3CDTF">2026-01-01T00:00:00Z</dcterms:created>'
+)
+_FIXED_MODIFIED = (
+    b'<dcterms:modified xsi:type="dcterms:W3CDTF">2026-01-01T00:00:00Z</dcterms:modified>'
+)
 _CREATED_RE = re.compile(rb"<dcterms:created[^>]*>[^<]*</dcterms:created>")
 _MODIFIED_RE = re.compile(rb"<dcterms:modified[^>]*>[^<]*</dcterms:modified>")
 
@@ -645,7 +1169,7 @@ def build(out_path: Path = DEFAULT_OUT) -> Path:
 
     # Keep exactly seven layouts; drop the rest so the file carries "seven layouts"
     # and not eleven. SlideLayouts.remove() drops the relationship and the part.
-    for extra in list(layouts)[len(LAYOUT_NAMES):]:
+    for extra in list(layouts)[len(LAYOUT_NAMES) :]:
         layouts.remove(extra)
 
     # A throwaway presentation used purely as a shape factory. LayoutShapes exposes no
@@ -666,20 +1190,29 @@ def build(out_path: Path = DEFAULT_OUT) -> Path:
         # keeps media from ever covering body text.
         shapes = SPECS[name]()
         builders = [
-            (lambda s=sp: _make_rect(scratch, s) if s["kind"] in ("rect", "roundrect")
-             else _make_textbox(scratch, s))
+            (
+                lambda s=sp: (
+                    _make_rect(scratch, s)
+                    if s["kind"] in ("rect", "roundrect")
+                    else _make_textbox(scratch, s)
+                )
+            )
             for sp in shapes
         ]
-        for cfg, factory in ((PICTURE.get(name), _make_picture),
-                             (TABLES.get(name), _make_table),
-                             (CHARTS.get(name), _make_chart)):
+        for cfg, factory in (
+            (PICTURE.get(name), _make_picture),
+            (TABLES.get(name), _make_table),
+            (CHARTS.get(name), _make_chart),
+        ):
             if cfg:
                 # insert_at is the doc-12 position the media occupies; entries at or
                 # after it shift down one, so the media lands exactly there.
-                builders.insert(cfg.get("insert_at", len(shapes)),
-                                lambda c=cfg, f=factory: f(scratch, c))
-        builders += [(lambda s=sp: _make_textbox(scratch, s))
-                     for sp in _footer_spec(_slide_id(name))]
+                builders.insert(
+                    cfg.get("insert_at", len(shapes)), lambda c=cfg, f=factory: f(scratch, c)
+                )
+        builders += [
+            (lambda s=sp: _make_textbox(scratch, s)) for sp in _footer_spec(_slide_id(name))
+        ]
 
         spTree = layout.shapes._spTree
         for factory in builders:
@@ -734,8 +1267,11 @@ def audit(path: Path = DEFAULT_OUT) -> dict[str, Any]:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
-    ap.add_argument("--check", action="store_true",
-                    help="regenerate to a temp path and diff layout names; write nothing")
+    ap.add_argument(
+        "--check",
+        action="store_true",
+        help="regenerate to a temp path and diff layout names; write nothing",
+    )
     args = ap.parse_args(argv)
 
     if args.check:

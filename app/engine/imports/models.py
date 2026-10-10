@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from decimal import Decimal
-from typing import Optional, List, Dict, Any
+from typing import Any
 
 
 @dataclass
@@ -10,12 +10,12 @@ class PreScanResult:
     file_name: str
     file_size_bytes: int
     file_checksum: str
-    sheet_names: List[str]
+    sheet_names: list[str]
     estimated_rows: int
-    detected_encoding: Optional[str] = None
-    detected_delimiter: Optional[str] = None
+    detected_encoding: str | None = None
+    detected_delimiter: str | None = None
     header_row_candidate: int = 1
-    sample_headers: List[str] = field(default_factory=list)
+    sample_headers: list[str] = field(default_factory=list)
     has_banner: bool = False
     is_encrypted: bool = False
 
@@ -23,25 +23,25 @@ class PreScanResult:
 @dataclass
 class ValidationIssue:
     check_code: str  # e.g. IMP-001..IMP-032
-    severity: str    # high, medium, low
+    severity: str  # high, medium, low
     message_slug: str
     message: str
-    source_row_ref: Optional[str] = None
-    raw_values: Optional[Dict[str, Any]] = None
+    source_row_ref: str | None = None
+    raw_values: dict[str, Any] | None = None
 
 
 @dataclass
 class ValidationCheckReport:
     check_code: str
     check_name: str
-    status: str       # pass, fail, warn, skipped
-    severity: str     # high, medium, low
+    status: str  # pass, fail, warn, skipped
+    severity: str  # high, medium, low
     offending_count: int
-    message_slug: Optional[str] = None
-    skip_reason: Optional[str] = None
-    sample_rows: List[Dict[str, Any]] = field(default_factory=list)
-    detail: Optional[str] = None
-    weight: Optional[Decimal] = None
+    message_slug: str | None = None
+    skip_reason: str | None = None
+    sample_rows: list[dict[str, Any]] = field(default_factory=list)
+    detail: str | None = None
+    weight: Decimal | None = None
 
     def __post_init__(self):
         if self.weight is None:
@@ -63,23 +63,23 @@ class ParsedTransaction:
     posting_date: str
     company_code: str
     account_code: str
-    cost_center_code: Optional[str]
-    project_code: Optional[str]
-    vendor_code: Optional[str]
-    invoice_no: Optional[str]
-    description: Optional[str]
+    cost_center_code: str | None
+    project_code: str | None
+    vendor_code: str | None
+    invoice_no: str | None
+    description: str | None
     debit: Decimal
     credit: Decimal
     net_amount: Decimal
     currency_code: str
-    document_date: Optional[str] = None
+    document_date: str | None = None
     line_no: int = 1
-    journal_category: Optional[str] = None
-    raw_values: Dict[str, Any] = field(default_factory=dict)
+    journal_category: str | None = None
+    raw_values: dict[str, Any] = field(default_factory=dict)
     is_zero_amount: bool = False
-    period_code: Optional[str] = None
+    period_code: str | None = None
     # Assigned on import; required for cross-batch exception checks.
-    import_batch_id: Optional[int] = None
+    import_batch_id: int | None = None
 
 
 @dataclass
@@ -96,12 +96,12 @@ class ImportBatchResult:
     total_debit: Decimal
     total_credit: Decimal
     net_imbalance: Decimal
-    checks: List[ValidationCheckReport] = field(default_factory=list)
-    quarantined_rows: List[Dict[str, Any]] = field(default_factory=list)
+    checks: list[ValidationCheckReport] = field(default_factory=list)
+    quarantined_rows: list[dict[str, Any]] = field(default_factory=list)
     balance_tolerance: Decimal = Decimal("0.00")
     sheet_name: str = "Data"
-    external_batch_ref: Optional[str] = None
-    subject_namespace: Optional[str] = None
+    external_batch_ref: str | None = None
+    subject_namespace: str | None = None
 
     def __post_init__(self) -> None:
         for field_name, maximum_length in (

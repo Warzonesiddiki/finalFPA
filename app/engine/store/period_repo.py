@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from app.engine.store.db import DatabaseManager
 
@@ -30,8 +30,8 @@ class PeriodDTO:
     has_actuals: bool
     has_budget: bool
     is_forecast_eligible: bool
-    closed_at: Optional[str] = None
-    created_at: Optional[str] = None
+    closed_at: str | None = None
+    created_at: str | None = None
 
 
 class PeriodRepository:
@@ -65,9 +65,7 @@ class PeriodRepository:
         caller-supplied. The read-then-write is safe under the ADR-004
         single-user desktop model: DuckDB permits one writing process per file.
         """
-        row = duck_conn.execute(
-            f"SELECT COALESCE(MAX({column}), 0) + 1 FROM {table}"
-        ).fetchone()
+        row = duck_conn.execute(f"SELECT COALESCE(MAX({column}), 0) + 1 FROM {table}").fetchone()
         return int(row[0])
 
     def _ensure_tables(self) -> None:
@@ -92,7 +90,7 @@ class PeriodRepository:
             );
         """)
 
-    def list_periods(self) -> List[PeriodDTO]:
+    def list_periods(self) -> list[PeriodDTO]:
         duck_conn = self.db.get_duckdb_connection()
         rows = duck_conn.execute("""
             SELECT period_id, fiscal_year, period_number, period_code, period_label,
@@ -104,31 +102,42 @@ class PeriodRepository:
 
         result = []
         for r in rows:
-            result.append(PeriodDTO(
-                period_id=r[0],
-                fiscal_year=r[1],
-                period_number=r[2],
-                period_code=r[3],
-                period_label=r[4],
-                start_date=str(r[5]),
-                end_date=str(r[6]),
-                status=r[7],
-                has_actuals=bool(r[8]),
-                has_budget=bool(r[9]),
-                is_forecast_eligible=bool(r[10]),
-                closed_at=str(r[11]) if r[11] else None,
-                created_at=str(r[12]) if r[12] else None,
-            ))
+            result.append(
+                PeriodDTO(
+                    period_id=r[0],
+                    fiscal_year=r[1],
+                    period_number=r[2],
+                    period_code=r[3],
+                    period_label=r[4],
+                    start_date=str(r[5]),
+                    end_date=str(r[6]),
+                    status=r[7],
+                    has_actuals=bool(r[8]),
+                    has_budget=bool(r[9]),
+                    is_forecast_eligible=bool(r[10]),
+                    closed_at=str(r[11]) if r[11] else None,
+                    created_at=str(r[12]) if r[12] else None,
+                )
+            )
         return result
 
-    def get_period(self, period_id: int) -> Optional[PeriodDTO]:
+    def get_period(self, period_id: int) -> PeriodDTO | None:
         periods = self.list_periods()
         for p in periods:
             if p.period_id == period_id:
                 return p
         return None
 
-    def open_period(self, fiscal_year: int, period_number: int, period_code: str, period_label: str, start_date: str, end_date: str, carry_forward_config: Dict[str, Any]) -> PeriodDTO:
+    def open_period(
+        self,
+        fiscal_year: int,
+        period_number: int,
+        period_code: str,
+        period_label: str,
+        start_date: str,
+        end_date: str,
+        carry_forward_config: dict[str, Any],
+    ) -> PeriodDTO:
         duck_conn = self.db.get_duckdb_connection()
         # Insert or update period.
         # period_id is supplied explicitly (see _next_id): omitting it raises
@@ -138,24 +147,43 @@ class PeriodRepository:
         # Period wizard used to appear to work for seeded FY26 periods and only
         # fail for a genuinely new fiscal year.
         period_id = self._next_id(duck_conn, "DimPeriod", "period_id")
-        duck_conn.execute("""
+        duck_conn.execute(
+            """
             INSERT INTO DimPeriod (period_id, fiscal_year, period_number, period_code, period_label, start_date, end_date, status, has_actuals, has_budget, is_forecast_eligible)
             VALUES (?, ?, ?, ?, ?, ?, ?, 'open', FALSE, FALSE, TRUE)
             ON CONFLICT (period_code) DO UPDATE SET
                 status = 'open',
                 start_date = excluded.start_date,
                 end_date = excluded.end_date
-        """, [period_id, fiscal_year, period_number, period_code, period_label, start_date, end_date])
+        """,
+            [
+                period_id,
+                fiscal_year,
+                period_number,
+                period_code,
+                period_label,
+                start_date,
+                end_date,
+            ],
+        )
 
         # Record audit log for opening / wizard execution
-        row = duck_conn.execute("SELECT period_id FROM DimPeriod WHERE period_code = ?", [period_code]).fetchone()
+        row = duck_conn.execute(
+            "SELECT period_id FROM DimPeriod WHERE period_code = ?", [period_code]
+        ).fetchone()
         period_id = row[0] if row else period_id
 
-        duck_conn.execute("""
+        duck_conn.execute(
+            """
             INSERT INTO PeriodAuditLog (log_id, period_id, action, reason, performed_by)
             VALUES (?, ?, 'open_wizard', ?, 'system')
-        """, [self._next_id(duck_conn, "PeriodAuditLog", "log_id"),
-              period_id, json.dumps(carry_forward_config)])
+        """,
+            [
+                self._next_id(duck_conn, "PeriodAuditLog", "log_id"),
+                period_id,
+                json.dumps(carry_forward_config),
+            ],
+        )
 
         return self.get_period(period_id)  # type: ignore
 
@@ -165,45 +193,62 @@ class PeriodRepository:
         if not period:
             raise ValueError(f"Period {period_id} not found")
 
-        now_str = datetime.now(timezone.utc).isoformat()
+        now_str = datetime.now(UTC).isoformat()
 
         # Capture immutable snapshot of actuals/budget totals for this period.
         # FactActual has no `amount` column (03 DATA_DICTIONARY: it stores
         # debit, credit and the derived net_amount), so selecting SUM(amount)
         # raised `Binder Error: Referenced column "amount" not found` and made
         # close unreachable. net_amount is the amount column for this fact.
-        summary_rows = duck_conn.execute("""
+        summary_rows = duck_conn.execute(
+            """
             SELECT account_id, SUM(net_amount) as total_amount
             FROM FactActual
             WHERE period_id = ?
             GROUP BY account_id
-        """, [period_id]).fetchall()
+        """,
+            [period_id],
+        ).fetchall()
 
         snapshot_data = {
             "period_code": period.period_code,
             "closed_at": now_str,
-            "totals": {str(r[0]): str(r[1]) for r in summary_rows}
+            "totals": {str(r[0]): str(r[1]) for r in summary_rows},
         }
         snapshot_json = json.dumps(snapshot_data, sort_keys=True)
         import hashlib
+
         snapshot_hash = hashlib.sha256(snapshot_json.encode("utf-8")).hexdigest()
 
-        duck_conn.execute("""
+        duck_conn.execute(
+            """
             INSERT INTO PeriodSnapshot (snapshot_id, period_id, snapshot_json, snapshot_hash)
             VALUES (?, ?, ?, ?)
-        """, [self._next_id(duck_conn, "PeriodSnapshot", "snapshot_id"),
-              period_id, snapshot_json, snapshot_hash])
+        """,
+            [
+                self._next_id(duck_conn, "PeriodSnapshot", "snapshot_id"),
+                period_id,
+                snapshot_json,
+                snapshot_hash,
+            ],
+        )
 
-        duck_conn.execute("""
+        duck_conn.execute(
+            """
             UPDATE DimPeriod
             SET status = 'closed', closed_at = CURRENT_TIMESTAMP
             WHERE period_id = ?
-        """, [period_id])
+        """,
+            [period_id],
+        )
 
-        duck_conn.execute("""
+        duck_conn.execute(
+            """
             INSERT INTO PeriodAuditLog (log_id, period_id, action, reason, performed_by)
             VALUES (?, ?, 'close', 'Period closed and immutable snapshot captured', ?)
-        """, [self._next_id(duck_conn, "PeriodAuditLog", "log_id"), period_id, closed_by])
+        """,
+            [self._next_id(duck_conn, "PeriodAuditLog", "log_id"), period_id, closed_by],
+        )
 
         return self.get_period(period_id)  # type: ignore
 
@@ -216,16 +261,21 @@ class PeriodRepository:
         if not reason or len(reason.strip()) < 5:
             raise ValueError("Typed reopen requires a valid audit reason (minimum 5 characters)")
 
-        duck_conn.execute("""
+        duck_conn.execute(
+            """
             UPDATE DimPeriod
             SET status = 'open', closed_at = NULL
             WHERE period_id = ?
-        """, [period_id])
+        """,
+            [period_id],
+        )
 
-        duck_conn.execute("""
+        duck_conn.execute(
+            """
             INSERT INTO PeriodAuditLog (log_id, period_id, action, reason, performed_by)
             VALUES (?, ?, 'reopen', ?, ?)
-        """, [self._next_id(duck_conn, "PeriodAuditLog", "log_id"),
-              period_id, reason, reopened_by])
+        """,
+            [self._next_id(duck_conn, "PeriodAuditLog", "log_id"), period_id, reason, reopened_by],
+        )
 
         return self.get_period(period_id)  # type: ignore

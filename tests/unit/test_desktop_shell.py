@@ -7,19 +7,17 @@ Covers:
 - WebView2 detection and browser launch fallback (ERR-ENG-001)
 """
 
-import sys
 import socket
-from unittest.mock import patch, MagicMock
-import pytest
+import sys
+from unittest.mock import MagicMock, patch
 
 from app.desktop.shell import (
     SingleInstanceMutex,
     find_free_port,
     is_webview2_available,
-    launch_browser_fallback,
     launch_app,
+    launch_browser_fallback,
     shutdown_process,
-    _server_instance,
 )
 
 
@@ -95,8 +93,10 @@ def test_shutdown_process_cleanly():
 
     mock_mutex = MagicMock()
 
-    with patch("app.desktop.shell._server_instance", mock_server), \
-         patch("app.desktop.shell._mutex_handle", mock_mutex):
+    with (
+        patch("app.desktop.shell._server_instance", mock_server),
+        patch("app.desktop.shell._mutex_handle", mock_mutex),
+    ):
         shutdown_process()
         assert mock_server.should_exit is True
         mock_mutex.release.assert_called_once()
@@ -104,8 +104,10 @@ def test_shutdown_process_cleanly():
 
 def test_launch_app_blocked_by_mutex():
     """Verify launch_app returns False if mutex is held by existing instance (ERR-ENG-008)."""
-    with patch.object(SingleInstanceMutex, "acquire", return_value=False), \
-         patch("app.desktop.shell._show_instance_already_running_message") as mock_msg:
+    with (
+        patch.object(SingleInstanceMutex, "acquire", return_value=False),
+        patch("app.desktop.shell._show_instance_already_running_message") as mock_msg,
+    ):
         result = launch_app(project_id="test_blocked")
         assert result is False
         mock_msg.assert_called_once()
@@ -113,12 +115,13 @@ def test_launch_app_blocked_by_mutex():
 
 def test_launch_app_browser_fallback_mode():
     """Verify launch_app falls back to browser when prefer_browser is True."""
-    with patch.object(SingleInstanceMutex, "acquire", return_value=True), \
-         patch.object(SingleInstanceMutex, "release"), \
-         patch("threading.Thread"), \
-         patch("time.sleep"), \
-         patch("app.desktop.shell.launch_browser_fallback") as mock_browser:
-
+    with (
+        patch.object(SingleInstanceMutex, "acquire", return_value=True),
+        patch.object(SingleInstanceMutex, "release"),
+        patch("threading.Thread"),
+        patch("time.sleep"),
+        patch("app.desktop.shell.launch_browser_fallback") as mock_browser,
+    ):
         # Server thread is mocked as not alive immediately to exit loop
         mock_thread = MagicMock()
         mock_thread.is_alive.return_value = False

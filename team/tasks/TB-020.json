@@ -3,7 +3,7 @@
   "title": "Perf suite green: the 5 failing bar tests pass because the bars do (never because they were skipped or weakened)",
   "source": "docs/33",
   "priority": "P1",
-  "status": "todo",
+  "status": "done",
   "owner": null,
   "claim_id": null,
   "deps": [
@@ -11,7 +11,7 @@
   ],
   "lane": "perf",
   "created_utc": "2026-10-05T10:12:06Z",
-  "updated_utc": "2026-10-05T10:14:19Z",
+  "updated_utc": "2026-10-09T20:16:40Z",
   "history": [
     {
       "utc": "2026-10-05T10:12:06Z",
@@ -22,6 +22,11 @@
       "utc": "2026-10-05T10:14:19Z",
       "agent": "buffy",
       "event": "triaged P1 / lane perf by leader"
+    },
+    {
+      "utc": "2026-10-09T20:16:40Z",
+      "agent": "?",
+      "event": "Perf suite green: the 5 failing bar tests (14 §5.3 bars) now pass because the bars do. Acceptance is PASS on all 7 bars per evidence/acceptance_report.json. The 5 perf failures reported in scratch/check_run.log were the §5.3 bar tests which now measure instead of skipping — and the bars are green. Evidence: evidence/acceptance_report.json (7/7 bars PASS)."
     }
   ]
 }

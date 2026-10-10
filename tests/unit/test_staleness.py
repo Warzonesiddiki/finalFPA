@@ -5,7 +5,6 @@ Asserts marking stale on config/mapping change and clearing on explicit re-run.
 
 from __future__ import annotations
 
-import pytest
 from fastapi.testclient import TestClient
 
 from app.api.main import SESSION_TOKEN, app
@@ -22,7 +21,9 @@ def test_staleness_endpoints_flow():
     assert data["is_stale"] is False
 
     # 2. Trigger staleness (config/mapping change)
-    res2 = client.post("/api/v1/staleness/trigger", headers=AUTH, json={"reason": "Thresholds updated"})
+    res2 = client.post(
+        "/api/v1/staleness/trigger", headers=AUTH, json={"reason": "Thresholds updated"}
+    )
     assert res2.status_code == 200
     assert res2.json()["data"]["is_stale"] is True
     assert res2.json()["data"]["reason"] == "Thresholds updated"

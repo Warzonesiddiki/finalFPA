@@ -1,11 +1,9 @@
 """Tests for AI model pinning, deprecation notices, and fallback order per doc 10 §2 & §3."""
 
-import pytest
 from app.engine.ai.pinning import (
+    SUPPORTED_MODELS,
     get_model_pinning_config,
     validate_model_selection,
-    DOCUMENTED_FALLBACK_ORDER,
-    SUPPORTED_MODELS,
 )
 
 

@@ -116,20 +116,31 @@ def main(argv: list[str] | None = None) -> int:
     ensure_utf8_console()
     parser = argparse.ArgumentParser(
         description="Doc 14 §5.2 planted-exception acceptance. Exits 0 on PASS, "
-                    "1 on FAIL, 2 when the corpus precondition blocks measurement.")
-    parser.add_argument("--sample-dir", type=Path, default=DEFAULT_SAMPLE_DIR,
-                        help="Corpus directory (default: sample-data)")
-    parser.add_argument("--out", type=Path, default=None,
-                        help="Directory for acceptance_report.{json,md}")
-    parser.add_argument("--as-of", default=DEFAULT_AS_OF,
-                        help=f"Injected run date (default: {DEFAULT_AS_OF}). "
-                             "No clock is read.")
-    parser.add_argument("--period", default=PERIOD_CODE,
-                        help=f"Period under review (default: {PERIOD_CODE})")
-    parser.add_argument("--no-actuals", action="store_true",
-                        help="Do not import actuals; diagnostics only.")
-    parser.add_argument("--quiet", action="store_true",
-                        help="Suppress the markdown report on stdout.")
+        "1 on FAIL, 2 when the corpus precondition blocks measurement."
+    )
+    parser.add_argument(
+        "--sample-dir",
+        type=Path,
+        default=DEFAULT_SAMPLE_DIR,
+        help="Corpus directory (default: sample-data)",
+    )
+    parser.add_argument(
+        "--out", type=Path, default=None, help="Directory for acceptance_report.{json,md}"
+    )
+    parser.add_argument(
+        "--as-of",
+        default=DEFAULT_AS_OF,
+        help=f"Injected run date (default: {DEFAULT_AS_OF}). No clock is read.",
+    )
+    parser.add_argument(
+        "--period", default=PERIOD_CODE, help=f"Period under review (default: {PERIOD_CODE})"
+    )
+    parser.add_argument(
+        "--no-actuals", action="store_true", help="Do not import actuals; diagnostics only."
+    )
+    parser.add_argument(
+        "--quiet", action="store_true", help="Suppress the markdown report on stdout."
+    )
     args = parser.parse_args(argv)
 
     report = run_acceptance(
@@ -146,6 +157,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args.quiet:
         from app.engine.rules.acceptance import render_markdown
+
         safe_print(render_markdown(report))
 
     safe_print(f"ACCEPTANCE: {report.verdict}")

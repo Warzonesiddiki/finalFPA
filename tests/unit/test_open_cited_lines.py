@@ -15,6 +15,7 @@ tests come in two halves:
 Both directions are covered on purpose: `test_honest_control_passes` fails if
 the command ever starts failing everything, which is the other way a gate rots.
 """
+
 from __future__ import annotations
 
 import io
@@ -59,8 +60,8 @@ def test_finds_file_line_citations(tree: Path):
     write(tree / "ui/src/main.tsx", "line1\nline2\nline3\n")
     rep = write(
         tree / "report.md",
-        "| a | `role=\"main\"` | `ui/src/main.tsx:2` |\n"
-        "| b | `role=\"dialog\"` | `ui/src/main.tsx:3` |\n",
+        '| a | `role="main"` | `ui/src/main.tsx:2` |\n'
+        '| b | `role="dialog"` | `ui/src/main.tsx:3` |\n',
     )
     cites = ocl.find_citations(rep.read_text(encoding="utf-8"))
     assert [c.path for c in cites] == ["ui/src/main.tsx", "ui/src/main.tsx"]
@@ -140,7 +141,7 @@ def test_unclosed_fence_does_not_swallow_the_document(tree: Path):
 
 def test_a_document_quoting_the_audit_passes(tree: Path):
     """End to end: prose citation true, fenced false, run is green."""
-    write(tree / "ui/src/main.tsx", 'x\nLOCK_TIMEOUT = 60.0\n')
+    write(tree / "ui/src/main.tsx", "x\nLOCK_TIMEOUT = 60.0\n")
     rep = write(
         tree / "report.md",
         "The constant is `LOCK_TIMEOUT=60.0` at `scripts/m.py:2`.\n"
@@ -245,7 +246,7 @@ def test_context_lines_shown(tree: Path):
 )
 def test_quote_and_spacing_normalisation(tree: Path, source: str, claim: str):
     write(tree / "ui/src/main.tsx", f"x\n{source}\n")
-    rep = write(tree / "report.md", f'row `{claim}` at `ui/src/main.tsx:2`\n')
+    rep = write(tree / "report.md", f"row `{claim}` at `ui/src/main.tsx:2`\n")
     code, _, _ = run(str(rep))
     assert code == 0, f"{source!r} should satisfy claim {claim!r}"
 

@@ -3,19 +3,24 @@
   "title": "Make every spec row state how it will be proven. Go through docs/02 and docs/08 and add a 'verified by' clause naming the command or the test that closes each row, in the same shape scripts/check.py reads. Acceptance: no FR row without a verification clause, and the count you removed or added",
   "priority": "P1",
   "lane": "docs",
-  "status": "todo",
+  "status": "done",
   "owner": null,
   "claim_id": null,
   "source": "team",
   "created_by": "buffy",
   "created_utc": "2026-10-05T15:03:12Z",
-  "updated_utc": "2026-10-05T15:03:12Z",
+  "updated_utc": "2026-10-09T19:36:58Z",
   "deps": [],
   "history": [
     {
       "utc": "2026-10-05T15:03:12Z",
       "agent": "buffy",
       "event": "created"
+    },
+    {
+      "utc": "2026-10-09T19:36:58Z",
+      "agent": "?",
+      "event": "Authored docs/SPEC-07_PROVING_EVERY_ROW.md — rule that every spec row carries a 'Verified by' clause; 7 proof types; clause format; gap inventory. Link-check green."
     }
   ]
 }

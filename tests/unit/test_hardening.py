@@ -1,22 +1,17 @@
 """Comprehensive unit tests for Excel and CSV Hardening per docs/04_SOURCE_MAPPING_AND_IMPORT_SPEC.md §8 (X1..X26) and §9 (C1..C12)."""
 
-import pytest
-import openpyxl
 from pathlib import Path
-from tempfile import NamedTemporaryFile
+
+import openpyxl
+import pytest
 
 from app.engine.imports.hardening import (
-    HardeningFinding,
     detect_csv_encoding_and_delimiter,
-    read_hardened_csv,
     detect_hidden_sheets,
-    unmerge_header_cells,
-    detect_merged_data_cells,
-    verify_cached_formulas,
-    trim_trailing_empty,
-    concatenate_multi_row_headers,
     is_total_subtotal_row,
     load_hardened_excel_sheet,
+    read_hardened_csv,
+    trim_trailing_empty,
 )
 
 
@@ -59,7 +54,9 @@ def test_csv_delimiters_comma_tab_pipe(tmp_path: Path):
 
     # Comma delimited with trailing delimiter and whitespace (C11, C12)
     comma_file = tmp_path / "test_comma.csv"
-    comma_file.write_text(" ColA , ColB , ColC ,\n 10 , 20 , 30 ,\n 40 , 50 , 60 ,\n", encoding="utf-8")
+    comma_file.write_text(
+        " ColA , ColB , ColC ,\n 10 , 20 , 30 ,\n 40 , 50 , 60 ,\n", encoding="utf-8"
+    )
     headers, rows, findings = read_hardened_csv(comma_file)
     assert headers == ["ColA", "ColB", "ColC"]
     assert rows[0] == ["10", "20", "30"]
@@ -97,7 +94,10 @@ def test_hidden_sheet_detection(tmp_path: Path):
     data = load_hardened_excel_sheet(wb_path)
     assert data.sheet_name == "VisibleData"
     assert "HiddenNotes" in data.hidden_sheets
-    assert any(f.slug == "import.hiddenSheetSkipped" and f.sheet_name == "HiddenNotes" for f in data.findings)
+    assert any(
+        f.slug == "import.hiddenSheetSkipped" and f.sheet_name == "HiddenNotes"
+        for f in data.findings
+    )
 
 
 def test_merged_cells_header_unmerge_and_data_quarantine(tmp_path: Path):

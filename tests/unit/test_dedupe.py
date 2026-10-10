@@ -234,15 +234,20 @@ def test_exc_008_style_blocking_excludes_same_voucher_groups():
     )
 
     rows.append((key, {"voucher_no": "VCH-2026-0922-009"}))  # now two distinct vouchers
-    assert len(
-        list(
-            iter_candidate_groups(
-                rows,
-                key_of=lambda item: item[0],
-                is_candidate=lambda _k, rs: count_distinct(rs, lambda i: i[1]["voucher_no"]) >= 2,
+    assert (
+        len(
+            list(
+                iter_candidate_groups(
+                    rows,
+                    key_of=lambda item: item[0],
+                    is_candidate=lambda _k, rs: (
+                        count_distinct(rs, lambda i: i[1]["voucher_no"]) >= 2
+                    ),
+                )
             )
         )
-    ) == 1
+        == 1
+    )
 
 
 def test_exc_007_style_blocking_needs_two_rows_and_an_ordered_key():
@@ -293,7 +298,7 @@ def test_rules_delegate_to_this_module_rather_than_reimplementing():
     assert "from app.engine.dedupe import" in src_cat
     # The old inline normaliser body must be gone, not duplicated beside the new one.
     assert "[^A-Z0-9]" not in src_01
-    assert "lstrip(\"0\")" not in src_01
+    assert 'lstrip("0")' not in src_01
     # And the name `06` EXC-007 uses must be an alias of the one implementation, not a
     # second function that happens to agree today.
     from app.engine.dedupe import normalise_invoice_no
@@ -305,9 +310,7 @@ def test_rules_delegate_to_this_module_rather_than_reimplementing():
     assert "iter_candidate_groups(" in inspect.getsource(
         rules_catalog_001_008.evaluate_catalog_exc_008
     )
-    assert "count_distinct(" in inspect.getsource(
-        rules_catalog_001_008.evaluate_catalog_exc_008
-    )
+    assert "count_distinct(" in inspect.getsource(rules_catalog_001_008.evaluate_catalog_exc_008)
 
 
 def test_no_weighted_scorer_was_added():

@@ -1,12 +1,11 @@
 """Unit tests for engine calc and CLI commands."""
 
 from decimal import Decimal
-import pytest
+
 from app.engine.calc import (
-    quantize_money,
     calculate_variance,
     calculate_variance_pct,
-    ZERO,
+    quantize_money,
 )
 
 

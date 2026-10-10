@@ -5,28 +5,23 @@ Tests adherence to docs/12_POWERPOINT_OUTPUT_SPEC.md §1 through §7.
 
 import json
 from pathlib import Path
+
+import pytest
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
-import pytest
 
-from app.engine.exports.ppt_pack import (
-    DeckContext,
-    SourceBatchItem,
-    KPICardData,
-    BridgeDriverItem,
-    VarianceRow,
-    ExceptionCounts,
-    ExceptionRow,
-    generate_powerpoint_deck,
-    CANONICAL_DISCLAIMER,
-    SHORT_DISCLAIMER,
-    SLIDE_WIDTH_INCHES,
-    SLIDE_HEIGHT_INCHES,
-    ExportTemplateError,
-)
 from app.engine.exports.ppt_fit import (
     compute_character_budget,
     trim_text_to_budget,
+)
+from app.engine.exports.ppt_pack import (
+    CANONICAL_DISCLAIMER,
+    SHORT_DISCLAIMER,
+    SLIDE_HEIGHT_INCHES,
+    SLIDE_WIDTH_INCHES,
+    DeckContext,
+    ExportTemplateError,
+    generate_powerpoint_deck,
 )
 from app.engine.pptx_fill.ppt_spec import SLIDE_SHAPE_ORDER
 
@@ -89,7 +84,9 @@ def test_slide_1_cover_and_stamp():
     prs = generate_powerpoint_deck(context=ctx)
     s1 = prs.slides[0]
 
-    shape_names = {shape.name for shape in s1.shapes} | {shape.name for shape in s1.slide_layout.shapes}
+    shape_names = {shape.name for shape in s1.shapes} | {
+        shape.name for shape in s1.slide_layout.shapes
+    }
     assert "PPT-001_accent" in shape_names
     assert "PPT-001_title" in shape_names
     assert "PPT-001_packline" in shape_names
@@ -117,7 +114,7 @@ def test_slide_1_cover_and_stamp():
     # resolving through layout since it's a layout shape
     title_shape = next(
         (s for s in s1.shapes if s.name == "PPT-001_title"),
-        next(s for s in s1.slide_layout.shapes if s.name == "PPT-001_title")
+        next(s for s in s1.slide_layout.shapes if s.name == "PPT-001_title"),
     )
     assert title_shape.text_frame.text == "Acme Corp Test"
 
@@ -127,9 +124,7 @@ def test_slide_1_cover_and_stamp():
     assert "--- END FPA STAMP ---" in notes
     assert CANONICAL_DISCLAIMER in notes
 
-    json_part = notes.split("--- FPA STAMP (JSON) ---")[1].split(
-        "--- END FPA STAMP ---"
-    )[0]
+    json_part = notes.split("--- FPA STAMP (JSON) ---")[1].split("--- END FPA STAMP ---")[0]
     stamp_data = json.loads(json_part)
     assert stamp_data["schema"] == "fpa.ppt.stamp.v1"
     assert stamp_data["project"] == "Acme Corp Test"
@@ -166,9 +161,7 @@ def test_slide_3_bva_bridge_native_chart():
     assert "PPT-003_drivers" in shape_names
     assert "PPT-003_tieout" in shape_names
 
-    chart_shape = next(
-        s for s in s3.shapes if s.name == "PPT-003_chart_bridge"
-    )
+    chart_shape = next(s for s in s3.shapes if s.name == "PPT-003_chart_bridge")
     assert chart_shape.has_chart
     chart = chart_shape.chart
     assert len(chart.plots) > 0
@@ -247,9 +240,7 @@ def test_slide_6_forecast_chart_and_disclaimer():
         assert f"PPT-006_card{i}_value" in shape_names
         assert f"PPT-006_card{i}_compare" in shape_names
 
-    chart_shape = next(
-        s for s in s6.shapes if s.name == "PPT-006_chart_forecast"
-    )
+    chart_shape = next(s for s in s6.shapes if s.name == "PPT-006_chart_forecast")
     assert chart_shape.has_chart
     chart = chart_shape.chart
     assert len(chart.plots[0].series) == 3  # Actual, Forecast, Budget
@@ -284,9 +275,9 @@ def test_shape_whitelist_no_raster_screenshots():
                     f"only {sorted(permitted_pictures)} may be"
                 )
                 continue
-            assert (
-                shape.shape_type in allowed_types
-            ), f"Shape {shape.name} on {slide_id} has unallowed type {shape.shape_type}"
+            assert shape.shape_type in allowed_types, (
+                f"Shape {shape.name} on {slide_id} has unallowed type {shape.shape_type}"
+            )
 
 
 def test_save_and_reopen_deck(tmp_path: Path):
@@ -314,12 +305,14 @@ def test_def018_template_resolution_and_missing_template_error(monkeypatch, tmp_
     empty_dir.mkdir(parents=True, exist_ok=True)
     with patch("app.engine.exports.ppt_pack.Path.parent") as mock_parent:
         pass  # test via direct monkeypatch on Path
-    
+
     # Target Path.exists to simulate missing templates
     orig_exists = Path.exists
 
     def mock_exists(p):
-        if str(p).endswith("board_pack_template.pptx") or str(p).endswith("FPAMonthEndCopilot_v1.pptx"):
+        if str(p).endswith("board_pack_template.pptx") or str(p).endswith(
+            "FPAMonthEndCopilot_v1.pptx"
+        ):
             return False
         return orig_exists(p)
 

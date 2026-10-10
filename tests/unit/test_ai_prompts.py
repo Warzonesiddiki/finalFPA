@@ -1,14 +1,15 @@
 """Tests for prompt template version management, immutability, and 5-step edit process per doc 10 §5."""
 
 import pytest
-from app.engine.ai.prompts import PromptTemplateStore, SHIP_PROMPTS
+
+from app.engine.ai.prompts import SHIP_PROMPTS, PromptTemplateStore
 
 
 def test_shipped_prompts_are_immutable():
     """Verify shipped baseline prompt templates are immutable per doc 10 §5.1."""
     store = PromptTemplateStore()
     prompts = store.list_prompts()
-    
+
     assert len(prompts) == len(SHIP_PROMPTS)
     for p in prompts:
         assert len(p["versions"]) >= 1

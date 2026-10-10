@@ -53,7 +53,12 @@ def parse_catalog_specs(doc_path: Path) -> dict[str, CatalogSpec]:
         if m:
             if current_rule_id:
                 specs[current_rule_id] = CatalogSpec(
-                    current_rule_id, current_rule_name, severity, owner_role, subject_key_spec, rule_line
+                    current_rule_id,
+                    current_rule_name,
+                    severity,
+                    owner_role,
+                    subject_key_spec,
+                    rule_line,
                 )
             current_rule_id = m.group(1)
             current_rule_name = m.group(2).strip()
@@ -86,7 +91,9 @@ def parse_catalog_specs(doc_path: Path) -> dict[str, CatalogSpec]:
     return specs
 
 
-def check_spec_constants(doc_path: Path = DOC_06, rules_path: Path = RULES_DIR) -> tuple[int, list[str]]:
+def check_spec_constants(
+    doc_path: Path = DOC_06, rules_path: Path = RULES_DIR
+) -> tuple[int, list[str]]:
     """Compare catalog specifications against the active composed rule batch."""
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
@@ -114,7 +121,9 @@ def check_spec_constants(doc_path: Path = DOC_06, rules_path: Path = RULES_DIR) 
 
         if code_line_no > 0:
             print(f"      Code subject key: {code_snip} ({code_file.name}:{code_line_no})")
-            print("      Status: In sync (matches spec subject key definition company_code|account_code|period_span)")
+            print(
+                "      Status: In sync (matches spec subject key definition company_code|account_code|period_span)"
+            )
         else:
             issues.append(f"EXC-020 code subject key not found in {code_file.name}")
 
@@ -129,7 +138,10 @@ def check_spec_constants(doc_path: Path = DOC_06, rules_path: Path = RULES_DIR) 
             issues.append(f"Missing evaluator for {r_id} in active catalog batch")
 
     if issues:
-        print(f"\n[FAIL] FAILED: {len(issues)} spec-to-code constants drift issues found:", file=sys.stderr)
+        print(
+            f"\n[FAIL] FAILED: {len(issues)} spec-to-code constants drift issues found:",
+            file=sys.stderr,
+        )
         for issue in issues:
             print(f"  - {issue}", file=sys.stderr)
         return 1, issues

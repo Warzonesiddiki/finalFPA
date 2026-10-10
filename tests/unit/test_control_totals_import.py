@@ -249,9 +249,7 @@ def test_excel_duplicate_headers_are_blocked(tmp_path):
             "Currency",
         ]
     )
-    data.append(
-        ["VCH-1", "VCH-1", "2026-09-22", "IN01", "5300", "CC-110", 100, 100, "INR"]
-    )
+    data.append(["VCH-1", "VCH-1", "2026-09-22", "IN01", "5300", "CC-110", 100, 100, "INR"])
     path = tmp_path / "duplicate-header.xlsx"
     workbook.save(path)
     workbook.close()

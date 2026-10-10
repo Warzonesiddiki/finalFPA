@@ -11,16 +11,12 @@ Manages:
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
+from datetime import UTC, datetime
 
 from app.engine.exports.excel_pack import (
-    MonthEndPackData,
-    PackContext,
-    export_excel_pack,
     create_sample_pack_data,
+    export_excel_pack,
 )
 from app.engine.exports.ppt_pack import (
     DeckContext,
@@ -53,11 +49,11 @@ class IssuanceRefDTO:
     pack_type: str
     issued_at: str
     issued_by: str
-    recipients: List[str]
-    snapshot_id: Optional[int]
-    file_names: List[str]
+    recipients: list[str]
+    snapshot_id: int | None
+    file_names: list[str]
     status: str
-    notes: Optional[str]
+    notes: str | None
 
 
 @dataclass
@@ -67,7 +63,7 @@ class CommentaryRowDTO:
     scope_type: str
     subject_key: str
     current_version_no: int
-    locked_by_issue_id: Optional[int]
+    locked_by_issue_id: int | None
     text: str
     source: str
     author: str
@@ -111,7 +107,7 @@ class ReportsRepository:
             export_excel_pack(out_path, pack_data)
 
             file_size = out_path.stat().st_size if out_path.exists() else 0
-            now_str = datetime.now(timezone.utc).isoformat()
+            now_str = datetime.now(UTC).isoformat()
 
             cur = sqlite_conn.execute(
                 """
@@ -180,7 +176,7 @@ class ReportsRepository:
             generate_powerpoint_deck(deck_ctx, output_path=out_path)
 
             file_size = out_path.stat().st_size if out_path.exists() else 0
-            now_str = datetime.now(timezone.utc).isoformat()
+            now_str = datetime.now(UTC).isoformat()
 
             cur = sqlite_conn.execute(
                 """
@@ -220,7 +216,7 @@ class ReportsRepository:
         finally:
             sqlite_conn.close()
 
-    def get_packs(self, period_code: Optional[str] = None) -> List[PackRefDTO]:
+    def get_packs(self, period_code: str | None = None) -> list[PackRefDTO]:
         """List generated pack files."""
         sqlite_conn = self.db.get_sqlite_connection()
         try:
@@ -230,7 +226,9 @@ class ReportsRepository:
                     (period_code,),
                 ).fetchall()
             else:
-                rows = sqlite_conn.execute("SELECT * FROM FactExport ORDER BY export_id DESC").fetchall()
+                rows = sqlite_conn.execute(
+                    "SELECT * FROM FactExport ORDER BY export_id DESC"
+                ).fetchall()
 
             return [
                 PackRefDTO(
@@ -251,7 +249,7 @@ class ReportsRepository:
         finally:
             sqlite_conn.close()
 
-    def list_packs(self, period_code: Optional[str] = None) -> List[PackRefDTO]:
+    def list_packs(self, period_code: str | None = None) -> list[PackRefDTO]:
         """Alias for get_packs() matching repository list convention per docs/03_DATA_DICTIONARY.md."""
         return self.get_packs(period_code=period_code)
 
@@ -259,10 +257,10 @@ class ReportsRepository:
         self,
         period_id: int,
         period_code: str,
-        recipients: List[str],
+        recipients: list[str],
         pack_type: str = "both",
         issued_by: str = "Aarti",
-        notes: Optional[str] = None,
+        notes: str | None = None,
     ) -> IssuanceRefDTO:
         """Issue pack, increment version, lock commentary per FR-XC-002 and FR-XC-003."""
         if not recipients:
@@ -289,7 +287,7 @@ class ReportsRepository:
                 f"Acme_IN01_{period_code}_BoardDeck_v{next_version}.pptx",
             ]
 
-            now_str = datetime.now(timezone.utc).isoformat()
+            now_str = datetime.now(UTC).isoformat()
             cur = sqlite_conn.execute(
                 """
                 INSERT INTO FactPackIssue (
@@ -344,11 +342,15 @@ class ReportsRepository:
     ) -> IssuanceRefDTO:
         """Re-issue creates a new version while previous version remains immutable (FR-XC-003)."""
         if not reason or not reason.strip():
-            raise ValueError("Re-issuance requires a mandatory audit reason explaining what changed.")
+            raise ValueError(
+                "Re-issuance requires a mandatory audit reason explaining what changed."
+            )
 
         sqlite_conn = self.db.get_sqlite_connection()
         try:
-            prev = sqlite_conn.execute("SELECT * FROM FactPackIssue WHERE issue_id = ?", (issue_id,)).fetchone()
+            prev = sqlite_conn.execute(
+                "SELECT * FROM FactPackIssue WHERE issue_id = ?", (issue_id,)
+            ).fetchone()
             if not prev:
                 raise ValueError(f"Issue #{issue_id} not found.")
 
@@ -370,7 +372,7 @@ class ReportsRepository:
         finally:
             sqlite_conn.close()
 
-    def get_issuance_register(self, period_id: Optional[int] = None) -> List[IssuanceRefDTO]:
+    def get_issuance_register(self, period_id: int | None = None) -> list[IssuanceRefDTO]:
         """List all issued packs in the issuance register per SCR-030 and FR-XC-003."""
         sqlite_conn = self.db.get_sqlite_connection()
         try:
@@ -380,9 +382,11 @@ class ReportsRepository:
                     (period_id,),
                 ).fetchall()
             else:
-                rows = sqlite_conn.execute("SELECT * FROM FactPackIssue ORDER BY issue_id DESC").fetchall()
+                rows = sqlite_conn.execute(
+                    "SELECT * FROM FactPackIssue ORDER BY issue_id DESC"
+                ).fetchall()
 
-            res: List[IssuanceRefDTO] = []
+            res: list[IssuanceRefDTO] = []
             for r in rows:
                 p_id = r["period_id"]
                 res.append(
@@ -405,20 +409,38 @@ class ReportsRepository:
         finally:
             sqlite_conn.close()
 
-    def get_commentaries(self, period_id: int = 9) -> List[CommentaryRowDTO]:
+    def get_commentaries(self, period_id: int = 9) -> list[CommentaryRowDTO]:
         """Get per-line and executive commentary per SCR-031 and FR-XC-001."""
         sqlite_conn = self.db.get_sqlite_connection()
         try:
             # Seed default commentary if empty
-            count = sqlite_conn.execute("SELECT COUNT(*) as c FROM Commentary WHERE period_id = ?", (period_id,)).fetchone()["c"]
+            count = sqlite_conn.execute(
+                "SELECT COUNT(*) as c FROM Commentary WHERE period_id = ?", (period_id,)
+            ).fetchone()["c"]
             if count == 0:
                 defaults = [
-                    ("executive", "EXECUTIVE", "Executive Month-End Summary: Overall revenue exceeded budget by 2.4%, driven by strong direct sales and enterprise renewals. Operating expenses remained well controlled under a 1.2% variance."),
-                    ("line", "4000", "Revenue ahead of budget due to accelerated enterprise license deals closed in late Q3."),
-                    ("line", "5200", "Repairs & Maintenance costs elevated by unscheduled server migration and cooling repairs in data center CC-120."),
-                    ("line", "5450", "Project costs reflect Phase 2 implementation milestone billing approved by VP Engineering."),
+                    (
+                        "executive",
+                        "EXECUTIVE",
+                        "Executive Month-End Summary: Overall revenue exceeded budget by 2.4%, driven by strong direct sales and enterprise renewals. Operating expenses remained well controlled under a 1.2% variance.",
+                    ),
+                    (
+                        "line",
+                        "4000",
+                        "Revenue ahead of budget due to accelerated enterprise license deals closed in late Q3.",
+                    ),
+                    (
+                        "line",
+                        "5200",
+                        "Repairs & Maintenance costs elevated by unscheduled server migration and cooling repairs in data center CC-120.",
+                    ),
+                    (
+                        "line",
+                        "5450",
+                        "Project costs reflect Phase 2 implementation milestone billing approved by VP Engineering.",
+                    ),
                 ]
-                now_str = datetime.now(timezone.utc).isoformat()
+                now_str = datetime.now(UTC).isoformat()
                 for scope, subj, txt in defaults:
                     cur = sqlite_conn.execute(
                         "INSERT INTO Commentary (period_id, scope_type, subject_key, current_version_no) VALUES (?, ?, ?, 1)",
@@ -479,7 +501,7 @@ class ReportsRepository:
                 (period_id, scope_type, subject_key),
             ).fetchone()
 
-            now_str = datetime.now(timezone.utc).isoformat()
+            now_str = datetime.now(UTC).isoformat()
             if comm:
                 if comm["locked_by_issue_id"] is not None:
                     # Commentary is locked by an issued pack!

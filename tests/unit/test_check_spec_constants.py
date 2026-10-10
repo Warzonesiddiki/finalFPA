@@ -3,8 +3,6 @@
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 from scripts.check_spec_constants import (
     CatalogSpec,
     check_spec_constants,

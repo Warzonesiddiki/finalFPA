@@ -4,14 +4,13 @@
 allow-list in `apply` is tested by trying to make the watchdog verify a handoff -
 it must refuse, because a watchdog that rubber-stamps work is worse than none.
 """
+
 from __future__ import annotations
 
 import os
 import sys
 from datetime import timedelta
 from pathlib import Path
-
-import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -26,8 +25,12 @@ def cfg(**over):
 
 
 def agent_info(claims=(), stream=(), claimable=(), idle=0):
-    return {"active_claims": list(claims), "idle_minutes": idle,
-            "stream": list(stream), "stream_claimable": list(claimable)}
+    return {
+        "active_claims": list(claims),
+        "idle_minutes": idle,
+        "stream": list(stream),
+        "stream_claimable": list(claimable),
+    }
 
 
 def survey(agents=None, review=(), stale=(), todo=3, p0=("TB-001",), all_done=False):
@@ -51,7 +54,13 @@ def test_idle_seat_with_claimable_work_is_nudged():
 
 
 def test_a_working_seat_is_never_nudged():
-    s = survey({"opencode": agent_info(claims=["TB-016"], stream=["ENG-01"], claimable=["ENG-01"], idle=99)})
+    s = survey(
+        {
+            "opencode": agent_info(
+                claims=["TB-016"], stream=["ENG-01"], claimable=["ENG-01"], idle=99
+            )
+        }
+    )
     assert wd.decide(s, {"nudges": {}}, cfg()) == []
 
 
@@ -74,7 +83,9 @@ def test_blocked_seat_is_nudged_once_then_cooled_down():
 
 
 def test_expired_claim_is_escalated_with_the_takeover_command():
-    s = survey({"antigravity": agent_info(claims=["TB-007"])}, stale=["antigravity-20261005T1051Z-f2cb"])
+    s = survey(
+        {"antigravity": agent_info(claims=["TB-007"])}, stale=["antigravity-20261005T1051Z-f2cb"]
+    )
     actions = wd.decide(s, {"nudges": {}}, cfg())
     assert [a["kind"] for a in actions] == ["escalate"]
     assert "--steal antigravity-20261005T1051Z-f2cb" in actions[0]["text"]
@@ -85,7 +96,9 @@ def test_handoff_waiting_too_long_is_escalated_but_not_before():
     recent = (wd.now() - timedelta(minutes=2)).strftime("%Y-%m-%dT%H:%M:%SZ")
     waited = [{"task": "TB-008", "owner": "antigravity", "handoff": "HO-011", "updated_utc": old}]
     fresh = [{"task": "TB-025", "owner": "opencode", "handoff": "HO-013", "updated_utc": recent}]
-    assert [a["key"] for a in wd.decide(survey(review=waited), {"nudges": {}}, cfg())] == ["verify:TB-008"]
+    assert [a["key"] for a in wd.decide(survey(review=waited), {"nudges": {}}, cfg())] == [
+        "verify:TB-008"
+    ]
     assert wd.decide(survey(review=fresh), {"nudges": {}}, cfg()) == []
 
 
@@ -102,8 +115,9 @@ def test_watchdog_cannot_verify_or_accept_work(monkeypatch, tmp_path):
     """The allow-list is the safety property: even a bug in decide() cannot make the
     loop rubber-stamp a handoff, because only these four kinds are applied."""
     for kind in ("verify", "accept", "release_done", "commit"):
-        applied = wd.apply([{"kind": kind, "to": "owner", "key": "x", "text": "t"}],
-                           {"nudges": {}}, dry_run=True)
+        applied = wd.apply(
+            [{"kind": kind, "to": "owner", "key": "x", "text": "t"}], {"nudges": {}}, dry_run=True
+        )
         assert applied == [], kind
     assert set(wd.SAFE) == {"nudge", "escalate", "draft", "done"}
 
@@ -128,10 +142,10 @@ def test_only_one_loop_can_run_at_a_time(monkeypatch, tmp_path):
     monkeypatch.setattr(wd, "LOG_DIR", log_dir)
     monkeypatch.setattr(wd, "LOCK", log_dir / "watchdog.lock")
     assert wd.acquire_lock() == os.getpid()
-    assert wd.acquire_lock() == 0                      # refused while we are alive
+    assert wd.acquire_lock() == 0  # refused while we are alive
     log_dir.mkdir(parents=True, exist_ok=True)
-    wd.LOCK.write_text(str(os.getpid() + 999999), encoding="utf-8")   # a dead pid
-    assert wd.acquire_lock() == os.getpid()            # taken over
+    wd.LOCK.write_text(str(os.getpid() + 999999), encoding="utf-8")  # a dead pid
+    assert wd.acquire_lock() == os.getpid()  # taken over
     wd.release_lock()
     assert not wd.LOCK.exists()
 
@@ -164,6 +178,5 @@ def test_an_away_seat_is_never_nudged():
 
 def test_the_same_seat_is_nudged_when_it_is_not_away():
     """The away flag must not become a permanent mute: drop it and the nudge returns."""
-    s = survey({"antigravity": agent_info(
-        stream=["RV-02"], claimable=["RV-02"], idle=600)})
+    s = survey({"antigravity": agent_info(stream=["RV-02"], claimable=["RV-02"], idle=600)})
     assert [a["to"] for a in wd.decide(s, {"nudges": {}}, cfg())] == ["antigravity"]

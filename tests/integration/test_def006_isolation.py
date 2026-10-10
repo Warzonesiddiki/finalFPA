@@ -84,9 +84,7 @@ def _row_counts(project_dir: Path) -> dict:
         try:
             for table in ("FactActual", "FactBudget"):
                 try:
-                    counts[table] = con.execute(
-                        f"SELECT COUNT(*) FROM {table}"
-                    ).fetchone()[0]
+                    counts[table] = con.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
                 except Exception:
                     counts[table] = None
         finally:
@@ -98,9 +96,7 @@ def _row_counts(project_dir: Path) -> dict:
         try:
             for table in ("FactImportBatch", "MappingSuggestion"):
                 try:
-                    counts[table] = con.execute(
-                        f"SELECT COUNT(*) FROM {table}"
-                    ).fetchone()[0]
+                    counts[table] = con.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
                 except Exception:
                     counts[table] = None
         finally:
@@ -171,8 +167,11 @@ def test_suite_run_does_not_touch_the_live_project_database(tmp_path):
         f"  after : {[(n, after_fp[n]) for n in changed]}"
     )
 
-    moved = {k: (before_rows.get(k), after_rows.get(k))
-             for k in before_rows if before_rows.get(k) != after_rows.get(k)}
+    moved = {
+        k: (before_rows.get(k), after_rows.get(k))
+        for k in before_rows
+        if before_rows.get(k) != after_rows.get(k)
+    }
     assert not moved, (
         "DEF-006 REGRESSION: row counts in the live user database changed "
         f"during a test run: {moved}"
@@ -221,6 +220,6 @@ def test_live_project_dir_is_the_user_profile_not_the_test_temp_dir():
         "DEF-006 regression would then pass vacuously."
     )
     assert live_dir.name == "default"
-    assert (
-        REAL_LOCALAPPDATA is not None or REAL_FPA_PROJECT_DIR is not None
-    ), "no unpatched project directory was captured at conftest import"
+    assert REAL_LOCALAPPDATA is not None or REAL_FPA_PROJECT_DIR is not None, (
+        "no unpatched project directory was captured at conftest import"
+    )

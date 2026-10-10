@@ -10,8 +10,9 @@ Quoting docs/04_SOURCE_MAPPING_AND_IMPORT_SPEC.md §8 (X22) and edge-case matrix
 from __future__ import annotations
 
 from pathlib import Path
-import pytest
+
 from openpyxl import Workbook
+
 from app.engine.imports import parse_and_validate_csv
 from app.engine.imports.hardening import load_hardened_excel_sheet
 
@@ -22,8 +23,7 @@ def test_header_only_csv_rejected(tmp_path: Path):
     """
     csv_file = tmp_path / "header_only.csv"
     csv_file.write_text(
-        "Company,Voucher,Line,PostingDate,AccountCode,Debit,Credit,Period\n",
-        encoding="utf-8"
+        "Company,Voucher,Line,PostingDate,AccountCode,Debit,Credit,Period\n", encoding="utf-8"
     )
     batch = parse_and_validate_csv(csv_file)
     assert batch.loaded_count == 0
@@ -39,7 +39,7 @@ def test_zero_amount_rows_kept_and_flagged(tmp_path: Path):
         "Company,Voucher,Line,PostingDate,AccountCode,Debit,Credit,Period\n"
         "COMP,V001,1,2026-04-01,1001,0.00,0.00,FY26-P01\n"
         "COMP,V002,1,2026-04-01,1001,500.00,0.00,FY26-P01\n",
-        encoding="utf-8"
+        encoding="utf-8",
     )
     batch = parse_and_validate_csv(csv_file)
     assert batch.loaded_count == 2
@@ -54,7 +54,7 @@ def test_single_row_file_supported(tmp_path: Path):
     csv_file.write_text(
         "Company,Voucher,Line,PostingDate,AccountCode,Debit,Credit,Period\n"
         "COMP,V001,1,2026-04-01,1001,123.45,0.00,FY26-P01\n",
-        encoding="utf-8"
+        encoding="utf-8",
     )
     batch = parse_and_validate_csv(csv_file)
     assert batch.loaded_count == 1
@@ -68,7 +68,9 @@ def test_header_only_excel_rejected(tmp_path: Path):
     wb = Workbook()
     ws = wb.active
     ws.title = "Actuals"
-    ws.append(["Company", "Voucher", "Line", "PostingDate", "AccountCode", "Debit", "Credit", "Period"])
+    ws.append(
+        ["Company", "Voucher", "Line", "PostingDate", "AccountCode", "Debit", "Credit", "Period"]
+    )
     xlsx_path = tmp_path / "no_data_rows.xlsx"
     wb.save(xlsx_path)
 

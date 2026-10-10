@@ -14,7 +14,6 @@ Outputs:
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import NamedTuple
 
@@ -96,20 +95,22 @@ def generate_baseline_markdown(components: list[ComponentAudit], summary: dict[s
         test_str = c.test_path or "—"
         lines.append(f"| `{c.name}` | `{c.rel_path}` | {c.loc} | {tested_mark} | {test_str} |")
 
-    lines.extend([
-        "",
-        "---",
-        "",
-        "## 3. Recommended Remediation & Test Harness Plan",
-        "",
-        "1. Stand up Vitest + React Testing Library under `ui/` (`vitest.config.ts`).",
-        "2. Add component test scripts to `ui/package.json` (`npm run test:ui`).",
-        "3. Prioritize critical interactive components:",
-        "   - `ui/src/components/exceptions/ExceptionsRegisterTable.tsx` (sorting, filtering, actions)",
-        "   - `ui/src/components/analyze/BvaMatrixTable.tsx` (variance calculations, colour indicators)",
-        "   - `ui/src/components/import/ControlTotalReconciliationStep.tsx` (reconciliation math verification)",
-        "   - `ui/src/components/forecast/ForecastWorkspace.tsx` (scenario override handling)",
-    ])
+    lines.extend(
+        [
+            "",
+            "---",
+            "",
+            "## 3. Recommended Remediation & Test Harness Plan",
+            "",
+            "1. Stand up Vitest + React Testing Library under `ui/` (`vitest.config.ts`).",
+            "2. Add component test scripts to `ui/package.json` (`npm run test:ui`).",
+            "3. Prioritize critical interactive components:",
+            "   - `ui/src/components/exceptions/ExceptionsRegisterTable.tsx` (sorting, filtering, actions)",
+            "   - `ui/src/components/analyze/BvaMatrixTable.tsx` (variance calculations, colour indicators)",
+            "   - `ui/src/components/import/ControlTotalReconciliationStep.tsx` (reconciliation math verification)",
+            "   - `ui/src/components/forecast/ForecastWorkspace.tsx` (scenario override handling)",
+        ]
+    )
     return "\n".join(lines) + "\n"
 
 
@@ -130,4 +131,5 @@ def main() -> int:
 
 if __name__ == "__main__":
     import sys
+
     sys.exit(main())

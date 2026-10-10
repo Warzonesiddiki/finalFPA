@@ -148,9 +148,7 @@ def test_exc_001_falls_back_to_config_for_legacy_batches_without_tolerance():
 def test_exc_001_ignores_rejected_voided_and_balanced_batches():
     rejected = batch(1, status="rejected")
     voided = batch(2, status="voided")
-    balanced = batch(
-        3, total_credit=Decimal("18450200.00"), net_imbalance=Decimal("0.00")
-    )
+    balanced = batch(3, total_credit=Decimal("18450200.00"), net_imbalance=Decimal("0.00"))
     ctx = RuleContext(import_batches=[rejected, voided, balanced])
 
     assert evaluate_catalog_exc_001(ctx) == []
@@ -310,9 +308,7 @@ def test_exc_003_does_not_raise_within_control_tolerance():
 
 
 def test_exc_003_is_disabled_with_explicit_notice_without_control_totals():
-    result = evaluate_all_rules_detailed(
-        RuleContext(), batch=(evaluate_catalog_exc_003,)
-    )
+    result = evaluate_all_rules_detailed(RuleContext(), batch=(evaluate_catalog_exc_003,))
 
     assert result.executions[0].status == "disabled"
     assert result.executions[0].notice == "No control-totals block supplied"
@@ -521,10 +517,7 @@ def test_exc_008_sums_monthly_budgets_when_annual_budget_is_absent():
 
 
 def test_exc_008_default_absolute_floor_suppresses_small_exact_duplicates():
-    txs = [
-        make_tx(voucher_no=voucher, debit=Decimal("12500.00"))
-        for voucher in ("VCH-A", "VCH-B")
-    ]
+    txs = [make_tx(voucher_no=voucher, debit=Decimal("12500.00")) for voucher in ("VCH-A", "VCH-B")]
     ctx = RuleContext(
         transactions=txs,
         annual_budgets={("IN01", "5300", "CC-110"): Decimal("100000.00")},

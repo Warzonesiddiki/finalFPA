@@ -40,24 +40,26 @@ def _unbalanced_gl_corpus() -> list[dict]:
     `sample-data/d365_gl_actuals.csv`, so the fixture cannot drift into looking
     balanced by accident.
     """
-    return [{
-        "file": "d365_gl_actuals.csv",
-        "source_type": "actuals_d365",
-        "is_general_ledger": True,
-        "balanced": False,
-        "rows": 250037,
-        "loaded_count": 250037,
-        "quarantined_count": 0,
-        "rejected_count": 0,
-        "total_debit": "24626607267.80",
-        "total_credit": "6682091688.47",
-        "net_imbalance": "17944515579.33",
-        "recorded_status": "rejected",
-        "failed_checks": ["IMP-023"],
-        "checks_run": 9,
-        "data_quality_score": 84,
-        "checksum": "0" * 64,
-    }]
+    return [
+        {
+            "file": "d365_gl_actuals.csv",
+            "source_type": "actuals_d365",
+            "is_general_ledger": True,
+            "balanced": False,
+            "rows": 250037,
+            "loaded_count": 250037,
+            "quarantined_count": 0,
+            "rejected_count": 0,
+            "total_debit": "24626607267.80",
+            "total_credit": "6682091688.47",
+            "net_imbalance": "17944515579.33",
+            "recorded_status": "rejected",
+            "failed_checks": ["IMP-023"],
+            "checks_run": 9,
+            "data_quality_score": 84,
+            "checksum": "0" * 64,
+        }
+    ]
 
 
 def _blocked_report() -> acc.AcceptanceReport:
@@ -69,17 +71,20 @@ def _blocked_report() -> acc.AcceptanceReport:
     """
     report = acc.AcceptanceReport()
     report.bars = [
-        acc.BarResult("Planted-exception recall", ">= 29 of 32",
-                      "3/32 = 9.4 %", False, "3 missed"),
+        acc.BarResult("Planted-exception recall", ">= 29 of 32", "3/32 = 9.4 %", False, "3 missed"),
         acc.BarResult("Control precision", "0 of 8", "2 fired", False, "P32, P30"),
         acc.BarResult("High-severity recall", "18 of 18", "3/18", False, ""),
         acc.BarResult("Stability", "identical", "identical", True, ""),
     ]
     report.findings_total = 157
-    report.rules = [acc.RuleRow(rule_id="EXC-001", evaluator="evaluate_exc_001",
-                               plantings=["P1"], missed=["P1"])]
-    acc.attach_corpus_gate(report, _unbalanced_gl_corpus(),
-                           committed_rows={"d365_gl_actuals.csv": 0})
+    report.rules = [
+        acc.RuleRow(
+            rule_id="EXC-001", evaluator="evaluate_exc_001", plantings=["P1"], missed=["P1"]
+        )
+    ]
+    acc.attach_corpus_gate(
+        report, _unbalanced_gl_corpus(), committed_rows={"d365_gl_actuals.csv": 0}
+    )
     acc.apply_blocked_state(report)
     return report
 
@@ -87,6 +92,7 @@ def _blocked_report() -> acc.AcceptanceReport:
 # ---------------------------------------------------------------------------
 # The guarantee
 # ---------------------------------------------------------------------------
+
 
 def test_blocked_run_is_never_reported_as_fail_or_pass():
     """BLOCKED is its own verdict. FAIL would blame the rules; PASS would lie."""
@@ -152,8 +158,14 @@ def test_blocked_reason_names_the_measured_cause():
     report = _blocked_report()
     assert len(report.blocked_reasons) == 1
     reason = report.blocked_reasons[0]
-    for needle in ("d365_gl_actuals.csv", "actuals_d365", "17944515579.33",
-                   "IMP-023", "0 of 250037", "data_quality_score=84"):
+    for needle in (
+        "d365_gl_actuals.csv",
+        "actuals_d365",
+        "17944515579.33",
+        "IMP-023",
+        "0 of 250037",
+        "data_quality_score=84",
+    ):
         assert needle in reason, f"blocked reason omits {needle!r}"
 
 
@@ -166,17 +178,17 @@ def test_passed_property_consults_blocked_reasons_independently():
     This pins that second line of defence directly.
     """
     report = acc.AcceptanceReport()
-    report.bars = [acc.BarResult("Planted-exception recall", ">= 29 of 32",
-                                 "32/32 = 100.0 %", True)]
+    report.bars = [
+        acc.BarResult("Planted-exception recall", ">= 29 of 32", "32/32 = 100.0 %", True)
+    ]
     report.blocked_reasons = ["synthetic block, bars left untouched"]
-    assert not report.passed, (
-        "passed returned True on a blocked run whose bars were all green"
-    )
+    assert not report.passed, "passed returned True on a blocked run whose bars were all green"
 
     # And the same report with no block must pass, so the check is not vacuous.
     unblocked = acc.AcceptanceReport()
-    unblocked.bars = [acc.BarResult("Planted-exception recall", ">= 29 of 32",
-                                    "32/32 = 100.0 %", True)]
+    unblocked.bars = [
+        acc.BarResult("Planted-exception recall", ">= 29 of 32", "32/32 = 100.0 %", True)
+    ]
     assert unblocked.passed is True
 
 
@@ -187,16 +199,26 @@ def test_balanced_corpus_does_not_block():
     test above while measuring nothing, forever.
     """
     report = acc.AcceptanceReport()
-    report.bars = [acc.BarResult("Planted-exception recall", ">= 29 of 32",
-                                 "32/32 = 100.0 %", True)]
-    corpus = [{
-        "file": "d365_gl_actuals.csv", "source_type": "actuals_d365",
-        "is_general_ledger": True, "balanced": True, "rows": 250037,
-        "total_debit": "100.00", "total_credit": "100.00",
-        "net_imbalance": "0.00", "recorded_status": "committed",
-        "failed_checks": [], "checks_run": 9, "data_quality_score": 100,
-        "checksum": "a" * 64,
-    }]
+    report.bars = [
+        acc.BarResult("Planted-exception recall", ">= 29 of 32", "32/32 = 100.0 %", True)
+    ]
+    corpus = [
+        {
+            "file": "d365_gl_actuals.csv",
+            "source_type": "actuals_d365",
+            "is_general_ledger": True,
+            "balanced": True,
+            "rows": 250037,
+            "total_debit": "100.00",
+            "total_credit": "100.00",
+            "net_imbalance": "0.00",
+            "recorded_status": "committed",
+            "failed_checks": [],
+            "checks_run": 9,
+            "data_quality_score": 100,
+            "checksum": "a" * 64,
+        }
+    ]
     acc.attach_corpus_gate(report, corpus, committed_rows={"d365_gl_actuals.csv": 250037})
     acc.apply_blocked_state(report)
 
@@ -211,6 +233,7 @@ def test_balanced_corpus_does_not_block():
 # End-to-end through the real gate
 # ---------------------------------------------------------------------------
 
+
 def test_run_acceptance_end_to_end_reports_blocked(tmp_path):
     """Drive the real entry point against a synthetic unbalanced corpus.
 
@@ -221,8 +244,7 @@ def test_run_acceptance_end_to_end_reports_blocked(tmp_path):
     """
     fake = tmp_path / "sample_data"
     fake.mkdir()
-    shutil.copy2(SAMPLE_DIR / "expected_exceptions.csv",
-                 fake / "expected_exceptions.csv")
+    shutil.copy2(SAMPLE_DIR / "expected_exceptions.csv", fake / "expected_exceptions.csv")
 
     # T-010: since DEC-056's control-total gate the harness refuses to run
     # unless the FULL ordered fixture set plus the recorded control-total
@@ -243,9 +265,11 @@ def test_run_acceptance_end_to_end_reports_blocked(tmp_path):
 
     # A minimal general-ledger CSV whose debits do not equal its credits. The
     # watermark first line matches the real corpus so parsing behaves the same.
-    header = ("VoucherNo,PostingDate,CompanyCode,AccountCode,CostCenterCode,"
-              "ProjectCode,VendorCode,InvoiceNo,Description,Debit,Credit,"
-              "CurrencyCode,Watermark,ProjectType")
+    header = (
+        "VoucherNo,PostingDate,CompanyCode,AccountCode,CostCenterCode,"
+        "ProjectCode,VendorCode,InvoiceNo,Description,Debit,Credit,"
+        "CurrencyCode,Watermark,ProjectType"
+    )
     (fake / "d365_gl_actuals.csv").write_text(
         "# SAMPLE DATA - NOT FOR PRODUCTION USE\n"
         f"{header}\n"
@@ -254,12 +278,9 @@ def test_run_acceptance_end_to_end_reports_blocked(tmp_path):
         encoding="utf-8",
     )
 
-    report = acc.run_acceptance(sample_dir=fake, project_dir=tmp_path / "proj",
-                                stability_runs=1)
+    report = acc.run_acceptance(sample_dir=fake, project_dir=tmp_path / "proj", stability_runs=1)
 
-    assert report.verdict == "BLOCKED", (
-        f"an unbalanced GL must block the run, got {report.verdict}"
-    )
+    assert report.verdict == "BLOCKED", f"an unbalanced GL must block the run, got {report.verdict}"
     assert not report.passed
     assert not report.measurable
     assert report.blocked_reasons

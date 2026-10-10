@@ -25,6 +25,7 @@ from app.engine.rules.rules_01_08 import RuleContext
 # Batch composition - the de-duplication guarantee
 # ---------------------------------------------------------------------------
 
+
 def test_full_batch_has_no_duplicate_evaluators():
     """Every implemented evaluator appears once in the composed batch."""
     batch = build_full_rule_batch()
@@ -66,6 +67,7 @@ def test_dedup_is_stable_across_calls():
 # ---------------------------------------------------------------------------
 # CLI wiring
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def isolated_project(tmp_path, monkeypatch):
@@ -125,8 +127,14 @@ def test_cli_exceptions_run_accepts_explicit_as_of(capsys, monkeypatch, isolated
     monkeypatch.setattr(
         "sys.argv",
         [
-            "fpa-copilot", "exceptions", "run",
-            "--period", "FY26-P09", "--as-of", "2026-10-05", "--json",
+            "fpa-copilot",
+            "exceptions",
+            "run",
+            "--period",
+            "FY26-P09",
+            "--as-of",
+            "2026-10-05",
+            "--json",
         ],
     )
     main()
@@ -148,6 +156,7 @@ def test_cli_exceptions_no_subcommand_prints_usage(capsys, monkeypatch):
 # Findings are not duplicated by the wiring
 # ---------------------------------------------------------------------------
 
+
 def test_deduplicated_run_does_not_duplicate_rule_findings():
     """Two different EXC-009/012/015 rules must not each produce twin findings.
 
@@ -161,11 +170,21 @@ def test_deduplicated_run_does_not_duplicate_rule_findings():
             self.__dict__.update(kw)
 
     base = dict(
-        source_row_ref="row_x", voucher_no="VCH-X", posting_date="2026-09-10",
-        company_code="IN01", account_code="5100", cost_center_code="CC-100",
-        project_code=None, vendor_code="V-001", invoice_no="INV-1",
-        description="d", debit=Decimal("1000.00"), credit=Decimal("0.00"),
-        net_amount=Decimal("1000.00"), currency_code="INR", document_date=None,
+        source_row_ref="row_x",
+        voucher_no="VCH-X",
+        posting_date="2026-09-10",
+        company_code="IN01",
+        account_code="5100",
+        cost_center_code="CC-100",
+        project_code=None,
+        vendor_code="V-001",
+        invoice_no="INV-1",
+        description="d",
+        debit=Decimal("1000.00"),
+        credit=Decimal("0.00"),
+        net_amount=Decimal("1000.00"),
+        currency_code="INR",
+        document_date=None,
     )
     ctx = RuleContext(transactions=[_Tx(**base)], period_id="FY26-P09")
 
@@ -185,11 +204,21 @@ def test_evaluate_all_rules_matches_manual_iteration():
             self.__dict__.update(kw)
 
     tx = _Tx(
-        source_row_ref="row_y", voucher_no="VCH-Y", posting_date="2026-09-11",
-        company_code="IN01", account_code="5200", cost_center_code="CC-101",
-        project_code=None, vendor_code="V-002", invoice_no="INV-2",
-        description="d", debit=Decimal("2500.00"), credit=Decimal("0.00"),
-        net_amount=Decimal("2500.00"), currency_code="INR", document_date=None,
+        source_row_ref="row_y",
+        voucher_no="VCH-Y",
+        posting_date="2026-09-11",
+        company_code="IN01",
+        account_code="5200",
+        cost_center_code="CC-101",
+        project_code=None,
+        vendor_code="V-002",
+        invoice_no="INV-2",
+        description="d",
+        debit=Decimal("2500.00"),
+        credit=Decimal("0.00"),
+        net_amount=Decimal("2500.00"),
+        currency_code="INR",
+        document_date=None,
     )
     ctx = RuleContext(transactions=[tx], period_id="FY26-P09")
 
@@ -197,6 +226,4 @@ def test_evaluate_all_rules_matches_manual_iteration():
     for ev in build_full_rule_batch():
         manual.extend(ev(ctx))
 
-    assert [f.identity_hash for f in evaluate_all_rules(ctx)] == [
-        f.identity_hash for f in manual
-    ]
+    assert [f.identity_hash for f in evaluate_all_rules(ctx)] == [f.identity_hash for f in manual]

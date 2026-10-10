@@ -8,11 +8,10 @@ Quoted from docs/26_API_CONTRACT.md §5 & docs/08_UI_UX_SPEC.md §16:
 from __future__ import annotations
 
 import os
-import pytest
+
 from fastapi.testclient import TestClient
 
-from app.api.main import app, SESSION_TOKEN
-
+from app.api.main import SESSION_TOKEN, app
 
 client = TestClient(app, raise_server_exceptions=False)
 

@@ -38,10 +38,7 @@ def _write_control_total_sidecars(root: Path) -> None:
             json.dumps(
                 {
                     "accepted_by": "test-suite",
-                    "reason": (
-                        "Synthetic control-total acceptance recorded by the "
-                        "unit test."
-                    ),
+                    "reason": ("Synthetic control-total acceptance recorded by the unit test."),
                 }
             ),
             encoding="utf-8",
@@ -148,13 +145,13 @@ def test_acceptance_imports_history_around_main_actuals_in_documented_order(
     # T-010: the recorded control-total decision rides only with the fixture it
     # belongs to, and reaches the production parser as a keyword argument.
     assert stubs["acceptance_calls"] == [
-        ("02_gl_batch_039.xlsx", {
-            "accepted_by": "test-suite",
-            "reason": (
-                "Synthetic control-total acceptance recorded by the "
-                "unit test."
-            ),
-        })
+        (
+            "02_gl_batch_039.xlsx",
+            {
+                "accepted_by": "test-suite",
+                "reason": ("Synthetic control-total acceptance recorded by the unit test."),
+            },
+        )
     ]
 
 
@@ -268,13 +265,13 @@ def test_corpus_integrity_reports_all_files_and_actual_commitability(
     # T-010: the recorded control-total decision must reach the production
     # excel parser for the fixture it belongs to, and only for that one.
     assert acceptance_calls == [
-        ("02_gl_batch_039.xlsx", {
-            "accepted_by": "test-suite",
-            "reason": (
-                "Synthetic control-total acceptance recorded by the "
-                "unit test."
-            ),
-        })
+        (
+            "02_gl_batch_039.xlsx",
+            {
+                "accepted_by": "test-suite",
+                "reason": ("Synthetic control-total acceptance recorded by the unit test."),
+            },
+        )
     ]
     rejected_gl = next(row for row in rows if row["file"].endswith("039.xlsx"))
     assert rejected_gl["balanced"] is True

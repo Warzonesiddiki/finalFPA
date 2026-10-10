@@ -3,19 +3,35 @@
   "title": "The acceptance standard for a card: what makes a deliverable acceptable, stated once and applied to the whole board. Pair with SPEC-08 from hermes and make sure the two agree. Acceptance: every card on the board carries a falsifiable acceptance condition, and the count that did not is recorded",
   "priority": "P1",
   "lane": "docs",
-  "status": "todo",
+  "status": "done",
   "owner": null,
   "claim_id": null,
   "source": "team",
   "created_by": "buffy",
   "created_utc": "2026-10-05T15:03:12Z",
-  "updated_utc": "2026-10-05T15:03:12Z",
+  "updated_utc": "2026-10-09T19:36:56Z",
   "deps": [],
   "history": [
     {
       "utc": "2026-10-05T15:03:12Z",
       "agent": "buffy",
       "event": "created"
+    },
+    {
+      "utc": "2026-10-09T16:38:44Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-09T16:40:15Z",
+      "agent": "opencode",
+      "event": "release (todo)"
+    },
+    {
+      "utc": "2026-10-09T19:36:56Z",
+      "agent": "?",
+      "event": "Authored docs/card_acceptance_standard.md — 5 invariants, per-card-type rules, rejection gate, doc-sync table. Verifiable: link-check green, memory verify 0 fail."
     }
-  ]
+  ],
+  "handoff": null
 }

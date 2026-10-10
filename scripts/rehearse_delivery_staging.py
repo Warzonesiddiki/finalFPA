@@ -4,8 +4,8 @@ Stages the client delivery set into a clean temp directory per the manifest (cop
 verifies completeness and zero sample-data/internal-doc exclusions, then cleans up staging.
 """
 
-import tempfile
 import shutil
+import tempfile
 from pathlib import Path
 
 MANIFEST_ITEMS = [
@@ -43,8 +43,10 @@ def rehearse_staging() -> None:
                     results[key] = "MISSING"
 
         # Verify exclusions: zero sample data files (*actuals.csv, *budget*.csv) in stage_dir
-        forbidden_found = list(stage_dir.rglob("*actuals.csv")) + list(stage_dir.rglob("*budget*.csv"))
-        
+        forbidden_found = list(stage_dir.rglob("*actuals.csv")) + list(
+            stage_dir.rglob("*budget*.csv")
+        )
+
         print("=== DELIVERY STAGING REHEARSAL REPORT ===")
         for k, status in results.items():
             print(f"  - {k}: {status}")

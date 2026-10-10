@@ -7,8 +7,10 @@ using synthetic fixtures (not sample-data files).
 from __future__ import annotations
 
 from pathlib import Path
+
 import pytest
-from app.engine.imports import parse_and_validate_csv, prescan_file
+
+from app.engine.imports import parse_and_validate_csv
 
 
 @pytest.mark.tst_id("TST-IMP-10")
@@ -22,7 +24,7 @@ def test_csv_delimiter_handling(tmp_path: Path):
     csv_comma.write_text(
         "Company,Voucher,Line,PostingDate,AccountCode,Debit,Credit,Period\n"
         "COMP,V001,1,2026-04-01,1001,100.00,0.00,FY26-P01\n",
-        encoding="utf-8"
+        encoding="utf-8",
     )
     batch_comma = parse_and_validate_csv(csv_comma)
     assert batch_comma.loaded_count == 1
@@ -32,7 +34,7 @@ def test_csv_delimiter_handling(tmp_path: Path):
     csv_semi.write_text(
         "Company;Voucher;Line;PostingDate;AccountCode;Debit;Credit;Period\n"
         "COMP;V001;1;2026-04-01;1001;100.00;0.00;FY26-P01\n",
-        encoding="utf-8"
+        encoding="utf-8",
     )
     batch_semi = parse_and_validate_csv(csv_semi)
     assert batch_semi.total_source_rows == 1
@@ -67,10 +69,10 @@ def test_csv_quoted_delimiters_and_newlines(tmp_path: Path):
     """
     csv_quoted = tmp_path / "quoted.csv"
     csv_quoted.write_text(
-        'Company,Voucher,Line,PostingDate,AccountCode,Debit,Credit,Period,Description\n'
+        "Company,Voucher,Line,PostingDate,AccountCode,Debit,Credit,Period,Description\n"
         'COMP,V001,1,2026-04-01,1001,100.00,0.00,FY26-P01,"Expense, items and fees"\n'
         'COMP,V002,1,2026-04-01,1001,200.00,0.00,FY26-P01,"Line 1\nLine 2"\n',
-        encoding="utf-8"
+        encoding="utf-8",
     )
     batch = parse_and_validate_csv(csv_quoted)
     assert batch.total_source_rows == 2

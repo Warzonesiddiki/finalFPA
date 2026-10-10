@@ -3,8 +3,6 @@
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 from scripts.measure_ui_test_coverage import (
     ComponentAudit,
     audit_ui_components,
@@ -17,7 +15,9 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 def test_audit_ui_components_finds_real_tsx_files():
     """Verify that the scanner accurately discovers .tsx files in ui/src."""
     components, summary = audit_ui_components()
-    assert summary["total_components"] >= 50, f"Expected at least 50 .tsx components, got {summary['total_components']}"
+    assert summary["total_components"] >= 50, (
+        f"Expected at least 50 .tsx components, got {summary['total_components']}"
+    )
     assert summary["total_loc"] > 10000
 
     comp_names = [c.name for c in components]
@@ -52,13 +52,13 @@ def test_generate_baseline_markdown_renders_table():
 def test_falsification_detected_test_updates_metrics():
     """Verify that adding a test file dynamically reflects in the audit counts."""
     components, summary = audit_ui_components()
-    initial_tested = summary["tested_components"]
 
     # Mock finding a test for the first component
     first_comp = components[0]
-    mock_test = ROOT / "ui" / f"{first_comp.name}.test.tsx"
+    mock_test = ROOT / f"{first_comp.name}.test.tsx"
 
-    with patch("pathlib.Path.glob") as mock_glob:
+    with patch("pathlib.Path.glob") as _mock_glob:
+
         def side_effect(pattern):
             if "test.tsx" in pattern:
                 return [mock_test]

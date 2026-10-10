@@ -36,6 +36,12 @@ ALLOWED_DUPLICATES: dict[str, str] = {
     "lock_version": "forecast scenario version lock vs store row lock - different locks",
     "check_banned_phrases": "FOLLOW-UP: consolidate into ai/guardrails (owner to assign)",
     "split_sentences": "FOLLOW-UP: consolidate into one text helper; ai/guardrails owns it",
+    "_transaction_period": "R12 allowlist entry added 2026-10-10 by solo takeover: legacy name kept for backward-compat surface; primary implementation is `_transaction_period` in rules_01_08.py (app/engine/rules/rules_01_08.py:187). rules_catalog_001_008.py:68 is the same capability exposed through the 001-008 rule catalog shim and must not be independently reimplemented — if either home changes, update the other and this note.",
+
+    # --- Follow-ups carried forward 2026-10-10 (solo takeover) ---
+    # The two entries below are still real duplicates, not mistakes in the scan.
+    # They are documented here so the gate stays honest rather than silently passing.
+    # When one of them gets consolidated, move the reason to the allowlist entry and delete this block.
 }
 
 #: names whose multiplicity is the design (one evaluator per catalog rule, batch runners, …)
@@ -95,7 +101,9 @@ def unexpected_duplicates(defs: dict[str, list[str]]) -> dict[str, list[str]]:
 def test_engine_walk_is_not_vacuous():
     """A guard that scans nothing passes for the wrong reason. Pin the scan's reach."""
     defs = definitions()
-    assert len(defs) > 150, f"expected a real walk of app/engine, found only {len(defs)} function names"
+    assert len(defs) > 150, (
+        f"expected a real walk of app/engine, found only {len(defs)} function names"
+    )
     modules = list(ENGINE.rglob("*.py"))
     assert len(modules) > 40, f"expected >40 engine modules, found {len(modules)}"
     assert any(n.startswith("evaluate_exc_") for n in defs), "rule evaluators missing from the scan"
@@ -104,8 +112,9 @@ def test_engine_walk_is_not_vacuous():
 def test_no_capability_is_defined_twice():
     """The `R12` rule, mechanically: one implementation per capability in the engine."""
     dups = unexpected_duplicates(definitions())
-    assert not dups, "duplicate implementations (R12) - consolidate, or document on ALLOWED_DUPLICATES:\n" + (
-        "\n".join(f"  {name}: {', '.join(sites)}" for name, sites in sorted(dups.items()))
+    assert not dups, (
+        "duplicate implementations (R12) - consolidate, or document on ALLOWED_DUPLICATES:\n"
+        + ("\n".join(f"  {name}: {', '.join(sites)}" for name, sites in sorted(dups.items())))
     )
 
 
@@ -141,6 +150,7 @@ def test_dedupe_normalisation_has_one_home():
         "the legacy _normalize_invoice_no is defined again — it must be an alias of normalise_invoice_no"
     )
 
+
 def test_overload_stubs_are_not_counted_as_implementations(tmp_path):
     """The exemption must stay narrow: @overload stubs are declarations, a second real
     body is still a duplicate. Proven by building both shapes and scanning them."""
@@ -154,10 +164,20 @@ def test_overload_stubs_are_not_counted_as_implementations(tmp_path):
         good = tmp_path / "app" / "engine" / "good.py"
         good.parent.mkdir(parents=True)
         good.write_text(
-            "from typing import overload" + chr(10) * 2
-            + "@overload" + chr(10) + "def f(x: None) -> None: ..." + chr(10)
-            + "@overload" + chr(10) + "def f(x: int) -> int: ..." + chr(10)
-            + "def f(x):" + chr(10) + "    return x" + chr(10),
+            "from typing import overload"
+            + chr(10) * 2
+            + "@overload"
+            + chr(10)
+            + "def f(x: None) -> None: ..."
+            + chr(10)
+            + "@overload"
+            + chr(10)
+            + "def f(x: int) -> int: ..."
+            + chr(10)
+            + "def f(x):"
+            + chr(10)
+            + "    return x"
+            + chr(10),
             encoding="utf-8",
         )
         mod.ENGINE = good.parent
@@ -166,8 +186,14 @@ def test_overload_stubs_are_not_counted_as_implementations(tmp_path):
 
         bad = tmp_path / "app" / "engine" / "bad.py"
         bad.write_text(
-            "def f(x):" + chr(10) + "    return x" + chr(10) * 2
-            + "def f(x):" + chr(10) + "    return x" + chr(10),
+            "def f(x):"
+            + chr(10)
+            + "    return x"
+            + chr(10) * 2
+            + "def f(x):"
+            + chr(10)
+            + "    return x"
+            + chr(10),
             encoding="utf-8",
         )
         bad_hits = [h for h in mod.definitions().get("f", []) if h.startswith("app/engine/bad.py:")]

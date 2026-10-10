@@ -94,9 +94,7 @@ def _loaded_total(measure: str, transactions: list[ParsedTransaction]) -> Decima
         "credit": "credit",
         "net": "net_amount",
     }[measure]
-    return quantize_money(
-        sum((getattr(transaction, field) for transaction in transactions), ZERO)
-    )
+    return quantize_money(sum((getattr(transaction, field) for transaction in transactions), ZERO))
 
 
 def read_control_totals_report(
@@ -170,9 +168,7 @@ def read_control_totals_report(
         accepted_variances = 0
         accepted_by = str(acceptance.get("accepted_by", "")).strip() if acceptance else ""
         acceptance_reason = str(acceptance.get("reason", "")).strip() if acceptance else ""
-        if acceptance is not None and (
-            not accepted_by or len(acceptance_reason) < 10
-        ):
+        if acceptance is not None and (not accepted_by or len(acceptance_reason) < 10):
             raise ValueError(
                 "Control-total acceptance requires accepted_by and a reason of at least 10 characters"
             )
@@ -189,9 +185,7 @@ def read_control_totals_report(
                         "Control-total accepted_at must be an ISO-8601 timestamp"
                     ) from exc
                 if parsed_accepted_at.tzinfo is None:
-                    raise ValueError(
-                        "Control-total accepted_at must include a timezone"
-                    )
+                    raise ValueError("Control-total accepted_at must include a timezone")
                 accepted_at = parsed_accepted_at.astimezone(UTC).isoformat()
             else:
                 accepted_at = datetime.now(UTC).isoformat()
@@ -214,9 +208,7 @@ def read_control_totals_report(
                     raise ValueError(f"Duplicate scope '{scope}'")
                 seen_scopes.add(scope.casefold())
 
-                measure = _canonical_measure(
-                    _cell(row, indices.get("measure")), scope
-                )
+                measure = _canonical_measure(_cell(row, indices.get("measure")), scope)
                 supplied_value = _cell(row, indices.get("supplied_total"))
                 if supplied_value in (None, ""):
                     raise ValueError("SuppliedTotal is required")

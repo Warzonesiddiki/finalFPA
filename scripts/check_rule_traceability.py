@@ -10,11 +10,9 @@ Outputs an objective matrix and lists any rules with missing legs as the deliver
 from __future__ import annotations
 
 import ast
-import json
 import re
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
 
 ROOT = Path(__file__).resolve().parent.parent
 RULES_DIR = ROOT / "app" / "engine" / "rules"
@@ -28,18 +26,18 @@ ALL_RULE_IDS = [f"EXC-{i:03d}" for i in range(1, 25)]
 @dataclass
 class RuleTraceabilityRow:
     rule_id: str
-    implementing_module: Optional[str]
-    evaluator_func: Optional[str]
-    proving_test_file: Optional[str]
-    test_function: Optional[str]
-    evidence_artifact: Optional[str]
+    implementing_module: str | None
+    evaluator_func: str | None
+    proving_test_file: str | None
+    test_function: str | None
+    evidence_artifact: str | None
     is_complete: bool
-    missing_legs: List[str]
+    missing_legs: list[str]
 
 
-def scan_implementations(rules_dir: Path) -> Dict[str, Tuple[str, str]]:
+def scan_implementations(rules_dir: Path) -> dict[str, tuple[str, str]]:
     """Scan app/engine/rules AST to find where each EXC rule is implemented."""
-    rule_map: Dict[str, Tuple[str, str]] = {}
+    rule_map: dict[str, tuple[str, str]] = {}
 
     for py_file in sorted(rules_dir.glob("*.py")):
         if py_file.name.startswith("__"):
@@ -55,10 +53,9 @@ def scan_implementations(rules_dir: Path) -> Dict[str, Tuple[str, str]]:
             if isinstance(node, ast.FunctionDef):
                 fn_name = node.name
                 doc = ast.get_docstring(node) or ""
-                fn_code = fn_name.lower()
 
                 # Look for EXC-xxx citations in function name, docstring, or body
-                found_rules: Set[str] = set(re.findall(r"EXC-\d{3}", doc, re.IGNORECASE))
+                found_rules: set[str] = set(re.findall(r"EXC-\d{3}", doc, re.IGNORECASE))
                 found_rules.update(re.findall(r"EXC-\d{3}", fn_name, re.IGNORECASE))
 
                 for subnode in ast.walk(node):
@@ -74,9 +71,9 @@ def scan_implementations(rules_dir: Path) -> Dict[str, Tuple[str, str]]:
     return rule_map
 
 
-def scan_tests(tests_dir: Path) -> Dict[str, Tuple[str, str]]:
+def scan_tests(tests_dir: Path) -> dict[str, tuple[str, str]]:
     """Scan tests/ AST to find tests proving each EXC rule."""
-    test_map: Dict[str, Tuple[str, str]] = {}
+    test_map: dict[str, tuple[str, str]] = {}
 
     for py_file in sorted(tests_dir.rglob("*.py")):
         if py_file.name.startswith("__"):
@@ -93,7 +90,7 @@ def scan_tests(tests_dir: Path) -> Dict[str, Tuple[str, str]]:
                 fn_name = node.name
                 doc = ast.get_docstring(node) or ""
 
-                found_rules: Set[str] = set(re.findall(r"EXC-\d{3}", doc, re.IGNORECASE))
+                found_rules: set[str] = set(re.findall(r"EXC-\d{3}", doc, re.IGNORECASE))
                 found_rules.update(re.findall(r"EXC-\d{3}", fn_name, re.IGNORECASE))
 
                 for subnode in ast.walk(node):
@@ -109,9 +106,9 @@ def scan_tests(tests_dir: Path) -> Dict[str, Tuple[str, str]]:
     return test_map
 
 
-def scan_evidence(evidence_dir: Path) -> Dict[str, str]:
+def scan_evidence(evidence_dir: Path) -> dict[str, str]:
     """Scan evidence/ for markdown/json files citing each EXC rule."""
-    evidence_map: Dict[str, str] = {}
+    evidence_map: dict[str, str] = {}
 
     for doc_file in sorted(evidence_dir.rglob("*")):
         if not doc_file.is_file() or doc_file.suffix not in (".md", ".json", ".txt"):
@@ -130,13 +127,13 @@ def scan_evidence(evidence_dir: Path) -> Dict[str, str]:
     return evidence_map
 
 
-def build_traceability_matrix() -> List[RuleTraceabilityRow]:
+def build_traceability_matrix() -> list[RuleTraceabilityRow]:
     """Build the end-to-end traceability matrix for EXC-001..EXC-024."""
     impl_map = scan_implementations(RULES_DIR)
     test_map = scan_tests(TESTS_DIR)
     ev_map = scan_evidence(EVIDENCE_DIR)
 
-    rows: List[RuleTraceabilityRow] = []
+    rows: list[RuleTraceabilityRow] = []
 
     for r_id in ALL_RULE_IDS:
         impl = impl_map.get(r_id)
@@ -166,7 +163,7 @@ def build_traceability_matrix() -> List[RuleTraceabilityRow]:
     return rows
 
 
-def generate_traceability_report(rows: List[RuleTraceabilityRow]) -> str:
+def generate_traceability_report(rows: list[RuleTraceabilityRow]) -> str:
     """Generate markdown report of the rule traceability matrix."""
     complete_count = sum(1 for r in rows if r.is_complete)
     incomplete_rows = [r for r in rows if not r.is_complete]
@@ -194,26 +191,42 @@ def generate_traceability_report(rows: List[RuleTraceabilityRow]) -> str:
     ]
 
     if incomplete_rows:
-        lines.append("| Rule ID | Missing Legs | Current Implementation | Current Test | Current Evidence |")
+        lines.append(
+            "| Rule ID | Missing Legs | Current Implementation | Current Test | Current Evidence |"
+        )
         lines.append("|---|---|---|---|---|")
         for r in incomplete_rows:
             missing_str = ", ".join(r.missing_legs)
-            impl_str = f"`{r.implementing_module}` ({r.evaluator_func})" if r.implementing_module else "*Missing*"
-            test_str = f"`{r.proving_test_file}` ({r.test_function})" if r.proving_test_file else "*Missing*"
+            impl_str = (
+                f"`{r.implementing_module}` ({r.evaluator_func})"
+                if r.implementing_module
+                else "*Missing*"
+            )
+            test_str = (
+                f"`{r.proving_test_file}` ({r.test_function})"
+                if r.proving_test_file
+                else "*Missing*"
+            )
             ev_str = f"`{r.evidence_artifact}`" if r.evidence_artifact else "*Missing*"
-            lines.append(f"| `{r.rule_id}` | **{missing_str}** | {impl_str} | {test_str} | {ev_str} |")
+            lines.append(
+                f"| `{r.rule_id}` | **{missing_str}** | {impl_str} | {test_str} | {ev_str} |"
+            )
     else:
-        lines.append("All 24 rules are 100% complete across implementation, test, and evidence legs.")
+        lines.append(
+            "All 24 rules are 100% complete across implementation, test, and evidence legs."
+        )
 
-    lines.extend([
-        "",
-        "---",
-        "",
-        "## Complete Traceability Matrix (24 Rules)",
-        "",
-        "| Rule ID | Implementation Module | Proving Test | Evidence Artifact | Status |",
-        "|---|---|---|---|---|",
-    ])
+    lines.extend(
+        [
+            "",
+            "---",
+            "",
+            "## Complete Traceability Matrix (24 Rules)",
+            "",
+            "| Rule ID | Implementation Module | Proving Test | Evidence Artifact | Status |",
+            "|---|---|---|---|---|",
+        ]
+    )
 
     for r in rows:
         impl_str = f"`{r.implementing_module}`" if r.implementing_module else "—"

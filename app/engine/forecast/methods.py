@@ -13,14 +13,15 @@ Implements:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from decimal import Decimal, ROUND_HALF_UP
-from enum import Enum
 import logging
-from typing import Any, Sequence
+from collections.abc import Sequence
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from decimal import ROUND_HALF_UP, Decimal
+from enum import Enum
+from typing import Any
 
-from app.engine.calc.math import quantize_money, ZERO
+from app.engine.calc.math import ZERO, quantize_money
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ def quantize_rate(rate: Decimal | str | int | float) -> Decimal:
 
 class ForecastMethod(str, Enum):
     """Forecast method codes per 03_DATA_DICTIONARY DimMethod and 07_FORECAST_METHODS_SPEC."""
+
     LOCKED_ACTUALS = "locked_actuals"
     REMAINING_BUDGET = "remaining_budget"
     RUN_RATE = "run_rate"
@@ -46,6 +48,7 @@ class ForecastMethod(str, Enum):
 
 class Scenario(str, Enum):
     """Forecast scenarios per 07_FORECAST_METHODS_SPEC §6."""
+
     BASE = "base"
     BEST = "best"
     WORST = "worst"
@@ -54,6 +57,7 @@ class Scenario(str, Enum):
 @dataclass
 class PeriodActual:
     """Loaded actual for a period."""
+
     period_code: str
     amount: Decimal
     is_closed: bool = True
@@ -70,16 +74,19 @@ class ManualOverride:
 
     Enforces mandatory reason string per FR-FC-006.
     """
+
     period_code: str
     amount: Decimal
     reason: str
     author: str = "system"
     old_value: Decimal | None = None
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     def __post_init__(self) -> None:
         if not self.reason or not self.reason.strip():
-            raise ValueError("Manual override requires a mandatory non-empty reason (FR-FC-006 / CALC-064).")
+            raise ValueError(
+                "Manual override requires a mandatory non-empty reason (FR-FC-006 / CALC-064)."
+            )
         self.reason = self.reason.strip()
         if not isinstance(self.amount, Decimal):
             self.amount = Decimal(str(self.amount))
@@ -88,6 +95,7 @@ class ManualOverride:
 @dataclass
 class ForecastResult:
     """A generated forecast period line per 03_DATA_DICTIONARY §4.3 (FactForecast)."""
+
     period_code: str
     amount: Decimal  # Displayed (2 dp)
     amount_stored: Decimal  # Stored full precision / 6 dp
@@ -103,6 +111,7 @@ class ForecastResult:
 # -----------------------------------------------------------------------------
 # Method 1: Locked Actuals (CALC-060)
 # -----------------------------------------------------------------------------
+
 
 def calc_locked_actuals(
     actuals: Sequence[PeriodActual],
@@ -176,6 +185,7 @@ def calc_locked_actuals(
 # Method 2: Remaining-Budget Method (CALC-061)
 # -----------------------------------------------------------------------------
 
+
 def calc_remaining_budget(
     annual_budget: Decimal | str | int | float,
     actuals: Sequence[Decimal | PeriodActual],
@@ -193,15 +203,14 @@ def calc_remaining_budget(
     annual_budget_dec = Decimal(str(annual_budget))
 
     actual_values = [
-        item.amount if isinstance(item, PeriodActual) else Decimal(str(item))
-        for item in actuals
+        item.amount if isinstance(item, PeriodActual) else Decimal(str(item)) for item in actuals
     ]
     consumed_actuals = sum(actual_values, ZERO)
     remaining = annual_budget_dec - consumed_actuals
 
     if isinstance(remaining_periods, int):
         k = remaining_periods
-        period_codes = [f"P{i+1}" for i in range(k)]
+        period_codes = [f"P{i + 1}" for i in range(k)]
     else:
         period_codes = list(remaining_periods)
         k = len(period_codes)
@@ -238,6 +247,7 @@ def calc_remaining_budget(
 # -----------------------------------------------------------------------------
 # Method 3: Run-Rate Method (CALC-062)
 # -----------------------------------------------------------------------------
+
 
 def calc_run_rate(
     actuals: Sequence[Decimal | PeriodActual],
@@ -278,7 +288,7 @@ def calc_run_rate(
         for item in window_actuals
     ]
     window_period_codes = [
-        item.period_code if isinstance(item, PeriodActual) else f"ACT-{i+1}"
+        item.period_code if isinstance(item, PeriodActual) else f"ACT-{i + 1}"
         for i, item in enumerate(window_actuals)
     ]
 
@@ -287,7 +297,7 @@ def calc_run_rate(
     avg_display = quantize_money(avg_stored)
 
     if isinstance(remaining_periods, int):
-        period_codes = [f"P{i+1}" for i in range(remaining_periods)]
+        period_codes = [f"P{i + 1}" for i in range(remaining_periods)]
     else:
         period_codes = list(remaining_periods)
 
@@ -320,6 +330,7 @@ def calc_run_rate(
 # Method 4: 3-Month Trailing Average (CALC-063)
 # -----------------------------------------------------------------------------
 
+
 def calc_avg_3m(
     actuals: Sequence[Decimal | PeriodActual],
     remaining_periods: Sequence[str] | int = 1,
@@ -347,6 +358,7 @@ def calc_avg_3m(
 # Manual Override Handling (CALC-064)
 # -----------------------------------------------------------------------------
 
+
 def calc_manual_override(
     override: ManualOverride | dict[str, Any],
     scenario: Scenario = Scenario.BASE,
@@ -360,7 +372,9 @@ def calc_manual_override(
         amount = Decimal(str(override["amount"]))
         reason = override.get("reason", "")
         author = override.get("author", "system")
-        old_value = Decimal(str(override["old_value"])) if override.get("old_value") is not None else None
+        old_value = (
+            Decimal(str(override["old_value"])) if override.get("old_value") is not None else None
+        )
         rec = ManualOverride(
             period_code=period_code,
             amount=amount,
@@ -406,6 +420,7 @@ def calc_manual_override(
 # Scenario Adjustment (CALC-065)
 # -----------------------------------------------------------------------------
 
+
 def apply_scenario_adjustment(
     base_result: ForecastResult,
     adjustment_pct: Decimal | str | float,
@@ -443,6 +458,7 @@ def apply_scenario_adjustment(
 # -----------------------------------------------------------------------------
 # Forecast Accuracy Metrics (CALC-066 … CALC-069)
 # -----------------------------------------------------------------------------
+
 
 def calc_signed_error(actual: Decimal | str | float, forecast: Decimal | str | float) -> Decimal:
     """Signed error per CALC-066: actual - forecast.
@@ -496,6 +512,7 @@ def calc_mape_lite(
 # -----------------------------------------------------------------------------
 # Method Eligibility and Resolution (doc 07 §4.1, §5)
 # -----------------------------------------------------------------------------
+
 
 def check_method_eligibility(
     method: ForecastMethod,
@@ -555,7 +572,12 @@ def resolve_method(
     If the resolved method is ineligible, fallback order:
     manual (if override exists) -> remaining_budget (if budget exists) -> None (flagged as insufficient history).
     """
-    candidate = line_pinned_method or account_group_method or project_default_method or ForecastMethod.REMAINING_BUDGET
+    candidate = (
+        line_pinned_method
+        or account_group_method
+        or project_default_method
+        or ForecastMethod.REMAINING_BUDGET
+    )
 
     eligible, hint = check_method_eligibility(
         method=candidate,
@@ -573,6 +595,9 @@ def resolve_method(
         return ForecastMethod.MANUAL, "Fallback to manual override (candidate ineligible)"
 
     if has_budget and remaining_periods_count > 0:
-        return ForecastMethod.REMAINING_BUDGET, f"Fallback to remaining_budget ({candidate.value} ineligible: {hint})"
+        return (
+            ForecastMethod.REMAINING_BUDGET,
+            f"Fallback to remaining_budget ({candidate.value} ineligible: {hint})",
+        )
 
     return None, f"Not forecast - insufficient history ({candidate.value} ineligible: {hint})"

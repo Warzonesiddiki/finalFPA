@@ -49,45 +49,46 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass, field
-from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Canonical mapping targets, doc 04_SOURCE_MAPPING_AND_IMPORT_SPEC.md section 6.
 # Used to validate a suggested target field (FR-IMP-008 edge case, FR-AI-006).
 # ---------------------------------------------------------------------------
-CANONICAL_FIELDS: frozenset = frozenset({
-    "company_code",
-    "account_code",
-    "cost_center_code",
-    "department_code",
-    "project_code",
-    "vendor_code",
-    "vendor_name",
-    "posting_date",
-    "document_date",
-    "period_code",
-    "voucher_no",
-    "document_no",
-    "invoice_no",
-    "line_no",
-    "description",
-    "debit",
-    "credit",
-    "amount",
-    "currency_code",
-    "journal_category",
-    "budget_version",
-    "scenario_code",
-    "expected_amount",
-    "frequency",
-    "start_period_code",
-    "amount_threshold",
-    "scope",
-    "effective_from",
-    "owner_name",
-})
+CANONICAL_FIELDS: frozenset = frozenset(
+    {
+        "company_code",
+        "account_code",
+        "cost_center_code",
+        "department_code",
+        "project_code",
+        "vendor_code",
+        "vendor_name",
+        "posting_date",
+        "document_date",
+        "period_code",
+        "voucher_no",
+        "document_no",
+        "invoice_no",
+        "line_no",
+        "description",
+        "debit",
+        "credit",
+        "amount",
+        "currency_code",
+        "journal_category",
+        "budget_version",
+        "scenario_code",
+        "expected_amount",
+        "frequency",
+        "start_period_code",
+        "amount_threshold",
+        "scope",
+        "effective_from",
+        "owner_name",
+    }
+)
 
 # Suggestion states and the only legal transitions out of `suggested`.
 STATE_SUGGESTED = "suggested"
@@ -99,7 +100,7 @@ STATES = frozenset({STATE_SUGGESTED, STATE_ACCEPTED, STATE_EDITED, STATE_REJECTE
 
 #: FR-IMP-008: `suggested -> accepted | edited | rejected`. A decided state is
 #: terminal - the queue may not reopen it, so the audit trail stays append-only.
-ALLOWED_TRANSITIONS: Dict[str, frozenset] = {
+ALLOWED_TRANSITIONS: dict[str, frozenset] = {
     STATE_SUGGESTED: frozenset({STATE_ACCEPTED, STATE_EDITED, STATE_REJECTED}),
     STATE_ACCEPTED: frozenset(),
     STATE_EDITED: frozenset(),
@@ -157,15 +158,15 @@ class MappingSuggestion:
     origin: str = ORIGIN_RULE
     state: str = STATE_SUGGESTED
     # Evidence: examples of previously accepted rows that justify the proposal.
-    evidence_examples: List[Dict[str, Any]] = field(default_factory=list)
+    evidence_examples: list[dict[str, Any]] = field(default_factory=list)
     # Set when a human accepts or edits. Keeps the original AI proposal intact so
     # override rates remain measurable.
-    resolved_target_field: Optional[str] = None
-    decided_by: Optional[str] = None
-    decided_at: Optional[str] = None
-    malformed_reason: Optional[str] = None
-    suggestion_id: Optional[int] = None
-    created_at: Optional[str] = None
+    resolved_target_field: str | None = None
+    decided_by: str | None = None
+    decided_at: str | None = None
+    malformed_reason: str | None = None
+    suggestion_id: int | None = None
+    created_at: str | None = None
 
     def __post_init__(self) -> None:
         if self.state not in STATES:
@@ -185,9 +186,7 @@ class MappingSuggestion:
     @property
     def identity_hash(self) -> str:
         """Stable dedup key: run + source column (FR-IMP-008 deduplication)."""
-        return hashlib.sha256(
-            f"{self.import_run_id}|{self.source_column}".encode("utf-8")
-        ).hexdigest()
+        return hashlib.sha256(f"{self.import_run_id}|{self.source_column}".encode()).hexdigest()
 
     # -- FR-IMP-008 state machine ----------------------------------------
 
@@ -208,7 +207,7 @@ class MappingSuggestion:
                 f"from '{self.state}', got '{new_state}'"
             )
 
-    def accept(self, decided_by: str, decided_at: Optional[str] = None) -> "MappingSuggestion":
+    def accept(self, decided_by: str, decided_at: str | None = None) -> MappingSuggestion:
         """Accept the suggestion as proposed."""
         self._assert_transition(STATE_ACCEPTED)
         self.state = STATE_ACCEPTED
@@ -217,8 +216,9 @@ class MappingSuggestion:
         self.decided_at = decided_at
         return self
 
-    def edit(self, new_target_field: str, decided_by: str,
-             decided_at: Optional[str] = None) -> "MappingSuggestion":
+    def edit(
+        self, new_target_field: str, decided_by: str, decided_at: str | None = None
+    ) -> MappingSuggestion:
         """Accept with a human-chosen target, keeping the AI proposal visible.
 
         FR-IMP-008 `suggested -> edited`. The replacement must be a real canonical
@@ -238,8 +238,9 @@ class MappingSuggestion:
         self.decided_at = decided_at
         return self
 
-    def reject(self, decided_by: str, decided_at: Optional[str] = None,
-               reason: Optional[str] = None) -> "MappingSuggestion":
+    def reject(
+        self, decided_by: str, decided_at: str | None = None, reason: str | None = None
+    ) -> MappingSuggestion:
         """Reject the suggestion (FR-IMP-008 `suggested -> rejected`)."""
         self._assert_transition(STATE_REJECTED)
         self.state = STATE_REJECTED
@@ -265,13 +266,13 @@ class MappingSuggestion:
         return int(run_id) != int(self.import_run_id)
 
     @property
-    def effective_target_field(self) -> Optional[str]:
+    def effective_target_field(self) -> str | None:
         """The field to apply on a later run, or None if not usable yet."""
         if self.state in (STATE_ACCEPTED, STATE_EDITED):
             return self.resolved_target_field
         return None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "suggestion_id": self.suggestion_id,
             "import_run_id": self.import_run_id,
@@ -293,12 +294,13 @@ class MappingSuggestion:
 # Queue construction
 # ---------------------------------------------------------------------------
 
+
 def build_suggestion_queue(
     import_run_id: int,
-    proposals: List[Dict[str, Any]],
+    proposals: list[dict[str, Any]],
     ai_enabled: bool = False,
-    allowed_fields: Optional[frozenset] = None,
-) -> List[MappingSuggestion]:
+    allowed_fields: frozenset | None = None,
+) -> list[MappingSuggestion]:
     """Build the review queue for one import run (FR-IMP-008).
 
     `proposals` items: source_column, target_field, confidence, evidence (optional),
@@ -317,7 +319,7 @@ def build_suggestion_queue(
     ascending source_column.
     """
     fields = allowed_fields if allowed_fields is not None else CANONICAL_FIELDS
-    best: Dict[str, MappingSuggestion] = {}
+    best: dict[str, MappingSuggestion] = {}
 
     for raw in proposals or []:
         if not isinstance(raw, dict):
@@ -358,9 +360,9 @@ def build_suggestion_queue(
 
 
 def applyable_suggestions(
-    suggestions: List[MappingSuggestion],
+    suggestions: list[MappingSuggestion],
     run_id: int,
-) -> List[MappingSuggestion]:
+) -> list[MappingSuggestion]:
     """Suggestions this run is permitted to apply (FR-IMP-008).
 
     Filters to accepted/edited suggestions whose raising run differs from `run_id`.

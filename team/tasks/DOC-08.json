@@ -9,13 +9,24 @@
   "source": "team",
   "created_by": "buffy",
   "created_utc": "2026-10-05T15:22:07Z",
-  "updated_utc": "2026-10-05T15:22:07Z",
+  "updated_utc": "2026-10-09T16:38:03Z",
   "deps": [],
   "history": [
     {
       "utc": "2026-10-05T15:22:07Z",
       "agent": "buffy",
       "event": "created"
+    },
+    {
+      "utc": "2026-10-09T16:37:08Z",
+      "agent": "opencode",
+      "event": "claimed"
+    },
+    {
+      "utc": "2026-10-09T16:38:03Z",
+      "agent": "opencode",
+      "event": "release (todo)"
     }
-  ]
+  ],
+  "handoff": null
 }

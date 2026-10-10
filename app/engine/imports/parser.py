@@ -2,29 +2,43 @@
 
 import csv
 import hashlib
-import os
 import re
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import List, Dict, Tuple, Optional, Any, Set, Union
+from typing import Any
 
-from app.engine.calc import quantize_money, ZERO
+from app.engine.calc import ZERO, quantize_money
 from app.engine.imports.models import (
-    PreScanResult,
-    ValidationIssue,
-    ValidationCheckReport,
-    ParsedTransaction,
     ImportBatchResult,
+    ParsedTransaction,
+    PreScanResult,
+    ValidationCheckReport,
+    ValidationIssue,
 )
-from app.engine.imports.profiles import MappingProfile, match_profile, normalize_header, BUILTIN_PROFILES
+from app.engine.imports.profiles import (
+    BUILTIN_PROFILES,
+    MappingProfile,
+    match_profile,
+    normalize_header,
+)
 
 DEFAULT_FY26_PERIODS = {f"FY26-P{i:02d}" for i in range(1, 13)}
 
 MONTH_NAME_MAP = {
-    "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
-    "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+    "jan": 1,
+    "feb": 2,
+    "mar": 3,
+    "apr": 4,
+    "may": 5,
+    "jun": 6,
+    "jul": 7,
+    "aug": 8,
+    "sep": 9,
+    "oct": 10,
+    "nov": 11,
+    "dec": 12,
 }
 
 
@@ -38,8 +52,8 @@ def compute_file_checksum(filepath: str | Path) -> str:
 
 
 def _excel_data_sheet(
-    filepath: str | Path, preferred_sheet: Optional[str] = None
-) -> Tuple[str, List[str], int]:
+    filepath: str | Path, preferred_sheet: str | None = None
+) -> tuple[str, list[str], int]:
     """Select the visible transaction sheet, excluding auxiliary workbook tabs."""
     try:
         from openpyxl import load_workbook
@@ -113,7 +127,7 @@ def prescan_file(filepath: str | Path) -> PreScanResult:
 
     # Basic CSV scan
     lines = []
-    with open(p, "r", encoding="utf-8", errors="replace") as f:
+    with open(p, encoding="utf-8", errors="replace") as f:
         for _ in range(25):
             line = f.readline()
             if not line:
@@ -158,7 +172,7 @@ def prescan_file(filepath: str | Path) -> PreScanResult:
     )
 
 
-def parse_date_value(val: str, rule: str = "iso") -> Optional[str]:
+def parse_date_value(val: str, rule: str = "iso") -> str | None:
     """Parse string date to standard YYYY-MM-DD per 04 §7.1."""
     if not val:
         return None
@@ -179,9 +193,9 @@ def parse_date_value(val: str, rule: str = "iso") -> Optional[str]:
     return None
 
 
-def resolve_fiscal_period(val: str) -> Optional[str]:
+def resolve_fiscal_period(val: str) -> str | None:
     """Resolve period string variant to canonical period code FY<yy>-P<pp> per 04 §7.4.
-    
+
     Accepted variants per spec:
     - FY26-P09, FY26-P9
     - 2026-P09, 26-P09
@@ -239,15 +253,15 @@ def check_imp_017_sign_rule(
     val: Any,
     rule: str = "cr_dr",
     mode: str = "balance_style",
-    source_row_ref: Optional[str] = None,
-) -> Tuple[Decimal, Optional[str], Optional[ValidationIssue]]:
+    source_row_ref: str | None = None,
+) -> tuple[Decimal, str | None, ValidationIssue | None]:
     """Check IMP-017: Sign / Cr-Dr interpretation applied per 04 §7.2, §8 X16, §10.
-    
+
     Interpretation rules:
     - In balance-style exports: Dr -> debit, Cr -> credit.
     - In amount-style exports: Cr -> negative, Dr -> positive.
     - Accounting parentheses: (1,200.00) -> negative amount.
-    
+
     Returns (amount, direction, issue) where:
     - amount: Quantized Decimal money
     - direction: 'debit', 'credit', 'negative', 'positive', or None
@@ -264,7 +278,7 @@ def check_imp_017_sign_rule(
     if not s or s == "-":
         return ZERO, None, None
 
-    direction: Optional[str] = None
+    direction: str | None = None
     negative = False
     sign_rule_applied = False
 
@@ -326,12 +340,12 @@ def parse_money_value(val: Any) -> Decimal:
 
 
 def check_imp_018_period_in_calendar(
-    period_code: Optional[str],
-    valid_periods: Optional[Union[Set[str], List[str]]] = None,
-    source_row_ref: Optional[str] = None,
-) -> Optional[ValidationIssue]:
+    period_code: str | None,
+    valid_periods: set[str] | list[str] | None = None,
+    source_row_ref: str | None = None,
+) -> ValidationIssue | None:
     """Check IMP-018: Period resolved against the fiscal calendar per 04 §7.4 & §10.
-    
+
     On failure: Quarantine the row with slug 'import.periodNotInCalendar'.
     """
     if valid_periods is None:
@@ -362,14 +376,14 @@ def check_imp_018_period_in_calendar(
 
 
 def check_imp_019_date_in_fiscal_year(
-    posting_date: Union[str, datetime, Any],
+    posting_date: str | datetime | Any,
     fy_start: str = "2026-01-01",
     fy_end: str = "2026-12-31",
     fiscal_year: int = 2026,
-    source_row_ref: Optional[str] = None,
-) -> Optional[ValidationIssue]:
+    source_row_ref: str | None = None,
+) -> ValidationIssue | None:
     """Check IMP-019: Dates inside configured fiscal year per 04 §10 & §20 E6.
-    
+
     On failure: Quarantine the row with slug 'import.dateOutsideFiscalYear'.
     """
     if posting_date is None:
@@ -414,12 +428,12 @@ def check_imp_019_date_in_fiscal_year(
 
 
 def check_imp_020_currency_matches(
-    currency_code: Optional[str],
+    currency_code: str | None,
     project_currency: str = "INR",
-    source_row_ref: Optional[str] = None,
-) -> Optional[ValidationIssue]:
+    source_row_ref: str | None = None,
+) -> ValidationIssue | None:
     """Check IMP-020: Currency matches project currency (INR default) per 04 §10 & §20 E10.
-    
+
     On failure: Quarantine the row with slug 'import.mixedCurrency'.
     """
     if not currency_code or not str(currency_code).strip():
@@ -443,10 +457,10 @@ def check_imp_020_currency_matches(
 def check_imp_021_zero_amount(
     debit: Any,
     credit: Any,
-    source_row_ref: Optional[str] = None,
-) -> Tuple[bool, Optional[ValidationIssue]]:
+    source_row_ref: str | None = None,
+) -> tuple[bool, ValidationIssue | None]:
     """Check IMP-021: Zero-amount rows noted per 04 §10 & §20 E4.
-    
+
     On failure / trigger: Keep the row; count and flag it (excluded from outlier rules).
     Slug: 'import.zeroAmountRows'.
     """
@@ -468,10 +482,10 @@ def check_imp_021_zero_amount(
 def check_imp_022_both_debit_credit(
     debit: Any,
     credit: Any,
-    source_row_ref: Optional[str] = None,
-) -> Optional[ValidationIssue]:
+    source_row_ref: str | None = None,
+) -> ValidationIssue | None:
     """Check IMP-022: Debit and credit not both populated per 04 §7.2 & §10.
-    
+
     On failure / trigger: Warn; load row as provided. Slug: 'import.bothDebitCredit'.
     """
     d = quantize_money(debit) if not isinstance(debit, Decimal) else debit
@@ -518,7 +532,7 @@ def is_amount_style_source(source_type: str) -> bool:
 
 
 def check_imp_023_subledger_reconciliation(
-    transactions: List[ParsedTransaction],
+    transactions: list[ParsedTransaction],
     tolerance: Decimal = ZERO,
 ) -> ValidationCheckReport:
     """Check IMP-023 for an amount-style sub-ledger (DEC-056, tolerance `06` §8).
@@ -562,12 +576,12 @@ def check_imp_023_subledger_reconciliation(
 
 
 def check_imp_023_balance(
-    transactions: List[ParsedTransaction],
+    transactions: list[ParsedTransaction],
     tolerance: Decimal = ZERO,
     check_entity_period: bool = True,
 ) -> ValidationCheckReport:
     """Check IMP-023: Debit = credit balance within tolerance per file/entity/period per 04 §10 & §12.
-    
+
     Computed at exact minor-unit Decimal precision (no epsilon).
     On failure: Reject; show the imbalance amount and the top contributing rows.
     Slug: 'import.balanceMismatch'.
@@ -578,15 +592,15 @@ def check_imp_023_balance(
     imbalance = quantize_money(abs(total_debit - total_credit))
 
     offending_count = 0
-    top_samples: List[Dict[str, Any]] = []
-    group_imbalances: List[str] = []
+    top_samples: list[dict[str, Any]] = []
+    group_imbalances: list[str] = []
 
     if imbalance > tol:
         offending_count += 1
 
     if check_entity_period and transactions:
-        entity_totals: Dict[str, Tuple[Decimal, Decimal]] = {}
-        period_totals: Dict[str, Tuple[Decimal, Decimal]] = {}
+        entity_totals: dict[str, tuple[Decimal, Decimal]] = {}
+        period_totals: dict[str, tuple[Decimal, Decimal]] = {}
 
         for t in transactions:
             ent = t.company_code or "DEFAULT"
@@ -614,19 +628,23 @@ def check_imp_023_balance(
     if not is_balanced:
         sorted_txs = sorted(transactions, key=lambda t: abs(t.debit - t.credit), reverse=True)
         for t in sorted_txs[:5]:
-            top_samples.append({
-                "voucher_no": t.voucher_no,
-                "source_row_ref": t.source_row_ref,
-                "debit": str(t.debit),
-                "credit": str(t.credit),
-                "net_amount": str(t.net_amount),
-            })
+            top_samples.append(
+                {
+                    "voucher_no": t.voucher_no,
+                    "source_row_ref": t.source_row_ref,
+                    "debit": str(t.debit),
+                    "credit": str(t.credit),
+                    "net_amount": str(t.net_amount),
+                }
+            )
 
         detail = f"Imbalance ₹{imbalance} exceeds tolerance ₹{tol} (Total Debit: ₹{total_debit}, Total Credit: ₹{total_credit})"
         if group_imbalances:
             detail += f". Breakdown: {'; '.join(group_imbalances[:3])}"
     else:
-        detail = f"Total Debit: ₹{total_debit}, Total Credit: ₹{total_credit}, Imbalance: ₹{imbalance}"
+        detail = (
+            f"Total Debit: ₹{total_debit}, Total Credit: ₹{total_credit}, Imbalance: ₹{imbalance}"
+        )
 
     return ValidationCheckReport(
         check_code="IMP-023",
@@ -647,12 +665,12 @@ def check_imp_024_row_count_reconciliation(
     rejected_count: int,
 ) -> ValidationCheckReport:
     """Check IMP-024: Row-count reconciliation (source = loaded + quarantined + rejected) per 04 §10 & §12.
-    
+
     Internal invariant: A mismatch blocks commit and indicates an internal anomaly, never a user error.
     Slug: 'import.countMismatch'.
     """
     expected = loaded_count + quarantined_count + rejected_count
-    reconciled = (source_count == expected)
+    reconciled = source_count == expected
     diff = abs(source_count - expected)
 
     if reconciled:
@@ -673,14 +691,14 @@ def check_imp_024_row_count_reconciliation(
 
 def parse_csv_transactions(
     filepath: str | Path,
-    profile: Optional[MappingProfile] = None,
+    profile: MappingProfile | None = None,
     fiscal_year: int = 2026,
     fy_start: str = "2026-01-01",
     fy_end: str = "2026-12-31",
     project_currency: str = "INR",
     balance_tolerance: Decimal = ZERO,
-    source_row_refs: Optional[List[str]] = None,
-) -> Tuple[ImportBatchResult, List[ParsedTransaction]]:
+    source_row_refs: list[str] | None = None,
+) -> tuple[ImportBatchResult, list[ParsedTransaction]]:
     """Parse CSV returning both the validation batch result and the valid parsed transactions."""
     p = Path(filepath)
     checksum = compute_file_checksum(p)
@@ -691,24 +709,24 @@ def parse_csv_transactions(
         if profile is None:
             profile = BUILTIN_PROFILES[0]
 
-    loaded: List[ParsedTransaction] = []
-    quarantined: List[Dict[str, Any]] = []
-    rejected: List[ValidationIssue] = []
+    loaded: list[ParsedTransaction] = []
+    quarantined: list[dict[str, Any]] = []
+    rejected: list[ValidationIssue] = []
 
-    sign_rule_issues: List[ValidationIssue] = []
-    period_issues: List[ValidationIssue] = []
-    date_fy_issues: List[ValidationIssue] = []
-    currency_issues: List[ValidationIssue] = []
-    zero_amount_issues: List[ValidationIssue] = []
-    both_debit_credit_issues: List[ValidationIssue] = []
+    sign_rule_issues: list[ValidationIssue] = []
+    period_issues: list[ValidationIssue] = []
+    date_fy_issues: list[ValidationIssue] = []
+    currency_issues: list[ValidationIssue] = []
+    zero_amount_issues: list[ValidationIssue] = []
+    both_debit_credit_issues: list[ValidationIssue] = []
 
-    col_idx_map: Dict[str, int] = {}
+    col_idx_map: dict[str, int] = {}
     total_source_rows = 0
     total_debit = ZERO
     total_credit = ZERO
-    voucher_line_counts: Dict[Tuple[str, str], int] = {}
+    voucher_line_counts: dict[tuple[str, str], int] = {}
 
-    with open(p, "r", encoding="utf-8", errors="replace") as f:
+    with open(p, encoding="utf-8", errors="replace") as f:
         reader = csv.reader(f)
         current_row_idx = 0
         headers_found = False
@@ -739,7 +757,7 @@ def parse_csv_transactions(
             )
             raw_row_dict = dict(zip([f"col_{i}" for i in range(len(row))], row))
 
-            def get_col(field_name: str) -> Optional[str]:
+            def get_col(field_name: str) -> str | None:
                 if field_name in col_idx_map:
                     idx = col_idx_map[field_name]
                     if idx < len(row):
@@ -775,16 +793,10 @@ def parse_csv_transactions(
             derived_line_no = voucher_line_counts.get(voucher_key, 0) + 1
             explicit_line_no = get_col("line_no")
             try:
-                line_no = (
-                    int(explicit_line_no)
-                    if explicit_line_no is not None
-                    else derived_line_no
-                )
+                line_no = int(explicit_line_no) if explicit_line_no is not None else derived_line_no
             except (TypeError, ValueError):
                 line_no = derived_line_no
-            voucher_line_counts[voucher_key] = max(
-                voucher_line_counts.get(voucher_key, 0), line_no
-            )
+            voucher_line_counts[voucher_key] = max(voucher_line_counts.get(voucher_key, 0), line_no)
 
             debit_raw = get_col("debit")
             credit_raw = get_col("credit")
@@ -793,15 +805,19 @@ def parse_csv_transactions(
             # IMP-018: Period resolution against calendar
             resolved_period = None
             if period_code_raw:
-                p_issue = check_imp_018_period_in_calendar(period_code_raw, source_row_ref=source_row_ref)
+                p_issue = check_imp_018_period_in_calendar(
+                    period_code_raw, source_row_ref=source_row_ref
+                )
                 if p_issue:
                     period_issues.append(p_issue)
-                    quarantined.append({
-                        "source_row_ref": source_row_ref,
-                        "reason_code": p_issue.message_slug,
-                        "reason_detail": p_issue.message,
-                        "raw_values": raw_row_dict,
-                    })
+                    quarantined.append(
+                        {
+                            "source_row_ref": source_row_ref,
+                            "reason_code": p_issue.message_slug,
+                            "reason_detail": p_issue.message,
+                            "raw_values": raw_row_dict,
+                        }
+                    )
                     continue
                 resolved_period = resolve_fiscal_period(period_code_raw)
 
@@ -815,24 +831,32 @@ def parse_csv_transactions(
             if posting_date_raw:
                 posting_date = parse_date_value(posting_date_raw, rule=profile.date_rule)
                 if posting_date is None:
-                    quarantined.append({
-                        "source_row_ref": source_row_ref,
-                        "reason_code": "import.dateUnparsed",
-                        "reason_detail": f"Invalid date: {posting_date_raw}",
-                        "raw_values": raw_row_dict,
-                    })
+                    quarantined.append(
+                        {
+                            "source_row_ref": source_row_ref,
+                            "reason_code": "import.dateUnparsed",
+                            "reason_detail": f"Invalid date: {posting_date_raw}",
+                            "raw_values": raw_row_dict,
+                        }
+                    )
                     continue
                 fy_issue = check_imp_019_date_in_fiscal_year(
-                    posting_date, fy_start=fy_start, fy_end=fy_end, fiscal_year=fiscal_year, source_row_ref=source_row_ref
+                    posting_date,
+                    fy_start=fy_start,
+                    fy_end=fy_end,
+                    fiscal_year=fiscal_year,
+                    source_row_ref=source_row_ref,
                 )
                 if fy_issue:
                     date_fy_issues.append(fy_issue)
-                    quarantined.append({
-                        "source_row_ref": source_row_ref,
-                        "reason_code": fy_issue.message_slug,
-                        "reason_detail": fy_issue.message,
-                        "raw_values": raw_row_dict,
-                    })
+                    quarantined.append(
+                        {
+                            "source_row_ref": source_row_ref,
+                            "reason_code": fy_issue.message_slug,
+                            "reason_detail": fy_issue.message,
+                            "raw_values": raw_row_dict,
+                        }
+                    )
                     continue
             else:
                 posting_date = "2026-09-30"
@@ -848,23 +872,35 @@ def parse_csv_transactions(
             )
             if curr_issue:
                 currency_issues.append(curr_issue)
-                quarantined.append({
-                    "source_row_ref": source_row_ref,
-                    "reason_code": curr_issue.message_slug,
-                    "reason_detail": curr_issue.message,
-                    "raw_values": raw_row_dict,
-                })
+                quarantined.append(
+                    {
+                        "source_row_ref": source_row_ref,
+                        "reason_code": curr_issue.message_slug,
+                        "reason_detail": curr_issue.message,
+                        "raw_values": raw_row_dict,
+                    }
+                )
                 continue
-            currency = currency_raw.strip().upper() if currency_raw and currency_raw.strip() else project_currency
+            currency = (
+                currency_raw.strip().upper()
+                if currency_raw and currency_raw.strip()
+                else project_currency
+            )
 
             # Amounts parsing, IMP-017, IMP-021, IMP-022
             try:
                 if debit_raw is not None or credit_raw is not None:
                     debit, _, d_sign_issue = check_imp_017_sign_rule(
-                        debit_raw, rule=profile.number_rule, mode="balance_style", source_row_ref=source_row_ref
+                        debit_raw,
+                        rule=profile.number_rule,
+                        mode="balance_style",
+                        source_row_ref=source_row_ref,
                     )
                     credit, _, c_sign_issue = check_imp_017_sign_rule(
-                        credit_raw, rule=profile.number_rule, mode="balance_style", source_row_ref=source_row_ref
+                        credit_raw,
+                        rule=profile.number_rule,
+                        mode="balance_style",
+                        source_row_ref=source_row_ref,
                     )
                     if d_sign_issue:
                         sign_rule_issues.append(d_sign_issue)
@@ -872,7 +908,10 @@ def parse_csv_transactions(
                         sign_rule_issues.append(c_sign_issue)
                 elif amount_raw is not None:
                     amt, _, amt_sign_issue = check_imp_017_sign_rule(
-                        amount_raw, rule=profile.number_rule, mode="amount_style", source_row_ref=source_row_ref
+                        amount_raw,
+                        rule=profile.number_rule,
+                        mode="amount_style",
+                        source_row_ref=source_row_ref,
                     )
                     if amt_sign_issue:
                         sign_rule_issues.append(amt_sign_issue)
@@ -886,21 +925,27 @@ def parse_csv_transactions(
                     debit = ZERO
                     credit = ZERO
             except ValueError as e:
-                quarantined.append({
-                    "source_row_ref": source_row_ref,
-                    "reason_code": "import.numberUnparsed",
-                    "reason_detail": str(e),
-                    "raw_values": raw_row_dict,
-                })
+                quarantined.append(
+                    {
+                        "source_row_ref": source_row_ref,
+                        "reason_code": "import.numberUnparsed",
+                        "reason_detail": str(e),
+                        "raw_values": raw_row_dict,
+                    }
+                )
                 continue
 
             # IMP-021: Zero-amount rows
-            is_zero, zero_issue = check_imp_021_zero_amount(debit, credit, source_row_ref=source_row_ref)
+            is_zero, zero_issue = check_imp_021_zero_amount(
+                debit, credit, source_row_ref=source_row_ref
+            )
             if zero_issue:
                 zero_amount_issues.append(zero_issue)
 
             # IMP-022: Debit and credit not both populated
-            both_issue = check_imp_022_both_debit_credit(debit, credit, source_row_ref=source_row_ref)
+            both_issue = check_imp_022_both_debit_credit(
+                debit, credit, source_row_ref=source_row_ref
+            )
             if both_issue:
                 both_debit_credit_issues.append(both_issue)
 
@@ -932,84 +977,98 @@ def parse_csv_transactions(
             )
             loaded.append(tx)
 
-    checks: List[ValidationCheckReport] = []
-    checks.append(ValidationCheckReport(
-        check_code="IMP-001",
-        check_name="File readable and format supported",
-        status="pass",
-        severity="high",
-        offending_count=0,
-    ))
+    checks: list[ValidationCheckReport] = []
+    checks.append(
+        ValidationCheckReport(
+            check_code="IMP-001",
+            check_name="File readable and format supported",
+            status="pass",
+            severity="high",
+            offending_count=0,
+        )
+    )
 
     # IMP-017 report
-    checks.append(ValidationCheckReport(
-        check_code="IMP-017",
-        check_name="Sign / Cr-Dr interpretation applied",
-        status="warn" if sign_rule_issues else "pass",
-        severity="low",
-        offending_count=len(sign_rule_issues),
-        detail=f"{len(sign_rule_issues)} rows had sign or Cr-Dr rules applied",
-        message_slug="import.signRuleApplied" if sign_rule_issues else None,
-    ))
+    checks.append(
+        ValidationCheckReport(
+            check_code="IMP-017",
+            check_name="Sign / Cr-Dr interpretation applied",
+            status="warn" if sign_rule_issues else "pass",
+            severity="low",
+            offending_count=len(sign_rule_issues),
+            detail=f"{len(sign_rule_issues)} rows had sign or Cr-Dr rules applied",
+            message_slug="import.signRuleApplied" if sign_rule_issues else None,
+        )
+    )
 
     # IMP-018 report
-    checks.append(ValidationCheckReport(
-        check_code="IMP-018",
-        check_name="Period resolved against the fiscal calendar",
-        status="fail" if period_issues else "pass",
-        severity="high",
-        offending_count=len(period_issues),
-        detail=f"{len(period_issues)} rows with periods outside fiscal calendar",
-        message_slug="import.periodNotInCalendar" if period_issues else None,
-    ))
+    checks.append(
+        ValidationCheckReport(
+            check_code="IMP-018",
+            check_name="Period resolved against the fiscal calendar",
+            status="fail" if period_issues else "pass",
+            severity="high",
+            offending_count=len(period_issues),
+            detail=f"{len(period_issues)} rows with periods outside fiscal calendar",
+            message_slug="import.periodNotInCalendar" if period_issues else None,
+        )
+    )
 
     # IMP-019 report
-    checks.append(ValidationCheckReport(
-        check_code="IMP-019",
-        check_name="Dates inside configured fiscal year",
-        status="fail" if date_fy_issues else "pass",
-        severity="medium",
-        offending_count=len(date_fy_issues),
-        detail=f"{len(date_fy_issues)} rows with dates outside configured fiscal year",
-        message_slug="import.dateOutsideFiscalYear" if date_fy_issues else None,
-    ))
+    checks.append(
+        ValidationCheckReport(
+            check_code="IMP-019",
+            check_name="Dates inside configured fiscal year",
+            status="fail" if date_fy_issues else "pass",
+            severity="medium",
+            offending_count=len(date_fy_issues),
+            detail=f"{len(date_fy_issues)} rows with dates outside configured fiscal year",
+            message_slug="import.dateOutsideFiscalYear" if date_fy_issues else None,
+        )
+    )
 
     # IMP-020 report
-    checks.append(ValidationCheckReport(
-        check_code="IMP-020",
-        check_name="Currency matches project currency",
-        status="fail" if currency_issues else "pass",
-        severity="high",
-        offending_count=len(currency_issues),
-        detail=f"{len(currency_issues)} rows with non-matching currency",
-        message_slug="import.mixedCurrency" if currency_issues else None,
-    ))
+    checks.append(
+        ValidationCheckReport(
+            check_code="IMP-020",
+            check_name="Currency matches project currency",
+            status="fail" if currency_issues else "pass",
+            severity="high",
+            offending_count=len(currency_issues),
+            detail=f"{len(currency_issues)} rows with non-matching currency",
+            message_slug="import.mixedCurrency" if currency_issues else None,
+        )
+    )
 
     # IMP-021 report
-    checks.append(ValidationCheckReport(
-        check_code="IMP-021",
-        check_name="Zero-amount rows noted",
-        status="warn" if zero_amount_issues else "pass",
-        severity="low",
-        offending_count=len(zero_amount_issues),
-        detail=f"{len(zero_amount_issues)} zero-amount rows noted (kept in load)",
-        message_slug="import.zeroAmountRows" if zero_amount_issues else None,
-    ))
+    checks.append(
+        ValidationCheckReport(
+            check_code="IMP-021",
+            check_name="Zero-amount rows noted",
+            status="warn" if zero_amount_issues else "pass",
+            severity="low",
+            offending_count=len(zero_amount_issues),
+            detail=f"{len(zero_amount_issues)} zero-amount rows noted (kept in load)",
+            message_slug="import.zeroAmountRows" if zero_amount_issues else None,
+        )
+    )
 
     # IMP-022 report
-    checks.append(ValidationCheckReport(
-        check_code="IMP-022",
-        check_name="Debit and credit not both populated",
-        status="warn" if both_debit_credit_issues else "pass",
-        severity="low",
-        offending_count=len(both_debit_credit_issues),
-        detail=f"{len(both_debit_credit_issues)} rows have both debit and credit populated",
-        message_slug="import.bothDebitCredit" if both_debit_credit_issues else None,
-    ))
+    checks.append(
+        ValidationCheckReport(
+            check_code="IMP-022",
+            check_name="Debit and credit not both populated",
+            status="warn" if both_debit_credit_issues else "pass",
+            severity="low",
+            offending_count=len(both_debit_credit_issues),
+            detail=f"{len(both_debit_credit_issues)} rows have both debit and credit populated",
+            message_slug="import.bothDebitCredit" if both_debit_credit_issues else None,
+        )
+    )
 
     # IMP-023 report
     # Per-entity/period balance checked if source is general ledger or explicitly requested
-    check_entities_periods = (profile.source_type == "actuals_d365")
+    check_entities_periods = profile.source_type == "actuals_d365"
     # Budget files represent unidirectional budget amounts, so balance check passes for budget
     effective_balance_tolerance = quantize_money(balance_tolerance)
     if profile.source_type == "budget":
@@ -1085,14 +1144,14 @@ def _excel_value_for_csv(value: Any) -> str:
 
 def parse_excel_transactions(
     filepath: str | Path,
-    profile: Optional[MappingProfile] = None,
+    profile: MappingProfile | None = None,
     fiscal_year: int = 2026,
     fy_start: str = "2026-01-01",
     fy_end: str = "2026-12-31",
     project_currency: str = "INR",
     balance_tolerance: Decimal = ZERO,
-    control_total_acceptance: Optional[Dict[str, str]] = None,
-) -> Tuple[ImportBatchResult, List[ParsedTransaction]]:
+    control_total_acceptance: dict[str, str] | None = None,
+) -> tuple[ImportBatchResult, list[ParsedTransaction]]:
     """Parse the transaction sheet and optional ControlTotals sheet in an XLSX."""
     from openpyxl import load_workbook
     from openpyxl.utils.datetime import from_excel
@@ -1120,7 +1179,7 @@ def parse_excel_transactions(
             for index, header in enumerate(hardened.headers)
             if "date" in str(header).casefold()
         }
-        csv_rows: List[List[str]] = []
+        csv_rows: list[list[str]] = []
         for row_index, row in zip(hardened.row_indices, hardened.rows):
             serialized_row = []
             for column_index, value in enumerate(row):
@@ -1183,7 +1242,7 @@ def parse_excel_transactions(
                 )
             )
 
-    hardening_quarantines: Dict[int, List[Any]] = {}
+    hardening_quarantines: dict[int, list[Any]] = {}
     for finding in hardened.quarantined_rows:
         if finding.row_index is not None:
             hardening_quarantines.setdefault(finding.row_index, []).append(finding)
@@ -1207,8 +1266,7 @@ def parse_excel_transactions(
             batch.rejected_count,
         )
         batch.checks = [
-            reconciled if check.check_code == "IMP-024" else check
-            for check in batch.checks
+            reconciled if check.check_code == "IMP-024" else check for check in batch.checks
         ]
 
     if profile.source_type != "budget":
@@ -1217,9 +1275,7 @@ def parse_excel_transactions(
             transactions,
             acceptance=control_total_acceptance,
         )
-        batch.checks = [
-            check for check in batch.checks if check.check_code != "IMP-025"
-        ]
+        batch.checks = [check for check in batch.checks if check.check_code != "IMP-025"]
         batch.checks.append(total_report)
 
     return batch, transactions
@@ -1227,13 +1283,11 @@ def parse_excel_transactions(
 
 def parse_and_validate_csv(
     filepath: str | Path,
-    profile: Optional[MappingProfile] = None,
+    profile: MappingProfile | None = None,
     batch_id: int = 1,
     balance_tolerance: Decimal = ZERO,
 ) -> ImportBatchResult:
     """Parse and validate CSV file according to 32 checks in 04 §10."""
-    batch, _ = parse_csv_transactions(
-        filepath, profile, balance_tolerance=balance_tolerance
-    )
+    batch, _ = parse_csv_transactions(filepath, profile, balance_tolerance=balance_tolerance)
     batch.batch_id = batch_id
     return batch

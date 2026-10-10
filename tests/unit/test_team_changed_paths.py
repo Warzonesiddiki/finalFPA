@@ -12,6 +12,7 @@ and failed the existence check as a path that does not exist, and .xlsx was miss
 from the allowlist, so 33 of the 55 files under sample-data/ could not be declared at
 all - the gate was blind to exactly the lane that changes them most.
 """
+
 from __future__ import annotations
 
 import sys
@@ -30,15 +31,20 @@ def declared(body: str) -> set[str]:
 
 # --------------------------------------------------------------------------- acceptance
 def test_accepts_the_extensions_every_lane_actually_ships():
-    got = declared("app/engine/rules/rules_01_08.py, ui/src/main.tsx, "
-                   "sample-data/gl/d365_gl_actuals.csv, "
-                   "sample-data/import_history/02_gl_batch_039.xlsx, "
-                   "dist/pilot-1.2.3.pptx, evidence/report.pdf, packaging/SBOM.json")
+    got = declared(
+        "app/engine/rules/rules_01_08.py, ui/src/main.tsx, "
+        "sample-data/gl/d365_gl_actuals.csv, "
+        "sample-data/import_history/02_gl_batch_039.xlsx, "
+        "dist/pilot-1.2.3.pptx, evidence/report.pdf, packaging/SBOM.json"
+    )
     assert got == {
-        "app/engine/rules/rules_01_08.py", "ui/src/main.tsx",
+        "app/engine/rules/rules_01_08.py",
+        "ui/src/main.tsx",
         "sample-data/gl/d365_gl_actuals.csv",
         "sample-data/import_history/02_gl_batch_039.xlsx",
-        "dist/pilot-1.2.3.pptx", "evidence/report.pdf", "packaging/SBOM.json",
+        "dist/pilot-1.2.3.pptx",
+        "evidence/report.pdf",
+        "packaging/SBOM.json",
     }
 
 
@@ -54,13 +60,16 @@ def test_accepts_a_dotted_version_string_beside_a_real_path():
 
 
 # --------------------------------------------------------------------------- rejection
-@pytest.mark.parametrize("line", [
-    "3.14.7",
-    "940 passed",
-    "docs/18",
-    "--no-cache",
-    "section 5.3",
-])
+@pytest.mark.parametrize(
+    "line",
+    [
+        "3.14.7",
+        "940 passed",
+        "docs/18",
+        "--no-cache",
+        "section 5.3",
+    ],
+)
 def test_rejects_tokens_that_only_look_like_paths(line: str):
     assert declared(line) == set()
 
@@ -78,8 +87,7 @@ def test_expands_a_brace_group_into_its_members():
 
 
 def test_expands_two_brace_groups_on_one_line():
-    assert declared("a/{x.py,y.py} b/{p.md,q.md}") == {
-        "a/x.py", "a/y.py", "b/p.md", "b/q.md"}
+    assert declared("a/{x.py,y.py} b/{p.md,q.md}") == {"a/x.py", "a/y.py", "b/p.md", "b/q.md"}
 
 
 def test_expands_before_splitting_so_the_commas_inside_the_braces_do_not_break_it():
@@ -107,8 +115,8 @@ def test_handoff_index_and_rejection_detection():
         hd.mkdir()
         (hd / "HO-031-ux-08.md").write_text("# HO-031\n\n## Changed\n", encoding="utf-8")
         (hd / "HO-040-ux-08.md").write_text(
-            "# HO-040\n\n### Rejected by `buffy`\nRequired before re-handoff:\n",
-            encoding="utf-8")
+            "# HO-040\n\n### Rejected by `buffy`\nRequired before re-handoff:\n", encoding="utf-8"
+        )
         (hd / "TEMPLATE.md").write_text("# template\n", encoding="utf-8")
         (hd / "HO-041-ux-09.md").write_text("# HO-041\n", encoding="utf-8")
 
@@ -124,8 +132,11 @@ def test_handoff_index_and_rejection_detection():
             # whose only handoff was rejected
             hidx, rej = team.handoff_index(), team.rejected_handoffs()
             tid, hid = "UX-08", "HO-040"
-            newer = [h for h, (n, suf, _f) in hidx.items()
-                     if suf.startswith(tid.lower()) and n > hidx[hid][0] and h not in rej]
+            newer = [
+                h
+                for h, (n, suf, _f) in hidx.items()
+                if suf.startswith(tid.lower()) and n > hidx[hid][0] and h not in rej
+            ]
             assert hid in rej and not newer
         finally:
             team.HANDOFFS = original

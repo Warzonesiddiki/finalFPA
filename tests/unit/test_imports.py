@@ -1,9 +1,10 @@
 """Unit and golden tests for import parser and validation checks per 04_SOURCE_MAPPING_AND_IMPORT_SPEC.md."""
 
-import pytest
 from pathlib import Path
-from app.engine.imports import prescan_file, parse_and_validate_csv, compute_file_checksum
-from app.engine.calc import ZERO
+
+import pytest
+
+from app.engine.imports import compute_file_checksum, parse_and_validate_csv, prescan_file
 
 
 @pytest.mark.tst_id("TST-IMP-01")
@@ -32,7 +33,10 @@ def test_parse_and_validate_bank_ledger():
         batch = parse_and_validate_csv(sample_file)
         assert batch.total_source_rows > 0
         # Check rule P13: total_source_rows == loaded + quarantined + rejected
-        assert batch.total_source_rows == batch.loaded_count + batch.quarantined_count + batch.rejected_count
+        assert (
+            batch.total_source_rows
+            == batch.loaded_count + batch.quarantined_count + batch.rejected_count
+        )
         # Find check IMP-024
         check_24 = next(c for c in batch.checks if c.check_code == "IMP-024")
         assert check_24.status == "pass"
@@ -46,4 +50,7 @@ def test_parse_and_validate_malformed_date():
         assert batch.quarantined_count > 0
         assert any(q["reason_code"] == "import.dateUnparsed" for q in batch.quarantined_rows)
         # Equation source = loaded + quarantined + rejected must still hold
-        assert batch.total_source_rows == batch.loaded_count + batch.quarantined_count + batch.rejected_count
+        assert (
+            batch.total_source_rows
+            == batch.loaded_count + batch.quarantined_count + batch.rejected_count
+        )

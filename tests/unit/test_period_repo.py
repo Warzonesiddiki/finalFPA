@@ -1,6 +1,6 @@
-import pytest
-from app.engine.store.period_repo import PeriodRepository
 from app.engine.store.db import DatabaseManager
+from app.engine.store.period_repo import PeriodRepository
+
 
 def test_period_repo_operations(tmp_path):
     db_path = tmp_path / "test.db"

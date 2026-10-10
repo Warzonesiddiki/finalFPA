@@ -17,49 +17,46 @@ quoted inline from 06_EXCEPTION_RULES_CATALOG.md.
 
 from __future__ import annotations
 
-import calendar
-import re
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
-from app.engine.calc.math import quantize_money, ZERO
+from app.engine.calc.math import ZERO, quantize_money
 from app.engine.rules.rules_01_08 import (
     Finding,
-    RecurringCostRuleItem,
     RuleContext,
+    _derive_period_from_date,
     _get_val,
     _import_batch_source_types,
     _is_expense_transaction,
     _is_general_ledger_transaction,
     _parse_date,
-    _derive_period_from_date,
-    period_end_from_id,
     evaluate_exc_004,
     evaluate_exc_005,
     evaluate_exc_006,
+    period_end_from_id,
 )
-
 
 # ==============================================================================
 # EXC-010: Potential cut-off issue (Catalog EXC-010)
 # ==============================================================================
 
-def _period_end_for(context: RuleContext, period_id: Optional[str]) -> Optional[date]:
+
+def _period_end_for(context: RuleContext, period_id: str | None) -> date | None:
     """Resolve a period end from DimPeriod data, falling back to the standard calendar."""
     ends = getattr(context, "dim_period_end_dates", None) or {}
     raw_end = ends.get(str(period_id).strip()) if period_id else None
     return _parse_date(raw_end) if raw_end else _period_end_from_id(period_id)
 
 
-def evaluate_exc_010(context: RuleContext) -> List[Finding]:
+def evaluate_exc_010(context: RuleContext) -> list[Finding]:
     """EXC-010: Catch prior-period document dates posted near period boundary."""
-    findings: List[Finding] = []
+    findings: list[Finding] = []
     cutoff_window_days = int(context.config.get("EXC-010_cutoff_window_days", 7))
     min_amount = Decimal(str(context.config.get("EXC-010_min_amount", "50000.00")))
     max_gap_days = int(context.config.get("EXC-010_max_gap_days", 90))
 
-    groups: Dict[Tuple[str, str, str, str], List[Any]] = {}
+    groups: dict[tuple[str, str, str, str], list[Any]] = {}
 
     for tx in context.transactions:
         post_d = _parse_date(_get_val(tx, "posting_date"))
@@ -86,7 +83,9 @@ def evaluate_exc_010(context: RuleContext) -> List[Finding]:
             and doc_period < post_period
             and 0 <= days_after_close <= cutoff_window_days
         ):
-            amt = quantize_money(_get_val(tx, "debit", ZERO) or abs(_get_val(tx, "net_amount", ZERO)))
+            amt = quantize_money(
+                _get_val(tx, "debit", ZERO) or abs(_get_val(tx, "net_amount", ZERO))
+            )
             if amt >= min_amount:
                 comp = str(_get_val(tx, "company_code", "IN01")).strip()
                 acc = str(_get_val(tx, "account_code", "")).strip()
@@ -95,7 +94,9 @@ def evaluate_exc_010(context: RuleContext) -> List[Finding]:
                 key = (comp, acc, vendor, doc_str)
                 groups.setdefault(key, []).append(tx)
 
-    for (comp, acc, vendor, doc_str), tx_list in sorted(groups.items(), key=lambda x: (x[0][0], x[0][1])):
+    for (comp, acc, vendor, doc_str), tx_list in sorted(
+        groups.items(), key=lambda x: (x[0][0], x[0][1])
+    ):
         total_amount = sum(
             quantize_money(_get_val(tx, "debit", ZERO) or abs(_get_val(tx, "net_amount", ZERO)))
             for tx in tx_list
@@ -106,11 +107,11 @@ def evaluate_exc_010(context: RuleContext) -> List[Finding]:
         # dimensions for grouping and reviewer detail.
         invoice = str(_get_val(tx_list[0], "invoice_no", "")).strip()
         subject_key = (
-            f"{vendor}|{invoice}"
-            if vendor and invoice
-            else f"{comp}|{acc}|{vendor}|{doc_str}"
+            f"{vendor}|{invoice}" if vendor and invoice else f"{comp}|{acc}|{vendor}|{doc_str}"
         )
-        evidence_refs = [str(_get_val(tx, "source_row_ref", f"row_{i}")) for i, tx in enumerate(tx_list, 1)]
+        evidence_refs = [
+            str(_get_val(tx, "source_row_ref", f"row_{i}")) for i, tx in enumerate(tx_list, 1)
+        ]
 
         findings.append(
             Finding(
@@ -157,7 +158,7 @@ _EXC011_BEYOND_PERIOD_END = 0
 _EXC011_WITHIN_OPEN_PERIOD = 1
 
 
-def _exc_011_rank_bucket(post_d: date, period_end: Optional[date]) -> int:
+def _exc_011_rank_bucket(post_d: date, period_end: date | None) -> int:
     """Return 0 when the posting is beyond the period end, else 1.
 
     When the period end cannot be resolved (period_id not in FYyy-Pmm form) every
@@ -169,22 +170,20 @@ def _exc_011_rank_bucket(post_d: date, period_end: Optional[date]) -> int:
     return _EXC011_BEYOND_PERIOD_END if post_d > period_end else _EXC011_WITHIN_OPEN_PERIOD
 
 
-def _context_period_end(
-    context: RuleContext, period_id: Optional[str] = None
-) -> Optional[date]:
+def _context_period_end(context: RuleContext, period_id: str | None = None) -> date | None:
     """Resolve a period end, preferring DimPeriod data over the calendar fallback."""
     resolved_period = str(period_id or context.period_id).strip()
     raw = (getattr(context, "dim_period_end_dates", None) or {}).get(resolved_period)
     return _parse_date(raw) if raw else _period_end_from_id(resolved_period)
 
 
-def evaluate_exc_011(context: RuleContext) -> List[Finding]:
+def evaluate_exc_011(context: RuleContext) -> list[Finding]:
     """EXC-011: Detect transactions with posting_date after as_of_date.
 
     Findings are returned in the doc 06 ranking order: rows dated beyond the period
     end first, rows dated inside the still-open period last.
     """
-    findings: List[Finding] = []
+    findings: list[Finding] = []
     as_of = _parse_date(context.as_of_date) if context.as_of_date else None
     if not as_of:
         return findings
@@ -192,7 +191,7 @@ def evaluate_exc_011(context: RuleContext) -> List[Finding]:
     min_amount = Decimal(str(context.config.get("EXC-011_min_amount", "0.00")))
     period_end = _context_period_end(context)
 
-    groups: Dict[Tuple[str, str, str], List[Any]] = {}
+    groups: dict[tuple[str, str, str], list[Any]] = {}
 
     for tx in context.transactions:
         post_d = _parse_date(_get_val(tx, "posting_date"))
@@ -200,7 +199,9 @@ def evaluate_exc_011(context: RuleContext) -> List[Finding]:
             continue
 
         if post_d > as_of:
-            amt = quantize_money(_get_val(tx, "debit", ZERO) or abs(_get_val(tx, "net_amount", ZERO)))
+            amt = quantize_money(
+                _get_val(tx, "debit", ZERO) or abs(_get_val(tx, "net_amount", ZERO))
+            )
             if amt >= min_amount:
                 comp = str(_get_val(tx, "company_code", "IN01")).strip()
                 vch = str(_get_val(tx, "voucher_no", "")).strip()
@@ -239,18 +240,23 @@ def evaluate_exc_011(context: RuleContext) -> List[Finding]:
         # rather than as a distinct one. Verified zero such vouchers in the
         # sample corpus; grouping is unchanged by this decision.
         subject_key = f"{comp}|{vch}"
-        evidence_refs = [str(_get_val(tx, "source_row_ref", f"row_{i}")) for i, tx in enumerate(tx_list, 1)]
+        evidence_refs = [
+            str(_get_val(tx, "source_row_ref", f"row_{i}")) for i, tx in enumerate(tx_list, 1)
+        ]
         beyond = _exc_011_rank_bucket(post_d, period_end) == _EXC011_BEYOND_PERIOD_END
         scope = (
-            "beyond period end" if beyond
+            "beyond period end"
+            if beyond
             else f"within the open period (ends {period_end.isoformat()})"
         )
         # Doc 06: "the detail shows the voucher and account".
-        accounts = sorted({
-            str(_get_val(tx, "account_code", "")).strip()
-            for tx in tx_list
-            if str(_get_val(tx, "account_code", "")).strip()
-        })
+        accounts = sorted(
+            {
+                str(_get_val(tx, "account_code", "")).strip()
+                for tx in tx_list
+                if str(_get_val(tx, "account_code", "")).strip()
+            }
+        )
         account_text = ", ".join(accounts) if accounts else "no account on row"
 
         findings.append(
@@ -282,9 +288,10 @@ def evaluate_exc_011(context: RuleContext) -> List[Finding]:
 # EXC-013: Out-of-pattern spike vs trailing average (Catalog EXC-013)
 # ==============================================================================
 
-def evaluate_exc_013(context: RuleContext) -> List[Finding]:
+
+def evaluate_exc_013(context: RuleContext) -> list[Finding]:
     """EXC-013: Detect monthly spend spiking significantly vs historical trailing average."""
-    findings: List[Finding] = []
+    findings: list[Finding] = []
     spike_ratio = Decimal(str(context.config.get("EXC-013_spike_ratio", "2.5")))
     min_deviation = Decimal(str(context.config.get("EXC-013_min_deviation", "50000.00")))
 
@@ -292,8 +299,8 @@ def evaluate_exc_013(context: RuleContext) -> List[Finding]:
     current_end = _period_end_from_id(current_period)
 
     # 1) Aggregate current period and prior periods by (company_code, account_code, cost_center_code)
-    current_totals: Dict[Tuple[str, str, str], List[Any]] = {}
-    prior_period_totals: Dict[Tuple[str, str, str], Dict[str, Decimal]] = {}
+    current_totals: dict[tuple[str, str, str], list[Any]] = {}
+    prior_period_totals: dict[tuple[str, str, str], dict[str, Decimal]] = {}
 
     for tx in context.transactions:
         comp = str(_get_val(tx, "company_code", "IN01")).strip()
@@ -337,7 +344,9 @@ def evaluate_exc_013(context: RuleContext) -> List[Finding]:
                 if mean_baseline > ZERO:
                     historical_baselines[key_str] = quantize_money(mean_baseline)
 
-    for (comp, acc, cc), tx_list in sorted(current_totals.items(), key=lambda x: (x[0][0], x[0][1])):
+    for (comp, acc, cc), tx_list in sorted(
+        current_totals.items(), key=lambda x: (x[0][0], x[0][1])
+    ):
         curr_total = sum(
             quantize_money(abs(_get_val(tx, "net_amount", ZERO) or _get_val(tx, "debit", ZERO)))
             for tx in tx_list
@@ -352,7 +361,10 @@ def evaluate_exc_013(context: RuleContext) -> List[Finding]:
                     # The acceptance fixture keys this period-scoped finding by
                     # company/account/cost centre; period remains in the finding field.
                     subject_key = f"{comp}|{acc}|{cc}"
-                    evidence_refs = [str(_get_val(tx, "source_row_ref", f"row_{i}")) for i, tx in enumerate(tx_list, 1)]
+                    evidence_refs = [
+                        str(_get_val(tx, "source_row_ref", f"row_{i}"))
+                        for i, tx in enumerate(tx_list, 1)
+                    ]
                     findings.append(
                         Finding(
                             rule_id="EXC-013",
@@ -378,9 +390,10 @@ def evaluate_exc_013(context: RuleContext) -> List[Finding]:
 # EXC-014: Unusual vendor -> account combination (Catalog EXC-014)
 # ==============================================================================
 
-def evaluate_exc_014(context: RuleContext) -> List[Finding]:
+
+def evaluate_exc_014(context: RuleContext) -> list[Finding]:
     """EXC-014: Detect spend posted to an account a vendor has never historically used."""
-    findings: List[Finding] = []
+    findings: list[Finding] = []
     min_amount = Decimal(str(context.config.get("EXC-014_min_amount", "100000.00")))
     historical_pairs = context.config.get("known_vendor_accounts", set())
 
@@ -389,11 +402,13 @@ def evaluate_exc_014(context: RuleContext) -> List[Finding]:
 
     # 1) If known_vendor_accounts not provided in config, derive from prior period transactions
     historical_pairs = set(context.config.get("known_vendor_accounts", set()))
-    historical_vendor_activity: Dict[str, Dict[str, Set[str]]] = {}  # vendor -> {"periods": set(), "accounts": set(), "rows": 0}
+    historical_vendor_activity: dict[
+        str, dict[str, set[str]]
+    ] = {}  # vendor -> {"periods": set(), "accounts": set(), "rows": 0}
 
     # Separate current period transactions from prior periods
-    current_txs: List[Any] = []
-    prior_txs: List[Any] = []
+    current_txs: list[Any] = []
+    prior_txs: list[Any] = []
 
     for tx in context.transactions:
         tx_p = _get_val(tx, "period_code")
@@ -423,7 +438,9 @@ def evaluate_exc_014(context: RuleContext) -> List[Finding]:
 
             if vendor and acc:
                 historical_pairs.add((vendor, acc))
-                v_entry = historical_vendor_activity.setdefault(vendor, {"periods": set(), "accounts": set(), "rows": 0})
+                v_entry = historical_vendor_activity.setdefault(
+                    vendor, {"periods": set(), "accounts": set(), "rows": 0}
+                )
                 v_entry["periods"].add(tx_period)
                 v_entry["accounts"].add(acc)
                 v_entry["rows"] += 1
@@ -433,7 +450,7 @@ def evaluate_exc_014(context: RuleContext) -> List[Finding]:
     min_history_periods = int(context.config.get("EXC-014_min_history_periods", 2))
     max_historical_accounts = int(context.config.get("EXC-014_max_historical_accounts", 3))
 
-    groups: Dict[Tuple[str, str], List[Any]] = {}
+    groups: dict[tuple[str, str], list[Any]] = {}
     for tx in current_txs:
         vendor = str(_get_val(tx, "vendor_code", "")).strip()
         acc = str(_get_val(tx, "account_code", "")).strip()
@@ -452,7 +469,9 @@ def evaluate_exc_014(context: RuleContext) -> List[Finding]:
                 if len(act["accounts"]) > max_historical_accounts:
                     continue
 
-            amt = quantize_money(abs(_get_val(tx, "net_amount", ZERO) or _get_val(tx, "debit", ZERO)))
+            amt = quantize_money(
+                abs(_get_val(tx, "net_amount", ZERO) or _get_val(tx, "debit", ZERO))
+            )
             if amt >= min_amount:
                 groups.setdefault(pair, []).append(tx)
 
@@ -462,7 +481,9 @@ def evaluate_exc_014(context: RuleContext) -> List[Finding]:
             for tx in tx_list
         )
         subject_key = f"{vendor}|{acc}"
-        evidence_refs = [str(_get_val(tx, "source_row_ref", f"row_{i}")) for i, tx in enumerate(tx_list, 1)]
+        evidence_refs = [
+            str(_get_val(tx, "source_row_ref", f"row_{i}")) for i, tx in enumerate(tx_list, 1)
+        ]
 
         findings.append(
             Finding(
@@ -500,7 +521,8 @@ def evaluate_exc_014(context: RuleContext) -> List[Finding]:
 # rule_id EXC-004. These entry points are the catalog-named surface for the
 # EXC-009..EXC-016 batch and stamp catalog_rule_id for register/export consumers.
 
-def evaluate_exc_009(context: RuleContext) -> List[Finding]:
+
+def evaluate_exc_009(context: RuleContext) -> list[Finding]:
     """EXC-009: raise one High finding per (batch, company, declared, derived) group."""
     findings = evaluate_exc_004(context)
     for f in findings:
@@ -519,7 +541,8 @@ def evaluate_exc_009(context: RuleContext) -> List[Finding]:
 # Thresholds: min_credit_amount; offset_ratio = 0.90. Tier exact, severity Medium,
 # owner Cost Centre Owner.
 
-def evaluate_exc_012(context: RuleContext) -> List[Finding]:
+
+def evaluate_exc_012(context: RuleContext) -> list[Finding]:
     """EXC-012: catalog-named entry point for the negative-expense rule."""
     findings = evaluate_exc_005(context)
     for f in findings:
@@ -541,7 +564,8 @@ def evaluate_exc_012(context: RuleContext) -> List[Finding]:
 # Doc 06 section 3: without the recurring-cost master the rule is disabled, never
 # approximated - an empty master list yields no findings.
 
-def evaluate_exc_015(context: RuleContext) -> List[Finding]:
+
+def evaluate_exc_015(context: RuleContext) -> list[Finding]:
     """EXC-015: catalog-named entry point for the missing-recurring-cost rule."""
     findings = evaluate_exc_006(context)
     for f in findings:
@@ -570,7 +594,8 @@ def evaluate_exc_015(context: RuleContext) -> List[Finding]:
 # ("needs at least N loaded periods") rather than substituting a heuristic - so with
 # fewer than pattern_periods prior periods carrying a pattern, nothing is raised.
 
-def _period_end_from_id(period_id: Optional[str]) -> Optional[date]:
+
+def _period_end_from_id(period_id: str | None) -> date | None:
     """Resolve an FYyy-Pmm period id to its calendar period-end date.
 
     Thin local alias onto the shared rules_01_08 helper so the calendar logic has
@@ -580,7 +605,7 @@ def _period_end_from_id(period_id: Optional[str]) -> Optional[date]:
     return period_end_from_id(period_id)
 
 
-def _accrual_amount(record: Dict[str, Any]) -> Decimal:
+def _accrual_amount(record: dict[str, Any]) -> Decimal:
     """Absolute accrual amount from a prior-period record mapping."""
     raw = record.get("amount")
     if raw is None:
@@ -591,9 +616,9 @@ def _accrual_amount(record: Dict[str, Any]) -> Decimal:
         return ZERO
 
 
-def evaluate_exc_016(context: RuleContext) -> List[Finding]:
+def evaluate_exc_016(context: RuleContext) -> list[Finding]:
     """EXC-016: flag a stable month-end accrual pattern absent from this period."""
-    findings: List[Finding] = []
+    findings: list[Finding] = []
 
     pattern_periods = int(context.config.get("EXC-016_pattern_periods", 3))
     stability_band = Decimal(str(context.config.get("EXC-016_stability_band", "0.25")))
@@ -610,13 +635,12 @@ def evaluate_exc_016(context: RuleContext) -> List[Finding]:
         # Production contexts carry the committed actual rows but do not inject
         # a separate history table. Derive the pattern inputs from those rows.
         prior_records = []
-        candidate_rows: Dict[Tuple[str, str, str, str], List[Tuple[Any, date, Decimal]]] = {}
+        candidate_rows: dict[tuple[str, str, str, str], list[tuple[Any, date, Decimal]]] = {}
         source_types = _import_batch_source_types(context)
         for tx in context.transactions:
-            if (
-                not _is_general_ledger_transaction(tx, context, source_types)
-                or not _is_expense_transaction(context, tx)
-            ):
+            if not _is_general_ledger_transaction(
+                tx, context, source_types
+            ) or not _is_expense_transaction(context, tx):
                 continue
             raw_period = _get_val(tx, "period_code")
             period = str(raw_period).strip() if raw_period is not None else ""
@@ -649,29 +673,30 @@ def evaluate_exc_016(context: RuleContext) -> List[Finding]:
         # to the same voucher for that key and period.
         for (comp, acc, cc, period), rows in candidate_rows.items():
             voucher_ids = {
-                str(_get_val(tx, "voucher_no", "")).strip()
-                for tx, _post_d, _amount in rows
+                str(_get_val(tx, "voucher_no", "")).strip() for tx, _post_d, _amount in rows
             }
             if len(voucher_ids) != 1 or not next(iter(voucher_ids)):
                 continue
             amount = quantize_money(sum((row[2] for row in rows), ZERO))
             first_tx, first_post, _first_amount = min(rows, key=lambda row: row[1])
-            prior_records.append({
-                "period_id": period,
-                "company_code": comp,
-                "account_code": acc,
-                "cost_center_code": cc,
-                "posting_date": first_post.isoformat(),
-                "amount": amount,
-                "source_row_ref": _get_val(first_tx, "source_row_ref"),
-                "voucher_no": next(iter(voucher_ids)),
-            })
+            prior_records.append(
+                {
+                    "period_id": period,
+                    "company_code": comp,
+                    "account_code": acc,
+                    "cost_center_code": cc,
+                    "posting_date": first_post.isoformat(),
+                    "amount": amount,
+                    "source_row_ref": _get_val(first_tx, "source_row_ref"),
+                    "voucher_no": next(iter(voucher_ids)),
+                }
+            )
 
     if not isinstance(prior_records, (list, tuple)):
         return findings
 
     # 1) Bucket prior-period pre-close debits by key -> period
-    history: Dict[Tuple[str, str, str], Dict[str, Dict[str, Any]]] = {}
+    history: dict[tuple[str, str, str], dict[str, dict[str, Any]]] = {}
     for rec in prior_records:
         if not isinstance(rec, dict):
             continue
@@ -721,13 +746,12 @@ def evaluate_exc_016(context: RuleContext) -> List[Finding]:
         return findings
 
     # 2) Current-period GL expense postings by key for the comparable-window test
-    current_by_key: Dict[Tuple[str, str, str], List[Any]] = {}
+    current_by_key: dict[tuple[str, str, str], list[Any]] = {}
     current_source_types = _import_batch_source_types(context)
     for tx in context.transactions:
-        if (
-            not _is_general_ledger_transaction(tx, context, current_source_types)
-            or not _is_expense_transaction(context, tx)
-        ):
+        if not _is_general_ledger_transaction(
+            tx, context, current_source_types
+        ) or not _is_expense_transaction(context, tx):
             continue
         raw_period = _get_val(tx, "period_code")
         tx_period = str(raw_period).strip() if raw_period is not None else ""
@@ -743,8 +767,8 @@ def evaluate_exc_016(context: RuleContext) -> List[Finding]:
             continue
         current_by_key.setdefault((comp, acc, cc), []).append(tx)
 
-    window_start: Optional[date] = None
-    window_end_bound: Optional[date] = None
+    window_start: date | None = None
+    window_end_bound: date | None = None
     if current_end is not None and window_days > 0:
         window_start = date.fromordinal(current_end.toordinal() - (window_days - 1))
         window_end_bound = date.fromordinal(current_end.toordinal() - 1)
@@ -776,7 +800,7 @@ def evaluate_exc_016(context: RuleContext) -> List[Finding]:
             continue
 
         # 4) Does the current period carry a comparable pre-close accrual?
-        matched_rows: List[Any] = []
+        matched_rows: list[Any] = []
         for tx in current_by_key.get((comp, acc, cc), []):
             post_d = _parse_date(_get_val(tx, "posting_date"))
             if post_d is None or window_start is None or window_end_bound is None:
@@ -791,8 +815,8 @@ def evaluate_exc_016(context: RuleContext) -> List[Finding]:
             # Pattern present this period - nothing missing.
             continue
 
-        evidence_periods = ', '.join(
-            '{} Rs {} on {}'.format(p_, d['amount'], d['posting_date'].isoformat())
+        evidence_periods = ", ".join(
+            "{} Rs {} on {}".format(p_, d["amount"], d["posting_date"].isoformat())
             for p_, d in ordered_periods
         )
         window_text = (
@@ -800,9 +824,7 @@ def evaluate_exc_016(context: RuleContext) -> List[Finding]:
             if window_start and window_end_bound
             else f"last {window_days} days of {current_period}"
         )
-        evidence_refs = [
-            d["source_row_ref"] for _, d in ordered_periods if d.get("source_row_ref")
-        ]
+        evidence_refs = [d["source_row_ref"] for _, d in ordered_periods if d.get("source_row_ref")]
         evidence_refs += [
             str(_get_val(tx, "source_row_ref", f"row_{i}"))
             for i, tx in enumerate(current_by_key.get((comp, acc, cc), []), 1)
@@ -823,12 +845,7 @@ def evaluate_exc_016(context: RuleContext) -> List[Finding]:
                 period_id=context.period_id,
                 owner_role="GL Accountant",
                 effective_threshold=(
-                    'pattern_periods {}; stability_band {}%; '
-                    'accrual_post_window_days {}'.format(
-                        pattern_periods,
-                        quantize_money(stability_band * Decimal(100)),
-                        window_days,
-                    )
+                    f"pattern_periods {pattern_periods}; stability_band {quantize_money(stability_band * Decimal(100))}%; accrual_post_window_days {window_days}"
                 ),
                 detail=(
                     f"No accrual posted on {acc}/{cc} within {window_text}, yet the last "
@@ -869,9 +886,9 @@ BATCH_09_16_EVALUATORS = (
 )
 
 
-def evaluate_all_09_16(context: RuleContext) -> List[Finding]:
+def evaluate_all_09_16(context: RuleContext) -> list[Finding]:
     """Execute the EXC-009..EXC-016 batch deterministically in catalog order."""
-    all_findings: List[Finding] = []
+    all_findings: list[Finding] = []
     for evaluator in BATCH_09_16_EVALUATORS:
         all_findings.extend(evaluator(context))
     return all_findings

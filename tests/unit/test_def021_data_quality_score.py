@@ -11,6 +11,7 @@ unbalanced file therefore still reported "100% data quality" to the client.
 Per 05 §8 (CALC-050) the score is derived from the check reports, and §8.2
 guarantee 1 states that any failed High-severity check must cap the score at 96.
 """
+
 from decimal import Decimal
 
 import pytest
@@ -115,7 +116,9 @@ def test_clean_batch_scores_full_marks(tmp_path):
     assert _stored_score(repo, batch_id) == Decimal("100")
 
 
-@pytest.mark.parametrize("status,expected_below_100", [("warn", True), ("fail", True), ("pass", False)])
+@pytest.mark.parametrize(
+    "status,expected_below_100", [("warn", True), ("fail", True), ("pass", False)]
+)
 def test_score_tracks_check_status(tmp_path, status, expected_below_100):
     """Score must move with check status rather than ignoring the reports."""
     repo = ImportRepository(DatabaseManager(tmp_path / f"dq_{status}.db"))

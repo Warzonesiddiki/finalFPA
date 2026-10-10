@@ -3,14 +3,8 @@
 Per docs/10_AI_INTEGRATION_SPEC.md §1 through §7.
 """
 
-from decimal import Decimal
-import pytest
-
 from app.engine.ai.client import (
-    AIConfig,
-    AIDraftResult,
     RedactionEngine,
-    AIClient,
 )
 
 
@@ -52,6 +46,7 @@ def test_redaction_engine_vendor_masking():
 def test_rule_based_narrative_generator_fallback():
     """Verify offline deterministic narrative generation (PROMPT-01 fallback)."""
     from app.engine.ai.client import RuleBasedNarrativeGenerator
+
     variables = {
         "period_label": "September 2026",
         "data_block_json": {
@@ -61,9 +56,7 @@ def test_rule_based_narrative_generator_fallback():
                 {"label": "Favourability", "value": "Unfavourable"},
                 {"label": "Variance", "value": "45,000.00", "currency": "INR"},
             ],
-            "contributors": [
-                {"label": "Airfare", "amount": "30,000.00", "id": "cont-1"}
-            ],
+            "contributors": [{"label": "Airfare", "amount": "30,000.00", "id": "cont-1"}],
         },
     }
     result = RuleBasedNarrativeGenerator.generate_prompt_01(variables)

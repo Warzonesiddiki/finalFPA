@@ -10,6 +10,7 @@ short-circuits, a ship decision gets made on a partial picture, which is the fai
 written to remove. The staleness and no-adjective-free-text checks are secondary but real: a
 hand-edited dossier is a dossier nobody can trust.
 """
+
 from __future__ import annotations
 
 import sys
@@ -24,8 +25,15 @@ import release_dossier as rd  # noqa: E402
 
 def results(*specs: tuple[str, int]) -> list[dict]:
     return [
-        {"id": gid, "proves": f"{gid} proves something", "cmd": f"scripts/{gid}.py",
-         "rc": rc, "secs": 1.0, "note": "note", "slow": False}
+        {
+            "id": gid,
+            "proves": f"{gid} proves something",
+            "cmd": f"scripts/{gid}.py",
+            "rc": rc,
+            "secs": 1.0,
+            "note": "note",
+            "slow": False,
+        }
         for gid, rc in specs
     ]
 
@@ -33,8 +41,16 @@ def results(*specs: tuple[str, int]) -> list[dict]:
 def build(rs: list[dict], **kw) -> str:
     red = [r for r in rs if r["rc"] != 0]
     green = [r for r in rs if r["rc"] == 0]
-    args = {"skipped": [], "head_sha": "abc1234", "tracked": 10, "dirty": 5,
-            "declared_od": 18, "listed_od": 2, "od_ids": ["OQ-016", "OQ-017"], "slow": True}
+    args = {
+        "skipped": [],
+        "head_sha": "abc1234",
+        "tracked": 10,
+        "dirty": 5,
+        "declared_od": 18,
+        "listed_od": 2,
+        "od_ids": ["OQ-016", "OQ-017"],
+        "slow": True,
+    }
     args.update(kw)
     return rd.build(rs, red, green, **args)
 
@@ -103,6 +119,7 @@ def test_check_fails_on_a_stale_dossier(tmp_path: Path, monkeypatch: pytest.Monk
     # Rebuilding must disagree with the stale file.
     import io
     from contextlib import redirect_stderr, redirect_stdout
+
     out, err = io.StringIO(), io.StringIO()
     with redirect_stdout(out), redirect_stderr(err):
         code = rd.main(["--check"])

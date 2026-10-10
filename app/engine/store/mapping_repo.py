@@ -1,25 +1,23 @@
 """Mapping profile and version persistence repository per 04_SOURCE_MAPPING_AND_IMPORT_SPEC.md §5 and 03_DATA_DICTIONARY.md §3.8, §5.5."""
 
 import json
-from datetime import datetime
-from typing import Dict, List, Optional, Any
 import sqlite3
-import duckdb
+from datetime import datetime
+from typing import Any
 
-from app.engine.store.db import DatabaseManager
 from app.engine.imports.profiles import (
+    BUILTIN_PROFILES,
+    DimMapping,
     MappingProfile,
     MappingProfileVersion,
-    DimMapping,
-    BUILTIN_PROFILES,
     compute_header_signature,
-    normalize_header,
 )
+from app.engine.store.db import DatabaseManager
 
 
 class MappingRepository:
     """Manages persistence, versioning, immutability, and cloning of mapping profiles.
-    
+
     Persistence architecture per 03_DATA_DICTIONARY.md:
     - MappingProfile & MappingProfileVersion stored in SQLite (workflow state)
     - DimMapping stored in DuckDB (analytical store) and SQLite (workflow state)
@@ -50,9 +48,9 @@ class MappingRepository:
         self,
         profile: MappingProfile,
         change_note: str = "Initial profile creation",
-        effective_from_period_id: Optional[int] = None,
+        effective_from_period_id: int | None = None,
         created_by: str = "system",
-        is_builtin: Optional[bool] = None,
+        is_builtin: bool | None = None,
     ) -> MappingProfile:
         """Save a new mapping profile and its initial version (v1) with DimMapping entries."""
         if not profile.header_signature and profile.column_map:
@@ -152,20 +150,22 @@ class MappingRepository:
                         ),
                     )
                     mapping_id = cur_dim.lastrowid
-                    dim_rows.append((
-                        mapping_id,
-                        profile_id,
-                        1,
-                        profile.source_type,
-                        src_col,
-                        canon_field,
-                        transform_json,
-                        effective_from_period_id,
-                        created_by,
-                        datetime.now(),
-                        True,
-                        change_note,
-                    ))
+                    dim_rows.append(
+                        (
+                            mapping_id,
+                            profile_id,
+                            1,
+                            profile.source_type,
+                            src_col,
+                            canon_field,
+                            transform_json,
+                            effective_from_period_id,
+                            created_by,
+                            datetime.now(),
+                            True,
+                            change_note,
+                        )
+                    )
         finally:
             sqlite_conn.close()
 
@@ -191,20 +191,20 @@ class MappingRepository:
     def create_version(
         self,
         profile_id: int,
-        column_map: Dict[str, str],
+        column_map: dict[str, str],
         change_note: str,
-        effective_from_period_id: Optional[int] = None,
+        effective_from_period_id: int | None = None,
         created_by: str = "system",
-        transforms: Optional[Dict[str, Any]] = None,
-        delimiter: Optional[str] = None,
-        encoding: Optional[str] = None,
-        date_rule: Optional[str] = None,
-        number_rule: Optional[str] = None,
-        sheet_selector: Optional[str] = None,
-        header_row: Optional[int] = None,
+        transforms: dict[str, Any] | None = None,
+        delimiter: str | None = None,
+        encoding: str | None = None,
+        date_rule: str | None = None,
+        number_rule: str | None = None,
+        sheet_selector: str | None = None,
+        header_row: int | None = None,
     ) -> MappingProfileVersion:
         """Create a new immutable version of a profile per 04 §5.3.
-        
+
         Editing a profile creates a new version with effective_from_period_id and change_note.
         Built-in profiles are read-only (raises ValueError if attempted).
         """
@@ -256,7 +256,16 @@ class MappingRepository:
                         date_rule = ?, number_rule = ?, sheet_selector = ?, header_row = ?
                     WHERE profile_id = ?
                     """,
-                    (new_signature, del_val, enc_val, dt_val, num_val, sheet_val, h_row_val, profile_id),
+                    (
+                        new_signature,
+                        del_val,
+                        enc_val,
+                        dt_val,
+                        num_val,
+                        sheet_val,
+                        h_row_val,
+                        profile_id,
+                    ),
                 )
 
                 definition = {
@@ -301,9 +310,7 @@ class MappingRepository:
                 dim_rows = []
                 for src_col, canon_field in column_map.items():
                     transform_json = (
-                        json.dumps(trans_val[src_col])
-                        if src_col in trans_val
-                        else None
+                        json.dumps(trans_val[src_col]) if src_col in trans_val else None
                     )
                     cur_dim = sqlite_conn.execute(
                         """
@@ -327,20 +334,22 @@ class MappingRepository:
                         ),
                     )
                     mapping_id = cur_dim.lastrowid
-                    dim_rows.append((
-                        mapping_id,
-                        profile_id,
-                        next_version_no,
-                        row["source_type"],
-                        src_col,
-                        canon_field,
-                        transform_json,
-                        effective_from_period_id,
-                        created_by,
-                        datetime.now(),
-                        True,
-                        change_note,
-                    ))
+                    dim_rows.append(
+                        (
+                            mapping_id,
+                            profile_id,
+                            next_version_no,
+                            row["source_type"],
+                            src_col,
+                            canon_field,
+                            transform_json,
+                            effective_from_period_id,
+                            created_by,
+                            datetime.now(),
+                            True,
+                            change_note,
+                        )
+                    )
         finally:
             sqlite_conn.close()
 
@@ -383,7 +392,7 @@ class MappingRepository:
         created_by: str = "system",
     ) -> MappingProfile:
         """Clone an existing profile (especially built-ins) per 04 §5.4.
-        
+
         Shipped profiles are read-only; clone to edit. The clone is created with
         is_builtin=False and version 1.
         """
@@ -417,8 +426,8 @@ class MappingRepository:
     def get_active_profile_by_id(
         self,
         profile_id: int,
-        period_id: Optional[int] = None,
-    ) -> Optional[MappingProfile]:
+        period_id: int | None = None,
+    ) -> MappingProfile | None:
         """Retrieve active mapping profile by profile_id and optional period_id."""
         sqlite_conn = self.db.get_sqlite_connection()
         try:
@@ -473,10 +482,10 @@ class MappingRepository:
     def get_active_profile_by_source_type(
         self,
         source_type: str,
-        period_id: Optional[int] = None,
-    ) -> Optional[MappingProfile]:
+        period_id: int | None = None,
+    ) -> MappingProfile | None:
         """Retrieve active mapping profile by source_type and optional period_id.
-        
+
         Prefers custom profiles (is_builtin=0) over built-in profiles (is_builtin=1).
         """
         sqlite_conn = self.db.get_sqlite_connection()
@@ -499,15 +508,17 @@ class MappingRepository:
         finally:
             sqlite_conn.close()
 
-    def get_profile_by_id(self, profile_id: int) -> Optional[MappingProfile]:
+    def get_profile_by_id(self, profile_id: int) -> MappingProfile | None:
         """Convenience alias for get_active_profile_by_id."""
         return self.get_active_profile_by_id(profile_id)
 
-    def get_profile_by_name(self, name: str) -> Optional[MappingProfile]:
+    def get_profile_by_name(self, name: str) -> MappingProfile | None:
         """Retrieve profile by unique name."""
         sqlite_conn = self.db.get_sqlite_connection()
         try:
-            cur = sqlite_conn.execute("SELECT profile_id FROM MappingProfile WHERE name = ?", (name,))
+            cur = sqlite_conn.execute(
+                "SELECT profile_id FROM MappingProfile WHERE name = ?", (name,)
+            )
             row = cur.fetchone()
             if not row:
                 return None
@@ -517,9 +528,9 @@ class MappingRepository:
 
     def list_profiles(
         self,
-        source_type: Optional[str] = None,
+        source_type: str | None = None,
         include_builtin: bool = True,
-    ) -> List[MappingProfile]:
+    ) -> list[MappingProfile]:
         """List mapping profiles with optional source_type filter."""
         sqlite_conn = self.db.get_sqlite_connection()
         try:
@@ -543,7 +554,7 @@ class MappingRepository:
         finally:
             sqlite_conn.close()
 
-    def list_profile_versions(self, profile_id: int) -> List[MappingProfileVersion]:
+    def list_profile_versions(self, profile_id: int) -> list[MappingProfileVersion]:
         """List all versions of a mapping profile ordered by version_no."""
         sqlite_conn = self.db.get_sqlite_connection()
         try:
@@ -558,7 +569,11 @@ class MappingRepository:
             rows = cur.fetchall()
             versions = []
             for r in rows:
-                defn = json.loads(r["definition"]) if isinstance(r["definition"], str) else r["definition"]
+                defn = (
+                    json.loads(r["definition"])
+                    if isinstance(r["definition"], str)
+                    else r["definition"]
+                )
                 versions.append(
                     MappingProfileVersion(
                         version_id=r["version_id"],
@@ -579,8 +594,8 @@ class MappingRepository:
     def get_dim_mappings(
         self,
         profile_id: int,
-        version_no: Optional[int] = None,
-    ) -> List[DimMapping]:
+        version_no: int | None = None,
+    ) -> list[DimMapping]:
         """Retrieve DimMapping records for a profile from DuckDB (with SQLite fallback)."""
         duck_conn = self.db.get_duckdb_connection()
         try:
@@ -620,7 +635,9 @@ class MappingRepository:
                         transform=tf_dict,
                         effective_from_period_id=data.get("effective_from_period_id"),
                         approved_by=data.get("approved_by"),
-                        approved_at=str(data.get("approved_at")) if data.get("approved_at") else None,
+                        approved_at=str(data.get("approved_at"))
+                        if data.get("approved_at")
+                        else None,
                         is_active=bool(data.get("is_active", True)),
                         notes=data.get("notes"),
                         created_at=str(data.get("created_at")) if data.get("created_at") else None,
@@ -633,7 +650,7 @@ class MappingRepository:
     def _build_profile_from_rows(
         self,
         p_row: sqlite3.Row,
-        v_row: Optional[sqlite3.Row],
+        v_row: sqlite3.Row | None,
     ) -> MappingProfile:
         """Construct MappingProfile instance by merging profile row and version snapshot."""
         col_map = {}
@@ -644,7 +661,11 @@ class MappingRepository:
         if v_row:
             version_no = v_row["version_no"]
             effective_period = v_row["effective_from_period_id"]
-            defn = json.loads(v_row["definition"]) if isinstance(v_row["definition"], str) else v_row["definition"]
+            defn = (
+                json.loads(v_row["definition"])
+                if isinstance(v_row["definition"], str)
+                else v_row["definition"]
+            )
             col_map = defn.get("column_map", {})
             transforms = defn.get("transforms", {})
 

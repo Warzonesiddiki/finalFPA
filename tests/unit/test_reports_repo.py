@@ -1,13 +1,15 @@
-import pytest
-from app.engine.store.reports_repo import ReportsRepository
 from app.engine.store.db import DatabaseManager
+from app.engine.store.reports_repo import ReportsRepository
+
 
 def test_reports_repo_comprehensive(tmp_path):
     db_path = tmp_path / "test.db"
     db_mgr = DatabaseManager(db_path)
     repo = ReportsRepository(db_mgr)
-    
-    pack1 = repo.generate_excel_pack_file(period_code="2025-P03", scenario="base", generated_by="Tester")
+
+    pack1 = repo.generate_excel_pack_file(
+        period_code="2025-P03", scenario="base", generated_by="Tester"
+    )
     assert pack1 is not None
 
     deck1 = repo.generate_deck_file(period_code="2025-P03", scenario="base", generated_by="Tester")

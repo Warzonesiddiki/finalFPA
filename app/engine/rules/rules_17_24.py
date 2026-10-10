@@ -20,9 +20,9 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import date
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
-from app.engine.calc.math import quantize_money, ZERO
+from app.engine.calc.math import ZERO, quantize_money
 from app.engine.rules.rules_01_08 import (
     Finding,
     RuleContext,
@@ -37,19 +37,19 @@ from app.engine.rules.rules_01_08 import (
     _transaction_period,
 )
 
-
 # ==============================================================================
 # Shared helpers for the budget-relationship family (EXC-019, EXC-020)
 # ==============================================================================
 
-def _fy_of(period_id: Optional[str]) -> str:
+
+def _fy_of(period_id: str | None) -> str:
     """'FY26-P09' -> 'FY26'. The fiscal year is implied by the period (catalog EXC-019)."""
     if not period_id:
         return ""
     return period_id.split("-P")[0]
 
 
-def _period_num(period_id: Optional[str]) -> int:
+def _period_num(period_id: str | None) -> int:
     """'FY26-P09' -> 9. Returns -1 for anything unparseable so it sorts first / is skipped."""
     if not period_id or "-P" not in period_id:
         return -1
@@ -59,7 +59,7 @@ def _period_num(period_id: Optional[str]) -> int:
         return -1
 
 
-def _open_periods(context: RuleContext) -> List[str]:
+def _open_periods(context: RuleContext) -> list[str]:
     """Open periods of the fiscal year of ``context.period_id``, up to and including it.
 
     Per catalog EXC-020 these are the periods the budget should cover for the
@@ -79,7 +79,8 @@ def _open_periods(context: RuleContext) -> List[str]:
 # EXC-019: Cumulative overrun vs annual budget (Catalog EXC-019)
 # ==============================================================================
 
-def evaluate_exc_019(context: RuleContext) -> List[Finding]:
+
+def evaluate_exc_019(context: RuleContext) -> list[Finding]:
     """EXC-019: Detect a line that is still inside its monthly budget but has
     already exceeded its share of the ANNUAL budget.
 
@@ -91,7 +92,7 @@ def evaluate_exc_019(context: RuleContext) -> List[Finding]:
     Severity Medium, tier fuzzy, owner FP&A Analyst.
     Registers on the YTD rows for that key.
     """
-    findings: List[Finding] = []
+    findings: list[Finding] = []
     cfg = context.config
     ytd_tolerance_pct = Decimal(str(cfg.get("EXC-019_ytd_tolerance_pct", "0.05")))  # 5%
     annual_consumption_pct = Decimal(str(cfg.get("EXC-019_annual_consumption_pct", "0.80")))  # 80%
@@ -104,8 +105,8 @@ def evaluate_exc_019(context: RuleContext) -> List[Finding]:
     as_of = _period_num(context.period_id)
 
     # YTD actuals by key, counting only posted rows inside the open periods (CALC-004).
-    ytd_actual: Dict[Tuple[str, str, str], Decimal] = defaultdict(lambda: ZERO)
-    key_rows: Dict[Tuple[str, str, str], List[Any]] = defaultdict(list)
+    ytd_actual: dict[tuple[str, str, str], Decimal] = defaultdict(lambda: ZERO)
+    key_rows: dict[tuple[str, str, str], list[Any]] = defaultdict(list)
     for tx in context.transactions:
         comp = str(_get_val(tx, "company_code", "IN01")).strip()
         acc = str(_get_val(tx, "account_code", "")).strip()
@@ -123,8 +124,8 @@ def evaluate_exc_019(context: RuleContext) -> List[Finding]:
         key_rows[key].append(tx)
 
     # Candidate keys = anything with spend YTD, or any budget line in the open periods.
-    checked: Set[Tuple[str, str, str]] = set(ytd_actual.keys())
-    for (comp, acc, cc, p) in context.budgets.keys():
+    checked: set[tuple[str, str, str]] = set(ytd_actual.keys())
+    for comp, acc, cc, p in context.budgets.keys():
         if p in open_periods:
             checked.add((comp, acc, cc))
 
@@ -155,7 +156,8 @@ def evaluate_exc_019(context: RuleContext) -> List[Finding]:
                     (
                         v
                         for (c2, a2, cc2, p), v in context.budgets.items()
-                        if (c2, a2, cc2) == (comp, acc, cc) and _fy_of(p) == _fy_of(context.period_id)
+                        if (c2, a2, cc2) == (comp, acc, cc)
+                        and _fy_of(p) == _fy_of(context.period_id)
                     ),
                     ZERO,
                 )
@@ -219,7 +221,8 @@ def evaluate_exc_019(context: RuleContext) -> List[Finding]:
 # EXC-020: Budget coverage gap (Catalog EXC-020)
 # ==============================================================================
 
-def evaluate_exc_020(context: RuleContext) -> List[Finding]:
+
+def evaluate_exc_020(context: RuleContext) -> list[Finding]:
     """EXC-020: Make the SHAPE of the budget visible - entity x account x period
     cells with no budget line, so a variance report is never silently incomplete.
 
@@ -231,7 +234,7 @@ def evaluate_exc_020(context: RuleContext) -> List[Finding]:
     are informational and belong on the Check screen, not the register.
     Severity Medium, tier exact, owner FP&A Analyst.
     """
-    findings: List[Finding] = []
+    findings: list[Finding] = []
     cfg = context.config
     min_gap_periods = int(cfg.get("EXC-020_min_coverage_gap_periods", 1))
     include_no_actuals = bool(cfg.get("EXC-020_include_no_actuals_pairs", False))
@@ -241,7 +244,7 @@ def evaluate_exc_020(context: RuleContext) -> List[Finding]:
         return findings
 
     # Budget matrix: (entity, account) -> {period: amount} across the open periods.
-    budget_by_pair: Dict[Tuple[str, str], Dict[str, Decimal]] = defaultdict(dict)
+    budget_by_pair: dict[tuple[str, str], dict[str, Decimal]] = defaultdict(dict)
     for (comp, acc, cc, p), amount in context.budgets.items():
         if p in open_periods:
             budget_by_pair[(comp, acc)][p] = quantize_money(
@@ -249,7 +252,7 @@ def evaluate_exc_020(context: RuleContext) -> List[Finding]:
             )
 
     # Which (entity, account) pairs have spend inside the open periods?
-    actual_pairs: Set[Tuple[str, str]] = set()
+    actual_pairs: set[tuple[str, str]] = set()
     for tx in context.transactions:
         comp = str(_get_val(tx, "company_code", "IN01")).strip()
         acc = str(_get_val(tx, "account_code", "")).strip()
@@ -316,16 +319,18 @@ def evaluate_exc_020(context: RuleContext) -> List[Finding]:
 # EXC-021: Amount crossing approval threshold (Catalog EXC-021)
 # ==============================================================================
 
-def _exc021_current_rows(context: RuleContext) -> Tuple[Dict[Tuple[str, str], List[Any]], List[Tuple[str, str, Any]]]:
+
+def _exc021_current_rows(
+    context: RuleContext,
+) -> tuple[dict[tuple[str, str], list[Any]], list[tuple[str, str, Any]]]:
     """Index current-period GL voucher lines and their expense-side rows."""
     source_types = _import_batch_source_types(context)
-    voucher_lines: Dict[Tuple[str, str], List[Any]] = defaultdict(list)
-    expense_rows: List[Tuple[str, str, Any]] = []
+    voucher_lines: dict[tuple[str, str], list[Any]] = defaultdict(list)
+    expense_rows: list[tuple[str, str, Any]] = []
 
     for tx in context.transactions:
-        if (
-            not _is_current_period_transaction(tx, context)
-            or not _is_general_ledger_transaction(tx, context, source_types)
+        if not _is_current_period_transaction(tx, context) or not _is_general_ledger_transaction(
+            tx, context, source_types
         ):
             continue
         company = str(_get_val(tx, "company_code", "IN01") or "IN01").strip()
@@ -338,11 +343,11 @@ def _exc021_current_rows(context: RuleContext) -> Tuple[Dict[Tuple[str, str], Li
     return voucher_lines, expense_rows
 
 
-def _exc021_threshold_records(context: RuleContext) -> List[Dict[str, Any]]:
+def _exc021_threshold_records(context: RuleContext) -> list[dict[str, Any]]:
     """Validate and normalize versioned rows from MasterApprovalThreshold."""
-    records: List[Dict[str, Any]] = []
-    seen_versions: Set[Tuple[str, date]] = set()
-    identities: Dict[str, Tuple[Any, ...]] = {}
+    records: list[dict[str, Any]] = []
+    seen_versions: set[tuple[str, date]] = set()
+    identities: dict[str, tuple[Any, ...]] = {}
     for threshold in context.master_approval_thresholds:
         active_value = _get_val(threshold, "is_active", True)
         if isinstance(active_value, str):
@@ -352,7 +357,9 @@ def _exc021_threshold_records(context: RuleContext) -> List[Dict[str, Any]]:
         threshold_id = str(_get_val(threshold, "threshold_id", "")).strip()
         scope = str(_get_val(threshold, "scope", "")).strip().lower()
         if not threshold_id or "|" in threshold_id:
-            raise ValueError("EXC-021 approval threshold requires a non-empty delimiter-safe threshold_id")
+            raise ValueError(
+                "EXC-021 approval threshold requires a non-empty delimiter-safe threshold_id"
+            )
         if scope not in {"company", "account", "cost_center"}:
             raise ValueError(f"EXC-021 threshold {threshold_id} has unsupported scope {scope!r}")
         try:
@@ -375,34 +382,40 @@ def _exc021_threshold_records(context: RuleContext) -> List[Dict[str, Any]]:
         identity = (scope, company_code, account_code, cost_center_code, requires_dual)
         version_key = (threshold_id, effective_from)
         if version_key in seen_versions:
-            raise ValueError(f"EXC-021 duplicate threshold version: {threshold_id} at {effective_from}")
+            raise ValueError(
+                f"EXC-021 duplicate threshold version: {threshold_id} at {effective_from}"
+            )
         seen_versions.add(version_key)
         prior_identity = identities.setdefault(threshold_id, identity)
         if prior_identity != identity:
-            raise ValueError(f"EXC-021 threshold {threshold_id} changes scope or approval stage across versions")
-        records.append({
-            "threshold_id": threshold_id,
-            "scope": scope,
-            "scope_rank": {"company": 1, "account": 2, "cost_center": 3}[scope],
-            "amount": amount,
-            "requires_dual": requires_dual,
-            "effective_from": effective_from,
-            "is_active": threshold_is_active,
-            "company_code": company_code,
-            "account_code": account_code,
-            "cost_center_code": cost_center_code,
-        })
+            raise ValueError(
+                f"EXC-021 threshold {threshold_id} changes scope or approval stage across versions"
+            )
+        records.append(
+            {
+                "threshold_id": threshold_id,
+                "scope": scope,
+                "scope_rank": {"company": 1, "account": 2, "cost_center": 3}[scope],
+                "amount": amount,
+                "requires_dual": requires_dual,
+                "effective_from": effective_from,
+                "is_active": threshold_is_active,
+                "company_code": company_code,
+                "account_code": account_code,
+                "cost_center_code": cost_center_code,
+            }
+        )
     return records
 
 
 def _exc021_resolve_thresholds(
-    records: List[Dict[str, Any]], tx: Any, effective_date: date
-) -> List[Dict[str, Any]]:
+    records: list[dict[str, Any]], tx: Any, effective_date: date
+) -> list[dict[str, Any]]:
     """Resolve the newest threshold per approval stage, preferring narrower scope."""
     company = str(_get_val(tx, "company_code", "IN01") or "IN01").strip().casefold()
     account = str(_get_val(tx, "account_code", "") or "").strip().casefold()
     cost_center = str(_get_val(tx, "cost_center_code", "") or "").strip().casefold()
-    matches: List[Dict[str, Any]] = []
+    matches: list[dict[str, Any]] = []
     for record in records:
         if record["effective_from"] > effective_date:
             continue
@@ -414,7 +427,7 @@ def _exc021_resolve_thresholds(
         elif scope == "company" and record["company_code"] == company and company:
             matches.append(record)
 
-    resolved: List[Dict[str, Any]] = []
+    resolved: list[dict[str, Any]] = []
     for requires_dual in (False, True):
         stage_matches = [row for row in matches if row["requires_dual"] is requires_dual]
         for scope_rank in (3, 2, 1):
@@ -436,7 +449,7 @@ def _exc021_resolve_thresholds(
     return resolved
 
 
-def _exc021_required_input(context: RuleContext) -> Optional[str]:
+def _exc021_required_input(context: RuleContext) -> str | None:
     """Disable EXC-021 when thresholds or current-period scope coverage are missing."""
     records = _exc021_threshold_records(context)
     if not records or not any(row["is_active"] for row in records):
@@ -444,8 +457,7 @@ def _exc021_required_input(context: RuleContext) -> Optional[str]:
 
     period_end = _parse_date(context.as_of_date)
     if period_end is not None and not any(
-        row["is_active"] and row["effective_from"] <= period_end
-        for row in records
+        row["is_active"] and row["effective_from"] <= period_end for row in records
     ):
         return "EXC-021_effective_approval_thresholds"
 
@@ -453,15 +465,17 @@ def _exc021_required_input(context: RuleContext) -> Optional[str]:
     for _company, _voucher, tx in expense_rows:
         effective_date = _parse_date(_get_val(tx, "posting_date")) or period_end
         if effective_date is None:
-            raise ValueError("EXC-021 cannot resolve an effective date for a current-period transaction")
+            raise ValueError(
+                "EXC-021 cannot resolve an effective date for a current-period transaction"
+            )
         if not _exc021_resolve_thresholds(records, tx, effective_date):
             return "EXC-021_threshold_coverage"
     return None
 
 
-def evaluate_exc_021(context: RuleContext) -> List[Finding]:
+def evaluate_exc_021(context: RuleContext) -> list[Finding]:
     """Raise expense vouchers that meet their effective approval threshold."""
-    findings: List[Finding] = []
+    findings: list[Finding] = []
     records = _exc021_threshold_records(context)
     active_records = [row for row in records if row["is_active"]]
     if not active_records:
@@ -473,13 +487,15 @@ def evaluate_exc_021(context: RuleContext) -> List[Finding]:
         return findings
 
     voucher_lines, expense_rows = _exc021_current_rows(context)
-    groups: Dict[Tuple[str, str, str], Dict[str, Any]] = {}
+    groups: dict[tuple[str, str, str], dict[str, Any]] = {}
     missing_coverage = False
 
     for company, voucher, tx in expense_rows:
         effective_date = _parse_date(_get_val(tx, "posting_date")) or period_end
         if effective_date is None:
-            raise ValueError("EXC-021 cannot resolve an effective date for a current-period transaction")
+            raise ValueError(
+                "EXC-021 cannot resolve an effective date for a current-period transaction"
+            )
         resolved = _exc021_resolve_thresholds(records, tx, effective_date)
         if not resolved:
             missing_coverage = True
@@ -506,7 +522,9 @@ def evaluate_exc_021(context: RuleContext) -> List[Finding]:
             sum((_positive_transaction_amount(tx) for tx in trigger_rows), ZERO)
         )
         threshold_type = "dual" if threshold["requires_dual"] else "single"
-        approval_text = "dual approval required" if threshold["requires_dual"] else "single approval required"
+        approval_text = (
+            "dual approval required" if threshold["requires_dual"] else "single approval required"
+        )
         threshold_amount = threshold["amount"]
         scope_text = threshold["scope"].replace("_", " ")
         effective_text = threshold["effective_from"].isoformat()
@@ -554,9 +572,7 @@ def evaluate_exc_021(context: RuleContext) -> List[Finding]:
 
 evaluate_exc_021.REQUIRED_INPUT_CHECK = _exc021_required_input
 evaluate_exc_021.REQUIRED_INPUT_NOTICES = {
-    "EXC-021_approval_thresholds": (
-        "Disabled - needs active MasterApprovalThreshold rows"
-    ),
+    "EXC-021_approval_thresholds": ("Disabled - needs active MasterApprovalThreshold rows"),
     "EXC-021_effective_approval_thresholds": (
         "Disabled - no approval threshold is effective for the period under review"
     ),
@@ -570,7 +586,8 @@ evaluate_exc_021.REQUIRED_INPUT_NOTICES = {
 # EXC-022: Round-number manual journal (Catalog EXC-022)
 # ==============================================================================
 
-def _exc022_inputs(context: RuleContext) -> Dict[str, Any]:
+
+def _exc022_inputs(context: RuleContext) -> dict[str, Any]:
     """Collect current manual-pattern vouchers and the prior-period baseline."""
     cfg = context.config
     round_unit = Decimal(str(cfg.get("EXC-022_round_unit", "10000.00")))
@@ -583,20 +600,19 @@ def _exc022_inputs(context: RuleContext) -> Dict[str, Any]:
     if history_periods < 1:
         raise ValueError("EXC-022_history_periods must be at least 1")
 
-    current_vouchers: Dict[Tuple[str, str], List[Any]] = {}
-    prior_vouchers: Dict[Tuple[str, str, str], Decimal] = defaultdict(lambda: ZERO)
-    loaded_periods: Dict[str, Set[str]] = defaultdict(set)
-    degraded_category: Set[str] = set()
+    current_vouchers: dict[tuple[str, str], list[Any]] = {}
+    prior_vouchers: dict[tuple[str, str, str], Decimal] = defaultdict(lambda: ZERO)
+    loaded_periods: dict[str, set[str]] = defaultdict(set)
+    degraded_category: set[str] = set()
     source_types = _import_batch_source_types(context)
     current_fy = _fy_of(context.period_id)
     current_period_num = _period_num(context.period_id)
 
-    current_companies: Set[str] = set()
+    current_companies: set[str] = set()
     for tx in context.transactions:
-        if (
-            not _is_general_ledger_transaction(tx, context, source_types)
-            or not _is_expense_transaction(context, tx)
-        ):
+        if not _is_general_ledger_transaction(
+            tx, context, source_types
+        ) or not _is_expense_transaction(context, tx):
             continue
 
         company = str(_get_val(tx, "company_code", "IN01") or "IN01").strip()
@@ -610,11 +626,7 @@ def _exc022_inputs(context: RuleContext) -> Dict[str, Any]:
             if is_manual_candidate:
                 voucher = str(_get_val(tx, "voucher_no", "")).strip()
                 row_amount = _positive_transaction_amount(tx)
-                if (
-                    voucher
-                    and row_amount >= round_floor
-                    and row_amount % round_unit == ZERO
-                ):
+                if voucher and row_amount >= round_floor and row_amount % round_unit == ZERO:
                     current_vouchers.setdefault((company, voucher), []).append(tx)
                     if category_missing:
                         degraded_category.add(company)
@@ -656,19 +668,17 @@ def _exc022_inputs(context: RuleContext) -> Dict[str, Any]:
     }
 
 
-def _exc022_missing_history(data: Dict[str, Any]) -> Optional[str]:
+def _exc022_missing_history(data: dict[str, Any]) -> str | None:
     """Return a dependency key when any in-scope company lacks a baseline."""
     current_companies = data["current_companies"]
     if not current_companies:
         return None
 
     for company in current_companies:
-        periods = sorted(
-            data["loaded_periods"].get(company, set()), key=_period_num
-        )
+        periods = sorted(data["loaded_periods"].get(company, set()), key=_period_num)
         if len(periods) < data["history_periods"]:
             return "EXC-022_history"
-        baseline_periods = set(periods[-data["history_periods"]:])
+        baseline_periods = set(periods[-data["history_periods"] :])
         baseline_values = [
             amount
             for (c, period, _voucher), amount in data["prior_vouchers"].items()
@@ -682,11 +692,11 @@ def _exc022_missing_history(data: Dict[str, Any]) -> Optional[str]:
     return None
 
 
-def _exc022_required_input(context: RuleContext) -> Optional[str]:
+def _exc022_required_input(context: RuleContext) -> str | None:
     return _exc022_missing_history(_exc022_inputs(context))
 
 
-def evaluate_exc_022(context: RuleContext) -> List[Finding]:
+def evaluate_exc_022(context: RuleContext) -> list[Finding]:
     """Raise large round journals only when they exceed a three-period norm."""
     cfg = context.config
     data = _exc022_inputs(context)
@@ -699,7 +709,7 @@ def evaluate_exc_022(context: RuleContext) -> List[Finding]:
 
     round_unit = data["round_unit"]
     history_periods = data["history_periods"]
-    findings: List[Finding] = []
+    findings: list[Finding] = []
     current_companies = sorted(data["current_companies"])
 
     for company in current_companies:
@@ -797,23 +807,22 @@ evaluate_exc_022.REQUIRED_INPUT_NOTICES = {
 }
 
 
-
 # ==============================================================================
 # EXC-023: Voucher-level imbalance (Catalog EXC-023)
 # ==============================================================================
 
-def evaluate_exc_023(context: RuleContext) -> List[Finding]:
+
+def evaluate_exc_023(context: RuleContext) -> list[Finding]:
     """EXC-023: Detect vouchers where debits != credits."""
-    findings: List[Finding] = []
+    findings: list[Finding] = []
     tolerance = Decimal(str(context.config.get("EXC-023_tolerance", "0.00")))
     min_lines = int(context.config.get("EXC-023_min_lines", 2))
 
-    vouchers: Dict[Tuple[str, str], List[Any]] = {}
+    vouchers: dict[tuple[str, str], list[Any]] = {}
     source_types = _import_batch_source_types(context)
     for tx in context.transactions:
-        if (
-            not _is_current_period_transaction(tx, context)
-            or not _is_general_ledger_transaction(tx, context, source_types)
+        if not _is_current_period_transaction(tx, context) or not _is_general_ledger_transaction(
+            tx, context, source_types
         ):
             continue
         comp = str(_get_val(tx, "company_code", "IN01")).strip()
@@ -831,7 +840,9 @@ def evaluate_exc_023(context: RuleContext) -> List[Finding]:
 
         if diff > tolerance:
             subject_key = f"{comp}|{vch}"
-            evidence_refs = [str(_get_val(tx, "source_row_ref", f"row_{i}")) for i, tx in enumerate(tx_list, 1)]
+            evidence_refs = [
+                str(_get_val(tx, "source_row_ref", f"row_{i}")) for i, tx in enumerate(tx_list, 1)
+            ]
 
             findings.append(
                 Finding(
@@ -858,13 +869,14 @@ def evaluate_exc_023(context: RuleContext) -> List[Finding]:
 # EXC-024: Suspense / clearing account residual (Catalog EXC-024)
 # ==============================================================================
 
-def evaluate_exc_024(context: RuleContext) -> List[Finding]:
+
+def evaluate_exc_024(context: RuleContext) -> list[Finding]:
     """EXC-024: Detect uncleared balances on accounts tagged suspense or clearing."""
-    findings: List[Finding] = []
+    findings: list[Finding] = []
     residual_floor = Decimal(str(context.config.get("EXC-024_residual_floor", "100000.00")))
     suspense_accounts = context.config.get("suspense_accounts", {"1999", "9999", "SUSPENSE"})
 
-    accounts: Dict[Tuple[str, str], List[Any]] = {}
+    accounts: dict[tuple[str, str], list[Any]] = {}
     for tx in context.transactions:
         acc = str(_get_val(tx, "account_code", "")).strip()
         comp = str(_get_val(tx, "company_code", "IN01")).strip()
@@ -876,7 +888,9 @@ def evaluate_exc_024(context: RuleContext) -> List[Finding]:
         abs_net = abs(net_total)
         if abs_net >= residual_floor:
             subject_key = f"{comp}|{acc}|{context.period_id}"
-            evidence_refs = [str(_get_val(tx, "source_row_ref", f"row_{i}")) for i, tx in enumerate(tx_list, 1)]
+            evidence_refs = [
+                str(_get_val(tx, "source_row_ref", f"row_{i}")) for i, tx in enumerate(tx_list, 1)
+            ]
 
             findings.append(
                 Finding(
@@ -907,7 +921,7 @@ def evaluate_exc_024(context: RuleContext) -> List[Finding]:
 # "EXC-017" / "EXC-018". Including them here as well would double-raise
 # findings for plantings P17 / P18.
 
-BATCH_17_24_EVALUATORS: List[Any] = [
+BATCH_17_24_EVALUATORS: list[Any] = [
     evaluate_exc_019,
     evaluate_exc_020,
     evaluate_exc_021,
@@ -917,9 +931,9 @@ BATCH_17_24_EVALUATORS: List[Any] = [
 ]
 
 
-def evaluate_all_17_24(context: RuleContext) -> List[Finding]:
+def evaluate_all_17_24(context: RuleContext) -> list[Finding]:
     """Evaluate the EXC-017..EXC-024 batch and return all findings."""
-    all_findings: List[Finding] = []
+    all_findings: list[Finding] = []
     for evaluator in BATCH_17_24_EVALUATORS:
         all_findings.extend(evaluator(context))
     return all_findings

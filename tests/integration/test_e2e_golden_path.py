@@ -55,7 +55,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 import app.engine.store.db as db_module
-from app.api.main import app, SESSION_TOKEN
+from app.api.main import SESSION_TOKEN, app
 
 # Balanced GL fixture: 500,000 debit on 5200, 500,000 credit on 4000 -> debit == credit.
 _BALANCED_GL = (
@@ -171,14 +171,13 @@ def test_e2e_golden_path_smoke_journey(client: TestClient, tmp_path: Path):
     rejected_batch_id = bad["batchId"]
 
     rejected_batch = next(
-        b for b in client.get("/api/v1/imports", headers=headers).json()["data"]["items"]
+        b
+        for b in client.get("/api/v1/imports", headers=headers).json()["data"]["items"]
         if b["batch_id"] == rejected_batch_id
     )
     # Doc 04 §11: the batch is recorded as rejected and the file is NOT added to the model.
     assert rejected_batch["status"] == "rejected"
-    res_report = client.get(
-        f"/api/v1/imports/{committed_batch_id}/report", headers=headers
-    )
+    res_report = client.get(f"/api/v1/imports/{committed_batch_id}/report", headers=headers)
     # The committed batch's validation report carries the balance check (IMP-023).
     if res_report.status_code == 200:
         checks = res_report.json()["data"]["checks"]
@@ -195,9 +194,7 @@ def test_e2e_golden_path_smoke_journey(client: TestClient, tmp_path: Path):
     assert res_bud.status_code == 200
     assert res_bud.json()["sourceType"] == "budget"
 
-    res_bva = client.get(
-        "/api/v1/analysis/bva?period_id=9&window=MTD", headers=headers
-    )
+    res_bva = client.get("/api/v1/analysis/bva?period_id=9&window=MTD", headers=headers)
     assert res_bva.status_code == 200
     bva_items = res_bva.json()["data"]["items"]
     assert len(bva_items) > 0
@@ -258,7 +255,12 @@ def test_e2e_golden_path_smoke_journey(client: TestClient, tmp_path: Path):
     res_fc = client.post(
         "/api/v1/forecast/run",
         headers=headers,
-        json={"period": "FY26-P09", "scenario": "base", "default_method": "run_rate", "run_rate_n": 3},
+        json={
+            "period": "FY26-P09",
+            "scenario": "base",
+            "default_method": "run_rate",
+            "run_rate_n": 3,
+        },
     )
     assert res_fc.status_code == 200
     fc_data = res_fc.json()["data"]

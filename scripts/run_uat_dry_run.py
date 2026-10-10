@@ -10,13 +10,13 @@ sanitised real month). GATE-14 exit still requires corpus-derived expectations
 post-DEF-019 (D-13 option A); nothing here counts toward it.
 """
 
-from decimal import Decimal
-from pathlib import Path
+import shutil
 import sys
 import tempfile
-import shutil
+from decimal import Decimal
+from pathlib import Path
+
 import openpyxl
-from pptx import Presentation
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
@@ -30,8 +30,8 @@ from app.engine.exports.ppt_pack import (
     DeckContext,
     generate_powerpoint_deck,
 )
-from app.engine.store.db import DatabaseManager
 from app.engine.store.analytics_repo import AnalyticsRepository
+from app.engine.store.db import DatabaseManager
 from tests.artefacts.test_cross_artifact import create_sample_pack_data
 
 
@@ -40,7 +40,9 @@ def run_dry_run():
     print("FP&A MONTH-END COPILOT - STAGING PACK-ASSEMBLY DRY-RUN (SAMPLE DATA)")
     print("Document reference: docs/28_ACCEPTANCE_UAT_AND_GO_LIVE.md §5.2 / Doc 14 §12.4")
     print("Mode: STAGING rehearsal only — synthetic fixture, NOT TST-UAT-01..06 coverage;")
-    print("      GATE-14 exit still requires corpus-derived expectations post-DEF-019 (D-13 option A).")
+    print(
+        "      GATE-14 exit still requires corpus-derived expectations post-DEF-019 (D-13 option A)."
+    )
     print("=" * 75)
 
     tmp_dir = Path(tempfile.mkdtemp(prefix="fpa_uat_run_"))
@@ -75,9 +77,21 @@ def run_dry_run():
         rows = paged_result.items
 
         expected = {
-            "4000": {"actual": Decimal("12500000.00"), "budget": Decimal("12000000.00"), "var": Decimal("500000.00")},
-            "5100": {"actual": Decimal("5200000.00"), "budget": Decimal("5000000.00"), "var": Decimal("200000.00")},
-            "5500": {"actual": Decimal("1600000.00"), "budget": Decimal("1500000.00"), "var": Decimal("100000.00")},
+            "4000": {
+                "actual": Decimal("12500000.00"),
+                "budget": Decimal("12000000.00"),
+                "var": Decimal("500000.00"),
+            },
+            "5100": {
+                "actual": Decimal("5200000.00"),
+                "budget": Decimal("5000000.00"),
+                "var": Decimal("200000.00"),
+            },
+            "5500": {
+                "actual": Decimal("1600000.00"),
+                "budget": Decimal("1500000.00"),
+                "var": Decimal("100000.00"),
+            },
         }
 
         tst01_diffs = []
@@ -86,10 +100,25 @@ def run_dry_run():
             d_act = r.actual_amount - exp["actual"]
             d_bud = r.budget_amount - exp["budget"]
             d_var = r.variance_amount - exp["var"]
-            tst01_diffs.append((r.account_code, r.account_name, r.actual_amount, exp["actual"], d_act, d_bud, d_var))
-            print(f"  Account {r.account_code} ({r.account_name}): Actual={r.actual_amount:,.2f}, Expected={exp['actual']:,.2f}, Diff={d_act}")
+            tst01_diffs.append(
+                (
+                    r.account_code,
+                    r.account_name,
+                    r.actual_amount,
+                    exp["actual"],
+                    d_act,
+                    d_bud,
+                    d_var,
+                )
+            )
+            print(
+                f"  Account {r.account_code} ({r.account_name}): Actual={r.actual_amount:,.2f}, Expected={exp['actual']:,.2f}, Diff={d_act}"
+            )
 
-        tst01_pass = all(d[4] == Decimal("0.00") and d[5] == Decimal("0.00") and d[6] == Decimal("0.00") for d in tst01_diffs)
+        tst01_pass = all(
+            d[4] == Decimal("0.00") and d[5] == Decimal("0.00") and d[6] == Decimal("0.00")
+            for d in tst01_diffs
+        )
         results["TST-UAT-01"] = {
             "title": "Analyst reproduces one month manual BvA",
             "status": "PASS" if tst01_pass else "FAIL",
@@ -138,10 +167,19 @@ def run_dry_run():
         tst02_diff_var = excel_rev_var - engine_rev_var
 
         print(f"  Excel Pack: {excel_path.name} (exists: {excel_path.exists()})")
-        print(f"  PPT Deck: {ppt_path.name} (exists: {ppt_path.exists()}, {len(prs.slides)} slides)")
-        print(f"  Revenue parity: Excel={excel_rev_act:,.2f} vs Engine={engine_rev_act:,.2f} (Diff: {tst02_diff_act})")
+        print(
+            f"  PPT Deck: {ppt_path.name} (exists: {ppt_path.exists()}, {len(prs.slides)} slides)"
+        )
+        print(
+            f"  Revenue parity: Excel={excel_rev_act:,.2f} vs Engine={engine_rev_act:,.2f} (Diff: {tst02_diff_act})"
+        )
 
-        tst02_pass = (tst02_diff_act == Decimal("0.00") and tst02_diff_bud == Decimal("0.00") and tst02_diff_var == Decimal("0.00") and len(prs.slides) == 6)
+        tst02_pass = (
+            tst02_diff_act == Decimal("0.00")
+            and tst02_diff_bud == Decimal("0.00")
+            and tst02_diff_var == Decimal("0.00")
+            and len(prs.slides) == 6
+        )
         results["TST-UAT-02"] = {
             "title": "Tie-out worksheet: BvA totals, key accounts, exceptions vs PPT deck",
             "status": "PASS" if tst02_pass else "FAIL",
@@ -171,7 +209,7 @@ def run_dry_run():
 
         print(f"  Exception rows reviewed: {len(pack_data.exception_rows)}")
         print(f"  Misleading findings detected (S1/S2): {len(misleading_findings)}")
-        tst03_pass = (len(misleading_findings) == 0)
+        tst03_pass = len(misleading_findings) == 0
         results["TST-UAT-03"] = {
             "title": "Accounting-owner review of exception wording and verdicts",
             "status": "PASS" if tst03_pass else "FAIL",
@@ -188,7 +226,7 @@ def run_dry_run():
         missing_tasks = [t for t in required_tasks if t not in doc22_text]
         print(f"  Required task markers verified: {required_tasks}")
         print(f"  Missing tasks: {missing_tasks}")
-        tst04_pass = (len(missing_tasks) == 0)
+        tst04_pass = len(missing_tasks) == 0
         results["TST-UAT-04"] = {
             "title": "Training walkthrough using only Doc 22 (End User Guide)",
             "status": "PASS" if tst04_pass else "FAIL",
@@ -225,7 +263,9 @@ def run_dry_run():
         deliverables = {
             "named_hypercare_roster": Path("packaging/named_hypercare_roster.md").exists(),
             "fallback_execution_runbook": Path("packaging/fallback_execution_runbook.md").exists(),
-            "client_delivery_manifest": Path("packaging/client_delivery_package_manifest.md").exists(),
+            "client_delivery_manifest": Path(
+                "packaging/client_delivery_package_manifest.md"
+            ).exists(),
             "prefilled_sign_off_records": Path("packaging/prefilled_sign_off_records.md").exists(),
             "nightly_e2e_runbook": Path("packaging/nightly_e2e_runbook.md").exists(),
         }

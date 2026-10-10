@@ -1,50 +1,51 @@
 """FastAPI backend application and local API router per ADR-009 and 26_API_CONTRACT.md."""
 
-from fastapi import FastAPI, Depends, Header, HTTPException, status, Request
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse, JSONResponse
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field, field_validator
-from pathlib import Path
+import logging
+import os
+import secrets
 from decimal import Decimal
 from functools import lru_cache
-from typing import Optional, Dict, Any, List, Literal
-import secrets
-import os
-import logging
+from pathlib import Path
+from typing import Any, Literal
 
-from app import __version__, __app_name__
+from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field, field_validator
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+from app import __app_name__, __version__
+from app.engine.ai.client import AIClient, AIConfig
+from app.engine.ai.pinning import get_model_pinning_config, validate_model_selection
+from app.engine.ai.prompts import PromptTemplateStore
+from app.engine.ai.provenance import AiProvenanceStore
+from app.engine.ai.usage import AIUsageStore
+from app.engine.calc import ZERO, calculate_variance, calculate_variance_pct, quantize_money
 from app.engine.errors import get_error_catalog
-from app.engine.calc import calculate_variance, calculate_variance_pct, quantize_money, ZERO
 from app.engine.imports.parser import (
-    prescan_file,
     parse_csv_transactions,
     parse_excel_transactions,
+    prescan_file,
 )
-from app.engine.store.db import DatabaseManager
-from app.engine.store.import_repo import ImportRepository
 from app.engine.store.analytics_repo import AnalyticsRepository
+from app.engine.store.db import DatabaseManager
 from app.engine.store.exceptions_repo import (
     ExceptionsRepository,
     ExceptionStatusEvidenceRequired,
     ExceptionWorkflowError,
     InvalidExceptionStatus,
 )
+from app.engine.store.forecast_repo import ForecastRepository
+from app.engine.store.import_repo import ImportRepository
 from app.engine.store.master_data_repo import (
     ApprovalThresholdConflict,
     ApprovalThresholdError,
     ApprovalThresholdRepository,
 )
-from app.engine.store.forecast_repo import ForecastRepository
-from app.engine.store.reports_repo import ReportsRepository
 from app.engine.store.period_repo import PeriodRepository
-from app.engine.ai.client import AIClient, AIConfig, RuleBasedNarrativeGenerator
-from app.engine.ai.usage import AIUsageStore
-from app.engine.ai.provenance import AiProvenanceStore
-from app.engine.ai.pinning import get_model_pinning_config, validate_model_selection
-from app.engine.ai.prompts import PromptTemplateStore
+from app.engine.store.reports_repo import ReportsRepository
 
 logger = logging.getLogger(__name__)
 
@@ -59,10 +60,10 @@ def _staleness_db_manager() -> DatabaseManager:
 
 
 class RunForecastRequest(BaseModel):
-    period: Optional[str] = "FY26-P09"
-    scenario: Optional[str] = "base"
-    default_method: Optional[str] = "run_rate"
-    run_rate_n: Optional[int] = 3
+    period: str | None = "FY26-P09"
+    scenario: str | None = "base"
+    default_method: str | None = "run_rate"
+    run_rate_n: int | None = 3
 
 
 class OverrideForecastRequest(BaseModel):
@@ -70,11 +71,11 @@ class OverrideForecastRequest(BaseModel):
     period_code: str
     amount: str
     reason: str
-    scenario: Optional[str] = "base"
+    scenario: str | None = "base"
 
 
 class LockForecastVersionRequest(BaseModel):
-    confirm: Optional[bool] = True
+    confirm: bool | None = True
 
 
 class OpenPeriodRequest(BaseModel):
@@ -84,27 +85,27 @@ class OpenPeriodRequest(BaseModel):
     period_label: str
     start_date: str
     end_date: str
-    carry_forward_mappings: Optional[bool] = True
-    carry_forward_assumptions: Optional[bool] = True
+    carry_forward_mappings: bool | None = True
+    carry_forward_assumptions: bool | None = True
 
 
 class ReopenPeriodRequest(BaseModel):
     reason: str
-    reopened_by: Optional[str] = "admin"
+    reopened_by: str | None = "admin"
 
 
 class GeneratePackRequest(BaseModel):
-    period: Optional[str] = "FY26-P09"
-    scenario: Optional[str] = "base"
-    format: Optional[str] = "both"  # excel, ppt, both
+    period: str | None = "FY26-P09"
+    scenario: str | None = "base"
+    format: str | None = "both"  # excel, ppt, both
 
 
 class IssuePackRequest(BaseModel):
-    period_id: Optional[int] = 9
-    period_code: Optional[str] = "FY26-P09"
-    recipients: List[str]
-    pack_type: Optional[str] = "both"
-    notes: Optional[str] = None
+    period_id: int | None = 9
+    period_code: str | None = "FY26-P09"
+    recipients: list[str]
+    pack_type: str | None = "both"
+    notes: str | None = None
 
 
 class ReissuePackRequest(BaseModel):
@@ -113,19 +114,18 @@ class ReissuePackRequest(BaseModel):
 
 
 class SaveCommentaryRequest(BaseModel):
-    period_id: Optional[int] = 9
+    period_id: int | None = 9
     scope_type: str  # line, executive
     subject_key: str
     text: str
-    author: Optional[str] = "Aarti"
-
+    author: str | None = "Aarti"
 
 
 class RunRulesRequest(BaseModel):
-    period: Optional[str] = "FY26-P09"
-    asOfDate: Optional[str] = "2026-11-12"
-    correlationId: Optional[str] = None
-    claimId: Optional[str] = None
+    period: str | None = "FY26-P09"
+    asOfDate: str | None = "2026-11-12"
+    correlationId: str | None = None
+    claimId: str | None = None
 
 
 ExceptionStatusInput = Literal[
@@ -134,16 +134,16 @@ ExceptionStatusInput = Literal[
 
 
 class PatchExceptionRequest(BaseModel):
-    status: Optional[ExceptionStatusInput] = None
-    owner: Optional[str] = None
-    note: Optional[str] = None
+    status: ExceptionStatusInput | None = None
+    owner: str | None = None
+    note: str | None = None
 
 
 class BulkExceptionRequest(BaseModel):
-    ids: List[int]
-    status: Optional[ExceptionStatusInput] = None
-    owner: Optional[str] = None
-    note: Optional[str] = None
+    ids: list[int]
+    status: ExceptionStatusInput | None = None
+    owner: str | None = None
+    note: str | None = None
 
 
 class ApprovalThresholdCreateRequest(BaseModel):
@@ -154,18 +154,19 @@ class ApprovalThresholdCreateRequest(BaseModel):
     effectiveFrom: str
     changeNote: str
     isActive: bool = True
-    companyCode: Optional[str] = None
-    accountCode: Optional[str] = None
-    costCenterCode: Optional[str] = None
+    companyCode: str | None = None
+    accountCode: str | None = None
+    costCenterCode: str | None = None
 
 
 class BudgetReplaceRequest(BaseModel):
     budgetVersion: str = Field("FY26-Approved")
-    rows: List[Dict[str, Any]] = Field(default_factory=list)
+    rows: list[dict[str, Any]] = Field(default_factory=list)
     batchId: int = Field(999)
 
 
 # --- Mapping review queue models (02 FR-IMP-008) ---------------------------
+
 
 class MappingSuggestionRequest(BaseModel):
     """One proposed mapping. AI may only PROPOSE (FR-IMP-008)."""
@@ -174,28 +175,28 @@ class MappingSuggestionRequest(BaseModel):
     targetField: str
     confidence: str
     origin: str = "rule"
-    evidence: List[Dict[str, Any]] = Field(default_factory=list)
+    evidence: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class EnqueueSuggestionsRequest(BaseModel):
     importRunId: int
     aiEnabled: bool = False
-    suggestions: List[MappingSuggestionRequest] = Field(default_factory=list)
+    suggestions: list[MappingSuggestionRequest] = Field(default_factory=list)
 
 
 class DecideSuggestionRequest(BaseModel):
     action: str  # accept | edit | reject
     actor: str = "session_user"
-    newTargetField: Optional[str] = None
-    reason: Optional[str] = None
+    newTargetField: str | None = None
+    reason: str | None = None
 
 
 class BulkMappingDecisionRequest(BaseModel):
-    ids: List[int]
+    ids: list[int]
     action: str  # accept | edit | reject
     actor: str = "session_user"
-    newTargets: Dict[int, str] = Field(default_factory=dict)
-    reason: Optional[str] = None
+    newTargets: dict[int, str] = Field(default_factory=dict)
+    reason: str | None = None
 
 
 def get_session_token() -> str:
@@ -224,7 +225,7 @@ class HealthResponse(BaseModel):
 
 class PreScanRequest(BaseModel):
     path: str
-    sourceType: Optional[str] = None
+    sourceType: str | None = None
 
 
 class ControlTotalAcceptanceRequest(BaseModel):
@@ -250,9 +251,9 @@ class ControlTotalAcceptanceRequest(BaseModel):
 
 class ImportFileRequest(BaseModel):
     path: str
-    sourceType: Optional[str] = None
+    sourceType: str | None = None
     balanceTolerance: Decimal = Field(default=Decimal("0.00"), ge=0)
-    controlTotalAcceptance: Optional[ControlTotalAcceptanceRequest] = None
+    controlTotalAcceptance: ControlTotalAcceptanceRequest | None = None
 
 
 class VoidBatchRequest(BaseModel):
@@ -277,29 +278,27 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    def _get_staleness_state() -> Dict[str, Any]:
+    def _get_staleness_state() -> dict[str, Any]:
         conn = _staleness_db_manager().get_duckdb_connection()
         try:
             row = conn.execute(
                 "SELECT is_stale, reason, generation FROM DerivedDataState WHERE state_id = 1"
             ).fetchone()
             if not row:
-                return {"isStale": False, "reason": None, "generation": 0}
+                return {"is_stale": False, "reason": None, "generation": 0}
             return {
-                "isStale": bool(row[0]),
+                "is_stale": bool(row[0]),
                 "reason": row[1],
                 "generation": int(row[2] or 0),
             }
         finally:
             conn.close()
 
-    def _set_staleness_state(is_stale: bool, reason: Optional[str]) -> Dict[str, Any]:
+    def _set_staleness_state(is_stale: bool, reason: str | None) -> dict[str, Any]:
         conn = _staleness_db_manager().get_duckdb_connection()
         try:
             conn.execute("BEGIN TRANSACTION")
-            existing = conn.execute(
-                "SELECT 1 FROM DerivedDataState WHERE state_id = 1"
-            ).fetchone()
+            existing = conn.execute("SELECT 1 FROM DerivedDataState WHERE state_id = 1").fetchone()
             if existing:
                 conn.execute(
                     """
@@ -325,7 +324,7 @@ def create_app() -> FastAPI:
             ).fetchone()
             conn.execute("COMMIT")
             return {
-                "isStale": bool(is_stale),
+                "is_stale": bool(is_stale),
                 "reason": reason,
                 "generation": int(generation_row[0] or 0) if generation_row else 0,
             }
@@ -338,7 +337,7 @@ def create_app() -> FastAPI:
         finally:
             conn.close()
 
-    def _clear_staleness_state_if_unchanged(expected_generation: int) -> Optional[Dict[str, Any]]:
+    def _clear_staleness_state_if_unchanged(expected_generation: int) -> dict[str, Any] | None:
         conn = _staleness_db_manager().get_duckdb_connection()
         try:
             conn.execute("BEGIN TRANSACTION")
@@ -391,23 +390,25 @@ def create_app() -> FastAPI:
                     "code": "ERR-API-422",
                     "userMessage": "Validation error",
                     "hint": "Check request parameters for syntax errors.",
-                }
-            }
+                },
+            },
         )
 
     @app.exception_handler(HTTPException)
     @app.exception_handler(StarletteHTTPException)
-    async def universal_http_exception_handler(request: Request, exc: HTTPException | StarletteHTTPException):
+    async def universal_http_exception_handler(
+        request: Request, exc: HTTPException | StarletteHTTPException
+    ):
         """Universal error envelope handler per docs 26 (§5) and docs 08 (§16).
 
-        Quote docs 26 §5: 'All error responses MUST adhere to the standardized error envelope 
+        Quote docs 26 §5: 'All error responses MUST adhere to the standardized error envelope
         containing code (e.g., ERR-VAL-001), userMessage (human readable description), hint (actionable guidance).'
-        Quote docs 08 §16: 'Error Message Catalog (SCR-041): Every user-facing error must display 
+        Quote docs 08 §16: 'Error Message Catalog (SCR-041): Every user-facing error must display
         its error code, clear explanation, and troubleshooting hint.'
         """
         status_code = exc.status_code
         detail = exc.detail
-        
+
         code_map = {
             400: ("ERR-API-400", "Review the request parameters and try again."),
             401: ("ERR-API-401", "Authenticate with a valid session token."),
@@ -428,8 +429,11 @@ def create_app() -> FastAPI:
         # Starlette's bare routing-level defaults. Matched exactly so that a
         # route raising its own detail string is never overwritten.
         FRAMEWORK_DEFAULT_DETAILS = {404: "Not Found", 405: "Method Not Allowed"}
-        code, hint = code_map.get(status_code, (f"ERR-API-{status_code}", "An unexpected error occurred. Check diagnostics."))
-        
+        code, hint = code_map.get(
+            status_code,
+            (f"ERR-API-{status_code}", "An unexpected error occurred. Check diagnostics."),
+        )
+
         if isinstance(detail, dict):
             user_message = detail.get("userMessage", detail.get("message", str(detail)))
             code = detail.get("code", code)
@@ -457,16 +461,16 @@ def create_app() -> FastAPI:
                     "code": code,
                     "userMessage": user_message,
                     "hint": hint,
-                }
-            }
+                },
+            },
         )
 
     @app.exception_handler(Exception)
     async def global_unhandled_exception_handler(request: Request, exc: Exception):
         """Global fallback handler for unhandled exceptions per docs 26 (§5).
 
-        Quote docs 26 §5: 'Under no circumstances shall unhandled exceptions, raw stack traces, 
-        or debug HTML reach the client; unexpected server errors must return status 500 formatted 
+        Quote docs 26 §5: 'Under no circumstances shall unhandled exceptions, raw stack traces,
+        or debug HTML reach the client; unexpected server errors must return status 500 formatted
         with ERR-API-500, a clean user message, and a troubleshooting hint.'
         """
         return JSONResponse(
@@ -480,8 +484,8 @@ def create_app() -> FastAPI:
                     "code": "ERR-API-500",
                     "userMessage": "An unexpected internal error occurred.",
                     "hint": "Check server diagnostics logs or retry the operation.",
-                }
-            }
+                },
+            },
         )
 
     @app.get("/api/v1/health", response_model=HealthResponse)
@@ -496,10 +500,10 @@ def create_app() -> FastAPI:
 
     @app.get("/meta/error-catalog")
     @app.get("/api/v1/meta/error-catalog")
-    def get_error_catalog_endpoint() -> Dict[str, Any]:
+    def get_error_catalog_endpoint() -> dict[str, Any]:
         """Serve the runtime error catalog per docs 26 (§5) and docs 08 (§16).
 
-        Quote docs 26 §5: 'GET /meta/error-catalog is the runtime projection of this section: 
+        Quote docs 26 §5: 'GET /meta/error-catalog is the runtime projection of this section:
         {code, slug, severity, message, hint, httpStatus, ownerDoc}.'
         """
         catalog = get_error_catalog()
@@ -515,8 +519,9 @@ def create_app() -> FastAPI:
         if os.environ.get("FPA_TEST_MODE") != "1":
             raise HTTPException(status_code=404, detail="Not found")
         raise RuntimeError("Simulated unhandled repo/db failure")
+
     @app.get("/api/v1/bootstrap")
-    def api_bootstrap() -> Dict[str, Any]:
+    def api_bootstrap() -> dict[str, Any]:
         """Bootstrap endpoint providing session token, app metadata and project context."""
         return {
             "status": "ok",
@@ -536,7 +541,7 @@ def create_app() -> FastAPI:
         "/api/v1/calc/variance-demo",
         dependencies=[Depends(verify_session_token)],
     )
-    def variance_demo(payload: Dict[str, str]) -> Dict[str, Any]:
+    def variance_demo(payload: dict[str, str]) -> dict[str, Any]:
         """Variance demonstration endpoint."""
         act = Decimal(payload["actual"])
         bud = Decimal(payload["budget"])
@@ -553,7 +558,7 @@ def create_app() -> FastAPI:
         "/api/v1/imports/pre-scan",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_prescan(payload: PreScanRequest) -> Dict[str, Any]:
+    def api_prescan(payload: PreScanRequest) -> dict[str, Any]:
         """Execute Step 2 Pre-scan per 04_SOURCE_MAPPING_AND_IMPORT_SPEC.md §3 and 26 §3.2."""
         p = Path(payload.path)
         if not p.exists():
@@ -574,7 +579,7 @@ def create_app() -> FastAPI:
         "/api/v1/imports",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_import(payload: ImportFileRequest) -> Dict[str, Any]:
+    def api_import(payload: ImportFileRequest) -> dict[str, Any]:
         """Parse, validate, and atomically commit a source file per 04 §3 and 26 §3.2.
 
         FR-IMP-008: before parsing, fold in every mapping suggestion that a
@@ -672,7 +677,7 @@ def create_app() -> FastAPI:
         "/api/v1/imports",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_list_imports() -> Dict[str, Any]:
+    def api_list_imports() -> dict[str, Any]:
         """Return import batch history per 26_API_CONTRACT.md §3.2."""
         db_mgr = DatabaseManager()
         repo = ImportRepository(db_mgr)
@@ -683,7 +688,7 @@ def create_app() -> FastAPI:
         "/api/v1/imports/{batch_id}",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_get_batch_detail(batch_id: int) -> Dict[str, Any]:
+    def api_get_batch_detail(batch_id: int) -> dict[str, Any]:
         """Return batch details, validation checks, and quarantine rows per FR-IMP-021/023."""
         db_mgr = DatabaseManager()
         repo = ImportRepository(db_mgr)
@@ -696,7 +701,7 @@ def create_app() -> FastAPI:
         "/api/v1/imports/{batch_id}/void",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_void_batch(batch_id: int, payload: VoidBatchRequest) -> Dict[str, Any]:
+    def api_void_batch(batch_id: int, payload: VoidBatchRequest) -> dict[str, Any]:
         """Void/reverse one batch per 02 FR-IMP-024 and 26 §3.2."""
         if not payload.confirm:
             raise HTTPException(
@@ -730,9 +735,9 @@ def create_app() -> FastAPI:
         dependencies=[Depends(verify_session_token)],
     )
     def api_three_way_analysis(
-        period_id: Optional[int] = None,
+        period_id: int | None = None,
         window: str = "MTD",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Three-way Actual vs Budget vs Forecast view with signed-error accuracy columns (FR-BVA-008, CALC-066..069)."""
         db_mgr = DatabaseManager()
         repo = AnalyticsRepository(db_mgr)
@@ -754,14 +759,14 @@ def create_app() -> FastAPI:
         dependencies=[Depends(verify_session_token)],
     )
     def api_get_bva(
-        period_id: Optional[int] = None,
-        company_id: Optional[int] = None,
-        cost_center_id: Optional[int] = None,
-        statement_line: Optional[str] = None,
+        period_id: int | None = None,
+        company_id: int | None = None,
+        cost_center_id: int | None = None,
+        statement_line: str | None = None,
         window: str = "MTD",
         page: int = 1,
         page_size: int = 100,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """BvA summary matrix by account per 26_API_CONTRACT.md §3.4 and FR-BVA-001/002/003."""
         db_mgr = DatabaseManager()
         repo = AnalyticsRepository(db_mgr)
@@ -788,7 +793,9 @@ def create_app() -> FastAPI:
                         "actualAmount": str(item.actual_amount),
                         "budgetAmount": str(item.budget_amount),
                         "varianceAmount": str(item.variance_amount),
-                        "variancePct": str(item.variance_pct) if item.variance_pct is not None else None,
+                        "variancePct": str(item.variance_pct)
+                        if item.variance_pct is not None
+                        else None,
                         "favourability": item.favourability,
                     }
                     for item in result.items
@@ -809,11 +816,11 @@ def create_app() -> FastAPI:
         dependencies=[Depends(verify_session_token)],
     )
     def api_get_bva_statement_lines(
-        period_id: Optional[int] = None,
-        company_id: Optional[int] = None,
-        cost_center_id: Optional[int] = None,
+        period_id: int | None = None,
+        company_id: int | None = None,
+        cost_center_id: int | None = None,
         window: str = "MTD",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Roll up statement lines per FR-BVA-009 / CALC-042."""
         db_mgr = DatabaseManager()
         repo = AnalyticsRepository(db_mgr)
@@ -832,7 +839,9 @@ def create_app() -> FastAPI:
                         "actualAmount": str(line.actual_amount),
                         "budgetAmount": str(line.budget_amount),
                         "varianceAmount": str(line.variance_amount),
-                        "variancePct": str(line.variance_pct) if line.variance_pct is not None else None,
+                        "variancePct": str(line.variance_pct)
+                        if line.variance_pct is not None
+                        else None,
                         "favourability": line.favourability,
                         "accountCount": line.account_count,
                     }
@@ -851,15 +860,17 @@ def create_app() -> FastAPI:
         dependencies=[Depends(verify_session_token)],
     )
     def api_get_bva_entities(
-        period_id: Optional[int] = None,
-        company_id: Optional[int] = None,
+        period_id: int | None = None,
+        company_id: int | None = None,
         page: int = 1,
         page_size: int = 100,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Entity-level rollups per CALC-041 and FR-BVA-014."""
         db_mgr = DatabaseManager()
         repo = AnalyticsRepository(db_mgr)
-        res = repo.get_entity_rollups(period_id=period_id, company_id=company_id, page=page, page_size=page_size)
+        res = repo.get_entity_rollups(
+            period_id=period_id, company_id=company_id, page=page, page_size=page_size
+        )
         return {
             "status": "ok",
             "data": {
@@ -871,7 +882,9 @@ def create_app() -> FastAPI:
                         "actualAmount": str(item.actual_amount),
                         "budgetAmount": str(item.budget_amount),
                         "varianceAmount": str(item.variance_amount),
-                        "variancePct": str(item.variance_pct) if item.variance_pct is not None else None,
+                        "variancePct": str(item.variance_pct)
+                        if item.variance_pct is not None
+                        else None,
                         "favourability": item.favourability,
                     }
                     for item in res.items
@@ -890,16 +903,22 @@ def create_app() -> FastAPI:
         dependencies=[Depends(verify_session_token)],
     )
     def api_get_bva_cost_centers(
-        period_id: Optional[int] = None,
-        company_id: Optional[int] = None,
-        department_name: Optional[str] = None,
+        period_id: int | None = None,
+        company_id: int | None = None,
+        department_name: str | None = None,
         page: int = 1,
         page_size: int = 100,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Cost center rollups per FR-BVA-001/007."""
         db_mgr = DatabaseManager()
         repo = AnalyticsRepository(db_mgr)
-        res = repo.get_cost_center_aggregations(period_id=period_id, company_id=company_id, department_name=department_name, page=page, page_size=page_size)
+        res = repo.get_cost_center_aggregations(
+            period_id=period_id,
+            company_id=company_id,
+            department_name=department_name,
+            page=page,
+            page_size=page_size,
+        )
         return {
             "status": "ok",
             "data": {
@@ -912,7 +931,9 @@ def create_app() -> FastAPI:
                         "actualAmount": str(item.actual_amount),
                         "budgetAmount": str(item.budget_amount),
                         "varianceAmount": str(item.variance_amount),
-                        "variancePct": str(item.variance_pct) if item.variance_pct is not None else None,
+                        "variancePct": str(item.variance_pct)
+                        if item.variance_pct is not None
+                        else None,
                         "favourability": item.favourability,
                     }
                     for item in res.items
@@ -931,16 +952,16 @@ def create_app() -> FastAPI:
         dependencies=[Depends(verify_session_token)],
     )
     def api_get_analysis_drill(
-        period_id: Optional[int] = None,
-        account_id: Optional[int] = None,
-        account_code: Optional[str] = None,
-        statement_line: Optional[str] = None,
-        company_id: Optional[int] = None,
-        cost_center_id: Optional[int] = None,
-        voucher_no: Optional[str] = None,
+        period_id: int | None = None,
+        account_id: int | None = None,
+        account_code: str | None = None,
+        statement_line: str | None = None,
+        company_id: int | None = None,
+        cost_center_id: int | None = None,
+        voucher_no: str | None = None,
         page: int = 1,
         page_size: int = 50,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Transaction detail drill-through per 26_API_CONTRACT.md §3.4 and FR-BVA-004."""
         db_mgr = DatabaseManager()
         repo = AnalyticsRepository(db_mgr)
@@ -995,7 +1016,7 @@ def create_app() -> FastAPI:
         "/api/v1/master-data/approval-thresholds",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_list_approval_thresholds() -> Dict[str, Any]:
+    def api_list_approval_thresholds() -> dict[str, Any]:
         repo = ApprovalThresholdRepository(DatabaseManager())
         return {"status": "ok", "data": {"items": repo.list_approval_thresholds()}}
 
@@ -1006,7 +1027,7 @@ def create_app() -> FastAPI:
     )
     def api_create_approval_threshold_version(
         payload: ApprovalThresholdCreateRequest,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         repo = ApprovalThresholdRepository(DatabaseManager())
         try:
             item = repo.create_approval_threshold_version(
@@ -1040,7 +1061,7 @@ def create_app() -> FastAPI:
         "/api/v1/rules/run",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_run_rules(payload: Optional[RunRulesRequest] = None) -> Dict[str, Any]:
+    def api_run_rules(payload: RunRulesRequest | None = None) -> dict[str, Any]:
         """Trigger deterministic execution of the full de-duplicated rule catalog.
 
         Runs EXC-001..EXC-024 via the shared batch in app.engine.rules.batch.
@@ -1072,7 +1093,7 @@ def create_app() -> FastAPI:
         "/api/v1/mapping-suggestions",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_enqueue_mapping_suggestions(payload: EnqueueSuggestionsRequest) -> Dict[str, Any]:
+    def api_enqueue_mapping_suggestions(payload: EnqueueSuggestionsRequest) -> dict[str, Any]:
         """Enqueue proposals for an import run and return the review queue.
 
         FR-IMP-008: "With AI disabled, the queue shows rule-based suggestions only" -
@@ -1114,19 +1135,22 @@ def create_app() -> FastAPI:
         dependencies=[Depends(verify_session_token)],
     )
     def api_list_mapping_suggestions(
-        importRunId: Optional[int] = None,
-        state: Optional[str] = None,
-        origin: Optional[str] = None,
+        importRunId: int | None = None,
+        state: str | None = None,
+        origin: str | None = None,
         limit: int = 200,
         offset: int = 0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """List the review queue for an import run (FR-IMP-008)."""
         from app.engine.store.mapping_suggestion_repo import MappingSuggestionRepository
 
         repo = MappingSuggestionRepository(DatabaseManager())
         page = repo.list_suggestions(
-            import_run_id=importRunId, state=state, origin=origin,
-            limit=limit, offset=offset,
+            import_run_id=importRunId,
+            state=state,
+            origin=origin,
+            limit=limit,
+            offset=offset,
         )
         page["summary"] = repo.count_by_state(importRunId)
         return {"status": "ok", "data": page}
@@ -1137,7 +1161,7 @@ def create_app() -> FastAPI:
     )
     def api_decide_mapping_suggestion(
         suggestion_id: int, payload: DecideSuggestionRequest
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Accept / edit / reject one suggestion (FR-IMP-008 state machine).
 
         An illegal transition returns 409 rather than silently rewriting state, so
@@ -1183,7 +1207,7 @@ def create_app() -> FastAPI:
         "/api/v1/mapping-suggestions/bulk-decision",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_bulk_mapping_decision(payload: BulkMappingDecisionRequest) -> Dict[str, Any]:
+    def api_bulk_mapping_decision(payload: BulkMappingDecisionRequest) -> dict[str, Any]:
         """Bulk accept/edit with an audit trail (FR-IMP-008)."""
         from app.engine.store.mapping_suggestion_repo import MappingSuggestionRepository
 
@@ -1201,7 +1225,7 @@ def create_app() -> FastAPI:
         "/api/v1/mapping-suggestions/{suggestion_id}/audit",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_mapping_suggestion_audit(suggestion_id: int) -> Dict[str, Any]:
+    def api_mapping_suggestion_audit(suggestion_id: int) -> dict[str, Any]:
         """Append-only audit trail for one suggestion (FR-IMP-008)."""
         from app.engine.store.mapping_suggestion_repo import MappingSuggestionRepository
 
@@ -1216,16 +1240,16 @@ def create_app() -> FastAPI:
         dependencies=[Depends(verify_session_token)],
     )
     def api_list_exceptions(
-        period: Optional[str] = None,
-        severity: Optional[str] = None,
-        status: Optional[str] = None,
-        owner: Optional[str] = None,
-        rule_id: Optional[str] = None,
-        aging_bucket: Optional[str] = None,
-        q: Optional[str] = None,
+        period: str | None = None,
+        severity: str | None = None,
+        status: str | None = None,
+        owner: str | None = None,
+        rule_id: str | None = None,
+        aging_bucket: str | None = None,
+        q: str | None = None,
         page: int = 1,
         page_size: int = 50,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """List filterable exception register rows with aging buckets per FR-EXC-002/009."""
         db_mgr = DatabaseManager()
         repo = ExceptionsRepository(db_mgr)
@@ -1246,7 +1270,7 @@ def create_app() -> FastAPI:
         "/api/v1/exceptions/{exception_id}",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_get_exception_detail(exception_id: int) -> Dict[str, Any]:
+    def api_get_exception_detail(exception_id: int) -> dict[str, Any]:
         """Get single exception details with evidence, notes, and audit history per SCR-024."""
         db_mgr = DatabaseManager()
         repo = ExceptionsRepository(db_mgr)
@@ -1268,7 +1292,7 @@ def create_app() -> FastAPI:
         "/api/v1/periods",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_list_periods() -> Dict[str, Any]:
+    def api_list_periods() -> dict[str, Any]:
         """List all periods with open/closed status per FR-PRJ-003."""
         repo = PeriodRepository(DatabaseManager())
         items = repo.list_periods()
@@ -1301,7 +1325,7 @@ def create_app() -> FastAPI:
         "/api/v1/periods/open",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_open_period(payload: OpenPeriodRequest) -> Dict[str, Any]:
+    def api_open_period(payload: OpenPeriodRequest) -> dict[str, Any]:
         """New Period wizard - open period and carry forward mappings/assumptions (FR-PRJ-004)."""
         repo = PeriodRepository(DatabaseManager())
         try:
@@ -1325,7 +1349,7 @@ def create_app() -> FastAPI:
         "/api/v1/periods/{period_id}/close",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_close_period(period_id: int) -> Dict[str, Any]:
+    def api_close_period(period_id: int) -> dict[str, Any]:
         """Close period with immutable snapshot (FR-PRJ-005, FR-PRJ-010)."""
         repo = PeriodRepository(DatabaseManager())
         try:
@@ -1340,7 +1364,7 @@ def create_app() -> FastAPI:
         "/api/v1/periods/{period_id}/reopen",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_reopen_period(period_id: int, payload: ReopenPeriodRequest) -> Dict[str, Any]:
+    def api_reopen_period(period_id: int, payload: ReopenPeriodRequest) -> dict[str, Any]:
         """Typed reopen with audit log (FR-PRJ-005)."""
         repo = PeriodRepository(DatabaseManager())
         try:
@@ -1359,7 +1383,7 @@ def create_app() -> FastAPI:
         "/api/v1/exceptions/{exception_id}",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_patch_exception(exception_id: int, payload: PatchExceptionRequest) -> Dict[str, Any]:
+    def api_patch_exception(exception_id: int, payload: PatchExceptionRequest) -> dict[str, Any]:
         """Update status, owner, or add note per FR-EXC-006/007/008."""
         db_mgr = DatabaseManager()
         repo = ExceptionsRepository(db_mgr)
@@ -1391,7 +1415,7 @@ def create_app() -> FastAPI:
         "/api/v1/exceptions/bulk",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_bulk_exceptions(payload: BulkExceptionRequest) -> Dict[str, Any]:
+    def api_bulk_exceptions(payload: BulkExceptionRequest) -> dict[str, Any]:
         """Bulk update status or owner with 1:1 audit event logging per FR-EXC-010."""
         db_mgr = DatabaseManager()
         repo = ExceptionsRepository(db_mgr)
@@ -1409,37 +1433,10 @@ def create_app() -> FastAPI:
         return {"status": "ok", "data": res}
 
     @app.get(
-        "/api/v1/exceptions",
-        dependencies=[Depends(verify_session_token)],
-    )
-    def api_list_exceptions(
-        period_code: Optional[str] = None,
-        rule_id: Optional[str] = None,
-        status: Optional[str] = None,
-        severity: Optional[str] = None,
-        owner: Optional[str] = None,
-        page: int = 1,
-        pageSize: int = 50,
-    ) -> Dict[str, Any]:
-        """List exceptions with filters per FR-EXC-005."""
-        db_mgr = DatabaseManager()
-        repo = ExceptionsRepository(db_mgr)
-        res = repo.list_exceptions(
-            period_code=period_code,
-            rule_id=rule_id,
-            status=status,
-            severity=severity,
-            owner=owner,
-            page=page,
-            page_size=pageSize,
-        )
-        return {"status": "ok", "data": res}
-
-    @app.get(
         "/api/v1/exceptions/export/owner",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_export_owner_distribution(period_code: Optional[str] = None) -> Dict[str, Any]:
+    def api_export_owner_distribution(period_code: str | None = None) -> dict[str, Any]:
         """Export owner-wise exception distribution report (CSV + Teams summary) per FR-EXC-017."""
         db_mgr = DatabaseManager()
         repo = ExceptionsRepository(db_mgr)
@@ -1460,7 +1457,7 @@ def create_app() -> FastAPI:
         return FileResponse(
             path=file_path,
             filename=f"evidence_bundle_exc_{exception_id}.xlsx",
-            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
 
     # =========================================================================
@@ -1475,7 +1472,7 @@ def create_app() -> FastAPI:
         scenario: str = "base",
         default_method: str = "run_rate",
         run_rate_n: int = 3,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Retrieve or compute forecast workspace per SCR-027 and FR-FC-001..005."""
         db_mgr = DatabaseManager()
         repo = ForecastRepository(db_mgr)
@@ -1496,7 +1493,7 @@ def create_app() -> FastAPI:
                 "openPeriods": dto.open_periods,
                 "lastGeneratedAt": dto.last_generated_at,
                 "generatedBy": dto.generated_by,
-                "lines": [l.__dict__ for l in dto.lines],
+                "lines": [line.__dict__ for line in dto.lines],
                 "totals": dto.totals,
             },
         }
@@ -1505,7 +1502,7 @@ def create_app() -> FastAPI:
         "/api/v1/forecast/run",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_run_forecast(payload: RunForecastRequest) -> Dict[str, Any]:
+    def api_run_forecast(payload: RunForecastRequest) -> dict[str, Any]:
         """Generate forecast run per FR-FC-002/005 and 26_API_CONTRACT §3.6."""
         db_mgr = DatabaseManager()
         repo = ForecastRepository(db_mgr)
@@ -1526,7 +1523,7 @@ def create_app() -> FastAPI:
                 "openPeriods": dto.open_periods,
                 "lastGeneratedAt": dto.last_generated_at,
                 "generatedBy": dto.generated_by,
-                "lines": [l.__dict__ for l in dto.lines],
+                "lines": [line.__dict__ for line in dto.lines],
                 "totals": dto.totals,
             },
         }
@@ -1535,7 +1532,7 @@ def create_app() -> FastAPI:
         "/api/v1/forecast/cells",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_patch_forecast_cell(payload: OverrideForecastRequest) -> Dict[str, Any]:
+    def api_patch_forecast_cell(payload: OverrideForecastRequest) -> dict[str, Any]:
         """Apply manual override with mandatory reason per FR-FC-006 and CALC-064."""
         db_mgr = DatabaseManager()
         repo = ForecastRepository(db_mgr)
@@ -1562,8 +1559,8 @@ def create_app() -> FastAPI:
     )
     def api_lock_forecast_version(
         version_id: str,
-        payload: Optional[LockForecastVersionRequest] = None,
-    ) -> Dict[str, Any]:
+        payload: LockForecastVersionRequest | None = None,
+    ) -> dict[str, Any]:
         """Lock forecast version making it immutable per FR-FC-009."""
         db_mgr = DatabaseManager()
         repo = ForecastRepository(db_mgr)
@@ -1575,8 +1572,8 @@ def create_app() -> FastAPI:
         dependencies=[Depends(verify_session_token)],
     )
     def api_get_forecast_compare(
-        account_id: Optional[int] = None,
-    ) -> Dict[str, Any]:
+        account_id: int | None = None,
+    ) -> dict[str, Any]:
         """Get Base vs Best vs Worst scenario comparison per FR-FC-003 and SCR-028."""
         db_mgr = DatabaseManager()
         repo = ForecastRepository(db_mgr)
@@ -1587,7 +1584,7 @@ def create_app() -> FastAPI:
         "/api/v1/forecast/accuracy",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_get_forecast_accuracy() -> Dict[str, Any]:
+    def api_get_forecast_accuracy() -> dict[str, Any]:
         """Get forecast accuracy report for closed periods per FR-FC-007 and CALC-066..069."""
         db_mgr = DatabaseManager()
         repo = ForecastRepository(db_mgr)
@@ -1617,7 +1614,7 @@ def create_app() -> FastAPI:
         "/api/v1/packs/generate",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_generate_pack(payload: GeneratePackRequest) -> Dict[str, Any]:
+    def api_generate_pack(payload: GeneratePackRequest) -> dict[str, Any]:
         """Generate Excel pack or PowerPoint deck per FR-XL-001..009 / FR-PPT-001..009."""
         db_mgr = DatabaseManager()
         repo = ReportsRepository(db_mgr)
@@ -1639,7 +1636,7 @@ def create_app() -> FastAPI:
         "/api/v1/packs",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_get_packs(period: Optional[str] = None) -> Dict[str, Any]:
+    def api_get_packs(period: str | None = None) -> dict[str, Any]:
         """List generated pack files."""
         db_mgr = DatabaseManager()
         repo = ReportsRepository(db_mgr)
@@ -1650,7 +1647,7 @@ def create_app() -> FastAPI:
         "/api/v1/issuance",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_issue_pack(payload: IssuePackRequest) -> Dict[str, Any]:
+    def api_issue_pack(payload: IssuePackRequest) -> dict[str, Any]:
         """Issue pack, freeze snapshot, lock commentary per FR-XC-002 and FR-XC-003."""
         db_mgr = DatabaseManager()
         repo = ReportsRepository(db_mgr)
@@ -1670,7 +1667,7 @@ def create_app() -> FastAPI:
         "/api/v1/issuance",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_get_issuance_register(period_id: Optional[int] = None) -> Dict[str, Any]:
+    def api_get_issuance_register(period_id: int | None = None) -> dict[str, Any]:
         """Get pack issuance register per SCR-030 and FR-XC-003."""
         db_mgr = DatabaseManager()
         repo = ReportsRepository(db_mgr)
@@ -1681,7 +1678,7 @@ def create_app() -> FastAPI:
         "/api/v1/issuance/{issue_id}/reissue",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_reissue_pack(issue_id: int, payload: ReissuePackRequest) -> Dict[str, Any]:
+    def api_reissue_pack(issue_id: int, payload: ReissuePackRequest) -> dict[str, Any]:
         """Re-issue pack creates new version while previous remains immutable (FR-XC-003)."""
         db_mgr = DatabaseManager()
         repo = ReportsRepository(db_mgr)
@@ -1695,7 +1692,7 @@ def create_app() -> FastAPI:
         "/api/v1/commentary",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_get_commentary(period_id: int = 9) -> Dict[str, Any]:
+    def api_get_commentary(period_id: int = 9) -> dict[str, Any]:
         """Get line and executive commentary per SCR-031 and FR-XC-001."""
         db_mgr = DatabaseManager()
         repo = ReportsRepository(db_mgr)
@@ -1706,7 +1703,7 @@ def create_app() -> FastAPI:
         "/api/v1/commentary",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_save_commentary(payload: SaveCommentaryRequest) -> Dict[str, Any]:
+    def api_save_commentary(payload: SaveCommentaryRequest) -> dict[str, Any]:
         """Save line or executive commentary (FR-XC-001 / FR-XC-002)."""
         db_mgr = DatabaseManager()
         repo = ReportsRepository(db_mgr)
@@ -1721,26 +1718,30 @@ def create_app() -> FastAPI:
 
     class AiDraftRequest(BaseModel):
         prompt_id: str
-        variables: Dict[str, Any]
-        version: Optional[str] = "v1"
-        known_vendors: Optional[List[str]] = None
+        variables: dict[str, Any]
+        version: str | None = "v1"
+        known_vendors: list[str] | None = None
 
     class AiConfigPayload(BaseModel):
-        provider: Optional[str] = "openai"
-        base_url: Optional[str] = None
-        api_key: Optional[str] = None
-        model: Optional[str] = "gpt-4o"
-        temperature: Optional[float] = 0.2
+        provider: str | None = "openai"
+        base_url: str | None = None
+        api_key: str | None = None
+        model: str | None = "gpt-4o"
+        temperature: float | None = 0.2
 
     @app.get(
         "/api/v1/ai/config",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_get_ai_config() -> Dict[str, Any]:
+    def api_get_ai_config() -> dict[str, Any]:
         """Get current AI configuration state per docs 10 & 08."""
         cfg = AIConfig.from_env()
         has_key = bool(cfg.api_key and cfg.api_key.strip() and not cfg.api_key.startswith("your_"))
-        masked_key = (cfg.api_key[:6] + "..." + cfg.api_key[-4:]) if (cfg.api_key and len(cfg.api_key) > 10) else ("" if not has_key else "••••••••")
+        masked_key = (
+            (cfg.api_key[:6] + "..." + cfg.api_key[-4:])
+            if (cfg.api_key and len(cfg.api_key) > 10)
+            else ("" if not has_key else "••••••••")
+        )
         return {
             "status": "ok",
             "data": {
@@ -1751,14 +1752,14 @@ def create_app() -> FastAPI:
                 "isConfigured": has_key,
                 "maskedApiKey": masked_key,
                 "fallbackActive": not has_key,
-            }
+            },
         }
 
     @app.post(
         "/api/v1/ai/config",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_update_ai_config(payload: AiConfigPayload) -> Dict[str, Any]:
+    def api_update_ai_config(payload: AiConfigPayload) -> dict[str, Any]:
         """Update AI configuration (in-memory/session or env override)."""
         if payload.api_key is not None:
             os.environ["FPA_AI_API_KEY"] = payload.api_key
@@ -1774,7 +1775,7 @@ def create_app() -> FastAPI:
         "/api/v1/ai/test-connection",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_test_ai_connection(payload: Optional[AiConfigPayload] = None) -> Dict[str, Any]:
+    def api_test_ai_connection(payload: AiConfigPayload | None = None) -> dict[str, Any]:
         """Test AI connection or fallback status per docs 10."""
         cfg = AIConfig.from_env()
         if payload and payload.api_key:
@@ -1783,7 +1784,7 @@ def create_app() -> FastAPI:
             cfg.provider = payload.provider
         if payload and payload.model:
             cfg.model = payload.model
-        
+
         client = AIClient(cfg)
         ok = client.test_connection()
         return {
@@ -1792,15 +1793,17 @@ def create_app() -> FastAPI:
                 "connected": ok,
                 "isConfigured": client.is_configured(),
                 "mode": "ai" if client.is_configured() else "keyless_fallback",
-                "message": "Connection successful" if ok else "Keyless rule-based fallback active (no valid API key configured)"
-            }
+                "message": "Connection successful"
+                if ok
+                else "Keyless rule-based fallback active (no valid API key configured)",
+            },
         }
 
     @app.post(
         "/api/v1/ai/drafts",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_generate_ai_draft(payload: AiDraftRequest) -> Dict[str, Any]:
+    def api_generate_ai_draft(payload: AiDraftRequest) -> dict[str, Any]:
         """Generate AI commentary draft or keyless rule-based fallback per FR-AI-001..013 & docs 10."""
         cfg = AIConfig.from_env()
         client = AIClient(cfg)
@@ -1808,7 +1811,7 @@ def create_app() -> FastAPI:
             prompt_id=payload.prompt_id,
             variables=payload.variables,
             version=payload.version or "v1",
-            known_vendors=payload.known_vendors
+            known_vendors=payload.known_vendors,
         )
         return {
             "status": "ok",
@@ -1823,7 +1826,7 @@ def create_app() -> FastAPI:
                 "provider": result.provider,
                 "outcome": result.outcome,
                 "redactionStats": result.redaction_stats,
-            }
+            },
         }
 
     class AiCapPayload(BaseModel):
@@ -1833,7 +1836,7 @@ def create_app() -> FastAPI:
         "/api/v1/ai/usage",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_get_ai_usage(period_month: Optional[str] = None) -> Dict[str, Any]:
+    def api_get_ai_usage(period_month: str | None = None) -> dict[str, Any]:
         """Get AI usage telemetry logs, aggregated tokens, cost estimates, and monthly cap per doc 10 §8 & §9."""
         store = AIUsageStore()
         stats = store.get_usage_stats(period_month=period_month)
@@ -1843,26 +1846,30 @@ def create_app() -> FastAPI:
         "/api/v1/ai/cap",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_set_ai_cap(payload: AiCapPayload) -> Dict[str, Any]:
+    def api_set_ai_cap(payload: AiCapPayload) -> dict[str, Any]:
         """Set hard monthly token cap per doc 10 §9."""
         store = AIUsageStore()
         updated_cap = store.set_monthly_token_cap(payload.cap)
-        return {"status": "ok", "data": {"monthlyTokenCap": updated_cap}, "message": f"Monthly token cap updated to {updated_cap:,} tokens."}
+        return {
+            "status": "ok",
+            "data": {"monthlyTokenCap": updated_cap},
+            "message": f"Monthly token cap updated to {updated_cap:,} tokens.",
+        }
 
     class AiDraftProvenancePayload(BaseModel):
         subjectKey: str
-        periodId: Optional[int] = 9
+        periodId: int | None = 9
         content: str
         model: str
         promptId: str
         promptVersion: str
-        author: Optional[str] = "Aarti"
+        author: str | None = "Aarti"
 
     @app.get(
         "/api/v1/ai/drafts/provenance",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_list_ai_draft_provenance(subjectKey: str, periodId: int = 9) -> Dict[str, Any]:
+    def api_list_ai_draft_provenance(subjectKey: str, periodId: int = 9) -> dict[str, Any]:
         """List retained draft versions and provenance stamps per doc 10 §4 & §5."""
         store = AiProvenanceStore()
         drafts = store.list_drafts(subject_key=subjectKey, period_id=periodId)
@@ -1872,7 +1879,7 @@ def create_app() -> FastAPI:
         "/api/v1/ai/drafts/provenance",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_save_ai_draft_provenance(payload: AiDraftProvenancePayload) -> Dict[str, Any]:
+    def api_save_ai_draft_provenance(payload: AiDraftProvenancePayload) -> dict[str, Any]:
         """Save a new generated draft version while retaining previous versions per doc 10 §5."""
         store = AiProvenanceStore()
         saved = store.save_draft(
@@ -1890,13 +1897,17 @@ def create_app() -> FastAPI:
         "/api/v1/ai/drafts/provenance/{draft_id}/approve",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_approve_ai_draft_provenance(draft_id: str) -> Dict[str, Any]:
+    def api_approve_ai_draft_provenance(draft_id: str) -> dict[str, Any]:
         """Approve a specific draft version for PPT export / final issuance per doc 10 §6."""
         store = AiProvenanceStore()
         approved = store.approve_draft(draft_id)
         if not approved:
             raise HTTPException(status_code=404, detail="Draft not found")
-        return {"status": "ok", "data": approved, "message": "Draft version approved for PPT presentation pack."}
+        return {
+            "status": "ok",
+            "data": approved,
+            "message": "Draft version approved for PPT presentation pack.",
+        }
 
     class AiModelValidationPayload(BaseModel):
         modelId: str
@@ -1905,7 +1916,7 @@ def create_app() -> FastAPI:
         "/api/v1/ai/pinning",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_get_ai_pinning() -> Dict[str, Any]:
+    def api_get_ai_pinning() -> dict[str, Any]:
         """Get model pinning registry, deprecation notices, and documented fallback order per doc 10 §2 & §3."""
         config = get_model_pinning_config()
         return {"status": "ok", "data": config}
@@ -1914,7 +1925,7 @@ def create_app() -> FastAPI:
         "/api/v1/ai/pinning/validate",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_validate_ai_pinning(payload: AiModelValidationPayload) -> Dict[str, Any]:
+    def api_validate_ai_pinning(payload: AiModelValidationPayload) -> dict[str, Any]:
         """Validate selected model against pinning & deprecation registry per doc 10 §2."""
         res = validate_model_selection(payload.modelId)
         return {"status": "ok", "data": res}
@@ -1923,13 +1934,13 @@ def create_app() -> FastAPI:
         promptId: str
         templateText: str
         changelogNote: str
-        author: Optional[str] = "Aarti"
+        author: str | None = "Aarti"
 
     @app.get(
         "/api/v1/ai/prompts",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_list_ai_prompts() -> Dict[str, Any]:
+    def api_list_ai_prompts() -> dict[str, Any]:
         """List versioned prompt templates, immutable baselines, and changelog history per doc 10 §5."""
         store = PromptTemplateStore()
         prompts = store.list_prompts()
@@ -1939,7 +1950,7 @@ def create_app() -> FastAPI:
         "/api/v1/ai/prompts/edit",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_edit_ai_prompt(payload: AiPromptEditPayload) -> Dict[str, Any]:
+    def api_edit_ai_prompt(payload: AiPromptEditPayload) -> dict[str, Any]:
         """Execute 5-step prompt template edit process (CHANGELOG note required first, new version created, eval diff recorded) per doc 10 §5.2."""
         store = PromptTemplateStore()
         try:
@@ -1951,17 +1962,23 @@ def create_app() -> FastAPI:
             )
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
-        return {"status": "ok", "data": saved, "message": "Prompt template successfully versioned and eval fixtures re-run."}
+        return {
+            "status": "ok",
+            "data": saved,
+            "message": "Prompt template successfully versioned and eval fixtures re-run.",
+        }
 
     @app.post(
         "/api/v1/import/budget/preview-replace",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_preview_budget_replace(payload: BudgetReplaceRequest) -> Dict[str, Any]:
+    def api_preview_budget_replace(payload: BudgetReplaceRequest) -> dict[str, Any]:
         """Preview budget replacement diff per FR-IMP-028."""
         db_mgr = DatabaseManager()
         repo = ImportRepository(db_mgr)
-        diff = repo.preview_budget_replace(budget_version=payload.budgetVersion, incoming_rows=payload.rows)
+        diff = repo.preview_budget_replace(
+            budget_version=payload.budgetVersion, incoming_rows=payload.rows
+        )
         return {
             "status": "ok",
             "data": diff,
@@ -1971,7 +1988,7 @@ def create_app() -> FastAPI:
         "/api/v1/import/budget/commit-replace",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_commit_budget_replace(payload: BudgetReplaceRequest) -> Dict[str, Any]:
+    def api_commit_budget_replace(payload: BudgetReplaceRequest) -> dict[str, Any]:
         """Atomically replace budget version per FR-IMP-028."""
         db_mgr = DatabaseManager()
         repo = ImportRepository(db_mgr)
@@ -1997,7 +2014,7 @@ def create_app() -> FastAPI:
         q: str = "",
         page: int = 1,
         page_size: int = 50,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Global search across vouchers, vendors/invoice_no, descriptions, and accounts per FR-BVA-012."""
         db_mgr = DatabaseManager()
         repo = AnalyticsRepository(db_mgr)
@@ -2040,7 +2057,7 @@ def create_app() -> FastAPI:
         "/api/v1/forecast/methods",
         dependencies=[Depends(verify_session_token)],
     )
-    def api_get_forecast_methods() -> Dict[str, Any]:
+    def api_get_forecast_methods() -> dict[str, Any]:
         """Get available forecast methods per forecast spec."""
         return {
             "status": "ok",
@@ -2054,7 +2071,7 @@ def create_app() -> FastAPI:
         }
 
     @app.get("/api/v1/storage", dependencies=[Depends(verify_session_token)])
-    def api_get_storage() -> Dict[str, Any]:
+    def api_get_storage() -> dict[str, Any]:
         """Get storage usage breakdown per FR-PRJ-011."""
         return {
             "status": "ok",
@@ -2069,7 +2086,7 @@ def create_app() -> FastAPI:
         }
 
     @app.post("/api/v1/backup", dependencies=[Depends(verify_session_token)])
-    def api_post_backup() -> Dict[str, Any]:
+    def api_post_backup() -> dict[str, Any]:
         """Create project backup zip per FR-PRJ-008."""
         return {
             "status": "ok",
@@ -2081,7 +2098,7 @@ def create_app() -> FastAPI:
         }
 
     @app.post("/api/v1/restore", dependencies=[Depends(verify_session_token)])
-    def api_post_restore() -> Dict[str, Any]:
+    def api_post_restore() -> dict[str, Any]:
         """Restore project from backup zip per FR-PRJ-009."""
         return {
             "status": "ok",
@@ -2089,7 +2106,7 @@ def create_app() -> FastAPI:
         }
 
     @app.post("/api/v1/archive-raw", dependencies=[Depends(verify_session_token)])
-    def api_post_archive_raw() -> Dict[str, Any]:
+    def api_post_archive_raw() -> dict[str, Any]:
         """Archive closed period raw files per FR-PRJ-011."""
         return {
             "status": "ok",
@@ -2097,7 +2114,7 @@ def create_app() -> FastAPI:
         }
 
     @app.get("/api/v1/doctor", dependencies=[Depends(verify_session_token)])
-    def api_get_doctor() -> Dict[str, Any]:
+    def api_get_doctor() -> dict[str, Any]:
         """Run CLI doctor integrity checks per FR-XC-016."""
         return {
             "status": "ok",
@@ -2110,17 +2127,42 @@ def create_app() -> FastAPI:
                 "databasePath": "./data/fpa_prod.duckdb",
                 "pythonVersion": "Python 3.11.4",
                 "checks": [
-                    {"id": "DOC-01", "name": "DuckDB Connection & Integrity", "status": "PASS", "detail": "Database read/write operational (v0.10.0)"},
-                    {"id": "DOC-02", "name": "Sample Data Directory Permissions", "status": "PASS", "detail": "Read/Write access verified for all fixtures"},
-                    {"id": "DOC-03", "name": "Configuration Store & Schema Validation", "status": "PASS", "detail": "All 24 exception rules loaded and verified"},
-                    {"id": "DOC-04", "name": "AI Key & Credential Redaction Guardrails", "status": "PASS", "detail": "Zero unmasked secrets detected in state"},
-                    {"id": "DOC-05", "name": "Memory & Performance Headroom", "status": "PASS", "detail": "Peak memory 142MB (Threshold < 512MB)"},
+                    {
+                        "id": "DOC-01",
+                        "name": "DuckDB Connection & Integrity",
+                        "status": "PASS",
+                        "detail": "Database read/write operational (v0.10.0)",
+                    },
+                    {
+                        "id": "DOC-02",
+                        "name": "Sample Data Directory Permissions",
+                        "status": "PASS",
+                        "detail": "Read/Write access verified for all fixtures",
+                    },
+                    {
+                        "id": "DOC-03",
+                        "name": "Configuration Store & Schema Validation",
+                        "status": "PASS",
+                        "detail": "All 24 exception rules loaded and verified",
+                    },
+                    {
+                        "id": "DOC-04",
+                        "name": "AI Key & Credential Redaction Guardrails",
+                        "status": "PASS",
+                        "detail": "Zero unmasked secrets detected in state",
+                    },
+                    {
+                        "id": "DOC-05",
+                        "name": "Memory & Performance Headroom",
+                        "status": "PASS",
+                        "detail": "Peak memory 142MB (Threshold < 512MB)",
+                    },
                 ],
             },
         }
 
     @app.post("/api/v1/diagnostics/export", dependencies=[Depends(verify_session_token)])
-    def api_export_diagnostics() -> Dict[str, Any]:
+    def api_export_diagnostics() -> dict[str, Any]:
         """Export redacted diagnostics bundle zip per FR-XC-014 and doc 13."""
         return {
             "status": "ok",
@@ -2132,7 +2174,7 @@ def create_app() -> FastAPI:
         }
 
     @app.get("/api/v1/updates", dependencies=[Depends(verify_session_token)])
-    def api_get_updates() -> Dict[str, Any]:
+    def api_get_updates() -> dict[str, Any]:
         """Manual check for updates per FR-XC-015."""
         return {
             "status": "ok",
@@ -2146,16 +2188,16 @@ def create_app() -> FastAPI:
 
     # Staleness state per Addon 2 B.7 / docs 08/09
     @app.get("/api/v1/staleness", dependencies=[Depends(verify_session_token)])
-    def api_get_staleness() -> Dict[str, Any]:
+    def api_get_staleness() -> dict[str, Any]:
         """Get persisted derived-data staleness status per Addon 2 B.7."""
         return {"status": "ok", "data": _get_staleness_state()}
 
     @app.post("/api/v1/staleness/trigger", dependencies=[Depends(verify_session_token)])
-    def api_trigger_staleness(payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def api_trigger_staleness(payload: dict[str, Any] | None = None) -> dict[str, Any]:
         """Persist STALE state when configuration, mappings, or thresholds change."""
-        reason = str(
-            (payload or {}).get("reason") or "Configuration or mapping updated"
-        ).strip()[:500]
+        reason = str((payload or {}).get("reason") or "Configuration or mapping updated").strip()[
+            :500
+        ]
         if not reason:
             reason = "Configuration or mapping updated"
         return {"status": "ok", "data": _set_staleness_state(True, reason)}
@@ -2164,11 +2206,13 @@ def create_app() -> FastAPI:
         "/api/v1/staleness/rerun",
         dependencies=[Depends(verify_session_token)],
         responses={
-            409: {"description": "Configuration changed during recomputation; stale state retained"},
+            409: {
+                "description": "Configuration changed during recomputation; stale state retained"
+            },
             503: {"description": "Derived-data recomputation failed; stale state retained"},
         },
     )
-    def api_rerun_staleness() -> Dict[str, Any]:
+    def api_rerun_staleness() -> dict[str, Any]:
         """Recompute rule findings and the base forecast before clearing staleness."""
         rerun_generation = int(_get_staleness_state()["generation"])
         db_mgr = DatabaseManager()

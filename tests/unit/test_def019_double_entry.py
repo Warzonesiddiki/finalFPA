@@ -79,7 +79,7 @@ def _generate(tmp_path: Path, scale: int = 2000) -> Path:
 
 
 def _read_rows(gl_csv: Path):
-    with open(gl_csv, mode="r", encoding="utf-8-sig", newline="") as handle:
+    with open(gl_csv, encoding="utf-8-sig", newline="") as handle:
         reader = csv.reader(handle)
         header = None
         for row in reader:
@@ -118,12 +118,9 @@ def test_baseline_vouchers_balance_per_voucher(tmp_path):
         legs[voucher][1] += Decimal(row[idx["Credit"]] or "0.00")
 
     assert len(baseline_vouchers) == 1000, (
-        f"Expected 1000 baseline vouchers (scale 2000 // 2), found "
-        f"{len(baseline_vouchers)}"
+        f"Expected 1000 baseline vouchers (scale 2000 // 2), found {len(baseline_vouchers)}"
     )
-    imbalanced = {
-        v: (d, c) for v, (d, c) in legs.items() if d - c != Decimal("0.00")
-    }
+    imbalanced = {v: (d, c) for v, (d, c) in legs.items() if d - c != Decimal("0.00")}
     assert not imbalanced, (
         f"{len(imbalanced)} baseline vouchers do not balance "
         f"(showing 5): {dict(list(imbalanced.items())[:5])}"
@@ -153,8 +150,7 @@ def test_baseline_never_posts_to_suspense_1999(tmp_path):
         f"{sorted(touching)} (only planted {P24_VOUCHER} may post there)"
     )
     assert net == Decimal("1240000.00"), (
-        f"Suspense net is {net}, expected exactly the planted P24 "
-        f"1,240,000.00 debit"
+        f"Suspense net is {net}, expected exactly the planted P24 1,240,000.00 debit"
     )
 
 
@@ -180,18 +176,25 @@ def test_baseline_offset_pairings(tmp_path):
         accounts = {r[idx["MainAccount"]].strip() for r in legs}
         debits = [Decimal(r[idx["Debit"]] or "0.00") for r in legs]
         credits = [Decimal(r[idx["Credit"]] or "0.00") for r in legs]
-        amounts = {f"{d:.2f}" for d in debits if d} | {
-            f"{c:.2f}" for c in credits if c
-        }
+        amounts = {f"{d:.2f}" for d in debits if d} | {f"{c:.2f}" for c in credits if c}
         if len(amounts) != 1:
             bad.append((voucher, f"legs disagree on amount: {amounts}"))
             continue
-        revenue_leg = [r for r in legs if Decimal(r[idx["Credit"]] or "0.00") > 0
-                       and r[idx["MainAccount"]].strip() not in REVENUE_OFFSETS | EXPENSE_OFFSETS]
-        expense_leg = [r for r in legs if Decimal(r[idx["Debit"]] or "0.00") > 0
-                       and r[idx["MainAccount"]].strip() not in REVENUE_OFFSETS | EXPENSE_OFFSETS]
-        offset_leg = [r for r in legs
-                      if r[idx["MainAccount"]].strip() in REVENUE_OFFSETS | EXPENSE_OFFSETS]
+        revenue_leg = [
+            r
+            for r in legs
+            if Decimal(r[idx["Credit"]] or "0.00") > 0
+            and r[idx["MainAccount"]].strip() not in REVENUE_OFFSETS | EXPENSE_OFFSETS
+        ]
+        expense_leg = [
+            r
+            for r in legs
+            if Decimal(r[idx["Debit"]] or "0.00") > 0
+            and r[idx["MainAccount"]].strip() not in REVENUE_OFFSETS | EXPENSE_OFFSETS
+        ]
+        offset_leg = [
+            r for r in legs if r[idx["MainAccount"]].strip() in REVENUE_OFFSETS | EXPENSE_OFFSETS
+        ]
         if len(offset_leg) != 1 or len(revenue_leg) + len(expense_leg) != 1:
             bad.append((voucher, f"not one P&L leg + one offset leg: {accounts}"))
             continue
@@ -207,10 +210,7 @@ def test_baseline_offset_pairings(tmp_path):
             ):
                 bad.append((voucher, f"expense leg offset by {offset_acct}, want Cr 2000/1010"))
 
-    assert not bad, (
-        f"{len(bad)} baseline vouchers break the pairing rule "
-        f"(showing 5): {bad[:5]}"
-    )
+    assert not bad, f"{len(bad)} baseline vouchers break the pairing rule (showing 5): {bad[:5]}"
 
 
 def test_planted_p23_imbalance_preserved(tmp_path):
@@ -248,7 +248,8 @@ def test_verifier_reports_per_voucher_entity_period(tmp_path):
 
     assert result.by_voucher, "Verifier reports no per-voucher detail"
     baseline_bad = [
-        vb.voucher for vb in result.by_voucher.values()
+        vb.voucher
+        for vb in result.by_voucher.values()
         if _is_baseline(vb.voucher) and not vb.is_balanced
     ]
     assert not baseline_bad, (

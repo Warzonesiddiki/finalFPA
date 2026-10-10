@@ -149,9 +149,7 @@ def test_exc_011_subject_key_matches_expected_exceptions_fixture():
         debit=Decimal("175000.00"),
         net_amount=Decimal("175000.00"),
     )
-    ctx = RuleContext(
-        transactions=[tx], period_id="FY26-P09", as_of_date="2026-11-12"
-    )
+    ctx = RuleContext(transactions=[tx], period_id="FY26-P09", as_of_date="2026-11-12")
     findings = evaluate_exc_011(ctx)
 
     assert len(findings) == 1
@@ -185,9 +183,7 @@ def test_exc_011_grouping_by_date_is_unchanged_by_the_key_change():
         debit=Decimal("200.00"),
         net_amount=Decimal("200.00"),
     )
-    ctx = RuleContext(
-        transactions=[early, late], period_id="FY26-P09", as_of_date="2026-11-12"
-    )
+    ctx = RuleContext(transactions=[early, late], period_id="FY26-P09", as_of_date="2026-11-12")
     findings = evaluate_exc_011(ctx)
 
     assert len(findings) == 2, "grouping is still per posting_date"
@@ -220,6 +216,7 @@ def test_exc_013_out_of_pattern_spike_raised():
     assert len(findings) == 1
     assert findings[0].rule_id == "EXC-013"
     assert findings[0].amount_at_risk == Decimal("141000.00")  # 186k - 45k
+
 
 def test_exc_013_auto_derives_trailing_average():
     """EXC-013 derives 3-period trailing average from prior transactions when config omitted."""
@@ -256,7 +253,6 @@ def test_exc_013_auto_derives_trailing_average():
     assert findings[0].amount_at_risk == Decimal("141000.00")
 
 
-
 @pytest.mark.tst_id("TST-RUL-14")
 def test_exc_014_unusual_vendor_account_combination():
     """Planting P14: vendor bills unfamiliar account category."""
@@ -279,6 +275,7 @@ def test_exc_014_unusual_vendor_account_combination():
     assert len(findings) == 1
     assert findings[0].rule_id == "EXC-014"
     assert findings[0].amount_at_risk == Decimal("260000.00")
+
 
 def test_exc_014_auto_derives_history():
     """EXC-014 derives historical vendor accounts from prior transactions when config omitted."""
@@ -312,11 +309,11 @@ def test_exc_014_auto_derives_history():
     assert findings[0].subject_key == "V-00276|5800"
 
 
-
 # ==============================================================================
 # EXC-009 - Posting date / fiscal period mismatch (catalog EXC-009)
 # Doc 06: group by (batch, company, source period, derived period); High; min_rows 1.
 # ==============================================================================
+
 
 @pytest.mark.tst_id("TST-RUL-09")
 def test_exc_009_period_mismatch_raised():
@@ -354,44 +351,45 @@ def test_exc_009_not_raised_when_period_agrees():
 # Doc 06: credited total above min_credit_amount and offset_ratio < 0.90.
 # ==============================================================================
 
+
 @pytest.mark.tst_id("TST-RUL-12")
 def test_exc_012_unusual_credit_raised():
     """Planting P12: credits 680000.00 offset only by 120000.00 (17.6%)."""
     # Credits totalling 680000.00 with offsets totalling 120000.00 (17.6% offset)
     credits = [
         make_tx(
-            source_row_ref='row_cr1',
-            posting_date='2026-09-21',
-            account_code='5400',
-            cost_center_code='CC-110',
-            credit=Decimal('500000.00'),
-            net_amount=Decimal('-500000.00'),
+            source_row_ref="row_cr1",
+            posting_date="2026-09-21",
+            account_code="5400",
+            cost_center_code="CC-110",
+            credit=Decimal("500000.00"),
+            net_amount=Decimal("-500000.00"),
         ),
         make_tx(
-            source_row_ref='row_cr2',
-            posting_date='2026-09-22',
-            account_code='5400',
-            cost_center_code='CC-110',
-            credit=Decimal('180000.00'),
-            net_amount=Decimal('-180000.00'),
+            source_row_ref="row_cr2",
+            posting_date="2026-09-22",
+            account_code="5400",
+            cost_center_code="CC-110",
+            credit=Decimal("180000.00"),
+            net_amount=Decimal("-180000.00"),
         ),
     ]
     offsets = [
         make_tx(
-            source_row_ref='row_db1',
-            posting_date='2026-09-20',
-            account_code='5400',
-            cost_center_code='CC-110',
-            debit=Decimal('80000.00'),
-            net_amount=Decimal('80000.00'),
+            source_row_ref="row_db1",
+            posting_date="2026-09-20",
+            account_code="5400",
+            cost_center_code="CC-110",
+            debit=Decimal("80000.00"),
+            net_amount=Decimal("80000.00"),
         ),
         make_tx(
-            source_row_ref='row_db2',
-            posting_date='2026-09-20',
-            account_code='5400',
-            cost_center_code='CC-110',
-            debit=Decimal('40000.00'),
-            net_amount=Decimal('40000.00'),
+            source_row_ref="row_db2",
+            posting_date="2026-09-20",
+            account_code="5400",
+            cost_center_code="CC-110",
+            debit=Decimal("40000.00"),
+            net_amount=Decimal("40000.00"),
         ),
     ]
     ctx = RuleContext(transactions=credits + offsets, period_id="FY26-P09")
@@ -431,6 +429,7 @@ def test_exc_012_not_raised_when_offset_by_same_period_debits():
 # EXC-015 - Missing recurring cost (catalog EXC-015)
 # Doc 06: no posting within tolerance_pct (10%) of expected_amount -> raise.
 # ==============================================================================
+
 
 def _recurring(**kwargs) -> RecurringCostRuleItem:
     base = dict(
@@ -494,15 +493,33 @@ def test_exc_015_disabled_without_master_list():
 # ==============================================================================
 
 PRIOR_ACCRUALS = [
-    {"period_id": "FY26-P06", "company_code": "IN01", "account_code": "6100",
-     "cost_center_code": "CC-120", "posting_date": "2026-06-27",
-     "amount": Decimal("185000.00"), "source_row_ref": "row_h06"},
-    {"period_id": "FY26-P07", "company_code": "IN01", "account_code": "6100",
-     "cost_center_code": "CC-120", "posting_date": "2026-07-28",
-     "amount": Decimal("185000.00"), "source_row_ref": "row_h07"},
-    {"period_id": "FY26-P08", "company_code": "IN01", "account_code": "6100",
-     "cost_center_code": "CC-120", "posting_date": "2026-08-27",
-     "amount": Decimal("185000.00"), "source_row_ref": "row_h08"},
+    {
+        "period_id": "FY26-P06",
+        "company_code": "IN01",
+        "account_code": "6100",
+        "cost_center_code": "CC-120",
+        "posting_date": "2026-06-27",
+        "amount": Decimal("185000.00"),
+        "source_row_ref": "row_h06",
+    },
+    {
+        "period_id": "FY26-P07",
+        "company_code": "IN01",
+        "account_code": "6100",
+        "cost_center_code": "CC-120",
+        "posting_date": "2026-07-28",
+        "amount": Decimal("185000.00"),
+        "source_row_ref": "row_h07",
+    },
+    {
+        "period_id": "FY26-P08",
+        "company_code": "IN01",
+        "account_code": "6100",
+        "cost_center_code": "CC-120",
+        "posting_date": "2026-08-27",
+        "amount": Decimal("185000.00"),
+        "source_row_ref": "row_h08",
+    },
 ]
 
 
@@ -565,9 +582,9 @@ def test_exc_016_disabled_without_enough_history():
 
 def test_exc_016_not_raised_when_pattern_unstable():
     """Amounts outside the 25% stability band are not a pattern."""
-    unstable = [
-        dict(rec, amount=Decimal("60000.00")) for rec in PRIOR_ACCRUALS[:2]
-    ] + [dict(PRIOR_ACCRUALS[2], amount=Decimal("185000.00"))]
+    unstable = [dict(rec, amount=Decimal("60000.00")) for rec in PRIOR_ACCRUALS[:2]] + [
+        dict(PRIOR_ACCRUALS[2], amount=Decimal("185000.00"))
+    ]
     ctx = RuleContext(
         transactions=[],
         period_id="FY26-P09",
@@ -593,6 +610,7 @@ def test_exc_016_respects_exclusion_list():
 # Batch entry point
 # ==============================================================================
 
+
 def test_batch_09_16_runs_all_eight_rules():
     """EXC-009..EXC-016 all execute through evaluate_all_09_16."""
     ctx = RuleContext(
@@ -615,6 +633,7 @@ def test_batch_09_16_runs_all_eight_rules():
 # common legitimate case and are ranked last in the detail; rows dated beyond the
 # period end are ranked first."
 # ==============================================================================
+
 
 def test_exc_011_ranks_beyond_period_end_first():
     """Beyond-period-end postings sort ahead of in-open-period future postings.
@@ -672,7 +691,9 @@ def test_exc_011_ranking_is_deterministic_across_input_order():
         RuleContext(transactions=list(rows), period_id="FY26-P12", as_of_date="2026-11-12")
     )
     rev = evaluate_exc_011(
-        RuleContext(transactions=list(reversed(rows)), period_id="FY26-P12", as_of_date="2026-11-12")
+        RuleContext(
+            transactions=list(reversed(rows)), period_id="FY26-P12", as_of_date="2026-11-12"
+        )
     )
     assert [f.subject_key for f in fwd] == [f.subject_key for f in rev]
     # All beyond-period-end rows precede all in-open-period rows.
@@ -721,6 +742,7 @@ def test_exc_011_amount_at_risk_unchanged_by_ranking():
 # as_of resolution (doc 06 Purity + EXC-011 injection contract; doc 05 CALC-002)
 # ==============================================================================
 
+
 def test_default_as_of_resolves_to_period_end():
     """No caller as_of -> the run date is the period under review's end date.
 
@@ -753,6 +775,7 @@ def test_explicit_as_of_always_wins():
 
     # A date object is accepted and normalised to ISO.
     from datetime import date as _date
+
     ctx3 = RuleContext(transactions=[], period_id="FY26-P09", as_of_date=_date(2026, 10, 1))
     assert ctx3.as_of_date == "2026-10-01"
 
@@ -779,10 +802,13 @@ def test_resolve_as_of_date_returns_none_for_unresolvable_period():
 def test_resolve_as_of_date_precedence_order():
     """Explicit > DimPeriod > calendar fallback, checked directly."""
     assert resolve_as_of_date("FY26-P09", explicit_as_of="2026-12-01") == "2026-12-01"
-    assert resolve_as_of_date(
-        "FY26-P09",
-        dim_period_end_dates={"FY26-P09": "2026-11-30"},
-    ) == "2026-11-30"
+    assert (
+        resolve_as_of_date(
+            "FY26-P09",
+            dim_period_end_dates={"FY26-P09": "2026-11-30"},
+        )
+        == "2026-11-30"
+    )
     assert resolve_as_of_date("FY26-P09") == "2026-09-30"
 
 
@@ -822,9 +848,7 @@ def test_default_as_of_scopes_future_dated_to_the_period_close():
     earlier = RuleContext(
         transactions=[in_scope, late], period_id="FY26-P09", as_of_date="2026-11-01"
     )
-    assert [f.subject_key for f in evaluate_exc_011(earlier)] == [
-        "IN01|VCH-DEC"
-    ]
+    assert [f.subject_key for f in evaluate_exc_011(earlier)] == ["IN01|VCH-DEC"]
 
 
 def test_as_of_resolution_has_no_clock_dependency():

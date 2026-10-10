@@ -4,41 +4,32 @@ Tests per docs/10_AI_INTEGRATION_SPEC.md §8, §9, §10, and §12.
 """
 
 from decimal import Decimal
-import json
+
 import pytest
+
 from app.engine.ai.guardrails import (
-    validate_json_schema,
-    sanitize_fields,
-    check_banned_phrases,
-    validate_evidence_ids,
-    normalize_number_token,
-    extract_payload_numbers,
-    check_sentence_numbers,
-    reconcile_text_numbers,
-    reconcile_numbers,
-    AIDraftProvenance,
-    stamp_ai_draft,
+    AI_DRAFT_STAMP,
+    NUMBER_MISMATCH_WARNING,
+    NUMBER_REMOVED_PLACEHOLDER,
     AICapConfig,
-    AIUsageTracker,
-    FactAIUsage,
-    CapCheckResult,
-    ModelPinningManager,
+    AIDraftProvenance,
     AIGuardrailPipeline,
     AISchemaValidationError,
-    CapExceededException,
-    AI_DRAFT_STAMP,
-    NUMBER_REMOVED_PLACEHOLDER,
-    NUMBER_MISMATCH_WARNING,
-    PROMPT_01_OUTPUT_SCHEMA,
-    PROMPT_02_OUTPUT_SCHEMA,
-    PROMPT_03_OUTPUT_SCHEMA,
-    PROMPT_04_OUTPUT_SCHEMA,
+    AIUsageTracker,
+    ModelPinningManager,
+    check_banned_phrases,
+    extract_payload_numbers,
+    reconcile_numbers,
+    sanitize_fields,
+    stamp_ai_draft,
+    validate_evidence_ids,
+    validate_json_schema,
 )
-
 
 # ---------------------------------------------------------------------------
 # 1. JSON Schema Validation Tests (§8.1, §8.3)
 # ---------------------------------------------------------------------------
+
 
 def test_prompt_01_schema_validation_valid():
     valid_p1 = {
@@ -153,6 +144,7 @@ def test_prompt_04_message_draft_schema():
 # 2. Sanitation, Evidence ID & Banned Words (§8.1)
 # ---------------------------------------------------------------------------
 
+
 def test_sanitize_fields_strips_newlines():
     data = {"commentary": "Line 1.\n\nLine 2.\r\nLine 3."}
     cleaned = sanitize_fields("PROMPT-01", data)
@@ -204,6 +196,7 @@ def test_validate_evidence_ids_suggestions_downgrades_confidence():
 # ---------------------------------------------------------------------------
 # 3. Anti-Hallucination Number Reconciliation (§8.2 - DEC-026)
 # ---------------------------------------------------------------------------
+
 
 def test_extract_payload_numbers_and_normalization():
     payload = {
@@ -296,7 +289,11 @@ def test_reconcile_numbers_in_caveats_and_drivers():
     data = {
         "commentary": "Variance is 1000.00 for the period.",
         "drivers": [
-            {"label": "Unapproved travel of ₹75,000", "direction": "unfavourable", "evidence_ids": ["c-1"]}
+            {
+                "label": "Unapproved travel of ₹75,000",
+                "direction": "unfavourable",
+                "evidence_ids": ["c-1"],
+            }
         ],
         "caveats": ["Context includes ₹42,000 of miscellaneous charges."],
     }
@@ -311,6 +308,7 @@ def test_reconcile_numbers_in_caveats_and_drivers():
 # ---------------------------------------------------------------------------
 # 4. Provenance Tracking (§12)
 # ---------------------------------------------------------------------------
+
 
 def test_provenance_stamping():
     provenance = AIDraftProvenance(
@@ -335,6 +333,7 @@ def test_provenance_stamping():
 # ---------------------------------------------------------------------------
 # 5. Usage Logging & Cost / Token Capping (§9)
 # ---------------------------------------------------------------------------
+
 
 def test_cost_calculation():
     config = AICapConfig(input_rate_per_1k=0.15, output_rate_per_1k=0.77)
@@ -399,6 +398,7 @@ def test_usage_logging_and_csv_export():
 # 6. Model Pinning and Fallbacks (§10)
 # ---------------------------------------------------------------------------
 
+
 def test_model_pinning_rejects_floating_aliases():
     with pytest.raises(ValueError, match="Floating model alias 'latest' is forbidden"):
         ModelPinningManager(pinned_model="latest")
@@ -424,6 +424,7 @@ def test_model_pinning_execution_chain():
 # ---------------------------------------------------------------------------
 # 7. End-to-End Guardrail Pipeline (§8.1)
 # ---------------------------------------------------------------------------
+
 
 def test_pipeline_success():
     pipeline = AIGuardrailPipeline()

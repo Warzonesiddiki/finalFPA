@@ -1,8 +1,10 @@
 """Integration tests for Phase 1 Ingestion and Batch API routes per 26_API_CONTRACT.md §3.2."""
 
 from pathlib import Path
+
 from fastapi.testclient import TestClient
-from app.api.main import app, SESSION_TOKEN
+
+from app.api.main import SESSION_TOKEN, app
 
 client = TestClient(app)
 

@@ -16,8 +16,6 @@ Manual Override Precedence:
 
 from __future__ import annotations
 
-from typing import Optional, Tuple
-
 # Mapping of cost centres to default owners
 COST_CENTRE_OWNERS = {
     "CC-100": ("Ramesh Kumar", "Cost Centre Owner - Operations"),
@@ -36,19 +34,24 @@ ACCOUNT_PREFIX_OWNERS = {
     "21": ("Amit Joshi", "Treasury Controller"),
 }
 
+
 def resolve_exception_owner(
     rule_id: str,
-    cost_center_code: Optional[str] = None,
-    account_code: Optional[str] = None,
-    rule_default_role: Optional[str] = None,
-    manual_override_owner: Optional[str] = None,
-) -> Tuple[str, str, bool]:
+    cost_center_code: str | None = None,
+    account_code: str | None = None,
+    rule_default_role: str | None = None,
+    manual_override_owner: str | None = None,
+) -> tuple[str, str, bool]:
     """
     Resolves exception owner following the 6-step hierarchy with manual override precedence.
     Returns: (owner_name, owner_role, is_manually_overridden)
     """
     # 1. Manual Override Precedence (Highest)
-    if manual_override_owner and manual_override_owner.strip() and manual_override_owner != "Unassigned":
+    if (
+        manual_override_owner
+        and manual_override_owner.strip()
+        and manual_override_owner != "Unassigned"
+    ):
         role = "Manual Override Assignee"
         if "Manager" in manual_override_owner:
             role = "Finance Manager"

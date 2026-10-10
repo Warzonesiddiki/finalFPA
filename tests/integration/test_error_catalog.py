@@ -8,18 +8,16 @@ Quoted from docs/26_API_CONTRACT.md §5 & docs/08_UI_UX_SPEC.md §16:
 
 from __future__ import annotations
 
-import pytest
 from fastapi.testclient import TestClient
 
-from app.api.main import app, SESSION_TOKEN
-
+from app.api.main import SESSION_TOKEN, app
 
 client = TestClient(app)
 
 
 def test_get_error_catalog_endpoints():
     headers = {"X-Session-Token": SESSION_TOKEN}
-    
+
     # Test /meta/error-catalog
     res = client.get("/meta/error-catalog", headers=headers)
     assert res.status_code == 200
@@ -27,7 +25,7 @@ def test_get_error_catalog_endpoints():
     assert data["status"] == "ok"
     assert data["count"] > 0
     catalog = data["catalog"]
-    
+
     # Test /api/v1/meta/error-catalog
     res_v1 = client.get("/api/v1/meta/error-catalog", headers=headers)
     assert res_v1.status_code == 200
@@ -36,7 +34,16 @@ def test_get_error_catalog_endpoints():
     assert data_v1["count"] == len(catalog)
 
     # Verify required keys in catalog items per docs 26/08
-    required_keys = {"code", "family", "httpStatus", "message", "hint", "slug", "severity", "ownerDoc"}
+    required_keys = {
+        "code",
+        "family",
+        "httpStatus",
+        "message",
+        "hint",
+        "slug",
+        "severity",
+        "ownerDoc",
+    }
     families_found = set()
     for item in catalog:
         for key in required_keys:

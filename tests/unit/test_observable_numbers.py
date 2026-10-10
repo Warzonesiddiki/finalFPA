@@ -8,10 +8,13 @@ Acceptance criteria:
 """
 
 from decimal import Decimal
+
 import pytest
 
+from app.engine.calc.math import Direction, Favourability
 from app.engine.calc.observable import (
     ObservableNumber,
+    get_twelve_observable_numbers,
     observe_number_1_tb_balance,
     observe_number_2_net_amount,
     observe_number_3_variance,
@@ -24,9 +27,7 @@ from app.engine.calc.observable import (
     observe_number_10_budget_burn,
     observe_number_11_mape_lite,
     observe_number_12_rounding_footnote,
-    get_twelve_observable_numbers,
 )
-from app.engine.calc.math import Direction, Favourability
 
 
 def test_get_twelve_observable_numbers_returns_all_twelve():
@@ -34,22 +35,22 @@ def test_get_twelve_observable_numbers_returns_all_twelve():
     numbers = get_twelve_observable_numbers()
     assert len(numbers) == 12
     # Verify no float drift by checking they are exactly their Decimal values
-    assert numbers[0].value == Decimal('0.00'), f"number 0 value: {numbers[0].value}"
-    assert numbers[1].value == Decimal('150000.50'), f"number 1 value: {numbers[1].value}"
-    assert numbers[2].value == Decimal('800000.00'), f"number 2 value: {numbers[2].value}"
-    assert numbers[3].value == Decimal('8.0'), f"number 3 value: {numbers[3].value}"
+    assert numbers[0].value == Decimal("0.00"), f"number 0 value: {numbers[0].value}"
+    assert numbers[1].value == Decimal("150000.50"), f"number 1 value: {numbers[1].value}"
+    assert numbers[2].value == Decimal("800000.00"), f"number 2 value: {numbers[2].value}"
+    assert numbers[3].value == Decimal("8.0"), f"number 3 value: {numbers[3].value}"
     assert numbers[4].value == Favourability.FAVOURABLE, f"number 4 value: {numbers[4].value}"
-    assert numbers[5].value == Decimal('1.5'), f"number 5 value: {numbers[5].value}"
-    assert numbers[6].value == Decimal('16645000.00'), f"number 6 value: {numbers[6].value}"
+    assert numbers[5].value == Decimal("1.5"), f"number 5 value: {numbers[5].value}"
+    assert numbers[6].value == Decimal("16645000.00"), f"number 6 value: {numbers[6].value}"
     # number 7 is DQ score, raw score
     # Bypass type checker strictly for the test by fetching correctly
     raw = getattr(numbers[7].value, "raw_score", None)
-    assert raw == Decimal('95.37815126050420168067226891'), f"number 7 raw_score: {raw}"
-    assert numbers[8].value == Decimal('0.400000'), f"number 8 value: {numbers[8].value}"
-    assert numbers[9].value == Decimal('0.258000'), f"number 9 value: {numbers[9].value}"
-    assert numbers[10].value == Decimal('0.050000'), f"number 10 value: {numbers[10].value}"
-    assert numbers[11].value == Decimal('0.01'), f"number 11 value: {numbers[11].value}"
-    
+    assert raw == Decimal("95.37815126050420168067226891"), f"number 7 raw_score: {raw}"
+    assert numbers[8].value == Decimal("0.400000"), f"number 8 value: {numbers[8].value}"
+    assert numbers[9].value == Decimal("0.258000"), f"number 9 value: {numbers[9].value}"
+    assert numbers[10].value == Decimal("0.050000"), f"number 10 value: {numbers[10].value}"
+    assert numbers[11].value == Decimal("0.01"), f"number 11 value: {numbers[11].value}"
+
     for idx, num in enumerate(numbers, start=1):
         assert isinstance(num, ObservableNumber)
         assert num.id == idx
@@ -110,7 +111,7 @@ def test_observe_number_7_bridge_residual():
 
 def test_observe_number_8_dq_score():
     obs = observe_number_8_dq_score()
-    assert hasattr(obs.value, "score") and getattr(obs.value, "score") == 95
+    assert hasattr(obs.value, "score") and obs.value.score == 95
     assert obs.formula_id == "CALC-050"
 
 

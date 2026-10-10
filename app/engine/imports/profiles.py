@@ -2,8 +2,9 @@
 
 import hashlib
 import re
-from typing import Dict, List, Optional, Any, Iterable
+from collections.abc import Iterable
 from dataclasses import dataclass, field
+from typing import Any
 
 
 def normalize_header(header: str) -> str:
@@ -30,19 +31,19 @@ class MappingProfile:
     profile_id: int
     name: str
     source_type: str
-    column_map: Dict[str, str]  # normalized_header -> canonical_field
+    column_map: dict[str, str]  # normalized_header -> canonical_field
     delimiter: str = ","
     encoding: str = "utf-8"
     header_row: int = 1
     date_rule: str = "iso"  # iso, dd-mm-yyyy, mm-dd-yyyy
     number_rule: str = "standard"  # standard, parens_negative, cr_dr
-    sheet_selector: Optional[str] = None
+    sheet_selector: str | None = None
     header_signature: str = ""
     is_builtin: bool = False
     version_no: int = 1
-    effective_from_period_id: Optional[int] = None
-    transforms: Dict[str, Any] = field(default_factory=dict)
-    created_at: Optional[str] = None
+    effective_from_period_id: int | None = None
+    transforms: dict[str, Any] = field(default_factory=dict)
+    created_at: str | None = None
 
     def __post_init__(self):
         if not self.header_signature and self.column_map:
@@ -51,32 +52,32 @@ class MappingProfile:
 
 @dataclass
 class MappingProfileVersion:
-    version_id: Optional[int]
+    version_id: int | None
     profile_id: int
     version_no: int
-    definition: Dict[str, Any]
-    effective_from_period_id: Optional[int] = None
+    definition: dict[str, Any]
+    effective_from_period_id: int | None = None
     change_note: str = ""
     is_current: bool = True
-    created_at: Optional[str] = None
+    created_at: str | None = None
     created_by: str = "system"
 
 
 @dataclass
 class DimMapping:
-    mapping_id: Optional[int]
+    mapping_id: int | None
     profile_id: int
     version_no: int
     source_system: str
     source_column: str
     canonical_field: str
-    transform: Optional[Dict[str, Any]] = None
-    effective_from_period_id: Optional[int] = None
-    approved_by: Optional[str] = None
-    approved_at: Optional[str] = None
+    transform: dict[str, Any] | None = None
+    effective_from_period_id: int | None = None
+    approved_by: str | None = None
+    approved_at: str | None = None
     is_active: bool = True
-    notes: Optional[str] = None
-    created_at: Optional[str] = None
+    notes: str | None = None
+    created_at: str | None = None
 
 
 # Built-in profiles per 04_SOURCE_MAPPING_AND_IMPORT_SPEC.md §5.4
@@ -247,7 +248,7 @@ BUILTIN_PROFILES = [
 ]
 
 
-def match_profile(headers: List[str]) -> Optional[MappingProfile]:
+def match_profile(headers: list[str]) -> MappingProfile | None:
     """Find matching profile via Jaccard similarity threshold >= 0.80 per 04 §5.2."""
     norm_headers = {normalize_header(h) for h in headers if h.strip()}
     best_profile = None
@@ -265,4 +266,3 @@ def match_profile(headers: List[str]) -> Optional[MappingProfile]:
             best_profile = profile
 
     return best_profile
-

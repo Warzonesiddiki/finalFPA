@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Ground the 43-screen matrix in code and tests (UX-15)."""
+
 import re
 from pathlib import Path
 
@@ -8,11 +9,16 @@ UI_SRC = ROOT / "ui" / "src"
 TESTS_DIR = ROOT / "tests"
 EVIDENCE_PATH = ROOT / "evidence" / "ux" / "screen-to-code.md"
 
+
 def find_scren_in_tests(scr_id):
     """Scan all tests/ for a mention of SCR-nnn."""
-    test_files = list(TESTS_DIR.rglob("*.py")) + list(TESTS_DIR.rglob("*.tsx")) + list(TESTS_DIR.rglob("*.ts"))
+    test_files = (
+        list(TESTS_DIR.rglob("*.py"))
+        + list(TESTS_DIR.rglob("*.tsx"))
+        + list(TESTS_DIR.rglob("*.ts"))
+    )
     matches = []
-    
+
     for tf in test_files:
         if not tf.is_file():
             continue
@@ -20,14 +26,14 @@ def find_scren_in_tests(scr_id):
             content = tf.read_text(encoding="utf-8")
         except UnicodeDecodeError:
             continue
-        
+
         for i, line in enumerate(content.splitlines(), start=1):
             if scr_id in line:
                 # Find the nearest def test_ or it('...')
                 test_name = "unknown format"
                 for j in range(i, -1, -1):
                     ctx_line = content.splitlines()[j]
-                    tm = re.search(r'def (test_[a-zA-Z0-9_]+)', ctx_line)
+                    tm = re.search(r"def (test_[a-zA-Z0-9_]+)", ctx_line)
                     if tm:
                         test_name = tm.group(1)
                         break
@@ -35,34 +41,38 @@ def find_scren_in_tests(scr_id):
                     if jm:
                         test_name = jm.group(1)
                         break
-                
+
                 # Format relative path
                 rel_path = tf.relative_to(ROOT).as_posix()
                 matches.append(f"`{rel_path}::{test_name}`")
-    
+
     return set(matches)
+
 
 def extract_screen_locations():
     """Extract SCR to path:line from UX-03 screen conformance matrix."""
     matrix_path = ROOT / "evidence" / "ux" / "screen-conformance.md"
     content = matrix_path.read_text(encoding="utf-8")
-    
+
     mapping = []
     for line in content.splitlines():
         # Match lines like | `SCR-001` | **Home** | ... | `ui/src/main.tsx:145` | ...
-        m = re.match(r'^\|\s*`(SCR-\d{3})`\s*\|\s*\*\*([^*]+)\*\*\s*\|.*?\|\s*`([^:]+):(\d+)`', line)
+        m = re.match(
+            r"^\|\s*`(SCR-\d{3})`\s*\|\s*\*\*([^*]+)\*\*\s*\|.*?\|\s*`([^:]+):(\d+)`", line
+        )
         if m:
             scr = m.group(1)
             name = m.group(2)
             path = m.group(3)
             line_num = int(m.group(4))
             mapping.append({"id": scr, "name": name, "path": path, "line": line_num})
-            
+
     return mapping
+
 
 def main():
     mappings = extract_screen_locations()
-    
+
     doc_lines = [
         "# Screen-to-Code Traceability Matrix (UX-15)",
         "",
@@ -75,77 +85,80 @@ def main():
         "---",
         "",
         "## Executive Summary",
-        ""
+        "",
     ]
-    
+
     table_lines = [
         "| SCR ID | Screen Name | Implementing Component | Test Verifications |",
-        "|---|---|---|---|"
+        "|---|---|---|---|",
     ]
-    
+
     implemented_count = 0
-    no_component_count = 0 
+    no_component_count = 0
     no_test_count = 0
-    
+
     no_test_list = []
-    
+
     for scr in mappings:
         scr_id = scr["id"]
         # Verify file exists
         file_path = ROOT / scr["path"]
-        
+
         has_component = file_path.exists()
-        
+
         if has_component:
             implemented_count += 1
             comp_str = f"`{scr['path']}:{scr['line']}`"
         else:
             no_component_count += 1
             comp_str = f"**DEFECT: File missing** `{scr['path']}`"
-        
+
         # Find tests
         tests = find_scren_in_tests(scr_id)
-        
+
         if tests:
             test_str = "<br>".join(tests)
         else:
             no_test_count += 1
             test_str = "**DEFECT: No test covers this screen.**"
             no_test_list.append(scr_id)
-            
+
         table_lines.append(f"| `{scr_id}` | **{scr['name']}** | {comp_str} | {test_str} |")
 
     # Add summary
-    doc_lines.extend([
-        f"This matrix bridges the spec inventory (`08` §4) to the source tree (`ui/src/`) and testing layer (`tests/`). Any screen without a physical component file or an automated test represents a structural verification gap.",
-        "",
-        "### Audit Results",
-        f"- **Screens Implemented in Code:** {implemented_count} of {len(mappings)}",
-        f"- **Screens Missing Component Files:** {no_component_count} of {len(mappings)}",
-        f"- **Screens with Zero Test Coverage:** {no_test_count} of {len(mappings)}",
-        "",
-        "#### Unverified Screens (Zero Tests)",
-        ", ".join([f"`{s}`" for s in no_test_list]),
-        "",
-        "---",
-        "",
-        "## Grounding Matrix",
-        ""
-    ])
-    
+    doc_lines.extend(
+        [
+            "This matrix bridges the spec inventory (`08` §4) to the source tree (`ui/src/`) and testing layer (`tests/`). Any screen without a physical component file or an automated test represents a structural verification gap.",
+            "",
+            "### Audit Results",
+            f"- **Screens Implemented in Code:** {implemented_count} of {len(mappings)}",
+            f"- **Screens Missing Component Files:** {no_component_count} of {len(mappings)}",
+            f"- **Screens with Zero Test Coverage:** {no_test_count} of {len(mappings)}",
+            "",
+            "#### Unverified Screens (Zero Tests)",
+            ", ".join([f"`{s}`" for s in no_test_list]),
+            "",
+            "---",
+            "",
+            "## Grounding Matrix",
+            "",
+        ]
+    )
+
     doc_lines.extend(table_lines)
-    
-    doc_lines.extend([
-        "",
-        "---",
-        "*Report generated by `scripts/ground_screen_matrix.py` for task `UX-15`.*"
-    ])
-    
+
+    doc_lines.extend(
+        ["", "---", "*Report generated by `scripts/ground_screen_matrix.py` for task `UX-15`.*"]
+    )
+
     EVIDENCE_PATH.parent.mkdir(parents=True, exist_ok=True)
     EVIDENCE_PATH.write_text("\n".join(doc_lines) + "\n", encoding="utf-8")
-    
+
     print(f"Generated {EVIDENCE_PATH}")
-    print(f"Screens: {len(mappings)}, Implemented: {implemented_count}, Missing Tests: {no_test_count}")
-    
+    print(
+        f"Screens: {len(mappings)}, Implemented: {implemented_count}, Missing Tests: {no_test_count}"
+    )
+
+
 if __name__ == "__main__":
     main()

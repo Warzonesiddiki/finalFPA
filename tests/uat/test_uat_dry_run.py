@@ -22,10 +22,9 @@ Staging map (pack-assembly-only):
 
 import csv
 from decimal import Decimal
-import json
 from pathlib import Path
+
 import openpyxl
-from pptx import Presentation
 import pytest
 
 from app.engine.exports.excel_pack import (
@@ -36,8 +35,8 @@ from app.engine.exports.ppt_pack import (
     DeckContext,
     generate_powerpoint_deck,
 )
-from app.engine.store.db import DatabaseManager
 from app.engine.store.analytics_repo import AnalyticsRepository
+from app.engine.store.db import DatabaseManager
 from tests.artefacts.test_cross_artifact import create_sample_pack_data
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -52,10 +51,12 @@ def load_corpus_data(company_code="IN01", period_pattern="2026-09", period_code=
     assert budget_path.is_file(), f"Missing corpus file: {budget_path}"
 
     actual_totals = {}
-    with open(actuals_path, "r", encoding="utf-8") as f:
+    with open(actuals_path, encoding="utf-8") as f:
         lines = [l for l in f if not l.startswith("#")]
         for r in csv.DictReader(lines):
-            if r.get("CompanyCode") == company_code and r.get("PostingDate", "").startswith(period_pattern):
+            if r.get("CompanyCode") == company_code and r.get("PostingDate", "").startswith(
+                period_pattern
+            ):
                 acc = r.get("MainAccount")
                 if acc in ("4000", "5100", "5500"):
                     deb = Decimal(r.get("Debit") or "0")
@@ -63,13 +64,15 @@ def load_corpus_data(company_code="IN01", period_pattern="2026-09", period_code=
                     actual_totals[acc] = actual_totals.get(acc, Decimal("0.00")) + (deb - cred)
 
     budget_totals = {}
-    with open(budget_path, "r", encoding="utf-8") as f:
+    with open(budget_path, encoding="utf-8") as f:
         lines = [l for l in f if not l.startswith("#")]
         for r in csv.DictReader(lines):
             if r.get("EntityCode") == company_code and r.get("PeriodCode") == period_code:
                 acc = r.get("AccountCode")
                 if acc in ("4000", "5100", "5500"):
-                    budget_totals[acc] = budget_totals.get(acc, Decimal("0.00")) + Decimal(r.get("BudgetAmount") or "0")
+                    budget_totals[acc] = budget_totals.get(acc, Decimal("0.00")) + Decimal(
+                        r.get("BudgetAmount") or "0"
+                    )
 
     return actual_totals, budget_totals
 
@@ -331,6 +334,7 @@ def test_staging_packasm_04_training_walkthrough_doc22():
 def test_staging_packasm_05_cold_start_client_pass(tmp_path):
     """STAGING-PACK-05: Cold-start client pass in fresh directory context (staging check only; NOT TST-UAT-05 coverage)."""
     import time
+
     fresh_dir = tmp_path / "fresh_client_machine"
     fresh_dir.mkdir()
 
@@ -339,7 +343,7 @@ def test_staging_packasm_05_cold_start_client_pass(tmp_path):
     db_mgr = DatabaseManager(project_dir=fresh_dir)
     conn = db_mgr.get_duckdb_connection()
     elapsed = time.perf_counter() - start_time
-    
+
     # Assert cold-start under 1.8s
     assert elapsed < 1.8
 
@@ -375,7 +379,9 @@ def test_def016_behavioural_guard_no_tautological_uat_literals():
     import ast
     import re
     from pathlib import Path
+
     import pytest
+
     # --- LEAD-ADDED BEHAVIOURAL GUARD (DEF-016) -----------------------------
     # The naming rule above is insufficient: it is satisfied by putting a word in
     # a function name, so it proves nothing about behaviour. This guard checks the
@@ -401,10 +407,7 @@ def test_def016_behavioural_guard_no_tautological_uat_literals():
     seeded: set[float] = set()
     for node in ast.iter_child_nodes(uat_tree):
         is_fixture = isinstance(node, ast.FunctionDef) and any(
-            (
-                isinstance(d, ast.Attribute)
-                and d.attr == "fixture"
-            )
+            (isinstance(d, ast.Attribute) and d.attr == "fixture")
             or (
                 isinstance(d, ast.Call)
                 and isinstance(d.func, ast.Attribute)
@@ -489,7 +492,10 @@ def test_def016_behavioural_guard_no_tautological_uat_literals():
                 and isinstance(arg.value, str)
             ):
                 try:
-                    _check(round(abs(float(arg.value)), 2), f"{node.name} (line {getattr(sub, 'lineno', 0)})")
+                    _check(
+                        round(abs(float(arg.value)), 2),
+                        f"{node.name} (line {getattr(sub, 'lineno', 0)})",
+                    )
                 except ValueError:
                     continue
 
@@ -532,4 +538,3 @@ def test_def016_behavioural_guard_no_tautological_uat_literals():
                     f"corpus. That is a manufactured figure, not a measured one. "
                     f"Either derive it from sample-data/ or seed it in the fixture."
                 )
-

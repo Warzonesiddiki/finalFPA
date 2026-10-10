@@ -7,9 +7,8 @@ Acceptance requirement:
 """
 
 from decimal import Decimal
-from pathlib import Path
 from unittest.mock import patch
-import tempfile
+
 import openpyxl
 import pytest
 
@@ -48,7 +47,10 @@ def test_finding_stores_and_returns_correlation_and_claim_id(tmp_path):
         sample_rows=[{"col": "val"}],
     )
 
-    with patch("app.engine.store.exceptions_repo.build_full_rule_batch", return_value=[lambda ctx: [test_finding]]):
+    with patch(
+        "app.engine.store.exceptions_repo.build_full_rule_batch",
+        return_value=[lambda ctx: [test_finding]],
+    ):
         summary = repo.run_rules(
             period_code="FY26-P09",
             correlation_id=test_corr_id,
@@ -149,7 +151,9 @@ def test_falsification_missing_ids_fail_assertion():
     }
 
     with pytest.raises(AssertionError):
-        assert "correlation_id" in exc_dict and exc_dict["correlation_id"] is not None, "Missing correlation_id"
+        assert "correlation_id" in exc_dict and exc_dict["correlation_id"] is not None, (
+            "Missing correlation_id"
+        )
 
     with pytest.raises(AssertionError):
         assert "claim_id" in exc_dict and exc_dict["claim_id"] is not None, "Missing claim_id"

@@ -1,5 +1,5 @@
-import pytest
 from app.engine.ai.provenance import AiProvenanceStore
+
 
 def test_ai_provenance_version_retention_and_approval():
     """Test Doc 10 §4, §5, §6: Draft provenance stamping, version retention upon regeneration, and PPT approval flow."""

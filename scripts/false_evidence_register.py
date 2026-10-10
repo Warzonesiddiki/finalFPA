@@ -26,6 +26,7 @@ one has classified is a new pattern, and that is the moment to notice.
 Stdlib only. Writes one file. ``--check`` verifies the register is current
 without writing, for use in a gate.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -44,26 +45,45 @@ END = "<!-- END GENERATED: false_evidence_register.py -->"
 # Key: handoff short id. Value: (pattern id, one line on what it failed on).
 # This table is the judgement half and is maintained by hand on purpose.
 PATTERNS: dict[str, tuple[str, str]] = {
-    "HO-003": ("A-hidden-blast-radius",
-               "deliverable was never re-checked; verification ran the coordination layer only"),
-    "HO-004": ("D-checker-cannot-fail",
-               "'20 citations verified' came from a checker that greps docs/, not the deliverable"),
-    "HO-006": ("F-spec-code-drift",
-               "code shipped ahead of the catalogue DEC-057 requires, and a new branch shipped untested"),
-    "HO-010": ("A-hidden-blast-radius",
-               "## Changed declared 1 file; the claim window showed 7"),
-    "HO-012": ("A-hidden-blast-radius",
-               "## Changed declared 1 file; the claim window showed 4"),
-    "HO-013": ("A-hidden-blast-radius",
-               "## Changed declared 1 file; the claim window showed 5, including a shipped file"),
-    "HO-025": ("B-written-outside-scope",
-               "two scripts written outside the claimed scope, so no guard could see them"),
-    "HO-031": ("C-literal-generator",
-               "the audit table is a string literal; the script never opens a .tsx"),
-    "HO-033": ("C-literal-generator",
-               "'12 numbers verified' from a script that never reads app/"),
-    "HO-035": ("C-literal-generator",
-               "'77 error codes verified' from a generated table, not from raise sites"),
+    "HO-003": (
+        "A-hidden-blast-radius",
+        "deliverable was never re-checked; verification ran the coordination layer only",
+    ),
+    "HO-004": (
+        "D-checker-cannot-fail",
+        "'20 citations verified' came from a checker that greps docs/, not the deliverable",
+    ),
+    "HO-006": (
+        "F-spec-code-drift",
+        "code shipped ahead of the catalogue DEC-057 requires, and a new branch shipped untested",
+    ),
+    "HO-010": ("A-hidden-blast-radius", "## Changed declared 1 file; the claim window showed 7"),
+    "HO-012": ("A-hidden-blast-radius", "## Changed declared 1 file; the claim window showed 4"),
+    "HO-013": (
+        "A-hidden-blast-radius",
+        "## Changed declared 1 file; the claim window showed 5, including a shipped file",
+    ),
+    "HO-025": (
+        "B-written-outside-scope",
+        "two scripts written outside the claimed scope, so no guard could see them",
+    ),
+    "HO-031": (
+        "C-literal-generator",
+        "the audit table is a string literal; the script never opens a .tsx",
+    ),
+    "HO-033": ("C-literal-generator", "'12 numbers verified' from a script that never reads app/"),
+    "HO-035": (
+        "C-literal-generator",
+        "'77 error codes verified' from a generated table, not from raise sites",
+    ),
+    "HO-056": (
+        "A-hidden-blast-radius",
+        "verification claimed 3 passed; measured 1 failed + 1 passed on the acceptance-critical test",
+    ),
+    "HO-063": (
+        "A-hidden-blast-radius",
+        "verification claimed 2 passed; measured 1 failed (excel_pack.py regression, not author's fault)",
+    ),
 }
 
 PATTERN_TEXT: dict[str, tuple[str, str]] = {
@@ -97,7 +117,7 @@ PATTERN_TEXT: dict[str, tuple[str, str]] = {
         "**The checker could not fail on the thing it claimed to check.** "
         "`scripts/verify_audit_citations.py` concatenates `docs/*.md` and tests whether `SCR-`/`FR-"
         "`/`CALC-` id strings appear somewhere in them. It never resolves a `file:line` code "
-        "citation, so \"all 20 citations verified\" is fully compatible with a fabricated report.",
+        'citation, so "all 20 citations verified" is fully compatible with a fabricated report.',
         "`scripts/open_cited_lines.py` (LEAD-03, `TB-105`) is the replacement: it opens the cited "
         "line and compares the claim against it. `UX-14` owns the written acceptance standard; "
         "`SPEC-08`/`DOC-05` the spec text. **Rule:** a checker must have a test that provokes its "
@@ -120,9 +140,7 @@ def rejected_handoffs() -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
     for path in sorted((ROOT / "team" / "handoffs").glob("*.md")):
         text = path.read_text(encoding="utf-8", errors="replace")
-        m = re.search(
-            r"^### Rejected by `(?P<who>[^`]+)` . (?P<when>[0-9TZ:-]+)", text, re.M
-        )
+        m = re.search(r"^### Rejected by `(?P<who>[^`]+)` . (?P<when>[0-9TZ:-]+)", text, re.M)
         if not m:
             continue
         short = path.name.split("-")[0] + "-" + path.name.split("-")[1]
@@ -154,7 +172,11 @@ def audit_evidence(handoff_id: str) -> tuple[str, str]:
     """Re-audit a handoff's evidence with the citation opener. Returns (verdict, detail)."""
     proc = subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "open_cited_lines.py"), "--handoff", handoff_id],
-        capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        cwd=ROOT,
     )
     out = (proc.stdout + proc.stderr).strip()
     if proc.returncode == 0:
@@ -356,14 +378,18 @@ def main(argv: list[str] | None = None) -> int:
         prog="false_evidence_register.py",
         description="Build evidence/ops/false-evidence-register.md from the rejected handoffs.",
     )
-    ap.add_argument("--check", action="store_true", help="fail if the register is stale; write nothing")
+    ap.add_argument(
+        "--check", action="store_true", help="fail if the register is stale; write nothing"
+    )
     args = ap.parse_args(argv)
 
     want = build()
     if args.check:
         have = REGISTER.read_text(encoding="utf-8") if REGISTER.exists() else ""
         if have != want:
-            print(f"false_evidence_register: STALE - run {REGISTER.name} generator", file=sys.stderr)
+            print(
+                f"false_evidence_register: STALE - run {REGISTER.name} generator", file=sys.stderr
+            )
             return 1
         print("false_evidence_register: current")
         return 0

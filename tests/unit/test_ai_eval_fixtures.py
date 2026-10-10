@@ -1,12 +1,9 @@
 """Golden evaluation fixtures and test suite TST-AI-01 through TST-AI-14 per doc 10."""
 
-import pytest
-from decimal import Decimal
-from app.engine.ai.client import RedactionEngine, AIClient, AIConfig
-from app.engine.ai.guardrails import validate_json_schema, reconcile_numbers
-from app.engine.ai.usage import AIUsageStore
+from app.engine.ai.client import RedactionEngine
+from app.engine.ai.guardrails import reconcile_numbers, validate_json_schema
 from app.engine.ai.provenance import AiProvenanceStore
-from app.engine.ai.pinning import get_model_pinning_config, validate_model_selection
+from app.engine.ai.usage import AIUsageStore
 
 
 def test_tst_ai_01_03_mapping_suggestions_and_evidence():
@@ -23,7 +20,7 @@ def test_tst_ai_04_06_draft_versioning_and_provenance():
     s_key = "Test Subject TST-AI-04"
     d1 = store.save_draft(s_key, 9, "Draft v1", "gpt-4o", "PROMPT-01", "PROMPT-01.v1", "Aarti")
     d2 = store.save_draft(s_key, 9, "Draft v2", "gpt-4o", "PROMPT-01", "PROMPT-01.v2", "Aarti")
-    
+
     drafts = store.list_drafts(s_key, 9)
     assert len(drafts) >= 2
     assert drafts[0]["promptVersion"] == "PROMPT-01.v2"
@@ -48,7 +45,7 @@ def test_tst_ai_10_12_token_cap_and_keyless_fallback():
     """TST-AI-10..12: Verify monthly token cap enforcement and keyless fallback quality."""
     store = AIUsageStore()
     store.set_monthly_token_cap(1000)
-    
+
     # Log call exceeding cap
     store.log_call("PROMPT-01", "v1", "gpt-4o", "openai", 5, 800, 400, "ok")
     assert store.check_cap_exceeded()
@@ -67,7 +64,9 @@ def test_tst_ai_13_14_json_validation_and_number_mismatch():
 
     # Number mismatch reconciliation
     engine_payload = {"actual": "500000.00", "budget": "450000.00"}
-    text = "Actual spend was 500000.00 against budget 450000.00. Unverified ghost amount $99,999,999."
+    text = (
+        "Actual spend was 500000.00 against budget 450000.00. Unverified ghost amount $99,999,999."
+    )
     updated, guard_res = reconcile_numbers({"commentary": text}, engine_payload)
     assert guard_res.number_mismatch_flag is True
     assert "$99,999,999" not in updated["commentary"]

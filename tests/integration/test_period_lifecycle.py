@@ -80,9 +80,19 @@ def _insert_actual(repo: PeriodRepository, *, period_id: int, net_amount: str) -
                 net_amount, source_file_name, source_row_ref)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            [900001, 1, f"fp-{period_id}-{net_amount}", 1, 5200, period_id,
-             "2026-09-15", "VCH-TEST-001", net_amount, "unit_test.csv",
-             "row_1"],
+            [
+                900001,
+                1,
+                f"fp-{period_id}-{net_amount}",
+                1,
+                5200,
+                period_id,
+                "2026-09-15",
+                "VCH-TEST-001",
+                net_amount,
+                "unit_test.csv",
+                "row_1",
+            ],
         )
     finally:
         conn.close()
@@ -91,6 +101,7 @@ def _insert_actual(repo: PeriodRepository, *, period_id: int, net_amount: str) -
 # ---------------------------------------------------------------------------
 # open_period
 # ---------------------------------------------------------------------------
+
 
 def test_open_period_creates_a_genuinely_new_period(repo: PeriodRepository):
     """FR-PRJ-004. A period_code absent from the seed must be created.
@@ -102,8 +113,9 @@ def test_open_period_creates_a_genuinely_new_period(repo: PeriodRepository):
     """
     before = len(repo.list_periods())
 
-    dto = repo.open_period(NEW_FY, 1, NEW_CODE, NEW_CODE,
-                           "2027-01-01", "2027-01-31", {"carry": "maps"})
+    dto = repo.open_period(
+        NEW_FY, 1, NEW_CODE, NEW_CODE, "2027-01-01", "2027-01-31", {"carry": "maps"}
+    )
 
     assert dto is not None
     assert dto.period_code == NEW_CODE
@@ -117,8 +129,9 @@ def test_open_period_creates_a_genuinely_new_period(repo: PeriodRepository):
 
 def test_open_period_writes_an_audit_row(repo: PeriodRepository):
     """Doc 03 §2.1: PeriodAuditLog holds one audit event per period action."""
-    dto = repo.open_period(NEW_FY, 1, NEW_CODE, NEW_CODE,
-                           "2027-01-01", "2027-01-31", {"carry": "maps"})
+    dto = repo.open_period(
+        NEW_FY, 1, NEW_CODE, NEW_CODE, "2027-01-01", "2027-01-31", {"carry": "maps"}
+    )
 
     rows = _audit_rows(repo)
     opens = [r for r in rows if r[2] == "open_wizard"]
@@ -133,8 +146,7 @@ def test_open_period_writes_an_audit_row(repo: PeriodRepository):
 
 def test_open_period_on_an_already_seeded_period(repo: PeriodRepository):
     """The ON CONFLICT branch must still reopen a period that already exists."""
-    dto = repo.open_period(2026, 9, "FY26-P09", "FY26-P09",
-                           "2026-09-01", "2026-09-30", {})
+    dto = repo.open_period(2026, 9, "FY26-P09", "FY26-P09", "2026-09-01", "2026-09-30", {})
 
     assert dto.period_code == "FY26-P09"
     assert dto.status == "open"
@@ -147,6 +159,7 @@ def test_open_period_on_an_already_seeded_period(repo: PeriodRepository):
 # ---------------------------------------------------------------------------
 # close_period
 # ---------------------------------------------------------------------------
+
 
 def test_close_period_snapshots_and_audits(repo: PeriodRepository):
     """FR-PRJ-005 / FR-PRJ-010: close writes an immutable snapshot + audit event."""
@@ -171,8 +184,7 @@ def test_close_period_snapshots_and_audits(repo: PeriodRepository):
     assert isinstance(snapshot_id, int)
     assert period_id == 9
     # FR-PRJ-010 "immutable": the hash must verify against the stored JSON.
-    assert snapshot_hash == hashlib.sha256(
-        snapshot_json.encode("utf-8")).hexdigest()
+    assert snapshot_hash == hashlib.sha256(snapshot_json.encode("utf-8")).hexdigest()
     payload = json.loads(snapshot_json)
     assert payload["period_code"] == "FY26-P09"
 
@@ -195,9 +207,7 @@ def test_close_period_snapshot_totals_come_from_net_amount(repo: PeriodRepositor
 
     conn = repo.db.get_duckdb_connection()
     try:
-        snapshot_json = conn.execute(
-            "SELECT snapshot_json FROM PeriodSnapshot"
-        ).fetchone()[0]
+        snapshot_json = conn.execute("SELECT snapshot_json FROM PeriodSnapshot").fetchone()[0]
     finally:
         conn.close()
 
@@ -213,6 +223,7 @@ def test_close_period_raises_for_an_unknown_period(repo: PeriodRepository):
 # ---------------------------------------------------------------------------
 # reopen_period
 # ---------------------------------------------------------------------------
+
 
 def test_reopen_period_requires_a_typed_reason(repo: PeriodRepository):
     """FR-PRJ-005 "typed reopen (audited)": a real reason is mandatory."""
@@ -248,8 +259,7 @@ def test_full_open_close_reopen_cycle_leaves_one_audit_row_per_action(
     repo: PeriodRepository,
 ):
     """Doc 03: one audit event per period close or snapshot action."""
-    repo.open_period(NEW_FY, 1, NEW_CODE, NEW_CODE,
-                     "2027-01-01", "2027-01-31", {})
+    repo.open_period(NEW_FY, 1, NEW_CODE, NEW_CODE, "2027-01-01", "2027-01-31", {})
     period_id = repo.get_period(
         next(p.period_id for p in repo.list_periods() if p.period_code == NEW_CODE)
     ).period_id
@@ -265,6 +275,7 @@ def test_full_open_close_reopen_cycle_leaves_one_audit_row_per_action(
 # ---------------------------------------------------------------------------
 # The keys themselves
 # ---------------------------------------------------------------------------
+
 
 def test_audit_log_ids_are_unique_and_monotonic(repo: PeriodRepository):
     """The defect was an omitted key; this pins that ids are now real and unique."""
@@ -282,8 +293,7 @@ def test_audit_log_ids_are_unique_and_monotonic(repo: PeriodRepository):
 
 
 def test_next_id_starts_at_one_on_an_empty_table(repo: PeriodRepository):
-    assert repo._next_id(repo.db.get_duckdb_connection(),
-                         "PeriodAuditLog", "log_id") == 1
+    assert repo._next_id(repo.db.get_duckdb_connection(), "PeriodAuditLog", "log_id") == 1
 
 
 def test_duckdb_rejects_an_omitted_key_so_the_supplied_id_stays_load_bearing(

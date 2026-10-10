@@ -4,10 +4,14 @@ and Number Mismatch Stripping per docs 10, 13, and 14.
 """
 
 import pytest
-from decimal import Decimal
-import json
-from app.engine.ai.client import RedactionEngine, AIClient, AIConfig
-from app.engine.ai.guardrails import validate_json_schema, reconcile_numbers, AISchemaValidationError
+
+from app.engine.ai.client import RedactionEngine
+from app.engine.ai.guardrails import (
+    AISchemaValidationError,
+    reconcile_numbers,
+    validate_json_schema,
+)
+
 
 def test_planted_malicious_injection_fixture():
     """Verify with the planted malicious description fixture that imported text is treated as data not instructions (§3)."""

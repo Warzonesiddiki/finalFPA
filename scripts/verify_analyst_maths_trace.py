@@ -4,6 +4,7 @@
 Dynamically invokes the public observable numbers engine in app.engine.calc.observable
 at runtime to verify the numbers and their computation hops as structured data.
 """
+
 import sys
 from pathlib import Path
 
@@ -50,35 +51,37 @@ def main():
             f"| `Number {obs.id}` | **{obs.name}** | `{obs.formula_id}` | `app/engine/calc/observable.py` | {hop1} | {hop2} | {hop3} | **PASS**: {obs.display} |"
         )
 
-    doc_lines.extend([
-        "",
-        "---",
-        "",
-        "## Detailed Proofs & Observable Data Breakdown",
-        ""
-    ])
+    doc_lines.extend(["", "---", "", "## Detailed Proofs & Observable Data Breakdown", ""])
 
     for obs in observable_numbers:
         d = obs.to_dict()
-        doc_lines.extend([
-            f"### Number {obs.id} — {obs.name}",
-            f"* **Formula Identifier:** `{obs.formula_id}`",
-            f"* **Observed Output:** `{d['value']}` (`{obs.display}`)",
-            f"* **Inputs:** `{d['inputs']}`",
-            "* **Pipeline Hops:**",
-        ])
+        doc_lines.extend(
+            [
+                f"### Number {obs.id} — {obs.name}",
+                f"* **Formula Identifier:** `{obs.formula_id}`",
+                f"* **Observed Output:** `{d['value']}` (`{obs.display}`)",
+                f"* **Inputs:** `{d['inputs']}`",
+                "* **Pipeline Hops:**",
+            ]
+        )
         for h in obs.hops:
             doc_lines.append(f"  - **{h.name} ({h.hop_type}):** {h.detail}")
-        doc_lines.extend([
-            "* **Precision Assurance:** Intermediate operations executed at full minor-unit Decimal precision; display rounding applied exactly once at output boundary (`CALC-030`).",
-            ""
-        ])
+        doc_lines.extend(
+            [
+                "* **Precision Assurance:** Intermediate operations executed at full minor-unit Decimal precision; display rounding applied exactly once at output boundary (`CALC-030`).",
+                "",
+            ]
+        )
 
-    doc_lines.append("*Report generated dynamically by `scripts/verify_analyst_maths_trace.py` invoking `app.engine.calc.observable` for tasks `UX-09` and `ENG-07`.*")
+    doc_lines.append(
+        "*Report generated dynamically by `scripts/verify_analyst_maths_trace.py` invoking `app.engine.calc.observable` for tasks `UX-09` and `ENG-07`.*"
+    )
 
     EVIDENCE_PATH.parent.mkdir(parents=True, exist_ok=True)
     EVIDENCE_PATH.write_text("\n".join(doc_lines) + "\n", encoding="utf-8")
-    print(f"Generated {EVIDENCE_PATH} dynamically from app.engine.calc.observable (12 numbers verified as data).")
+    print(
+        f"Generated {EVIDENCE_PATH} dynamically from app.engine.calc.observable (12 numbers verified as data)."
+    )
 
 
 if __name__ == "__main__":

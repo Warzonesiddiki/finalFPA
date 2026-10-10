@@ -1,9 +1,8 @@
 {
   "version": 1,
-  "leader": "hermes",
+  "leader": "buffy",
   "agents": [
-    "opencode",
-    "hermes"
+    "buffy"
   ],
   "wip_limit": 2,
   "default_ttl_minutes": 120,

@@ -3,13 +3,13 @@
   "title": "Build the import-history fixture (overlapping batch 37 + control totals) for P2/P3",
   "source": "docs/33",
   "priority": "P0",
-  "status": "todo",
+  "status": "done",
   "owner": null,
   "claim_id": null,
   "deps": [],
   "lane": "corpus",
   "created_utc": "2026-10-05T10:12:06Z",
-  "updated_utc": "2026-10-05T10:14:18Z",
+  "updated_utc": "2026-10-09T20:16:39Z",
   "history": [
     {
       "utc": "2026-10-05T10:12:06Z",
@@ -20,6 +20,11 @@
       "utc": "2026-10-05T10:14:18Z",
       "agent": "buffy",
       "event": "triaged P0 / lane corpus by leader"
+    },
+    {
+      "utc": "2026-10-09T20:16:39Z",
+      "agent": "?",
+      "event": "Import-history fixture verified already in place and committed per acceptance: import_history/01_bank_batch_037.csv (4 rows), 02_gl_batch_039.xlsx (110 rows), 03_bank_batch_040.csv (10 rows), 04_bank_batch_041.csv (2 rows) — all 4 history fixtures committed, balanced, with DQ scores 100/93/100/92. The ordered import (before actuals: 037+039; after: 040+041) is what the acceptance harness imports. Evidence: evidence/acceptance_report.json corpus[]."
     }
   ]
 }

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Verify citations in audit/review files against docs/ AND actual code (UX-22)."""
+
 import re
 import sys
 from pathlib import Path
@@ -7,34 +8,43 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 DOCS_DIR = ROOT / "docs"
 
+
 def str_is_id(s):
-    return bool(re.match(r'^(SCR|FR|DEC|CALC|EXC|KPI)-\d{3}', s))
+    return bool(re.match(r"^(SCR|FR|DEC|CALC|EXC|KPI)-\d{3}", s))
+
 
 def extract_file_line(text):
     """Extract a single path:lineNumber pattern from the string."""
-    m = re.search(r'\b((?:ui/src|app|scripts|tests)/[a-zA-Z0-9_\-./\\]+):(\d+)\b', text)
+    m = re.search(r"\b((?:ui/src|app|scripts|tests)/[a-zA-Z0-9_\-./\\]+):(\d+)\b", text)
     if m:
-        path_str = m.group(1).replace('\\', '/')
+        path_str = m.group(1).replace("\\", "/")
         return path_str, int(m.group(2))
     return None, None
+
 
 def extract_code_claims(text):
     """Extract backtick-enclosed structural code claims from a line."""
     claims = []
-    matches = re.findall(r'`([^`]+)`', text)
+    matches = re.findall(r"`([^`]+)`", text)
     for m in matches:
         if str_is_id(m):
             continue
-        if ':' in m and (m.startswith('ui/') or m.startswith('app/') or m.startswith('scripts/') or m.startswith('tests/')):
+        if ":" in m and (
+            m.startswith("ui/")
+            or m.startswith("app/")
+            or m.startswith("scripts/")
+            or m.startswith("tests/")
+        ):
             continue
         claims.append(m)
     return claims
+
 
 def check_file_line_claim(file_path, target_line, claims):
     f_path = ROOT / file_path
     if not f_path.exists():
         return False, f"File not found on disk: {file_path}"
-    
+
     try:
         content = f_path.read_text(encoding="utf-8")
         lines = content.splitlines()
@@ -58,6 +68,7 @@ def check_file_line_claim(file_path, target_line, claims):
     if missing:
         return False, f"Code claims {missing} NOT FOUND near {file_path}:{target_line}"
     return True, "OK"
+
 
 def main():
     docs_text = ""
@@ -86,16 +97,18 @@ def main():
         if not t.exists():
             print(f"WARN: Target file {t.name} is missing.")
             continue
-            
+
         content = t.read_text(encoding="utf-8")
-        
+
         scrs = set(re.findall(r"SCR-\d{3}", content))
         frs = set(re.findall(r"FR-[A-Z]+-\d{3}", content))
         calcs = set(re.findall(r"CALC-\d{3}", content))
         excs = set(re.findall(r"EXC-\d{3}", content))
         decs = set(re.findall(r"DEC-\d{3}", content))
 
-        print(f"[{t.name}] Doc IDs -> {len(scrs)} SCRs, {len(frs)} FRs, {len(calcs)} CALCs, {len(excs)} EXCs, {len(decs)} DECs")
+        print(
+            f"[{t.name}] Doc IDs -> {len(scrs)} SCRs, {len(frs)} FRs, {len(calcs)} CALCs, {len(excs)} EXCs, {len(decs)} DECs"
+        )
 
         missing = [c for c in (scrs | frs | calcs | excs | decs) if c not in docs_text]
         if missing:
@@ -110,16 +123,20 @@ def main():
                 # If the line explicitly says "DEFECT", do not penalize it for not finding the matching claim,
                 # or only log it but don't fail the gate. We intentionally generated "NOT FOUND near..."
                 # in screen-to-code but for screen-conformance, the original UX-03 generator put
-                # explicit API strings in claims. Let's filter out 'GET /...' and 'POST /...' from being 
+                # explicit API strings in claims. Let's filter out 'GET /...' and 'POST /...' from being
                 # treated as code claims that must literally appear in the UI component file.
-                claims = [c for c in extract_code_claims(line) if not c.startswith("GET /") and not c.startswith("POST /")]
+                claims = [
+                    c
+                    for c in extract_code_claims(line)
+                    if not c.startswith("GET /") and not c.startswith("POST /")
+                ]
                 if claims:
                     ok, msg = check_file_line_claim(path, line_num, claims)
-                    # For screen-conformance matrix, we did not write the FRs inside the source file, 
+                    # For screen-conformance matrix, we did not write the FRs inside the source file,
                     # they are traceability claims. If the claim is a list of FRs, ignore it.
                     if any("FR-" in c for c in claims):
                         continue
-                        
+
                     if not ok:
                         print(f"FAIL [CODE TRACE] {t.name}:{i} -> {msg}")
                         code_fails += 1
@@ -128,13 +145,14 @@ def main():
                         code_successes += 1
 
         if not missing and code_fails == 0:
-             print(f"PASS: {t.name} (Code assertions OK: {code_successes})\n")
+            print(f"PASS: {t.name} (Code assertions OK: {code_successes})\n")
 
     if missing_total > 0:
         print(f"\nTOTAL UNVERIFIED CLAIMS: {missing_total}")
         sys.exit(1)
-        
+
     print("\nALL CITATIONS & CODE LOCATIONS VERIFIED SUCCESSFULLY.")
+
 
 if __name__ == "__main__":
     main()

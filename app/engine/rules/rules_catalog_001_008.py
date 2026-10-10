@@ -56,9 +56,7 @@ def _committed_batches(context: RuleContext) -> dict[str, Any]:
 
 def _period_order(period_code: Any) -> tuple[int, int] | None:
     """Return (fiscal year, period number) for the documented FYyy-Pnn form."""
-    match = re.fullmatch(
-        r"FY(\d{2,4})-P(\d{1,2})", str(period_code or "").strip(), re.IGNORECASE
-    )
+    match = re.fullmatch(r"FY(\d{2,4})-P(\d{1,2})", str(period_code or "").strip(), re.IGNORECASE)
     if not match:
         return None
     year = int(match.group(1))
@@ -171,15 +169,11 @@ def evaluate_catalog_exc_001(context: RuleContext) -> list[Finding]:
             tolerance_value = configured_tolerance
         tolerance = _money(tolerance_value, ZERO)
         batch_transactions = [
-            tx
-            for tx in context.transactions
-            if str(_value(tx, "import_batch_id", "")) == batch_id
+            tx for tx in context.transactions if str(_value(tx, "import_batch_id", "")) == batch_id
         ]
         top_rows = sorted(
             batch_transactions,
-            key=lambda tx: abs(
-                _money(_value(tx, "debit")) - _money(_value(tx, "credit"))
-            ),
+            key=lambda tx: abs(_money(_value(tx, "debit")) - _money(_value(tx, "credit"))),
             reverse=True,
         )[:5]
         sample_rows = [
@@ -192,9 +186,7 @@ def evaluate_catalog_exc_001(context: RuleContext) -> list[Finding]:
             for tx in top_rows
         ]
         evidence_refs = [
-            _text(tx, "source_row_ref")
-            for tx in top_rows
-            if _text(tx, "source_row_ref")
+            _text(tx, "source_row_ref") for tx in top_rows if _text(tx, "source_row_ref")
         ]
         file_name = _text(batch, "file_name", "import batch")
         subject_key = _batch_subject(batch, batch_id)
@@ -210,8 +202,7 @@ def evaluate_catalog_exc_001(context: RuleContext) -> list[Finding]:
                 subject_key=subject_key,
                 subject_display=f"Unbalanced import batch {batch_id}: {file_name}",
                 amount_at_risk=abs(imbalance),
-                period_id=_text(batch, "period_id", context.period_id)
-                or context.period_id,
+                period_id=_text(batch, "period_id", context.period_id) or context.period_id,
                 owner_role="GL Accountant",
                 effective_threshold=f"balance_tolerance ₹{tolerance}",
                 detail=(
@@ -254,9 +245,7 @@ def _cross_batch_findings_for_key(
     secondary: bool,
     matched_row_pairs: set[tuple[int, int]],
 ) -> list[Finding]:
-    grouped: dict[tuple[Any, ...], dict[str, list[Any]]] = defaultdict(
-        lambda: defaultdict(list)
-    )
+    grouped: dict[tuple[Any, ...], dict[str, list[Any]]] = defaultdict(lambda: defaultdict(list))
     for tx in context.transactions:
         batch_id = str(_value(tx, "import_batch_id", ""))
         if batch_id not in batch_by_id:
@@ -274,9 +263,7 @@ def _cross_batch_findings_for_key(
         for later_id in present:
             later_rows = by_batch[later_id]
             previous_ids = [
-                earlier_id
-                for earlier_id in present
-                if position[earlier_id] < position[later_id]
+                earlier_id for earlier_id in present if position[earlier_id] < position[later_id]
             ]
             if not previous_ids:
                 continue
@@ -310,9 +297,7 @@ def _cross_batch_findings_for_key(
                 )
                 candidate["later"][id(later_tx)] = later_tx
                 for earlier_id, earlier_tx, pair in matching_old:
-                    candidate["earlier"].setdefault(
-                        id(earlier_tx), (earlier_id, earlier_tx)
-                    )
+                    candidate["earlier"].setdefault(id(earlier_tx), (earlier_id, earlier_tx))
                     if not secondary:
                         matched_row_pairs.add(pair)
 
@@ -329,14 +314,11 @@ def _cross_batch_findings_for_key(
         earlier_batch = batch_by_id[earlier_id]
         older_date = _text(earlier_batch, "created_at", "unknown import date")
         later_rows = list(candidate["later"].values())
-        overlap_amount = quantize_money(
-            sum((_transaction_amount(tx) for tx in later_rows), ZERO)
-        )
+        overlap_amount = quantize_money(sum((_transaction_amount(tx) for tx in later_rows), ZERO))
         evidence_refs = sorted(
             {
                 _text(tx, "source_row_ref")
-                for _old_id, tx in earlier_entries
-                + [(later_id, tx) for tx in later_rows]
+                for _old_id, tx in earlier_entries + [(later_id, tx) for tx in later_rows]
                 if _text(tx, "source_row_ref")
             }
         )
@@ -370,12 +352,9 @@ def _cross_batch_findings_for_key(
                 severity="High",
                 tier="exact",
                 subject_key=subject_key,
-                subject_display=(
-                    f"Overlapping {candidate['key_type']} row {subject_key}"
-                ),
+                subject_display=(f"Overlapping {candidate['key_type']} row {subject_key}"),
                 amount_at_risk=overlap_amount,
-                period_id=_text(later_batch, "period_id", context.period_id)
-                or context.period_id,
+                period_id=_text(later_batch, "period_id", context.period_id) or context.period_id,
                 owner_role="GL Accountant",
                 effective_threshold="min_overlap_rows 1; include_voided_batches false",
                 detail=(
@@ -453,7 +432,8 @@ def evaluate_catalog_exc_003(context: RuleContext) -> list[Finding]:
     """Compare loaded totals with persisted optional client control totals."""
     findings: list[Finding] = []
     batch_by_id = {
-        batch_id: batch for batch in context.import_batches
+        batch_id: batch
+        for batch in context.import_batches
         if (batch_id := _batch_id(batch)) is not None
     }
     committed_ids = set(_committed_batches(context))
@@ -487,12 +467,9 @@ def evaluate_catalog_exc_003(context: RuleContext) -> list[Finding]:
                 severity="High",
                 tier="exact",
                 subject_key=subject_key,
-                subject_display=(
-                    f"Control-total variance for batch {batch_id} ({scope})"
-                ),
+                subject_display=(f"Control-total variance for batch {batch_id} ({scope})"),
                 amount_at_risk=variance,
-                period_id=_text(total, "period_id", context.period_id)
-                or context.period_id,
+                period_id=_text(total, "period_id", context.period_id) or context.period_id,
                 owner_role="Controller",
                 effective_threshold=f"control_total_tolerance ₹{tolerance}",
                 detail=(
@@ -530,9 +507,7 @@ def evaluate_catalog_exc_006(context: RuleContext) -> list[Finding]:
     if isinstance(excluded_accounts_config, str):
         excluded_accounts_config = (excluded_accounts_config,)
     excluded_accounts = {str(account).strip() for account in excluded_accounts_config}
-    scope_grain = (
-        str(context.config.get("EXC-006_scope_grain", "entity_account")).strip().lower()
-    )
+    scope_grain = str(context.config.get("EXC-006_scope_grain", "entity_account")).strip().lower()
     if scope_grain not in {"entity", "account", "entity_account"}:
         raise ValueError(f"Unsupported EXC-006 scope_grain: {scope_grain}")
 
@@ -556,23 +531,15 @@ def evaluate_catalog_exc_006(context: RuleContext) -> list[Finding]:
         return []
 
     budgeted_entity_accounts = _period_budget_keys(context, run_period[0])
-    groups: dict[tuple[str, ...], list[tuple[Any, str, str, Decimal]]] = defaultdict(
-        list
-    )
+    groups: dict[tuple[str, ...], list[tuple[Any, str, str, Decimal]]] = defaultdict(list)
     for record in ytd_rows:
         _tx, company, account, _amount = record
         if scope_grain == "entity":
-            if any(
-                b_company == company
-                for b_company, _b_account in budgeted_entity_accounts
-            ):
+            if any(b_company == company for b_company, _b_account in budgeted_entity_accounts):
                 continue
             group_key = (company,)
         elif scope_grain == "account":
-            if any(
-                b_account == account
-                for _b_company, b_account in budgeted_entity_accounts
-            ):
+            if any(b_account == account for _b_company, b_account in budgeted_entity_accounts):
                 continue
             group_key = (account,)
         else:
@@ -623,16 +590,11 @@ def evaluate_catalog_exc_006(context: RuleContext) -> list[Finding]:
         else:
             subject_key = f"entity_account|{key[0]}|{key[1]}"
             subject_display = (
-                f"Entity {key[0]} / account {key[1]} has actuals "
-                "without budget coverage"
+                f"Entity {key[0]} / account {key[1]} has actuals without budget coverage"
             )
 
         evidence_refs = sorted(
-            {
-                _text(tx, "source_row_ref")
-                for tx in tx_rows
-                if _text(tx, "source_row_ref")
-            }
+            {_text(tx, "source_row_ref") for tx in tx_rows if _text(tx, "source_row_ref")}
         )
         sample_rows = [
             {
@@ -703,13 +665,7 @@ def evaluate_catalog_exc_008(context: RuleContext) -> list[Finding]:
         voucher = _text(tx, "voucher_no")
         net = _money(_value(tx, "net_amount"))
         amount = abs(net)
-        if (
-            not company
-            or not account
-            or not posting_date
-            or not voucher
-            or amount == ZERO
-        ):
+        if not company or not account or not posting_date or not voucher or amount == ZERO:
             continue
         sign = 1 if net > ZERO else -1
         keyed.append(((company, account, amount, posting_date, cost_center, sign), tx))
@@ -734,28 +690,30 @@ def evaluate_catalog_exc_008(context: RuleContext) -> list[Finding]:
     for (company, account, _cost_center), amount in context.annual_budgets.items():
         key = (str(company), str(account))
         annual_budget_accounts.add(key)
-        account_budget[key] = quantize_money(
-            account_budget[key] + _money(amount)
-        )
+        account_budget[key] = quantize_money(account_budget[key] + _money(amount))
     for (company, account, _cost_center, period), amount in context.budgets.items():
         period_order = _period_order(period)
         key = (str(company), str(account))
         if period_order and period_order[0] == run_period[0] and key not in annual_budget_accounts:
-            account_budget[key] = quantize_money(
-                account_budget[key] + _money(amount)
-            )
+            account_budget[key] = quantize_money(account_budget[key] + _money(amount))
 
     findings: list[Finding] = []
-    for (company, account, amount, posting_date, cost_center, _sign), found in iter_candidate_groups(
+    for (
+        company,
+        account,
+        amount,
+        posting_date,
+        cost_center,
+        _sign,
+    ), found in iter_candidate_groups(
         keyed,
         key_of=lambda item: item[0],
         # `06` EXC-008: `require_different_voucher = true`. Rows in the same voucher are
         # normal multi-line postings and are excluded -- the requirement that removes the
         # largest class of false positives.
-        is_candidate=lambda _key, rows: count_distinct(
-            rows, lambda item: _text(item[1], "voucher_no")
-        )
-        >= 2,
+        is_candidate=lambda _key, rows: (
+            count_distinct(rows, lambda item: _text(item[1], "voucher_no")) >= 2
+        ),
         order_by=lambda group: group[0],
     ):
         rows = [item[1] for item in found]

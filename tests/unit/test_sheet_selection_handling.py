@@ -8,9 +8,14 @@ using synthetic openpyxl .xlsx fixtures.
 from __future__ import annotations
 
 from pathlib import Path
+
 import pytest
+
 openpyxl = pytest.importorskip("openpyxl")
-from app.engine.imports import load_hardened_excel_sheet, detect_hidden_sheets, is_total_subtotal_row
+from app.engine.imports import (
+    detect_hidden_sheets,
+    is_total_subtotal_row,
+)
 
 
 def test_sheet_selection_and_hardening(tmp_path: Path):
@@ -29,7 +34,9 @@ def test_sheet_selection_and_hardening(tmp_path: Path):
 
     # Sheet 2: Active data sheet with total rows
     ws2 = wb.create_sheet(title="Actuals")
-    ws2.append(["Company", "Voucher", "Line", "PostingDate", "AccountCode", "Debit", "Credit", "Period"])
+    ws2.append(
+        ["Company", "Voucher", "Line", "PostingDate", "AccountCode", "Debit", "Credit", "Period"]
+    )
     ws2.append(["COMP", "V001", 1, "2026-04-01", 1001, 100.00, 0.00, "FY26-P01"])
     ws2.append(["Total", "", "", "", "", 100.00, 0.00, ""])
 
@@ -43,4 +50,9 @@ def test_sheet_selection_and_hardening(tmp_path: Path):
 
     # Test total row exclusion helper
     assert is_total_subtotal_row(["Total", "", "", "", "", "100.00", "0.00", ""]) is True
-    assert is_total_subtotal_row(["COMP", "V001", "1", "2026-04-01", "1001", "100.00", "0.00", "FY26-P01"]) is False
+    assert (
+        is_total_subtotal_row(
+            ["COMP", "V001", "1", "2026-04-01", "1001", "100.00", "0.00", "FY26-P01"]
+        )
+        is False
+    )

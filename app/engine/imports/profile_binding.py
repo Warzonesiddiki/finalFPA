@@ -56,7 +56,7 @@ version forever and the profile history would be meaningless.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from app.engine.imports.mapping_suggestions import MappingSuggestion
 from app.engine.imports.profiles import MappingProfile, normalize_header
@@ -74,18 +74,18 @@ REVIEWED_PROFILE_SUFFIX = " (reviewed)"
 class ProfileBindingResult:
     """Outcome of resolving the effective profile for one import run."""
 
-    profile: Optional[MappingProfile]
+    profile: MappingProfile | None
     import_run_id: int
-    applied: List[MappingSuggestion] = field(default_factory=list)
-    already_applied: List[MappingSuggestion] = field(default_factory=list)
-    version_no: Optional[int] = None
+    applied: list[MappingSuggestion] = field(default_factory=list)
+    already_applied: list[MappingSuggestion] = field(default_factory=list)
+    version_no: int | None = None
     cloned_from_builtin: bool = False
 
     @property
     def changed(self) -> bool:
         return bool(self.applied)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "importRunId": self.import_run_id,
             "profileId": self.profile.profile_id if self.profile else None,
@@ -94,8 +94,12 @@ class ProfileBindingResult:
             "changed": self.changed,
             "clonedFromBuiltin": self.cloned_from_builtin,
             "applied": [
-                {"suggestionId": s.suggestion_id, "sourceColumn": s.source_column,
-                 "targetField": s.effective_target_field, "state": s.state}
+                {
+                    "suggestionId": s.suggestion_id,
+                    "sourceColumn": s.source_column,
+                    "targetField": s.effective_target_field,
+                    "state": s.state,
+                }
                 for s in self.applied
             ],
             "alreadyApplied": [s.suggestion_id for s in self.already_applied],
@@ -116,7 +120,7 @@ def next_import_run_id(db_manager: DatabaseManager) -> int:
         conn.close()
 
 
-def verify_run_id_prediction(db_manager: DatabaseManager) -> Tuple[int, int]:
+def verify_run_id_prediction(db_manager: DatabaseManager) -> tuple[int, int]:
     """(predicted_next_id, max_committed_id).
 
     A caller that has just committed can compare its actual batch id against the
@@ -134,9 +138,9 @@ def verify_run_id_prediction(db_manager: DatabaseManager) -> Tuple[int, int]:
 
 def resolve_base_profile(
     db_manager: DatabaseManager,
-    sample_headers: List[str],
+    sample_headers: list[str],
     source_type: str = "actuals_d365",
-) -> Optional[MappingProfile]:
+) -> MappingProfile | None:
     """Pick the profile to fold accepted suggestions into, before parsing.
 
     Fingerprint match first (doc 04 section 5.1), then fall back to the active
@@ -158,15 +162,15 @@ def resolve_base_profile(
 
 
 def _changed_entries(
-    column_map: Dict[str, str],
-    pending: List[MappingSuggestion],
-) -> Dict[str, str]:
+    column_map: dict[str, str],
+    pending: list[MappingSuggestion],
+) -> dict[str, str]:
     """Entries the merge would actually add or change.
 
     Empty means the accepted suggestions agree with the profile as it stands, so
     applying them is a genuine no-op.
     """
-    out: Dict[str, str] = {}
+    out: dict[str, str] = {}
     for s in pending:
         key = normalize_header(s.source_column)
         value = s.effective_target_field
@@ -177,8 +181,8 @@ def _changed_entries(
 
 def _ensure_editable_profile(
     mapping_repo: MappingRepository,
-    base_profile: Optional[MappingProfile],
-) -> Tuple[Optional[MappingProfile], bool]:
+    base_profile: MappingProfile | None,
+) -> tuple[MappingProfile | None, bool]:
     """Return a writable profile, cloning a built-in one if needed.
 
     `create_version` refuses built-in profiles ("Built-in profiles are read-only;
@@ -206,8 +210,8 @@ def _ensure_editable_profile(
 
 def resolve_profile_for_import(
     db_manager: DatabaseManager,
-    base_profile: Optional[MappingProfile] = None,
-    import_run_id: Optional[int] = None,
+    base_profile: MappingProfile | None = None,
+    import_run_id: int | None = None,
     created_by: str = "mapping_review_queue",
 ) -> ProfileBindingResult:
     """Fold every applyable accepted suggestion into the profile for this run.
@@ -268,7 +272,7 @@ def resolve_profile_for_import(
     if profile is None:
         return ProfileBindingResult(profile=None, import_run_id=run_id, already_applied=already)
 
-    merged: Dict[str, str] = dict(profile.column_map)
+    merged: dict[str, str] = dict(profile.column_map)
     for s in pending:
         merged[normalize_header(s.source_column)] = s.effective_target_field
 
@@ -298,17 +302,19 @@ def resolve_profile_for_import(
         created_by=created_by,
     )
 
-    suggestion_repo.record_applications([
-        {
-            "suggestion_id": s.suggestion_id,
-            "profile_id": profile.profile_id,
-            "version_no": version.version_no,
-            "import_run_id": run_id,
-            "source_column": s.source_column,
-            "canonical_field": s.effective_target_field,
-        }
-        for s in pending
-    ])
+    suggestion_repo.record_applications(
+        [
+            {
+                "suggestion_id": s.suggestion_id,
+                "profile_id": profile.profile_id,
+                "version_no": version.version_no,
+                "import_run_id": run_id,
+                "source_column": s.source_column,
+                "canonical_field": s.effective_target_field,
+            }
+            for s in pending
+        ]
+    )
 
     return ProfileBindingResult(
         profile=mapping_repo.get_active_profile_by_id(profile.profile_id),
@@ -321,9 +327,9 @@ def resolve_profile_for_import(
 
 
 def unmapped_columns_for_headers(
-    profile: Optional[MappingProfile],
-    headers: List[str],
-) -> List[str]:
+    profile: MappingProfile | None,
+    headers: list[str],
+) -> list[str]:
     """Source columns in `headers` the profile does not map.
 
     This is the trigger condition FR-IMP-008 names: "When a file has unmapped
@@ -333,8 +339,4 @@ def unmapped_columns_for_headers(
     if profile is None:
         return [h.strip() for h in headers if h.strip()]
     column_map = profile.column_map
-    return [
-        h.strip()
-        for h in headers
-        if h.strip() and normalize_header(h) not in column_map
-    ]
+    return [h.strip() for h in headers if h.strip() and normalize_header(h) not in column_map]

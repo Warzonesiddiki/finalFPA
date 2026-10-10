@@ -4,13 +4,12 @@ The point of this file is falsification: a gate that cannot fail proves nothing,
 both directions are exercised - the real tree passes, and a tree whose notices file
 has lost an adopted-source section fails naming the ADP id.
 """
+
 from __future__ import annotations
 
 import shutil
 import sys
 from pathlib import Path
-
-import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))

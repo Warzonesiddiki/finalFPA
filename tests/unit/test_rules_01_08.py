@@ -1,15 +1,16 @@
 """Unit tests for Exception Rules 01 to 08 per 06_EXCEPTION_RULES_CATALOG.md."""
 
-from decimal import Decimal
 import hashlib
+from decimal import Decimal
+
 import pytest
 
+from app.engine.imports.models import ParsedTransaction
 from app.engine.rules.rules_01_08 import (
-    Finding,
-    RuleContext,
     RecurringCostRuleItem,
-    evaluate_all,
+    RuleContext,
     evaluate,
+    evaluate_all,
     evaluate_exc_001,
     evaluate_exc_002,
     evaluate_exc_003,
@@ -19,7 +20,6 @@ from app.engine.rules.rules_01_08 import (
     evaluate_exc_007,
     evaluate_exc_008,
 )
-from app.engine.imports.models import ParsedTransaction
 
 
 def make_tx(
@@ -61,6 +61,7 @@ def make_tx(
 # Rule 01: EXC-001 Duplicate Invoice Candidate
 # ==============================================================================
 
+
 @pytest.mark.tst_id("TST-RUL-01")
 @pytest.mark.tst("TST-RUL-01")
 def test_exc_001_duplicate_invoice_raised():
@@ -96,7 +97,7 @@ def test_exc_001_duplicate_invoice_raised():
     assert f.amount_at_risk == Decimal("45000.00")
     assert f.owner_role == "Accounts Payable"
     assert set(f.evidence_refs) == {"row_101", "row_102"}
-    expected_hash = hashlib.sha256("EXC-001|V-00931|INV-88213".encode("utf-8")).hexdigest()
+    expected_hash = hashlib.sha256(b"EXC-001|V-00931|INV-88213").hexdigest()
     assert f.identity_hash == expected_hash
 
 
@@ -137,7 +138,9 @@ def test_exc_001_date_window_exceeded():
         debit=Decimal("45000.00"),
     )
 
-    ctx = RuleContext(transactions=[tx1, tx2], period_id="FY26-P09", config={"EXC-001_date_window_days": 90})
+    ctx = RuleContext(
+        transactions=[tx1, tx2], period_id="FY26-P09", config={"EXC-001_date_window_days": 90}
+    )
     findings = evaluate_exc_001(ctx)
     assert len(findings) == 0
 
@@ -145,6 +148,7 @@ def test_exc_001_date_window_exceeded():
 # ==============================================================================
 # Rule 02: EXC-002 Unmapped GL Account
 # ==============================================================================
+
 
 @pytest.mark.tst_id("TST-RUL-02")
 @pytest.mark.tst("TST-RUL-02")
@@ -221,6 +225,7 @@ def test_exc_002_mapped_account_not_raised():
 # Rule 03: EXC-003 Inactive Cost Centre Usage
 # ==============================================================================
 
+
 @pytest.mark.tst_id("TST-RUL-03")
 def test_exc_003_inactive_cost_centre_raised():
     """Planting P5: Inactive cost centre CC-950 receives postings totalling ₹96,500.00."""
@@ -253,7 +258,9 @@ def test_exc_003_inactive_cost_centre_raised():
 
 def test_exc_003_active_cost_centre_not_raised():
     """Active cost centre should not be flagged."""
-    tx = make_tx(cost_center_code="CC-100", debit=Decimal("25000.00"), net_amount=Decimal("25000.00"))
+    tx = make_tx(
+        cost_center_code="CC-100", debit=Decimal("25000.00"), net_amount=Decimal("25000.00")
+    )
     ctx = RuleContext(
         transactions=[tx],
         dim_cost_centers={"CC-100": {"is_active": True}},
@@ -265,6 +272,7 @@ def test_exc_003_active_cost_centre_not_raised():
 # ==============================================================================
 # Rule 04: EXC-004 Posting-date vs Period Mismatch
 # ==============================================================================
+
 
 @pytest.mark.tst_id("TST-RUL-04")
 def test_exc_004_period_mismatch_raised():
@@ -304,6 +312,7 @@ def test_exc_004_matching_period_not_raised():
 # Rule 05: EXC-005 Unusual Negative Expense / Credit
 # ==============================================================================
 
+
 @pytest.mark.tst_id("TST-RUL-05")
 def test_exc_005_unusual_credit_raised():
     """Planting P12: Account 5400/CC-110 receives credits ₹680,000 with offset only ₹120,000 (17.6%)."""
@@ -326,7 +335,10 @@ def test_exc_005_unusual_credit_raised():
         transactions=[tx_credit, tx_debit],
         dim_accounts={"5400": {"account_type": "EXPENSE"}},
         period_id="FY26-P09",
-        config={"EXC-005_min_credit_amount": Decimal("500000.00"), "EXC-005_offset_ratio": Decimal("0.90")},
+        config={
+            "EXC-005_min_credit_amount": Decimal("500000.00"),
+            "EXC-005_offset_ratio": Decimal("0.90"),
+        },
     )
     findings = evaluate_exc_005(ctx)
 
@@ -358,7 +370,10 @@ def test_exc_005_precision_control_offset_above_threshold():
         transactions=[tx_credit, tx_debit],
         dim_accounts={"5400": {"account_type": "EXPENSE"}},
         period_id="FY26-P09",
-        config={"EXC-005_min_credit_amount": Decimal("500000.00"), "EXC-005_offset_ratio": Decimal("0.90")},
+        config={
+            "EXC-005_min_credit_amount": Decimal("500000.00"),
+            "EXC-005_offset_ratio": Decimal("0.90"),
+        },
     )
     assert len(evaluate_exc_005(ctx)) == 0
 
@@ -384,7 +399,10 @@ def test_exc_005_ignores_different_period_debits():
         transactions=[tx_credit, tx_debit_prior],
         dim_accounts={"5400": {"account_type": "EXPENSE"}},
         period_id="FY26-P09",
-        config={"EXC-005_min_credit_amount": Decimal("500000.00"), "EXC-005_offset_ratio": Decimal("0.90")},
+        config={
+            "EXC-005_min_credit_amount": Decimal("500000.00"),
+            "EXC-005_offset_ratio": Decimal("0.90"),
+        },
     )
     findings = evaluate_exc_005(ctx)
     assert len(findings) == 1
@@ -394,6 +412,7 @@ def test_exc_005_ignores_different_period_debits():
 # ==============================================================================
 # Rule 06: EXC-006 Missing Recurring Cost
 # ==============================================================================
+
 
 @pytest.mark.tst_id("TST-RUL-06")
 def test_exc_006_missing_recurring_cost_raised():
@@ -407,7 +426,9 @@ def test_exc_006_missing_recurring_cost_raised():
     )
 
     # Some unrelated transaction in the period
-    tx_other = make_tx(vendor_code="V-99999", debit=Decimal("20000.00"), net_amount=Decimal("20000.00"))
+    tx_other = make_tx(
+        vendor_code="V-99999", debit=Decimal("20000.00"), net_amount=Decimal("20000.00")
+    )
 
     ctx = RuleContext(
         transactions=[tx_other],
@@ -448,6 +469,7 @@ def test_exc_006_precision_control_within_tolerance():
 # ==============================================================================
 # Rule 07: EXC-007 Material Unbudgeted Spend (Catalog EXC-017)
 # ==============================================================================
+
 
 @pytest.mark.tst_id("TST-RUL-07")
 @pytest.mark.tst_id("TST-RUL-17")
@@ -500,6 +522,7 @@ def test_exc_007_spend_with_budget_not_raised():
 # Rule 08: EXC-008 Material Variance Over Threshold (Catalog EXC-018)
 # ==============================================================================
 
+
 @pytest.mark.tst_id("TST-RUL-08")
 @pytest.mark.tst_id("TST-RUL-18")
 def test_exc_008_material_variance_canonical_f13a():
@@ -545,7 +568,9 @@ def test_exc_008_precision_control_p29_fails_amount_floor():
 
     ctx = RuleContext(
         transactions=[tx],
-        budgets={("IN01", "5200", "CC-105", "FY26-P09"): Decimal("1000000.00")},  # var = +60,000 (+6.0%)
+        budgets={
+            ("IN01", "5200", "CC-105", "FY26-P09"): Decimal("1000000.00")
+        },  # var = +60,000 (+6.0%)
         period_id="FY26-P09",
         config={
             "EXC-008_materiality_pct": Decimal("0.02"),
@@ -568,7 +593,9 @@ def test_exc_008_precision_control_p30_fails_pct_threshold():
 
     ctx = RuleContext(
         transactions=[tx],
-        budgets={("IN01", "5200", "CC-110", "FY26-P09"): Decimal("40000000.00")},  # var = +900,000 (+2.25%)
+        budgets={
+            ("IN01", "5200", "CC-110", "FY26-P09"): Decimal("40000000.00")
+        },  # var = +900,000 (+2.25%)
         period_id="FY26-P09",
         config={
             "EXC-008_materiality_pct": Decimal("0.02"),
@@ -582,6 +609,7 @@ def test_exc_008_precision_control_p30_fails_pct_threshold():
 # ==============================================================================
 # Engine Determinism & Aggregate Evaluator Tests
 # ==============================================================================
+
 
 def test_evaluate_all_determinism():
     """Running evaluate() twice with same context must produce identical findings."""

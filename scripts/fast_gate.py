@@ -29,10 +29,21 @@ class GateStep(NamedTuple):
 
 
 GATE_STEPS: list[GateStep] = [
-    GateStep("Unit Tests & R12 Guard", [sys.executable, "-m", "pytest", "tests/unit", "-m", "not perf", "-q", "-o", "addopts="]),
-    GateStep("License & Provenance Gate", [sys.executable, str(ROOT / "scripts" / "license_gate.py")]),
-    GateStep("Documentation Integrity Check", [sys.executable, str(ROOT / "scripts" / "check_doc_integrity.py")]),
-    GateStep("Continuity Memory Verification", [sys.executable, str(ROOT / "scripts" / "memory.py"), "verify"]),
+    GateStep(
+        "Unit Tests & R12 Guard",
+        [sys.executable, "-m", "pytest", "tests/unit", "-m", "not perf", "-q", "-o", "addopts="],
+    ),
+    GateStep(
+        "License & Provenance Gate", [sys.executable, str(ROOT / "scripts" / "license_gate.py")]
+    ),
+    GateStep(
+        "Documentation Integrity Check",
+        [sys.executable, str(ROOT / "scripts" / "check_doc_integrity.py")],
+    ),
+    GateStep(
+        "Continuity Memory Verification",
+        [sys.executable, str(ROOT / "scripts" / "memory.py"), "verify"],
+    ),
 ]
 
 
@@ -47,7 +58,10 @@ def run_fast_gate() -> int:
         elapsed = time.perf_counter() - step_start
 
         if res.returncode != 0:
-            print(f"\n❌ FAILED: {step.name} exited with status {res.returncode} ({elapsed:.2f}s)", file=sys.stderr)
+            print(
+                f"\n❌ FAILED: {step.name} exited with status {res.returncode} ({elapsed:.2f}s)",
+                file=sys.stderr,
+            )
             return res.returncode
         print(f"    ✓ {step.name} passed in {elapsed:.2f}s")
 

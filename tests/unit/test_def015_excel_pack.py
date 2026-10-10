@@ -1,15 +1,14 @@
 import tempfile
-from pathlib import Path
 from decimal import Decimal
-import openpyxl
-import pytest
+from pathlib import Path
 
 from app.engine.exports.excel_pack import (
-    PackContext,
-    MonthEndPackData,
     BvARow,
+    MonthEndPackData,
+    PackContext,
     export_excel_pack,
 )
+
 
 def test_def015_excel_pack_money_float():
     """
@@ -19,9 +18,9 @@ def test_def015_excel_pack_money_float():
     """
     huge_amount = Decimal("99999999999999.99")
     huge_budget = Decimal("88888888888888.88")
-    
+
     ctx = PackContext()
-    
+
     bva = BvARow(
         level=1,
         account_code="4000",
@@ -36,9 +35,9 @@ def test_def015_excel_pack_money_float():
         effective_threshold="",
         rank=1,
         rows_count=1,
-        commentary=""
+        commentary="",
     )
-    
+
     pack_data = MonthEndPackData(
         context=ctx,
         bva_rows=[bva],
@@ -48,16 +47,14 @@ def test_def015_excel_pack_money_float():
         forecast_rows=[],
         import_batches=[],
     )
-    
+
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir) / "test_float_excel_pack.xlsx"
         export_excel_pack(tmp_path, pack_data)
-        
+
         # Verify the dataclass field type is indeed preserved
         assert isinstance(pack_data.bva_rows[0].actual, Decimal)
         assert pack_data.bva_rows[0].actual == huge_amount
-        
-        # Note: the openpyxl boundary legitimately coerces to float as Excel 
+
+        # Note: the openpyxl boundary legitimately coerces to float as Excel
         # is IEEE 754. The defect was coercion INSIDE the dataclass itself.
-
-

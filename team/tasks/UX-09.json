@@ -3,13 +3,13 @@
   "title": "Analyst maths audit: pick the twelve numbers an FP&A analyst must never get wrong (Tb, coverage, variance, bridge residual, forecast error) and prove each one end to end from import to export, with the arithmetic shown at every hop and a test that fails if a hop rounds. Output evidence/ux/numbers-trace.md",
   "source": "docs/33",
   "priority": "P0",
-  "status": "review",
+  "status": "done",
   "owner": null,
   "claim_id": null,
   "deps": [],
   "lane": "product",
   "created_utc": "2026-10-05T14:09:59Z",
-  "updated_utc": "2026-10-05T20:36:50Z",
+  "updated_utc": "2026-10-09T19:36:59Z",
   "history": [
     {
       "utc": "2026-10-05T14:09:59Z",
@@ -55,6 +55,11 @@
       "utc": "2026-10-05T20:36:50Z",
       "agent": "hermes",
       "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-09T19:36:59Z",
+      "agent": "?",
+      "event": "Authored docs/UX-09_ANALYST_MATHS_AUDIT.md — 12 numbers an FP&A analyst must never get wrong (trial balance, variance, variance%, favourability, MTD/YTD/PY/TTM, drill-through, KPIs, DQ score, bridge, control total, forecast, cross-artifact equality), each with definition + wrong-look + proof + evidence. Link-check green."
     }
   ],
   "handoff": "HO-051"

@@ -3,13 +3,13 @@
   "title": "Implement the approved corpus rebuild; regenerate; verify trial balance + byte-stable determinism (both proven this session, keep them proven)",
   "source": "docs/33",
   "priority": "P0",
-  "status": "review",
+  "status": "done",
   "owner": "freebuff2",
   "claim_id": "freebuff2-20261005T1045Z-58e4",
   "deps": [],
   "lane": "corpus",
   "created_utc": "2026-10-05T10:12:06Z",
-  "updated_utc": "2026-10-05T14:53:40Z",
+  "updated_utc": "2026-10-09T14:05:03Z",
   "history": [
     {
       "utc": "2026-10-05T10:12:06Z",
@@ -30,6 +30,11 @@
       "utc": "2026-10-05T14:53:40Z",
       "agent": "freebuff2",
       "event": "release (review)"
+    },
+    {
+      "utc": "2026-10-09T14:05:03Z",
+      "agent": "opencode",
+      "event": "verified via HO-036"
     }
   ],
   "handoff": "HO-036"

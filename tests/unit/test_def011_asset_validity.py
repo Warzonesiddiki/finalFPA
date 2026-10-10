@@ -9,6 +9,7 @@ shipped inside the installer.
 Precondition 4b now validates the assets. These tests pin that behaviour,
 including the positive path so the gate cannot rot into always-fail.
 """
+
 import importlib.util
 import sys
 import zipfile
@@ -65,14 +66,21 @@ def test_placeholder_text_file_is_not_a_valid_ico(tmp_path):
 def test_truncated_ico_with_valid_header_is_still_rejected(tmp_path):
     """Header alone is not enough - the size floor must reject a stub."""
     stub = tmp_path / "app.ico"
-    stub.write_bytes((0).to_bytes(2, "little") + (1).to_bytes(2, "little") + (1).to_bytes(2, "little"))
+    stub.write_bytes(
+        (0).to_bytes(2, "little") + (1).to_bytes(2, "little") + (1).to_bytes(2, "little")
+    )
     assert build._is_valid_ico(stub) is False
 
 
 def test_wrong_ico_type_is_rejected(tmp_path):
     """type=2 is a cursor, not an icon."""
     bad = tmp_path / "app.ico"
-    bad.write_bytes((0).to_bytes(2, "little") + (2).to_bytes(2, "little") + (1).to_bytes(2, "little") + b"\x00" * 2000)
+    bad.write_bytes(
+        (0).to_bytes(2, "little")
+        + (2).to_bytes(2, "little")
+        + (1).to_bytes(2, "little")
+        + b"\x00" * 2000
+    )
     assert build._is_valid_ico(bad) is False
 
 
@@ -118,7 +126,11 @@ def test_missing_pptx_is_rejected(tmp_path):
 
 def test_required_layout_names_match_doc_12_contract():
     assert build.REQUIRED_PPTX_LAYOUTS == (
-        "FPA-PPT-001", "FPA-PPT-002", "FPA-PPT-003",
-        "FPA-PPT-004", "FPA-PPT-005", "FPA-PPT-006",
+        "FPA-PPT-001",
+        "FPA-PPT-002",
+        "FPA-PPT-003",
+        "FPA-PPT-004",
+        "FPA-PPT-005",
+        "FPA-PPT-006",
         "FPA-PPT-DISCLAIMER",
     )

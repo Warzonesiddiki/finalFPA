@@ -1,0 +1,20 @@
+{
+  "id": "TB-110",
+  "title": "Wire the board pack's exception data to the store (closes G-23): generate_excel_pack_file currently builds exception_rows from create_sample_pack_data (reports_repo.py:101) and the deck uses ppt_pack.py:299 dataclass demo defaults, while the register reads FactException live - three surfaces, three truths by construction. Load pack/deck exception rows from ExceptionsRepository, identical rows/order/display to GET /api/v1/exceptions; keep the demo builder for tests only. Done-when: regenerating pack+deck after a store status/owner change yields rows identical to the register and TB-039 can fail if they differ. Evidence: evidence/ux19_field_authority.md",
+  "source": "docs/33",
+  "priority": "P0",
+  "status": "todo",
+  "owner": null,
+  "claim_id": null,
+  "deps": [],
+  "lane": "engine",
+  "created_utc": "2026-10-10T04:59:05Z",
+  "updated_utc": "2026-10-10T04:59:05Z",
+  "history": [
+    {
+      "utc": "2026-10-10T04:59:05Z",
+      "agent": "buffy",
+      "event": "created"
+    }
+  ]
+}

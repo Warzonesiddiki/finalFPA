@@ -38,9 +38,8 @@ from __future__ import annotations
 import csv
 import hashlib
 from dataclasses import dataclass, field
-from decimal import Decimal
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from app.engine.calc import ZERO, quantize_money
 from app.engine.calc.quality_score import calculate_quality_score
@@ -55,7 +54,6 @@ from app.engine.imports.parser import (
 )
 from app.engine.imports.profiles import normalize_header
 from app.engine.store.db import DatabaseManager
-
 
 # --------------------------------------------------------------------------
 # Vendor master
@@ -90,11 +88,11 @@ class VendorLoadResult:
     status: str
     loaded_count: int
     quarantined_count: int
-    quarantined_rows: List[Dict[str, Any]] = field(default_factory=list)
-    checks: List[ValidationCheckReport] = field(default_factory=list)
+    quarantined_rows: list[dict[str, Any]] = field(default_factory=list)
+    checks: list[ValidationCheckReport] = field(default_factory=list)
 
 
-def parse_vendor_csv(path: str | Path) -> Tuple[List[Dict[str, str]], List[Dict[str, Any]]]:
+def parse_vendor_csv(path: str | Path) -> tuple[list[dict[str, str]], list[dict[str, Any]]]:
     """Parse a vendor-master CSV into (valid_rows, quarantined_rows).
 
     Row-level failures quarantine the row (docs/04 §11); the row is never
@@ -104,7 +102,8 @@ def parse_vendor_csv(path: str | Path) -> Tuple[List[Dict[str, str]], List[Dict[
     """
     p = Path(path)
     lines = [
-        line for line in p.read_text(encoding="utf-8-sig").splitlines()
+        line
+        for line in p.read_text(encoding="utf-8-sig").splitlines()
         if line.strip() and not line.lstrip().startswith("#")
     ]
     if not lines:
@@ -114,16 +113,16 @@ def parse_vendor_csv(path: str | Path) -> Tuple[List[Dict[str, str]], List[Dict[
     col_map = {i: VENDOR_COLUMN_MAP.get(normalize_header(h)) for i, h in enumerate(headers)}
     header_list = list(headers)
 
-    valid: List[Dict[str, str]] = []
-    quarantined: List[Dict[str, Any]] = []
-    seen: Dict[str, str] = {}
+    valid: list[dict[str, str]] = []
+    quarantined: list[dict[str, Any]] = []
+    seen: dict[str, str] = {}
     exact_dupes = 0
     total = 0
     for raw in reader:
         total += 1
         ref = f"line {total + 1}"
         values = [raw.get(h, "") for h in header_list]
-        record: Dict[str, Optional[str]] = {}
+        record: dict[str, str | None] = {}
         for i, v in enumerate(values):
             canon = col_map.get(i)
             if canon and canon != "__ignored__":
@@ -131,35 +130,41 @@ def parse_vendor_csv(path: str | Path) -> Tuple[List[Dict[str, str]], List[Dict[
         raw_values = dict(zip(header_list, values))
         code = (record.get("vendor_code") or "").strip()
         if not code:
-            quarantined.append({
-                "source_row_ref": ref,
-                "reason_code": "import.vendorCodeMissing",
-                "reason_detail": f"Vendor code is missing or empty at {ref}",
-                "raw_values": raw_values,
-            })
+            quarantined.append(
+                {
+                    "source_row_ref": ref,
+                    "reason_code": "import.vendorCodeMissing",
+                    "reason_detail": f"Vendor code is missing or empty at {ref}",
+                    "raw_values": raw_values,
+                }
+            )
             continue
         name = (record.get("vendor_name") or "").strip() or code  # OQ-023 default
         if len(code) > 40 or len(name) > 200:
-            quarantined.append({
-                "source_row_ref": ref,
-                "reason_code": "import.vendorCodeMissing",
-                "reason_detail": f"Vendor code/name exceeds 03 §3.4 length at {ref}",
-                "raw_values": raw_values,
-            })
+            quarantined.append(
+                {
+                    "source_row_ref": ref,
+                    "reason_code": "import.vendorCodeMissing",
+                    "reason_detail": f"Vendor code/name exceeds 03 §3.4 length at {ref}",
+                    "raw_values": raw_values,
+                }
+            )
             continue
         if code in seen:
             if seen[code] == name:
                 exact_dupes += 1
                 continue
-            quarantined.append({
-                "source_row_ref": ref,
-                "reason_code": "import.vendorNameConflict",
-                "reason_detail": (
-                    f"Vendor '{code}' already maps to '{seen[code]}' in this file; "
-                    f"conflicting name '{name}' at {ref} quarantined, never overwritten"
-                ),
-                "raw_values": raw_values,
-            })
+            quarantined.append(
+                {
+                    "source_row_ref": ref,
+                    "reason_code": "import.vendorNameConflict",
+                    "reason_detail": (
+                        f"Vendor '{code}' already maps to '{seen[code]}' in this file; "
+                        f"conflicting name '{name}' at {ref} quarantined, never overwritten"
+                    ),
+                    "raw_values": raw_values,
+                }
+            )
             continue
         seen[code] = name
         valid.append({"vendor_code": code, "vendor_name": name})
@@ -179,41 +184,63 @@ def commit_vendor_csv(
     valid, quarantined = parse_vendor_csv(p)
     checksum = compute_file_checksum(p)
     size = p.stat().st_size
-    total_source = len(valid) + len(quarantined) + getattr(
-        parse_vendor_csv, "last_exact_dupes", 0)
+    total_source = len(valid) + len(quarantined) + getattr(parse_vendor_csv, "last_exact_dupes", 0)
 
     checks = [
         ValidationCheckReport(
-            check_code="IMP-001", check_name="File readable and format supported",
-            status="pass", severity="high", offending_count=0),
-        ValidationCheckReport(
-            check_code="IMP-016", check_name="Vendor codes present and well-formed",
-            status="fail" if quarantined else "pass", severity="high",
-            offending_count=len(quarantined),
-            detail=f"{len(quarantined)} vendor row(s) quarantined",
-            message_slug="import.vendorCodeMissing" if quarantined else None),
-        ValidationCheckReport(
-            check_code="IMP-024", check_name="Row-count reconciliation equation",
-            status="pass" if total_source == len(valid) + len(quarantined)
-            + getattr(parse_vendor_csv, "last_exact_dupes", 0) else "fail",
+            check_code="IMP-001",
+            check_name="File readable and format supported",
+            status="pass",
             severity="high",
             offending_count=0,
-            detail=(f"Source ({total_source}) = Loaded ({len(valid)}) + Quarantined "
-                    f"({len(quarantined)}) + Rejected (0)"),
-            message_slug=None),
+        ),
+        ValidationCheckReport(
+            check_code="IMP-016",
+            check_name="Vendor codes present and well-formed",
+            status="fail" if quarantined else "pass",
+            severity="high",
+            offending_count=len(quarantined),
+            detail=f"{len(quarantined)} vendor row(s) quarantined",
+            message_slug="import.vendorCodeMissing" if quarantined else None,
+        ),
+        ValidationCheckReport(
+            check_code="IMP-024",
+            check_name="Row-count reconciliation equation",
+            status="pass"
+            if total_source
+            == len(valid) + len(quarantined) + getattr(parse_vendor_csv, "last_exact_dupes", 0)
+            else "fail",
+            severity="high",
+            offending_count=0,
+            detail=(
+                f"Source ({total_source}) = Loaded ({len(valid)}) + Quarantined "
+                f"({len(quarantined)}) + Rejected (0)"
+            ),
+            message_slug=None,
+        ),
     ]
 
     batch_id = _insert_batch_row(
-        db, source_type="vendor_master", file_name=p.name, checksum=checksum,
-        size_bytes=size, total_source=total_source, loaded=len(valid),
-        quarantined=len(quarantined), checks=checks, status="staged")
+        db,
+        source_type="vendor_master",
+        file_name=p.name,
+        checksum=checksum,
+        size_bytes=size,
+        total_source=total_source,
+        loaded=len(valid),
+        quarantined=len(quarantined),
+        checks=checks,
+        status="staged",
+    )
 
     duck = db.get_duckdb_connection()
     try:
         try:
             duck.execute("BEGIN TRANSACTION;")
             existing = {r[0] for r in duck.execute("SELECT vendor_code FROM DimVendor").fetchall()}
-            max_id = duck.execute("SELECT COALESCE(MAX(vendor_id), 0) FROM DimVendor").fetchone()[0] or 0
+            max_id = (
+                duck.execute("SELECT COALESCE(MAX(vendor_id), 0) FROM DimVendor").fetchone()[0] or 0
+            )
             # DEC-046: DuckDB has no auto-increment; keys are allocated in Python.
             for row in valid:
                 if row["vendor_code"] in existing:
@@ -242,10 +269,14 @@ def commit_vendor_csv(
     # block above intentionally writes facts only.
     _insert_quarantine_rows(db, batch_id, "DimVendor", quarantined)
     _set_batch_status(db, batch_id, "committed")
-    return VendorLoadResult(batch_id=batch_id, status="committed",
-                            loaded_count=len(valid),
-                            quarantined_count=len(quarantined),
-                            quarantined_rows=quarantined, checks=checks)
+    return VendorLoadResult(
+        batch_id=batch_id,
+        status="committed",
+        loaded_count=len(valid),
+        quarantined_count=len(quarantined),
+        quarantined_rows=quarantined,
+        checks=checks,
+    )
 
 
 # --------------------------------------------------------------------------
@@ -293,15 +324,15 @@ class BudgetLoadResult:
     status: str
     loaded_count: int
     quarantined_count: int
-    quarantined_rows: List[Dict[str, Any]] = field(default_factory=list)
-    checks: List[ValidationCheckReport] = field(default_factory=list)
+    quarantined_rows: list[dict[str, Any]] = field(default_factory=list)
+    checks: list[ValidationCheckReport] = field(default_factory=list)
 
 
 def parse_budget_csv(
     path: str | Path,
     *,
     budget_version: str = "FY26-Approved",
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[ValidationCheckReport]]:
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[ValidationCheckReport]]:
     """Parse a budget CSV into (valid_rows, quarantined_rows, checks).
 
     Money is `Decimal` only (docs/03 §1.2: floats forbidden in money paths).
@@ -310,22 +341,28 @@ def parse_budget_csv(
     """
     p = Path(path)
     lines = [
-        line for line in p.read_text(encoding="utf-8-sig").splitlines()
+        line
+        for line in p.read_text(encoding="utf-8-sig").splitlines()
         if line.strip() and not line.lstrip().startswith("#")
     ]
     if not lines:
         empty_check = ValidationCheckReport(
-            check_code="IMP-008", check_name="Data range not empty",
-            status="fail", severity="high", offending_count=0,
-            detail="No data rows", message_slug="import.noDataRows")
+            check_code="IMP-008",
+            check_name="Data range not empty",
+            status="fail",
+            severity="high",
+            offending_count=0,
+            detail="No data rows",
+            message_slug="import.noDataRows",
+        )
         return [], [], [empty_check]
     reader = csv.DictReader(lines)
     headers = [(h or "") for h in (reader.fieldnames or [])]
     col_map = {i: BUDGET_COLUMN_MAP.get(normalize_header(h)) for i, h in enumerate(headers)}
     header_list = list(headers)
 
-    valid: List[Dict[str, Any]] = []
-    quarantined: List[Dict[str, Any]] = []
+    valid: list[dict[str, Any]] = []
+    quarantined: list[dict[str, Any]] = []
     number_issues = 0
     period_issues = 0
     missing_issues = 0
@@ -334,7 +371,7 @@ def parse_budget_csv(
         total += 1
         ref = f"line {total + 1}"
         values = [raw.get(h, "") for h in header_list]
-        record: Dict[str, Optional[str]] = {}
+        record: dict[str, str | None] = {}
         for i, v in enumerate(values):
             canon = col_map.get(i)
             if canon and canon != "__ignored__":
@@ -342,22 +379,32 @@ def parse_budget_csv(
         raw_values = dict(zip(header_list, values))
 
         def quarantine(code: str, detail: str) -> None:
-            quarantined.append({"source_row_ref": ref, "reason_code": code,
-                                "reason_detail": detail, "raw_values": raw_values})
+            quarantined.append(
+                {
+                    "source_row_ref": ref,
+                    "reason_code": code,
+                    "reason_detail": detail,
+                    "raw_values": raw_values,
+                }
+            )
 
         period_raw = record.get("period_code")
         account_raw = record.get("account_code")
         amount_raw = record.get("amount")
         if not period_raw or not account_raw or amount_raw is None:
             missing_issues += 1
-            quarantine("import.mappingIncomplete",
-                       f"Required budget field missing (period/account/amount) at {ref}")
+            quarantine(
+                "import.mappingIncomplete",
+                f"Required budget field missing (period/account/amount) at {ref}",
+            )
             continue
         period_code = resolve_fiscal_period(period_raw)
         if period_code is None:
             period_issues += 1
-            quarantine("import.periodNotInCalendar",
-                       f"Period '{period_raw}' could not be resolved against fiscal calendar at {ref}")
+            quarantine(
+                "import.periodNotInCalendar",
+                f"Period '{period_raw}' could not be resolved against fiscal calendar at {ref}",
+            )
             continue
         try:
             amount = quantize_money(parse_money_value(amount_raw))
@@ -365,49 +412,70 @@ def parse_budget_csv(
             number_issues += 1
             quarantine("import.numberUnparsed", f"Unparseable budget amount at {ref}: {exc}")
             continue
-        valid.append({
-            "period_code": period_code,
-            "company_code": (record.get("company_code") or "IN01").strip(),
-            "cost_center_code": (record.get("cost_center_code") or "").strip() or None,
-            "account_code": account_raw.strip(),
-            "amount": amount,
-            "budget_version": (record.get("budget_version") or budget_version).strip(),
-            "scenario_code": (record.get("scenario_code") or "base").strip(),
-            "currency_code": ((record.get("currency_code") or "INR").strip().upper()),
-            "source_row_ref": ref,
-            "raw_values": raw_values,
-        })
+        valid.append(
+            {
+                "period_code": period_code,
+                "company_code": (record.get("company_code") or "IN01").strip(),
+                "cost_center_code": (record.get("cost_center_code") or "").strip() or None,
+                "account_code": account_raw.strip(),
+                "amount": amount,
+                "budget_version": (record.get("budget_version") or budget_version).strip(),
+                "scenario_code": (record.get("scenario_code") or "base").strip(),
+                "currency_code": ((record.get("currency_code") or "INR").strip().upper()),
+                "source_row_ref": ref,
+                "raw_values": raw_values,
+            }
+        )
 
     checks = [
         ValidationCheckReport(
-            check_code="IMP-001", check_name="File readable and format supported",
-            status="pass", severity="high", offending_count=0),
+            check_code="IMP-001",
+            check_name="File readable and format supported",
+            status="pass",
+            severity="high",
+            offending_count=0,
+        ),
         ValidationCheckReport(
-            check_code="IMP-010", check_name="All required canonical fields mapped",
-            status="fail" if missing_issues else "pass", severity="high",
+            check_code="IMP-010",
+            check_name="All required canonical fields mapped",
+            status="fail" if missing_issues else "pass",
+            severity="high",
             offending_count=missing_issues,
             detail=f"{missing_issues} row(s) missing a required budget field",
-            message_slug="import.mappingIncomplete" if missing_issues else None),
+            message_slug="import.mappingIncomplete" if missing_issues else None,
+        ),
         ValidationCheckReport(
-            check_code="IMP-016", check_name="Numeric values parsed",
-            status="fail" if number_issues else "pass", severity="high",
+            check_code="IMP-016",
+            check_name="Numeric values parsed",
+            status="fail" if number_issues else "pass",
+            severity="high",
             offending_count=number_issues,
             detail=f"{number_issues} row(s) with unparseable amounts",
-            message_slug="import.numberUnparsed" if number_issues else None),
+            message_slug="import.numberUnparsed" if number_issues else None,
+        ),
         ValidationCheckReport(
-            check_code="IMP-018", check_name="Period resolved against the fiscal calendar",
-            status="fail" if period_issues else "pass", severity="high",
+            check_code="IMP-018",
+            check_name="Period resolved against the fiscal calendar",
+            status="fail" if period_issues else "pass",
+            severity="high",
             offending_count=period_issues,
             detail=f"{period_issues} row(s) with periods outside fiscal calendar",
-            message_slug="import.periodNotInCalendar" if period_issues else None),
+            message_slug="import.periodNotInCalendar" if period_issues else None,
+        ),
     ]
     return valid, quarantined, checks
 
 
-def _budget_key(row: Dict[str, Any]) -> Tuple[str, str, str, str, str, str]:
+def _budget_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, str]:
     """Uniqueness key per docs/03 §2.1 (FactBudget grain)."""
-    return (row["budget_version"], row["scenario_code"], row["period_code"],
-            row["account_code"], row["company_code"], row["cost_center_code"] or "")
+    return (
+        row["budget_version"],
+        row["scenario_code"],
+        row["period_code"],
+        row["account_code"],
+        row["company_code"],
+        row["cost_center_code"] or "",
+    )
 
 
 def commit_budget_csv(
@@ -429,10 +497,10 @@ def commit_budget_csv(
     # (same amount) de-duplicate with a recorded count; conflicting duplicates
     # (same key, different amount) block the commit. Never silently merged
     # (docs/03 §6).
-    by_key: Dict[Tuple[str, ...], Dict[str, Any]] = {}  # keyed by _budget_key
+    by_key: dict[tuple[str, ...], dict[str, Any]] = {}  # keyed by _budget_key
     exact_dupe_count = 0
-    conflicts: List[Dict[str, Any]] = []
-    deduped: List[Dict[str, Any]] = []
+    conflicts: list[dict[str, Any]] = []
+    deduped: list[dict[str, Any]] = []
     for row in valid:
         key = _budget_key(row)
         prior = by_key.get(key)
@@ -442,67 +510,111 @@ def commit_budget_csv(
         elif prior["amount"] == row["amount"]:
             exact_dupe_count += 1
         else:
-            conflicts.append({"key": "|".join(key),
-                              "first_amount": str(prior["amount"]),
-                              "conflict_amount": str(row["amount"]),
-                              "source_row_ref": row["source_row_ref"]})
+            conflicts.append(
+                {
+                    "key": "|".join(key),
+                    "first_amount": str(prior["amount"]),
+                    "conflict_amount": str(row["amount"]),
+                    "source_row_ref": row["source_row_ref"],
+                }
+            )
     dupe_check = ValidationCheckReport(
-        check_code="IMP-032", check_name="Budget duplicate lines on the uniqueness key",
+        check_code="IMP-032",
+        check_name="Budget duplicate lines on the uniqueness key",
         status="fail" if conflicts else ("warn" if exact_dupe_count else "pass"),
-        severity="medium", offending_count=len(conflicts) + exact_dupe_count,
-        detail=(f"{exact_dupe_count} exact duplicate(s) de-duplicated; "
-                f"{len(conflicts)} conflicting duplicate(s)"),
-        message_slug="import.duplicateBudgetLines" if (conflicts or exact_dupe_count) else None)
+        severity="medium",
+        offending_count=len(conflicts) + exact_dupe_count,
+        detail=(
+            f"{exact_dupe_count} exact duplicate(s) de-duplicated; "
+            f"{len(conflicts)} conflicting duplicate(s)"
+        ),
+        message_slug="import.duplicateBudgetLines" if (conflicts or exact_dupe_count) else None,
+    )
     checks.append(dupe_check)
 
     checksum = compute_file_checksum(p)
     size = p.stat().st_size
     total_source = len(valid) + len(quarantined) + exact_dupe_count
-    checks.append(ValidationCheckReport(
-        check_code="IMP-024", check_name="Row-count reconciliation equation",
-        status="pass", severity="high", offending_count=0,
-        detail=(f"Source ({total_source}) = Loaded ({len(deduped)}) + Quarantined "
-                f"({len(quarantined)}) + Rejected (0) + Exact-dupes ({exact_dupe_count})")))
+    checks.append(
+        ValidationCheckReport(
+            check_code="IMP-024",
+            check_name="Row-count reconciliation equation",
+            status="pass",
+            severity="high",
+            offending_count=0,
+            detail=(
+                f"Source ({total_source}) = Loaded ({len(deduped)}) + Quarantined "
+                f"({len(quarantined)}) + Rejected (0) + Exact-dupes ({exact_dupe_count})"
+            ),
+        )
+    )
 
     batch_id = _insert_batch_row(
-        db, source_type="budget", file_name=p.name, checksum=checksum,
-        size_bytes=size, total_source=total_source, loaded=len(deduped),
-        quarantined=len(quarantined), checks=checks, status="staged")
+        db,
+        source_type="budget",
+        file_name=p.name,
+        checksum=checksum,
+        size_bytes=size,
+        total_source=total_source,
+        loaded=len(deduped),
+        quarantined=len(quarantined),
+        checks=checks,
+        status="staged",
+    )
 
     if conflicts:
         _insert_quarantine_rows(db, batch_id, "FactBudget", quarantined)
-        _insert_check_row(db, batch_id, ValidationCheckReport(
-            check_code="IMP-032", check_name="Conflicting budget duplicates -- commit blocked",
-            status="fail", severity="medium", offending_count=len(conflicts),
-            detail=f"Blocked on {len(conflicts)} conflicting key(s): {conflicts[:3]}",
-            message_slug="import.duplicateBudgetLines"))
+        _insert_check_row(
+            db,
+            batch_id,
+            ValidationCheckReport(
+                check_code="IMP-032",
+                check_name="Conflicting budget duplicates -- commit blocked",
+                status="fail",
+                severity="medium",
+                offending_count=len(conflicts),
+                detail=f"Blocked on {len(conflicts)} conflicting key(s): {conflicts[:3]}",
+                message_slug="import.duplicateBudgetLines",
+            ),
+        )
         _set_batch_status(db, batch_id, "rejected")
         raise BudgetCommitBlocked(
             f"Budget commit blocked: {len(conflicts)} conflicting duplicate(s) "
             f"on the FactBudget uniqueness key (IMP-032). Batch {batch_id} recorded "
-            f"as rejected; no facts written.")
+            f"as rejected; no facts written."
+        )
 
     # Resolve FK ids against Dim* (docs/03 §7 I12: no orphan dimensions).
     # Unknown dimension values quarantine the row (OQ-024 default).
     duck = db.get_duckdb_connection()
     try:
-        companies = {r[0]: r[1] for r in
-                     duck.execute("SELECT company_code, company_id FROM DimCompany").fetchall()}
-        accounts = {r[0]: r[1] for r in
-                    duck.execute("SELECT account_code, account_id FROM DimAccount").fetchall()}
-        cost_centers = {r[0]: r[1] for r in
-                        duck.execute("SELECT cost_center_code, cost_center_id FROM DimCostCenter").fetchall()}
-        periods = {r[0]: r[1] for r in
-                   duck.execute("SELECT period_code, period_id FROM DimPeriod").fetchall()}
+        companies = {
+            r[0]: r[1]
+            for r in duck.execute("SELECT company_code, company_id FROM DimCompany").fetchall()
+        }
+        accounts = {
+            r[0]: r[1]
+            for r in duck.execute("SELECT account_code, account_id FROM DimAccount").fetchall()
+        }
+        cost_centers = {
+            r[0]: r[1]
+            for r in duck.execute(
+                "SELECT cost_center_code, cost_center_id FROM DimCostCenter"
+            ).fetchall()
+        }
+        periods = {
+            r[0]: r[1]
+            for r in duck.execute("SELECT period_code, period_id FROM DimPeriod").fetchall()
+        }
     finally:
         try:
             duck.close()
         except Exception:
             pass
 
-    resolved: List[Dict[str, Any]] = []
+    resolved: list[dict[str, Any]] = []
     for row in deduped:
-        missing: List[str] = []
+        missing: list[str] = []
         company_id = companies.get(row["company_code"])
         if company_id is None:
             # Docs/04 §6: unmapped company derives from the single-entity
@@ -524,16 +636,25 @@ def commit_budget_csv(
         if row["currency_code"] != "INR":
             missing.append(f"currency '{row['currency_code']}' (project currency is INR)")
         if missing:
-            quarantined.append({
-                "source_row_ref": row["source_row_ref"],
-                "reason_code": "import.unknownDimensions",
-                "reason_detail": f"Unmapped dimension(s) at {row['source_row_ref']}: "
-                                 f"{', '.join(missing)} -- quarantined per 03 §7 I12",
-                "raw_values": row["raw_values"],
-            })
+            quarantined.append(
+                {
+                    "source_row_ref": row["source_row_ref"],
+                    "reason_code": "import.unknownDimensions",
+                    "reason_detail": f"Unmapped dimension(s) at {row['source_row_ref']}: "
+                    f"{', '.join(missing)} -- quarantined per 03 §7 I12",
+                    "raw_values": row["raw_values"],
+                }
+            )
             continue
-        resolved.append({**row, "company_id": company_id, "account_id": account_id,
-                         "cost_center_id": cost_center_id, "period_id": period_id})
+        resolved.append(
+            {
+                **row,
+                "company_id": company_id,
+                "account_id": account_id,
+                "cost_center_id": cost_center_id,
+                "period_id": period_id,
+            }
+        )
 
     # The FK-resolution pass can only grow the quarantine list, so refresh the
     # audit counts and checks before committing facts.
@@ -551,10 +672,19 @@ def commit_budget_csv(
                     "scenario_code, company_id, account_id, cost_center_id, department_id, "
                     "project_id, period_id, amount, currency_code, is_derived_spread, "
                     "source_row_ref) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?, FALSE, ?)",
-                    [budget_id, batch_id, row["budget_version"], row["scenario_code"],
-                     row["company_id"], row["account_id"], row["cost_center_id"],
-                     row["period_id"], str(row["amount"]), row["currency_code"],
-                     row["source_row_ref"]],
+                    [
+                        budget_id,
+                        batch_id,
+                        row["budget_version"],
+                        row["scenario_code"],
+                        row["company_id"],
+                        row["account_id"],
+                        row["cost_center_id"],
+                        row["period_id"],
+                        str(row["amount"]),
+                        row["currency_code"],
+                        row["source_row_ref"],
+                    ],
                 )
             duck.execute("COMMIT;")
         except Exception:
@@ -574,10 +704,14 @@ def commit_budget_csv(
 
     _insert_quarantine_rows(db, batch_id, "FactBudget", quarantined)
     _set_batch_status(db, batch_id, "committed")
-    return BudgetLoadResult(batch_id=batch_id, status="committed",
-                            loaded_count=len(resolved),
-                            quarantined_count=len(quarantined),
-                            quarantined_rows=quarantined, checks=checks)
+    return BudgetLoadResult(
+        batch_id=batch_id,
+        status="committed",
+        loaded_count=len(resolved),
+        quarantined_count=len(quarantined),
+        quarantined_rows=quarantined,
+        checks=checks,
+    )
 
 
 # --------------------------------------------------------------------------
@@ -585,6 +719,7 @@ def commit_budget_csv(
 # batch-audit tables; the general AuditLog table does not exist in code,
 # see OQ-023).
 # --------------------------------------------------------------------------
+
 
 def _insert_batch_row(
     db: DatabaseManager,
@@ -596,15 +731,25 @@ def _insert_batch_row(
     total_source: int,
     loaded: int,
     quarantined: int,
-    checks: List[ValidationCheckReport],
+    checks: list[ValidationCheckReport],
     status: str,
 ) -> int:
     probe = ImportBatchResult(
-        batch_id=0, file_name=file_name, file_checksum=checksum, source_type=source_type,
-        total_source_rows=total_source, loaded_count=loaded,
-        quarantined_count=quarantined, rejected_count=0, is_balanced=True,
-        total_debit=ZERO, total_credit=ZERO, net_imbalance=ZERO,
-        checks=checks, quarantined_rows=[])
+        batch_id=0,
+        file_name=file_name,
+        file_checksum=checksum,
+        source_type=source_type,
+        total_source_rows=total_source,
+        loaded_count=loaded,
+        quarantined_count=quarantined,
+        rejected_count=0,
+        is_balanced=True,
+        total_debit=ZERO,
+        total_credit=ZERO,
+        net_imbalance=ZERO,
+        checks=checks,
+        quarantined_rows=[],
+    )
     try:
         dq_score = str(calculate_quality_score(probe).raw_score)
     except Exception:
@@ -619,8 +764,17 @@ def _insert_batch_row(
                        quarantined_count, rejected_count, status, is_balanced,
                        total_debit, total_credit, net_imbalance, data_quality_score
                    ) VALUES (?, ?, ?, ?, 'Data', 1, 1, ?, ?, ?, 0, ?, 1, '0.00', '0.00', '0.00', ?)""",
-                (source_type, file_name, checksum, size_bytes, total_source,
-                 loaded, quarantined, status, dq_score),
+                (
+                    source_type,
+                    file_name,
+                    checksum,
+                    size_bytes,
+                    total_source,
+                    loaded,
+                    quarantined,
+                    status,
+                    dq_score,
+                ),
             )
             batch_id = cur.lastrowid
             for c in checks:
@@ -629,9 +783,17 @@ def _insert_batch_row(
                            import_batch_id, check_code, check_name, status, severity,
                            offending_count, skip_reason, detail, weight
                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                    (batch_id, c.check_code, c.check_name, c.status, c.severity,
-                     c.offending_count, c.skip_reason, c.detail,
-                     float(c.weight) if c.weight is not None else 1.0),
+                    (
+                        batch_id,
+                        c.check_code,
+                        c.check_name,
+                        c.status,
+                        c.severity,
+                        c.offending_count,
+                        c.skip_reason,
+                        c.detail,
+                        float(c.weight) if c.weight is not None else 1.0,
+                    ),
                 )
             return int(batch_id)
     finally:
@@ -647,21 +809,32 @@ def _insert_check_row(db: DatabaseManager, batch_id: int, check: ValidationCheck
                        import_batch_id, check_code, check_name, status, severity,
                        offending_count, skip_reason, detail, weight
                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                (batch_id, check.check_code, check.check_name, check.status,
-                 check.severity, check.offending_count, check.skip_reason,
-                 check.detail, float(check.weight) if check.weight is not None else 1.0),
+                (
+                    batch_id,
+                    check.check_code,
+                    check.check_name,
+                    check.status,
+                    check.severity,
+                    check.offending_count,
+                    check.skip_reason,
+                    check.detail,
+                    float(check.weight) if check.weight is not None else 1.0,
+                ),
             )
     finally:
         conn.close()
 
 
 def _insert_quarantine_rows(
-    db: DatabaseManager, batch_id: int, target_table: str,
-    quarantined: List[Dict[str, Any]],
+    db: DatabaseManager,
+    batch_id: int,
+    target_table: str,
+    quarantined: list[dict[str, Any]],
 ) -> None:
     if not quarantined:
         return
     import json as _json
+
     conn = db.get_sqlite_connection()
     try:
         with conn:
@@ -672,10 +845,14 @@ def _insert_quarantine_rows(
                            import_batch_id, target_table, source_row_ref, reason_code,
                            reason_detail, raw_values, resolution
                        ) VALUES (?, ?, ?, ?, ?, ?, 'pending')""",
-                    (batch_id, target_table, q.get("source_row_ref", "unknown"),
-                     q.get("reason_code", "import.error"),
-                     q.get("reason_detail", "Quarantined row"),
-                     _json.dumps(raw, default=str)),
+                    (
+                        batch_id,
+                        target_table,
+                        q.get("source_row_ref", "unknown"),
+                        q.get("reason_code", "import.error"),
+                        q.get("reason_detail", "Quarantined row"),
+                        _json.dumps(raw, default=str),
+                    ),
                 )
     finally:
         conn.close()
@@ -685,13 +862,16 @@ def _set_batch_status(db: DatabaseManager, batch_id: int, status: str) -> None:
     conn = db.get_sqlite_connection()
     try:
         with conn:
-            conn.execute("UPDATE FactImportBatch SET status = ? WHERE batch_id = ?",
-                         (status, batch_id))
+            conn.execute(
+                "UPDATE FactImportBatch SET status = ? WHERE batch_id = ?", (status, batch_id)
+            )
     finally:
         conn.close()
 
 
-def _update_batch_counts(db: DatabaseManager, batch_id: int, *, loaded: int, quarantined: int) -> None:
+def _update_batch_counts(
+    db: DatabaseManager, batch_id: int, *, loaded: int, quarantined: int
+) -> None:
     conn = db.get_sqlite_connection()
     try:
         with conn:

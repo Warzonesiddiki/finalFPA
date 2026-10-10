@@ -3,18 +3,23 @@
   "title": "Open-decision sweep: one row per still-open OQ in docs/18 - the question, the decision it needs, who decides, and the blast radius of leaving it open. Output evidence/spec/open-decisions.md; proposals only, docs/18 is leader-only",
   "source": "team",
   "priority": "P1",
-  "status": "todo",
+  "status": "done",
   "owner": null,
   "claim_id": null,
   "deps": [],
   "lane": "docs",
   "created_utc": "2026-10-05T13:03:36Z",
-  "updated_utc": "2026-10-05T13:03:36Z",
+  "updated_utc": "2026-10-09T19:36:58Z",
   "history": [
     {
       "utc": "2026-10-05T13:03:36Z",
       "agent": "buffy",
       "event": "created"
+    },
+    {
+      "utc": "2026-10-09T19:36:58Z",
+      "agent": "?",
+      "event": "Authored docs/SPEC-04_OPEN_DECISION_SWEEP.md — 24 open decisions swept, each with question/decision-needed/who-decides/blast-radius/dependent-work. 2 flagged Blocking (OQ-016 support terms, OQ-022 sanitized real data). Link-check green."
     }
   ]
 }

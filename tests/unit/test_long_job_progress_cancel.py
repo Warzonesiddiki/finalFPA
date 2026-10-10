@@ -7,10 +7,10 @@ Proves atomic imports (no half-committed state on failure/cancellation) using sy
 from __future__ import annotations
 
 from pathlib import Path
-import pytest
+
+from app.engine.imports import parse_and_validate_csv
 from app.engine.store.db import DatabaseManager
 from app.engine.store.import_repo import ImportRepository
-from app.engine.imports import parse_and_validate_csv
 
 
 def test_import_atomicity_on_failure(tmp_path: Path):
@@ -27,7 +27,7 @@ def test_import_atomicity_on_failure(tmp_path: Path):
     bad_csv.write_text(
         "Company,Voucher,Line,PostingDate,AccountCode,Debit,Credit,Period\n"
         "COMP,V999,1,2026-04-01,1001,999.00,1.00,FY26-P01\n",
-        encoding="utf-8"
+        encoding="utf-8",
     )
 
     batch = parse_and_validate_csv(bad_csv)

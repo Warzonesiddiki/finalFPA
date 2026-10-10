@@ -1,11 +1,7 @@
 """Unit tests for the unified fast gate script (ENG-06)."""
 
-import subprocess
-import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-
-import pytest
+from unittest.mock import MagicMock, patch
 
 from scripts.fast_gate import GATE_STEPS, run_fast_gate
 

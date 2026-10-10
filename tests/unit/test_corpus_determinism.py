@@ -47,9 +47,7 @@ def _fingerprint(root: Path) -> dict[str, str]:
             continue
         if path.suffix.lower() not in {".csv", ".xlsx", ".pptx"}:
             continue
-        digests[path.relative_to(root).as_posix()] = hashlib.sha256(
-            path.read_bytes()
-        ).hexdigest()
+        digests[path.relative_to(root).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
     return digests
 
 
@@ -71,8 +69,7 @@ def test_corpus_regenerates_byte_identically(two_runs):
     assert first == second, (
         "corpus regeneration is not byte-reproducible; differing files: "
         + ", ".join(
-            name for name in sorted(set(first) | set(second))
-            if first.get(name) != second.get(name)
+            name for name in sorted(set(first) | set(second)) if first.get(name) != second.get(name)
         )
     )
 

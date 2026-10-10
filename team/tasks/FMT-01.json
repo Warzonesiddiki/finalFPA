@@ -3,13 +3,13 @@
   "title": "Clear the formatting and lint debt that is now hiding a real gate behind it. Measured today: `python -m ruff format --check app scripts tests` reports 173 files that would be reformatted, and `python -m ruff check app scripts tests` reports 1850 errors. Formatting is mechanical: apply it, then re-measure both numbers and paste the before and after. For the lint errors, do NOT blanket-fix. Triage into (a) safe auto-fix, (b) needs judgement, (c) pre-existing debt worth leaving, and record the counts per bucket with the rule you used to decide. Note that the format failure is what currently stops scripts/check.py at its first bar, so clearing it will make five more acceptance bars visible - some of which will be red, and that is the point. Acceptance: both numbers measured before and after and pasted, every bucket accounted for, and no suppression or noqa added to make a count go down.",
   "source": "docs/33",
   "priority": "P1",
-  "status": "review",
+  "status": "in-progress",
   "owner": "opencode",
   "claim_id": "opencode-20261005T2112Z-bb1c",
   "deps": [],
   "lane": "gate-tooling",
   "created_utc": "2026-10-05T20:33:08Z",
-  "updated_utc": "2026-10-05T21:33:54Z",
+  "updated_utc": "2026-10-09T20:28:58Z",
   "history": [
     {
       "utc": "2026-10-05T20:33:08Z",

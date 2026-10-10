@@ -65,9 +65,7 @@ def csv_file(tmp_path):
 
 
 def _import_file(path: str) -> dict:
-    response = client.post(
-        "/api/v1/imports", headers=AUTH, json={"path": path}
-    )
+    response = client.post("/api/v1/imports", headers=AUTH, json={"path": path})
     assert response.status_code == 200, response.text
     return response.json()
 
@@ -125,9 +123,7 @@ def test_accepted_suggestion_applies_on_the_next_import(csv_file):
     assert run_n1["batchId"] == run_n["batchId"] + 1
 
     # The suggestion is now linked to that profile version (profile history).
-    audit_view = client.get(
-        "/api/v1/mapping-suggestions", headers=AUTH
-    ).json()["data"]
+    audit_view = client.get("/api/v1/mapping-suggestions", headers=AUTH).json()["data"]
     assert audit_view["total"] == 1
 
 
@@ -148,9 +144,9 @@ def test_same_run_import_does_not_apply_its_own_suggestion(csv_file):
     # FPA_PROJECT_DIR / LOCALAPPDATA names. The autouse `isolated_project` fixture
     # in this module repoints both at tmp_path, so this reads the same throwaway
     # project the API just wrote - never the real user database.
-    from app.engine.store.db import DatabaseManager
-    from app.engine.imports.profiles import BUILTIN_PROFILES
     from app.engine.imports.profile_binding import resolve_profile_for_import
+    from app.engine.imports.profiles import BUILTIN_PROFILES
+    from app.engine.store.db import DatabaseManager
 
     db = DatabaseManager()
     same_run = resolve_profile_for_import(
@@ -188,9 +184,7 @@ def test_committed_facts_carry_the_applied_cost_center(csv_file, isolated_projec
 
     # Read the same database the API wrote to: the fixture patches LOCALAPPDATA,
     # and DatabaseManager appends /FP&A Month-End Copilot/Projects/default to it.
-    duckdb_path = (
-        Path(isolated_project) / "Projects" / "default" / "analytics.duckdb"
-    )
+    duckdb_path = Path(isolated_project) / "Projects" / "default" / "analytics.duckdb"
     conn = duckdb.connect(str(duckdb_path))
     try:
         rows = conn.execute(

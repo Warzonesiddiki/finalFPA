@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 SUPPORTED_MODELS = [
     {
@@ -45,7 +45,8 @@ DOCUMENTED_FALLBACK_ORDER = [
     },
 ]
 
-def get_model_pinning_config() -> Dict[str, Any]:
+
+def get_model_pinning_config() -> dict[str, Any]:
     """Get model pinning registry, deprecation notices, and documented fallback order per doc 10 §2 & §3."""
     return {
         "pinnedDefaultModel": "gpt-4o",
@@ -54,7 +55,8 @@ def get_model_pinning_config() -> Dict[str, Any]:
         "policy": "Non-silent switching enforced. Fallback always emits explicit labeling.",
     }
 
-def validate_model_selection(model_id: str) -> Dict[str, Any]:
+
+def validate_model_selection(model_id: str) -> dict[str, Any]:
     """Validate selected model against pinning & deprecation registry."""
     found = next((m for m in SUPPORTED_MODELS if m["modelId"] == model_id), None)
     if not found:

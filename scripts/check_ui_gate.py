@@ -6,9 +6,44 @@ above the baseline budget.
 """
 
 import json
-from pathlib import Path
+import re
 import subprocess
 import sys
+from pathlib import Path
+
+
+def _count_tsc_errors(proc: subprocess.CompletedProcess[str]) -> tuple[int, bool]:
+    """Return (count, count_is_trustworthy).
+
+    `tsc --noEmit` prints one diagnostic per line and each carries a TS error code,
+    so the error count is countable. If the output cannot be parsed the honest answer
+    is "I could not count these", not "there was one" - a flag dressed as a count
+    against a budget of 0 is a bar that fails for its own reason and hides why.
+    """
+    text = (proc.stdout or "") + "\n" + (proc.stderr or "")
+    if proc.returncode == 0:
+        return 0, True
+    matched = re.findall(r"\berror TS\d+:", text)
+    if matched:
+        return len(matched), True
+    # tsc failed but printed nothing we recognise (a crash, a config error, or output
+    # we could not read). Report the failure honestly rather than inventing a number.
+    return 1, False
+
+
+def _over_budget(count: int, count_ok: bool, budget: int, label: str) -> bool:
+    """One budget decision, stated honestly when the count could not be read."""
+    if not count_ok:
+        print(
+            f"FAILED: {label} check failed but its count could not be read from its output, "
+            "so the bar cannot say whether the budget was exceeded. This is a gate that "
+            "cannot decide, not a gate that found 1 error."
+        )
+        return True
+    if count > budget:
+        print(f"FAILED: {label} {count} exceed baseline budget {budget}")
+        return True
+    return False
 
 
 def check_ui_gate(repo_root: Path) -> int:
@@ -35,8 +70,12 @@ def check_ui_gate(repo_root: Path) -> int:
         encoding="utf-8",
         errors="replace",
     )
-    tsc_errors = 0 if tsc_proc.returncode == 0 else 1
-    if tsc_proc.returncode != 0:
+    # COUNT the errors, do not report a flag as a count. The previous line read
+    # `tsc_errors = 0 if tsc_proc.returncode == 0 else 1`, which printed
+    # "TypeScript Errors : 1" whatever the real number was - 34 errors reported as 1,
+    # and a budget of 0 that could never be reasoned about because the unit was wrong.
+    tsc_errors, tsc_count_ok = _count_tsc_errors(tsc_proc)
+    if not tsc_count_ok:
         print(f"    tsc stdout/stderr:\n{tsc_proc.stdout or ''}\n{tsc_proc.stderr or ''}")
 
     # 2. Run eslint with JSON format
@@ -70,15 +109,14 @@ def check_ui_gate(repo_root: Path) -> int:
         f"    ESLint Warnings   : {actual_eslint_warn} [Budget: <= {max_eslint_warn}]"
     )
 
-    failed = False
-    if tsc_errors > max_tsc:
-        print(f"FAILED: TypeScript errors {tsc_errors} exceed baseline budget {max_tsc}")
-        failed = True
+    failed = _over_budget(tsc_errors, tsc_count_ok, max_tsc, "TypeScript errors")
     if actual_eslint_err > max_eslint_err:
         print(f"FAILED: ESLint errors {actual_eslint_err} exceed baseline budget {max_eslint_err}")
         failed = True
     if actual_eslint_warn > max_eslint_warn:
-        print(f"FAILED: ESLint warnings {actual_eslint_warn} exceed baseline budget {max_eslint_warn}")
+        print(
+            f"FAILED: ESLint warnings {actual_eslint_warn} exceed baseline budget {max_eslint_warn}"
+        )
         failed = True
 
     if failed:

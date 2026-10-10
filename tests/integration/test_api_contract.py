@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from app.api.main import create_app, SESSION_TOKEN
+from app.api.main import SESSION_TOKEN, create_app
 
 
 @pytest.fixture
